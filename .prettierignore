@@ -1,0 +1,39 @@
+# Build output
+dist
+dist-ssr
+
+# Node dependencies
+node_modules
+
+# Firebase files
+.firebase
+firebase-debug.log
+
+# Environment variables
+.env
+.env.*.local
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+
+# Coverage / Test outputs
+coverage
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite & config cache
+.vite
+
+# Ignore static build files (optional)
+public/
+StaticData/
+
+# Ignore documentation & markdown if not needed
+README.md

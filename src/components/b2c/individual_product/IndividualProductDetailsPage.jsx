@@ -1,0 +1,665 @@
+import React, { Suspense, useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useProducts } from "../../../hooks/useProducts";
+import { cartService } from "../../../services/cartService";
+import { useWishlist } from "../../../context/WishlistContext";
+import { auth } from "../../../config";
+import B2BAuthService from "../../../services/b2bAuthService";
+import { B2BCartItemModel } from "../../../models/B2BCartItemModel";
+
+import ProductImageGallery from "./individual_product_components/ProductImageGallery";
+import ProductTitleSection from "./individual_product_components/ProductTitleSection";
+import ProductColorSelector from "./individual_product_components/ProductColorSelector";
+import ProductPriceSection from "./individual_product_components/ProductPriceSection";
+import ProductSizeSelector from "./individual_product_components/ProductSizeSelector";
+import ProductActionButtons from "./individual_product_components/ProductActionButtons";
+import OfferAndShippingInfo from "./individual_product_components/OfferAndShippingInfo";
+import ProductDescriptionSection from "./individual_product_components/ProductDescriptionSection";
+import ProductDetailsSection from "./individual_product_components/ProductDetailsSection";
+import DisclaimerSection from "./individual_product_components/DisclaimerSection";
+import HelpAndTryonSection from "./individual_product_components/HelpAndTryonSection";
+import ProductReviewsSection from "./individual_product_components/ProductReviewsSection";
+import ProductStockAndShipping from "./individual_product_components/ProductStockAndShipping";
+import ProductStarRatingSection from "./individual_product_components/ProductStarRatingSection";
+import AvailColorsPopup from "../../b2b/common/AvailColorsPopup";
+
+import img1 from "../../../assets/lazyloading/logoimg1.svg";
+import img2 from "../../../assets/lazyloading/logoimg2.svg";
+import img3 from "../../../assets/lazyloading/logoimg3.svg";
+import img4 from "../../../assets/lazyloading/logoimg4.svg";
+import img5 from "../../../assets/lazyloading/logoimg5.svg";
+import img6 from "../../../assets/lazyloading/logoimg6.svg";
+
+const UploadSelfieModal = React.lazy(() => import("../TryOn/UploadSelfieModal"));
+const TryOnPreviewModal = React.lazy(() => import("../TryOn/TryOnPreviewModal"));
+
+const IndividualProductDetailsPage = () => {
+  const { id } = useParams();
+  const { products, loading, error } = useProducts();
+  const { toggleWishlist, loading: wishlistLoading } = useWishlist();
+  const navigate = useNavigate();
+
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
+  const [showUploadSelfieModal, setShowUploadSelfieModal] = useState(false);
+  const [showTryOnPreviewModal, setShowTryOnPreviewModal] = useState(false);
+  const [tryOnData, setTryOnData] = useState({});
+  const [averageRating, setAverageRating] = useState(0);
+
+  const [showAddToBagPopup, setShowAddToBagPopup] = useState(false);
+  const [showAddToWishlistPopup, setShowAddToWishlistPopup] = useState(false);
+
+  const [selectedSize, setSelectedSize] = useState("");
+  const [showSizeError, setShowSizeError] = useState(false);
+  const [shakeSizeSelector, setShakeSizeSelector] = useState(false);
+
+  const [showB2BPopup, setShowB2BPopup] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const [showPage, setShowPage] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  const images = [img1, img2, img3, img4, img5, img6];
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsLoadingUser(true);
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        try {
+          const userData = await B2BAuthService.getUserById(currentUser.uid);
+          const email = userData?.data?.email;
+          const role = userData?.data?.role;
+          const userId = userData?.data?.userId;
+
+          setUserId(userId);
+          setUserRole(role);
+          setUserEmail(email);
+        } catch (error) {
+          setUserRole("B2C");
+          setUserId(currentUser.uid);
+          setUserEmail(currentUser.email);
+        }
+      } else {
+        setUserRole("guest");
+      }
+      setIsLoadingUser(false);
+    };
+
+    fetchUserData();
+
+    const unsubscribe = auth.onAuthStateChanged(() => {
+      fetchUserData();
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const editingCartItem = sessionStorage.getItem("editingCartItem");
+
+    if (editingCartItem) {
+      const item = JSON.parse(editingCartItem);
+      setEditingItem(item);
+
+      if (userRole === "B2B") {
+        setShowB2BPopup(true);
+      }
+
+      sessionStorage.removeItem("editingCartItem");
+    }
+  }, [userRole]);
+
+  const handleAverageRatingChange = React.useCallback((val) => {
+    setAverageRating((prev) => {
+      if (prev === val) return prev;
+      return val;
+    });
+  }, []);
+
+  useEffect(() => {
+    const imgTimer = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 200);
+
+    return () => clearTimeout(imgTimer);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPage(true);
+    }, 30);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!showPage || loading || isLoadingUser) {
+    return (
+      <div className="mt-24 flex items-center justify-center">
+        <img
+          src={images[currentIndex]}
+          alt="loader"
+          style={{
+            width: "300px",
+            height: "300px",
+            objectFit: "cover",
+            transition: "opacity 0.3s",
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
+
+  const product = products.find((p) => String(p.id) === String(id));
+  console.log("🛍️ [Product Details] Full product data:", product);
+
+  if (!product) return <div className="text-center py-10 text-gray-500">Product not found.</div>;
+
+  const imageUrls = product.imageUrls?.length ? product.imageUrls : ["/placeholder.jpg"];
+
+  const isSaree = product?.dressType?.toLowerCase() === "saree";
+  const requiresSizeSelection = !isSaree;
+  const isB2BUser = userRole === "B2B";
+
+  const validateSizeSelection = () => {
+    if (requiresSizeSelection && !selectedSize && !isB2BUser) {
+      setShowSizeError(true);
+      setShakeSizeSelector(true);
+
+      setTimeout(() => {
+        setShakeSizeSelector(false);
+      }, 500);
+
+      return false;
+    }
+    return true;
+  };
+
+  const showBagPopup = () => {
+    setShowAddToBagPopup(true);
+    setTimeout(() => {
+      setShowAddToBagPopup(false);
+    }, 3000);
+  };
+
+  const showWishlistPopup = () => {
+    setShowAddToWishlistPopup(true);
+    setTimeout(() => {
+      setShowAddToWishlistPopup(false);
+    }, 3000);
+  };
+
+  const handleAddToWishlist = async () => {
+    try {
+      if (requiresSizeSelection && !validateSizeSelection()) {
+        return;
+      }
+
+      const result = await toggleWishlist(
+        product,
+        requiresSizeSelection ? selectedSize : "One Size",
+        product.selectedColors?.[0] || "Default"
+      );
+
+      if (result.success) {
+        if (result.inWishlist) {
+          setShowAddToWishlistPopup(true);
+          setTimeout(() => setShowAddToWishlistPopup(false), 3000);
+        }
+      } else {
+        alert(`Failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      alert("Failed to update wishlist. Please try again.");
+    }
+  };
+
+  const handleTryOnClick = () => {
+    if (userRole === "B2B") {
+      alert("Virtual Try-On is not available for your account");
+      return;
+    }
+
+    if (requiresSizeSelection && !validateSizeSelection()) {
+      return;
+    }
+
+    const garmentImage = product.imageUrls?.[0];
+    if (!garmentImage) {
+      alert("No image available for try-on");
+      return;
+    }
+
+    setTryOnData({
+      garmentImage,
+      garmentName: product.title || product.name,
+      productId: product.id,
+      selectedColors: product.selectedColors || [],
+      selectedSizes: product.selectedSizes || [],
+      fabric: product.fabric || "",
+      price: parseFloat(product.price) || 0,
+      discount: product.discount || 0,
+      imageUrls: product.imageUrls || [garmentImage],
+      selectedSize: requiresSizeSelection ? selectedSize : "One Size",
+      dressType: product.dressType || 'lehenga',
+      outfitType: product.dressType?.toLowerCase() || "lehenga",
+    });
+
+    setShowUploadSelfieModal(true);
+  };
+
+  const handleUploadSelfieNext = (data) => {
+    setShowUploadSelfieModal(false);
+    setTryOnData((prev) => ({ ...prev, ...data }));
+    setShowTryOnPreviewModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowUploadSelfieModal(false);
+    setShowTryOnPreviewModal(false);
+    setTryOnData({});
+  };
+
+  const handleBuyNow = async (event) => {
+    event.stopPropagation();
+
+    if (userRole === "B2B") {
+      alert("B2B accounts cannot purchase directly. Please contact sales.");
+      return;
+    }
+
+    if (requiresSizeSelection && !validateSizeSelection()) {
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      const user = auth.currentUser;
+
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        description: product.description || product.shortDescription || "",
+        price: product.price,
+        image: imageUrls[0],
+        color: product.selectedColors?.[0] || "Default",
+        size: requiresSizeSelection ? selectedSize : "One Size",
+        quantity: 1,
+      };
+
+      if (user) {
+        navigate("/checkout", {
+          state: {
+            user: {
+              uid: user.uid,
+              email: user.email,
+              role: userRole,
+            },
+            cartItems: [cartItem],
+          },
+        });
+        return;
+      }
+
+      const guestCart = JSON.parse(sessionStorage.getItem("guest_cart")) || [];
+      const updatedCart = [...guestCart, cartItem];
+      sessionStorage.setItem("guest_cart", JSON.stringify(updatedCart));
+
+      navigate("/checkout", {
+        state: {
+          user: null,
+          cartItems: [cartItem],
+        },
+      });
+    } catch (error) {
+      console.error("Error during Buy Now:", error);
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleAddToBag = async (event) => {
+    event.stopPropagation();
+
+    if (userRole === "B2B") {
+      setShowB2BPopup(true);
+      return;
+    }
+
+    if (requiresSizeSelection && !validateSizeSelection()) {
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      const newItem = {
+        id: product.id,
+        name: product.name,
+        description: product.description || product.shortDescription || "",
+        price: product.price,
+        image: imageUrls[0],
+        color: product.selectedColors?.[0] || "Default",
+        size: requiresSizeSelection ? selectedSize : "One Size",
+        quantity: 1,
+        addedAt: new Date().toISOString(),
+      };
+
+      const user = auth.currentUser;
+
+      if (user) {
+        try {
+          await cartService.addToCart(product.id, newItem);
+          showBagPopup();
+          return;
+        } catch (error) {
+          const guestCart = JSON.parse(sessionStorage.getItem("guest_cart")) || [];
+          const existingItemIndex = guestCart.findIndex((item) => item.id === product.id);
+
+          if (existingItemIndex !== -1) {
+            guestCart[existingItemIndex].quantity += 1;
+          } else {
+            guestCart.push(newItem);
+          }
+
+          sessionStorage.setItem("guest_cart", JSON.stringify(guestCart));
+          showBagPopup();
+          return;
+        }
+      }
+
+      const guestCart = JSON.parse(sessionStorage.getItem("guest_cart")) || [];
+      const existingItemIndex = guestCart.findIndex((item) => item.id === product.id);
+
+      if (existingItemIndex !== -1) {
+        guestCart[existingItemIndex].quantity += 1;
+      } else {
+        guestCart.push(newItem);
+      }
+
+      sessionStorage.setItem("guest_cart", JSON.stringify(guestCart));
+      showBagPopup();
+    } catch (error) {
+      console.error("Error adding to bag:", error);
+      alert("Something went wrong while adding the item to your bag.");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleB2BCartConfirm = async (variantsArray) => {
+    try {
+      console.log("🛒 [B2B Cart] Starting handleB2BCartConfirm");
+      console.log("🛒 [B2B Cart] Received variantsArray:", variantsArray);
+      console.log("🛒 [B2B Cart] Product ID:", product.id);
+      console.log("🛒 [B2B Cart] User Role:", userRole);
+
+      if (!Array.isArray(variantsArray)) {
+        console.error("🛒 [B2B Cart] variantsArray is not an array:", variantsArray);
+        throw new Error("Variants data is not in expected format");
+      }
+
+      if (variantsArray.length === 0) {
+        console.error("🛒 [B2B Cart] Empty variants array");
+        throw new Error("No variants provided");
+      }
+
+      const user = auth.currentUser;
+
+      if (user) {
+        // 🟢 USER IS LOGGED IN - SAVE TO FIRESTORE
+        console.log("🛒 [B2B Cart] User is logged in, saving to Firestore");
+
+        try {
+          await cartService.addToCart(
+            product.id,
+            {
+              name: product.name,
+              price: product.price,
+              image: imageUrls[0],
+              description: product.description || "",
+            },
+            variantsArray
+          );
+
+          console.log("🛒 [B2B Cart] Successfully saved to Firestore");
+
+          const totalItems = variantsArray.reduce((sum, v) => sum + (v.quantity || 1), 0);
+          alert(`${totalItems} item${totalItems > 1 ? "s" : ""} added to your cart!`);
+
+          setShowB2BPopup(false);
+          navigate("/cart");
+          return;
+        } catch (firestoreError) {
+          console.error("🛒 [B2B Cart] Firestore save failed:", firestoreError);
+          // Fallback to sessionStorage if Firestore fails
+          console.log("🛒 [B2B Cart] Falling back to sessionStorage");
+        }
+      }
+
+      // 🔴 USER NOT LOGGED IN OR FIRESTORE FAILED - USE SESSIONSTORAGE
+      console.log("🛒 [B2B Cart] Using sessionStorage (guest cart)");
+
+      const guestCart = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
+      console.log("🛒 [B2B Cart] Current guest cart before:", guestCart);
+
+      // Remove ANY existing items with this product ID
+      const filteredCart = guestCart.filter(
+        (item) => !(item.productId === product.id || item.id === product.id)
+      );
+
+      // Create B2B item with proper structure
+      const b2bItem = {
+        productId: product.id,
+        id: product.id,
+        isB2BVariant: true,
+        b2bItem: true,
+        name: product.name,
+        price: Number(product.price) || 0,
+        image: imageUrls[0],
+        description: product.description || "",
+        variants: variantsArray.map((v) => ({
+          color: v.color,
+          size: v.size,
+          quantity: v.quantity || 1,
+          availableQuantity: v.availableQuantity || 999,
+        })),
+        totalQuantity: variantsArray.reduce((sum, v) => sum + (v.quantity || 1), 0),
+        subtotal:
+          (Number(product.price) || 0) *
+          variantsArray.reduce((sum, v) => sum + (v.quantity || 1), 0),
+        userId: user?.uid || null,
+        addedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedCart = [...filteredCart, b2bItem];
+      sessionStorage.setItem("guest_cart", JSON.stringify(updatedCart));
+
+      // Verify storage
+      const verifyCart = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
+      const b2bItemsInCart = verifyCart.filter((item) => item.isB2BVariant === true);
+      console.log("🛒 [B2B Cart] B2B items in stored cart:", b2bItemsInCart.length);
+
+      setShowB2BPopup(false);
+
+      const totalItems = b2bItem.totalQuantity;
+      console.log("🛒 [B2B Cart] Success! Added", totalItems, "B2B items");
+      alert(`${totalItems} item${totalItems > 1 ? "s" : ""} added to your cart!`);
+
+      navigate("/cart");
+    } catch (error) {
+      console.error("❌ [B2B Cart] Error adding B2B items to cart:", error);
+      alert("Something went wrong while adding items to your cart.");
+    }
+  };
+
+  const handleSizeSelect = (size) => {
+    setSelectedSize(size);
+    setShowSizeError(false);
+  };
+
+  return (
+    <div
+      className="mx-auto flex flex-col mt-30"
+      style={{
+        width: "1166px",
+        gap: "16px",
+        height: "auto",
+      }}
+    >
+      {showAddToBagPopup && (
+        <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300">
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span>Item added to your bag!</span>
+          </div>
+        </div>
+      )}
+
+      {showAddToWishlistPopup && (
+        <div className="fixed top-20 right-4 bg-pink-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>Item added to wishlist!</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="lg:w-1/2 sticky top-0 self-start">
+          <ProductImageGallery images={imageUrls} product={product} />
+        </div>
+
+        <div
+          className="space-y-6 overflow-y-scroll"
+          style={{
+            width: "663px",
+            height: "auto",
+            maxHeight: "calc(100vh - 4rem)",
+            gap: "24px",
+            paddingRight: "8px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
+          <ProductTitleSection
+            user={auth.currentUser}
+            userRole={userRole}
+            product={product}
+            onAddToWishlist={handleAddToWishlist}
+            addingToWishlist={wishlistLoading}
+          />
+
+          <ProductStarRatingSection averageRating={averageRating} />
+
+          <ProductPriceSection product={product} />
+
+          {!isB2BUser && product?.selectedColors?.length > 0 && (
+            <ProductColorSelector colors={product.selectedColors} />
+          )}
+
+          {requiresSizeSelection && !isB2BUser && (
+            <ProductSizeSelector
+              selectedSizes={product?.selectedSizes}
+              units={product?.units}
+              onSizeSelect={handleSizeSelect}
+              selectedSize={selectedSize}
+              showError={showSizeError}
+              shake={shakeSizeSelector}
+            />
+          )}
+
+          <ProductActionButtons
+            user={auth.currentUser}
+            userRole={userRole}
+            onAddToBag={handleAddToBag}
+            onBuyNow={handleBuyNow}
+            onVirtualTryOn={handleTryOnClick}
+            onAddToWishlist={handleAddToWishlist}
+            addingToCart={addingToCart}
+            addingToWishlist={addingToWishlist}
+            isB2BUser={isB2BUser}
+          />
+
+          {showB2BPopup && (
+            <AvailColorsPopup
+              colors={product?.selectedColors}
+              product={product}
+              onClose={() => {
+                setShowB2BPopup(false);
+                setEditingItem(null);
+              }}
+              editingItem={editingItem}
+              onConfirm={handleB2BCartConfirm}
+            />
+          )}
+
+          <ProductStockAndShipping />
+          <OfferAndShippingInfo />
+          <ProductDescriptionSection product={product} />
+          <ProductDetailsSection product={product} />
+          <DisclaimerSection />
+          <HelpAndTryonSection />
+          <ProductReviewsSection
+            productId={product?.id}
+            reviews={product?.vendorReviews}
+            onAverageRatingChange={handleAverageRatingChange}
+          />
+        </div>
+      </div>
+
+      <Suspense fallback={<div className="p-10 text-center">Loading Try-On...</div>}>
+        {showUploadSelfieModal && (
+          <UploadSelfieModal
+            isOpen={showUploadSelfieModal}
+            onClose={handleModalClose}
+            onNext={handleUploadSelfieNext}
+            garmentImage={tryOnData.garmentImage}
+            garmentName={tryOnData.garmentName}
+            tryOnData={tryOnData}
+            isSaree={isSaree}
+          />
+        )}
+        {showTryOnPreviewModal && (
+          <TryOnPreviewModal
+            isOpen={showTryOnPreviewModal}
+            onClose={handleModalClose}
+            tryOnData={tryOnData}
+          />
+        )}
+      </Suspense>
+    </div>
+  );
+};
+
+export default IndividualProductDetailsPage;

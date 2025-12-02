@@ -1,0 +1,33 @@
+/* Google Fonts must come FIRST */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit+Display:wght@100,200,300,400;500;600;700&display=swap");
+
+/* src/styles/index.css */
+/* @tailwind base;
+@tailwind components; */
+@tailwind utilities;
+
+/* Tailwind CSS */
+@import "tailwindcss";
+@import "tailwindcss" important;
+
+/* Base Styles */
+
+@import "./base/variables.css";
+@import "./base/typography.css";
+
+/* Hide scrollbar but allow scroll */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  display: none; /* Chrome, Safari, Opera */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

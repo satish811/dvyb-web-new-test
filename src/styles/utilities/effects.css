@@ -1,0 +1,15 @@
+@utility text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@utility text-shadow-lg {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@utility bg-surface {
+  background-color: var(--color-surface);
+}
+
+@utility bg-muted {
+  background-color: var(--color-gray-50);
+}

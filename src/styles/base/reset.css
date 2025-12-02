@@ -1,0 +1,17 @@
+* {
+  margin: 1;
+  padding: 1;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  color: var(--color-gray-800);
+  background-color: var(--color-background);
+  line-height: 1.6;
+  font-weight: 400;
+}

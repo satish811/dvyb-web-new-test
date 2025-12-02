@@ -1,0 +1,1048 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import step1img from "../../../assets/TryOn/step1img.svg";
+import Tickic from "../../../assets/TryOn/tick_ic.svg";
+import black_warnIc from "../../../assets/TryOn/black_warnIc.svg";
+import red_warnIc from "../../../assets/TryOn/red_warnIc.svg";
+import right_ic from "../../../assets/TryOn/right_ic.svg";
+import rightHoverArrow from "../../../assets/TryOn/rightHoverArrow.svg";
+
+import { profileService } from "../../../services/profileService.js";
+// models
+
+import model1 from "../../../assets/TryOn/model1.png";
+import model2 from "../../../assets/TryOn/model2.png";
+import model3 from "../../../assets/TryOn/young.jpg";
+import model4 from "../../../assets/TryOn/model4.jpg";
+
+const ProfilePhotoSelector = ({ onSelect }) => {
+  const [firebaseImage, setFirebaseImage] = useState(
+    "https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg"
+  );
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-4">
+        <div className="animate-spin h-6 w-6 border-2 border-b-red-700 rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!firebaseImage) return null;
+
+  return (
+    <button
+      onClick={() => onSelect(firebaseImage)}
+      className="w-full border border-gray-200 rounded-xl p-4 hover:border-primary transition-all bg-white hover:bg-red-50"
+    >
+      <div className="flex items-center gap-4">
+        <img
+          src={firebaseImage}
+          alt="Saved model"
+          className="w-16 h-20 object-cover rounded-md border border-gray-200"
+        />
+        <div className="text-left flex-1">
+          <div className="flex items-center gap-2">
+            <User size={16} className="text-primary" />
+            <span className="font-medium text-gray-800">Use My Saved Photo</span>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">Use your uploaded model photo</p>
+          <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full inline-block mt-2">
+            ✓ Ready to use
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+};
+
+const UploadSelfieModal = ({
+  isOpen,
+  onClose,
+  onNext,
+  garmentImage,
+  garmentName,
+  isSaree,
+  is3D = false,
+  tryOnData,
+}) => {
+  const [step, setStep] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [firebaseImage, setFirebaseImage] = useState(null);
+  const [loadingFirebaseImage, setLoadingFirebaseImage] = useState(true);
+  const [imageSource, setImageSource] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [showModelPreview, setShowModelPreview] = useState(false);
+  const navigate = useNavigate();
+  // ⭐ Conditional based on garment type
+
+  const [userHasTryOn, setUserHasTryOn] = useState(false);
+const [userTryOnImage, setUserTryOnImage] = useState(null);
+const [useUserModel, setUseUserModel] = useState(false); // Toggle state
+
+
+useEffect(() => {
+  const checkUserTryOn = async () => {
+    if (!isOpen || !tryOnData?.dressType) return;
+    
+    try {
+      const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
+      if (savedImage) {
+        setUserHasTryOn(true);
+        setUserTryOnImage(savedImage);
+        setUseUserModel(true); // Default to user model if available
+      } else {
+        setUserHasTryOn(false);
+        setUserTryOnImage(null);
+        setUseUserModel(false);
+      }
+    } catch (error) {
+      console.error("Error checking user try-on:", error);
+    }
+  };
+
+  checkUserTryOn();
+}, [isOpen, tryOnData]);
+
+
+
+const getModelsForDressType = (dressType) => {
+  // Normalize dress type to lowercase and remove extra spaces
+  const normalizedType = dressType?.toLowerCase().trim();
+
+
+
+
+    // Define all model arrays
+    const sareeModels = [
+      {
+        modelName: "Model 1",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/modeltryon_wsilt2.jpg",
+      },
+      {
+        modelName: "Model 2",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_5maj435maj435maj_zsikdk.png",
+      },
+      {
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_784di8784di8784d_ra30uh.png",
+      },
+      {
+        modelName: "Model 4",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213101/Gemini_Generated_Image_1vnwft1vnwft1vnw_gvxeta.png",
+      },
+    ];
+
+    const universalModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
+      },
+    ];
+
+    const shararaModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978924/sharara3_opiohp_12c9c7.jpg",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978942/bvfo12yqx2bwfjjbynop_e2f08a.jpg",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978969/dg36354daunzulny0vsk_593bdd.jpg",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978906/sharara4_pnw3fi_50fc1f.jpg",
+      },
+    ];
+
+    const anarkaliModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
+      },
+    ];
+
+    const pretModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret1_m8ralt.png",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret2_jbuvlf.png",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971711/pret3_baksin.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971712/pret4_gl6dky.png",
+      },
+    ];
+
+    const fusionModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion2_edimql.png",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion1_rexxbx.png",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion4_msdxrp.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971756/fusion3_nawkdm.png",
+      },
+    ];
+
+    const kurthaModels = [
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
+      },
+      {
+        modelName: "Dusky & Curvy",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978550/kurthaSet3_mbst5j_f7e8e5.jpg",
+      },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
+      },
+    ];
+
+    // Map dress types to their corresponding models
+    switch (normalizedType) {
+      case "saree":
+        return sareeModels;
+
+      case "sharara":
+      case "shararas":
+        return shararaModels;
+
+      case "anarkali":
+      case "anarkalis":
+        return anarkaliModels;
+
+      case "pret":
+      case "prêt":
+        return pretModels;
+
+      case "fusion":
+        return fusionModels;
+
+      case "kurta":
+      case "kurta set":
+      case "kurta sets":
+      case "kurta-sets":
+      case "kurtaset":
+        return kurthaModels;
+
+      case "lehenga":
+      case "wedding": // Wedding uses lehenga models
+        return universalModels;
+
+      // Default for other dress types (kurta sets, etc.)
+      default:
+        return universalModels;
+    }
+  };
+
+  const models = getModelsForDressType(tryOnData?.dressType || "lehenga");
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1);
+      setSelectedImage(null);
+      setImageSource("");
+      setUploadError("");
+      setIsUploading(false);
+    }
+  }, [isOpen]);
+
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "tryon_unsigned");
+    data.append("cloud_name", "doiezptnn");
+
+    const res = await fetch("https://api.cloudinary.com/v1_1/doiezptnn/image/upload", {
+      method: "POST",
+      body: data,
+    });
+
+    const json = await res.json();
+    if (!json.secure_url) throw new Error("Cloudinary upload failed");
+    return json.secure_url;
+  };
+
+  const validateImage = async (imageUrl) => {
+    try {
+      const img = new Image();
+      img.src = imageUrl;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+      return img.width >= 400 && img.height >= 600;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      setUploadError("Please select a valid image (JPEG, PNG, JPG).");
+      setStep(5);
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError("File size exceeds 2MB. Please choose a smaller image.");
+      setStep(5);
+      return;
+    }
+
+    setStep(3);
+    setIsUploading(true);
+    setUploadError("");
+
+    try {
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      setSelectedImage(cloudinaryUrl);
+      setImageSource("upload");
+
+      const isValid = await validateImage(cloudinaryUrl);
+      setStep(isValid ? 4 : 5);
+    } catch {
+      setUploadError("Failed to upload image. Please try again.");
+      setStep(5);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleContinue = () => {
+    if (selectedImage && garmentImage) {
+      onNext({ modelImage: selectedImage, garmentImage, is3D });
+    }
+  };
+
+  const handleReupload = () => {
+    setStep(2);
+    setSelectedImage(null);
+    setUploadError("");
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center  p-4">
+      <button
+        onClick={() => {
+          if (showModelSelector || showModelPreview) {
+            setShowModelSelector(false);
+            setShowModelPreview(false);
+            setSelectedModel(null);
+          }
+          onClose();
+        }}
+        className="absolute top-13 right-12 text-gray-600 hover:text-gray-800  p-1 shadow-sm"
+      >
+        <X size={22} />
+      </button>
+
+      {/* Step 1: Initial Selection */}
+      {/* Step 1: Initial Selection */}
+      {step === 1 && (
+        <div className="flex flex-col md:flex-row bg-white md:rounded-xl md:gap-[26px] overflow-hidden md:shadow-lg  w-full md:w-[838px] h-auto md:h-[564px] relative">
+          {/* CLOSE BUTTON - Top Right Corner */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          {/* LEFT IMAGE SECTION */}
+          <div className="flex justify-center items-center md:p-3">
+            <img
+              src={step1img}
+              alt="Garment"
+              className="w-full h-[240px] md:w-[400px] md:h-[532px] object-cover"
+            />
+          </div>
+
+          {/* RIGHT SIDE CONTENT */}
+          <div className="flex flex-col pt-4 px-4 md:pt-16 md:px-0 md:w-[400px] w-full pb-16 md:pb-0 relative">
+            {/* HEADING - Shows first on mobile, after card on desktop */}
+            <div className="block md:hidden">
+              <h2 className="text-2xl text-start font-semibold text-black">Try-On</h2>
+              <p className="text-gray-600 text-sm mb-4 mt-1 font-medium">Let's go shopping</p>
+            </div>
+
+            {/* SELECTED DRESS CARD */}
+            <div className="w-full md:w-[180px] rounded-xl shadow-md border p-2 border-gray-200 mb-5 md:mb-0">
+              <div className="flex justify-between items-center p-3 bg-[#EEF7F0] border border-[#B8E3C6] py-1 rounded-md">
+                <p className="text-[10px] font-medium text-[#15912C]">SELECTED DRESS</p>
+                <img src={Tickic} className="h-4" alt="" />
+              </div>
+              <div className="flex gap-3 mt-3 items-center">
+                <img src={garmentImage} className="h-12 w-12 rounded-md object-cover" alt="" />
+                <p className="text-xs text-gray-700 line-clamp-2">{garmentName}</p>
+              </div>
+            </div>
+
+            {/* HEADING - Shows after card on desktop */}
+            <div className="hidden md:block">
+              <h2 className="text-3xl text-start font-semibold mt-6 text-black">Try-On</h2>
+              <p className="text-gray-600 text-sm mb-5 mt-2 font-medium">Let's go shopping</p>
+            </div>
+
+            {/* BUTTONS */}
+            <button
+              onClick={() => setStep(2)}
+              className="w-full md:w-[345px] bg-[#8B0000] text-white h-[44px] text-sm hover:bg-[#A30000] transition rounded-md md:rounded-none"
+            >
+              Upload a picture
+            </button>
+
+            <button
+              onClick={() => {
+                setShowModelSelector(true);
+                setStep(null); // hide Step1
+              }}
+              className="w-full md:w-[345px] border mt-2 border-[#8B0000] text-[#8B0000] h-[44px] text-sm hover:bg-[#8B0000] hover:text-white transition rounded-md md:rounded-none"
+            >
+              Select a model
+            </button>
+
+            {/* FOOTNOTE */}
+            <p className="text-[10px] mt-4 text-gray-600 leading-tight md:max-w-[320px] text-start">
+              Hey! To use the 2D TRY ON feature, just upload or take a selfie or{" "}
+              <br className="hidden md:inline" />
+              Press <span className="text-primary text-xs font-medium">SKIP</span> to check out the
+              models you can try on!
+            </p>
+
+            {/* SKIP BUTTON (BOTTOM-RIGHT) */}
+            <button
+              onClick={onClose}
+              className="absolute bottom-4 right-4 cursor-pointer text-gray-600 border border-gray-300 px-4 py-1 rounded-md text-sm font-medium flex items-center gap-1 hover:text-gray-800"
+            >
+              SKIP
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Upload Instructions */}
+      {step === 2 && (
+        <div className="p-4 items-center text-center bg-white justify-center w-full md:w-[818px] overflow-y-auto relative max-w-full">
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-500 hover:text-gray-700"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 6L18 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => setStep(1)}
+            className="mb-4 md:mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            {/* <ArrowLeft size={20} /> Back */}
+          </button>
+
+          <h2 className="text-base md:text-xl font-bold text-gray-900 max-w-full md:max-w-2xl pr-8 md:pr-0">
+            Upload your full photo for the best try-on experience
+          </h2>
+          <p className="text-xl">— we'll do the rest!</p>
+          <div className="mt-4 md:mt-6 text-center justify-center -ml-24 flex flex-col md:flex-row md:gap-8 gap-0 md:items-start">
+            {/* Example Image */}
+            <div className="flex justify-center w-full md:w-[230px] h-auto md:h-[369px] mb-4 md:mb-0">
+              <img
+                src="https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg"
+                alt="Example"
+                className="w-full max-w-[280px] md:max-w-none md:w-full h-auto object-cover"
+              />
+            </div>
+
+            {/* Instructions + Upload */}
+            <div className="w-full md:w-[309px] px-0">
+              {/* Instruction Box */}
+              <div
+                className="rounded-lg p-4 md:p-5 w-full md:w-[388px] bg-[#FFF8F4]"
+                style={{
+                  backgroundImage: `
+              repeating-linear-gradient(0deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+              repeating-linear-gradient(90deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+              repeating-linear-gradient(180deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+              repeating-linear-gradient(270deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px)
+            `,
+                  backgroundSize: "2px 100%, 100% 2px, 2px 100%, 100% 2px",
+                  backgroundPosition: "0 0, 0 0, 100% 0, 0 100%",
+                  backgroundRepeat: "no-repeat",
+                }}
+              >
+                <h3 className="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">
+                  INSTRUCTIONS:
+                </h3>
+
+                <ul className="space-y-1.5 md:space-y-2 mt-3 md:mt-5 text-xs md:text-sm">
+                  <li className="flex gap-2 text-[#7F6301]">
+                    <span className="text-[#7F6301] ml-3 font-medium">
+                      • Stand straight and face forward
+                    </span>
+                  </li>
+                  <li className="flex gap-2 text-[#7F6301]">
+                    <span className="text-[#7F6301] ml-3 font-medium">
+                      • Maintain good lighting and contrast
+                    </span>
+                  </li>
+                  <li className="flex gap-2 text-[#7F6301]">
+                    <span className="text-[#7F6301] ml-3 font-medium">
+                      • Avoid filters or busy backgrounds
+                    </span>
+                  </li>
+                  <li className="flex gap-2 text-[#7F6301]">
+                    <span className="text-[#7F6301] ml-3 font-medium">
+                      • Keep file size under 2MB
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-xs md:text-sm text-gray-700 font-medium mt-3 md:mt-4 w-full md:w-[388px] leading-relaxed">
+                Your photos are never stored in our system. We respect your privacy and are
+                committed to protecting your personal data.
+              </p>
+
+              {/* Upload Button */}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/jpg"
+                onChange={handleFileChange}
+                className="hidden"
+                id="uploadInput"
+              />
+              <label
+                htmlFor="uploadInput"
+                className="mt-3 md:mt-4 block w-full md:w-[388px] bg-primary hover:bg-hoverBg text-white py-3 text-center font-medium cursor-pointer transition-colors text-sm"
+              >
+                Click to upload
+              </label>
+
+              {/* Camera Button */}
+              <button className="mt-3 w-full md:w-[388px] border border-[#8A0000] text-primary py-3 font-medium hover:bg-hoverBg hover:text-white cursor-pointer transition text-sm">
+                Use camera
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Uploading */}
+      {step === 3 && (
+        <div className="p-8 flex flex-col  bg-white items-center justify-center overflo text-center min-h-[400px]">
+          <div className="relative bg-gray-100 rounded-xl w-full max-w-sm overflow-hidden mb-6">
+            <img
+              src={selectedImage}
+              alt="Uploading"
+              className="w-full h-64 object-contain opacity-50"
+            />
+            <div className="absolute inset-0 flex flex-col justify-center items-center bg-black/40">
+              <div className="animate-spin h-10 w-10 border-4 border-white border-t-transparent rounded-full mb-3"></div>
+              <p className="text-white font-semibold text-lg">Uploading</p>
+            </div>
+          </div>
+          <div className="bg-red-50 p-4 rounded-xl border border-red-200 text-left w-full max-w-sm">
+            <p className="font-semibold text-red-800 mb-2">Please follow the below instructions</p>
+            <ul className="text-sm text-red-700 space-y-1">
+              <li>• Keep file size under 2MB</li>
+              <li>• Ensure image is clear and not pixelated</li>
+              <li>• Maintain good lighting and contrast</li>
+              <li>• Keep background clean or neutral</li>
+            </ul>
+          </div>
+          <button className="w-full max-w-sm bg-primary text-white py-3 rounded-lg font-medium mt-5 opacity-60 cursor-not-allowed">
+            CONTINUE
+          </button>
+          <button className="w-full max-w-sm border border-gray-300 py-3 rounded-lg mt-3 text-gray-700 opacity-60 cursor-not-allowed">
+            RE-UPLOAD
+          </button>
+        </div>
+      )}
+
+      {/* Step 4: Success */}
+      {step === 4 && (
+        <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
+          <img
+            src={selectedImage}
+            alt="Success"
+            className="w-full max-w-sm h-64 object-contain  shadow-md mb-4"
+          />
+          <div className="flex items-center gap-2  px-4 py-3 rounded-lg mb-5">
+            {/* <CheckCircle className="text-green-600" size={22} /> */}
+            <p className="text-green-700 font-normal -ml-48  text-start text-sm">
+              Image uploaded successfully
+            </p>
+          </div>
+          <button
+            onClick={handleContinue}
+            className="w-full max-w-sm bg-primary text-white py-3  font-medium hover:bg-red-800"
+          >
+            CONTINUE
+          </button>
+          <button
+            onClick={handleReupload}
+            className="w-full max-w-sm border border-gray-300 text-gray-700 py-3  mt-3 hover:border-red-700"
+          >
+            RE-UPLOAD
+          </button>
+          <p className="text-xs text-gray-600 mt-4">
+            Your photos are never stored in our system. We respect your privacy and are committed to
+            protecting your personal data.
+          </p>
+        </div>
+      )}
+
+      {/* Step 5: Error */}
+      {step === 5 && (
+        <div className="p-8 flex flex-col items-center justify-center text-center">
+          <div className=" w-full max-w-sm ">
+            <img
+              src={selectedImage}
+              alt="Error"
+              className="w-full max-w-sm h-64 object-cover   backdrop-blur-3xl blur-xs  "
+            />
+          </div>
+          <div className="  mt-3    text-left w-full max-w-lg ml-28  ">
+            <div className="flex items-center gap-4  ">
+              <img src={red_warnIc} className="h-5" alt="" />
+              <p className="text-red-600    text-lg ">
+                {uploadError || "Image you uploaded was blurred or pixelated"}
+              </p>
+            </div>
+            <div className="flex  -ml-0.5 items-center mt-4 gap-3">
+              <img src={black_warnIc} className="h-6" alt="" />
+              <p className="font-semibold text-lg text-outfit ">
+                {" "}
+                Please follow the below instructions{" "}
+              </p>
+            </div>
+            <ul className="text-md ml-2 text-black  text-outfit  mt-3 space-y-1">
+              <li>• Keep file size under 2MB</li>
+              <li>• Ensure image is clear and not pixelated</li>
+              <li>
+                • Maintain <span className="text-primary"> good lighting and contrast </span>{" "}
+              </li>
+              <li>• Keep background clean or neutral</li>
+            </ul>
+          </div>
+          <button
+            onClick={handleReupload}
+            className="w-full max-w-sm bg-primary text-white py-3 rounded-lg font-medium mt-5 hover:bg-red-800"
+          >
+            RE-UPLOAD
+          </button>
+          <p className="text-xs text-gray-600 mt-4">
+            Your photos are never stored in our system. We respect your privacy and are committed to
+            protecting your personal data.
+          </p>
+        </div>
+      )}
+
+      {/* Model Selector - Image 1 UI */}
+{/* Model Selector - Image 1 UI */}
+{showModelSelector && !showModelPreview && (
+  <div className="p-6 w-full bg-white md:w-[818px] relative">
+    {/* Close Button */}
+    <button
+      onClick={() => {
+        setShowModelSelector(false);
+        setStep(1);
+      }}
+      className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    {/* Header */}
+    <h2 className="text-md font-semibold mb-1">Select a model:</h2>
+    <p className="text-xs text-gray-600 mb-4">You can only choose one model</p>
+
+    {/* ✅ ADD TOGGLE HERE - Only show if user has saved try-on */}
+    {userHasTryOn && (
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* User's saved model thumbnail */}
+            <img 
+              src={userTryOnImage} 
+              alt="Your model" 
+              className="w-12 h-16 object-cover rounded border-2 border-primary"
+            />
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Your Model</p>
+              <p className="text-xs text-gray-600">Created from your profile</p>
+            </div>
+          </div>
+          
+          {/* Toggle Switch */}
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={useUserModel}
+              onChange={(e) => {
+                setUseUserModel(e.target.checked);
+                if (e.target.checked) {
+                  // Auto-select user model
+                  setSelectedModel({
+                    image: userTryOnImage,
+                    name: "Your Model",
+                  });
+                } else {
+                  // Clear selection to force user to pick static model
+                  setSelectedModel(null);
+                }
+              }}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+          </label>
+        </div>
+        
+        <p className="text-xs text-gray-500 mt-2">
+          {useUserModel 
+            ? "Using your personalized model" 
+            : "Toggle ON to use static DVYB models below"}
+        </p>
+      </div>
+    )}
+
+    {/* Model Grid - Only show if toggle is OFF or user has no saved model */}
+    {(!userHasTryOn || !useUserModel) && (
+      <div className="grid grid-cols-2 md:grid-cols-4 w-[550px] mb-6">
+        {models.map((model, index) => (
+          <div
+            key={index}
+            onClick={() => {
+              setSelectedModel({
+                image: model.modelimg,
+                name: model.modelName,
+              });
+            }}
+            className="cursor-pointer flex flex-col items-center relative"
+          >
+            <img
+              src={model.modelimg}
+              alt={model.modelName}
+              className="w-[95px] h-[180px] object-contain rounded-lg"
+            />
+            <p className="text-center mt-2 text-sm font-medium capitalize">{model.modelName}</p>
+
+            {selectedModel?.name === model.modelName && (
+              <div className="absolute inset-0 border-2 border-[#8B0000] rounded-none pointer-events-none">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#8B0000] flex items-center justify-center">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Warning Box */}
+    <div className="flex items-start gap-2 p-3 rounded-lg">
+      <input type="checkbox" className="mt-0.5" />
+      <p className="text-xs text-black">
+        Make it default model for All future try ons you can always change the model in the
+        settings
+      </p>
+    </div>
+
+    {/* Footer Buttons */}
+    <div className="flex justify-between items-center mt-6">
+      <button
+        onClick={() => {
+          setShowModelSelector(false);
+          setStep(1);
+        }}
+        className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 hover:border-red-900 hover:text-red-900 transition-colors"
+      >
+        <ArrowLeft size={16} /> BACK
+      </button>
+
+      <button
+        onClick={() => {
+          if (!selectedModel) {
+            alert("Please select a model to continue");
+            return;
+          }
+          setShowModelPreview(true);
+          setShowModelSelector(false);
+        }}
+        className={`px-6 py-2 rounded-md transition-colors ${
+          selectedModel
+            ? "bg-[#8B0000] text-white hover:bg-[#A30000] hover:text-white"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        }`}
+        disabled={!selectedModel}
+      >
+        NEXT →
+      </button>
+    </div>
+  </div>
+)}
+
+      {/* Model Preview - Image 2 UI */}
+
+      {showModelPreview && selectedModel && (
+        <div className="p-6 sm:p-12 w-full bg-white md:max-w-[818px] mx-auto relative">
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowModelPreview(false);
+              setShowModelSelector(true);
+            }}
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          {/* ---------- Two cards side-by-side (mobile stacks) ---------- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* ---------- Garment Card ---------- */}
+            <div className="border border-gray-300 rounded-lg p-4 shadow-sm">
+              <div className="h-64 md:h-72 flex items-center justify-center bg-gray-50 rounded-md mb-3 overflow-hidden">
+                <img
+                  src={garmentImage}
+                  alt="Selected dress"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="bg-[#EEF7F0] border border-[#B8E3C6] px-3 py-2 flex items-center justify-between mb-3 rounded">
+                <span className="text-sm font-semibold text-[#15912C]">SELECTED DRESS</span>
+                <img src={Tickic} className="h-4 w-4" alt="check" />
+              </div>
+              <p className="text-sm text-gray-700 line-clamp-2">{garmentName}</p>
+            </div>
+
+            {/* ---------- Model Card ---------- */}
+            <div className="border border-gray-300 rounded-lg p-4 shadow-sm">
+              <div className="h-64 md:h-72 flex items-center justify-center bg-gray-50 rounded-md mb-3 overflow-hidden">
+                <img
+                  src={selectedModel.image}
+                  alt="Selected model"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="bg-[#EEF7F0] border border-[#B8E3C6] px-3 py-2 flex items-center justify-between mb-3 rounded">
+                <span className="text-sm font-semibold text-[#15912C]">SELECTED MODEL</span>
+                <img src={Tickic} className="h-4 w-4" alt="check" />
+              </div>
+              <p className="text-sm text-gray-700">{selectedModel.name}</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            {/* Select Another Dress */}
+            <button
+              onClick={() => {
+                onClose();
+                navigate(`/products/${tryOnData?.productId}`);
+              }}
+              className="w-full bg-[#8B0000] text-white py-2.5 text-sm font-medium hover:bg-[#A30000] transition rounded-md"
+            >
+              Select Another Dress
+            </button>
+
+            {/* Select Another Model */}
+            <button
+              onClick={() => {
+                setShowModelPreview(false);
+                setShowModelSelector(true);
+              }}
+              className="w-full bg-[#8B0000] text-white py-2.5 text-sm font-medium hover:bg-[#A30000] transition rounded-md"
+            >
+              Select Another Model
+            </button>
+          </div>
+
+          {/* ---------- Continue button (bottom-right) ---------- */}
+          <div className="flex justify-end mt-8">
+            <button
+              onClick={() => {
+                // Final validation before proceeding to try-on
+                if (!selectedModel) {
+                  toast.error("Please select a model to continue");
+                  return;
+                }
+                onNext({
+                  modelImage: selectedModel.image,
+                  garmentImage,
+                  is3D,
+                });
+              }}
+              className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:bg-[#8B0000] hover:text-white hover:border-[#8B0000] transition-all"
+            >
+              Continue
+              <img src={right_ic} alt="" className="h-4 w-4 group-hover:hidden" />
+              <img src={rightHoverArrow} alt="" className="h-4 w-4 hidden group-hover:inline" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+    // </div>
+  );
+};
+
+export default UploadSelfieModal;
