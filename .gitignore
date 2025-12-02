@@ -19,9 +19,7 @@ dist-ssr
 .firebaserc
 firebase-debug.log
 
-# Environment variables
-.env
-.env.*.local
+
 
 # Editor directories and files
 .vscode/*
