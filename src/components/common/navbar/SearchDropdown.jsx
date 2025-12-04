@@ -34,6 +34,7 @@ export default function SearchDropdown({
   noResults = false,
   recentSearches = [],
   onSaveRecent,
+  onRemoveRecent,
 }) {
   const navigate = useNavigate();
   const [fuse, setFuse] = useState(null);
@@ -84,8 +85,28 @@ export default function SearchDropdown({
     e.preventDefault();
     if (searchQuery?.trim()) {
       onSaveRecent?.(searchQuery);
-      // Navigate to search results page
-      navigate(`/womenwear?query=${encodeURIComponent(searchQuery)}`);
+
+      const queryLower = searchQuery.toLowerCase().trim();
+      const categoryMap = {
+        saree: "saree",
+        sarees: "saree",
+        kurti: "kurta-sets",
+        kurtis: "kurta-sets",
+        lehenga: "lehenga",
+        lehengas: "lehenga",
+        anarkali: "anarkalis",
+        sharara: "shararas",
+        gown: "gown",
+        fusion: "fusion",
+        wedding: "wedding"
+      };
+
+      if (categoryMap[queryLower]) {
+        navigate(`/womenwear?category=${categoryMap[queryLower]}`);
+      } else {
+        navigate(`/womenwear?query=${encodeURIComponent(searchQuery)}`);
+      }
+
       onClose(); // Close dropdown after search
     }
   };
@@ -137,7 +158,7 @@ export default function SearchDropdown({
                   placeholder="saree.."
                   value={searchQuery || ""}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="flex-1 text-base outline-none py-3 px-4"
+                  className="flex-1 text-base outline-none py-3 px-4 cursor-pointer"
                   autoFocus
                 />
               </div>
@@ -202,15 +223,15 @@ export default function SearchDropdown({
       )}
 
       {/* // In JSX, after input/suggestions: */}
-      {(showSuggestions || showPopular || showRecent) && (
+      {(showSuggestions || showRecent || showPopular) && (
         <div className="max-w-6xl mx-auto px-6 pt-2">
           <div className="divide-y divide-gray-200">
             <h3 className="px-4 py-2 font-semibold text-gray-700">
               {showSuggestions
                 ? "Suggestions"
-                : showPopular
-                  ? "Popular Searches"
-                  : "Recent Searches"}
+                : showRecent
+                  ? "Recent Searches"
+                  : "Popular Searches"}
             </h3>
             <ul>
               {showSuggestions ? (
@@ -223,17 +244,7 @@ export default function SearchDropdown({
                     {item}
                   </li>
                 ))
-              ) : showPopular ? (
-                popularSearches.map((item, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handlePopularClick(item)}
-                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-lg"
-                  >
-                    {item}
-                  </li>
-                ))
-              ) : (
+              ) : showRecent ? (
                 // Recent as chips
                 <div className="px-4 py-3 flex flex-wrap gap-2">
                   {recentSearches.map((term, index) => (
@@ -246,12 +257,7 @@ export default function SearchDropdown({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Remove from recent
-                          setRecentSearches((prev) => prev.filter((s) => s !== term));
-                          localStorage.setItem(
-                            "recentSearches",
-                            JSON.stringify(recentSearches.filter((s) => s !== term))
-                          );
+                          onRemoveRecent?.(term);
                         }}
                         className="ml-2 text-gray-400 hover:text-gray-600"
                       >
@@ -260,6 +266,16 @@ export default function SearchDropdown({
                     </span>
                   ))}
                 </div>
+              ) : (
+                popularSearches.map((item, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handlePopularClick(item)}
+                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-lg"
+                  >
+                    {item}
+                  </li>
+                ))
               )}
             </ul>
           </div>
@@ -281,7 +297,10 @@ export default function SearchDropdown({
         <div className="flex justify-between items-center mb-2">
           {/* <button className="text-sm font-semibold hover:underline">VIEW ALL →</button> */}
         </div>
-        <TrendingProducts onClose={onClose} column={6} />
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold">TRENDING PRODUCTS</h2>
+        </div>
+        <TrendingProducts onClose={onClose} column={6} heading="" />
       </div>
     </div>
   );

@@ -6,44 +6,53 @@ import B2BAuthService from "../../services/b2bAuthService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const WishlistHeartButton = ({ productId, productData, className = "" }) => {
+const WishlistHeartButton = ({ 
+  productId, 
+  productData, 
+  className = "",
+  userRole: propUserRole, 
+  userId: propUserId 
+}) => {
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [userRole, setUserRole] = useState("b2c");
-  const [userId, setUserId] = useState(null);
+  const [userRole, setUserRole] = useState(propUserRole || "b2c");
+  const [userId, setUserId] = useState(propUserId || null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getUserRole = async () => {
-      const user = auth.currentUser;
+    
+    if (!propUserRole || !propUserId) {
+      const getUserRole = async () => {
+        const user = auth.currentUser;
 
-      if (user) {
-        try {
-          const userData = await B2BAuthService.getUserById(user.uid);
-          const role = userData.data.role;
-          const userId = userData.data.userId;
-          setUserId(userId);
-          if (userData.success && userData.data) {
-            setUserRole(role);
-          } else {
+        if (user) {
+          try {
+            const userData = await B2BAuthService.getUserById(user.uid);
+            const role = userData.data.role;
+            const userId = userData.data.userId;
+            setUserId(userId);
+            if (userData.success && userData.data) {
+              setUserRole(role);
+            } else {
+              setUserRole("b2c");
+            }
+          } catch (error) {
+            console.log("User not found in B2B, defaulting to B2C");
             setUserRole("b2c");
           }
-        } catch (error) {
-          console.log("User not found in B2B, defaulting to B2C");
+        } else {
           setUserRole("b2c");
         }
-      } else {
-        setUserRole("b2c");
-      }
-    };
+      };
 
-    getUserRole();
-    const unsubscribe = auth.onAuthStateChanged(() => {
       getUserRole();
-    });
+      const unsubscribe = auth.onAuthStateChanged(() => {
+        getUserRole();
+      });
 
-    return () => unsubscribe();
-  }, []);
+      return () => unsubscribe();
+    }
+  }, [propUserRole, propUserId]);
 
   useEffect(() => {
     if (productId) {
@@ -61,25 +70,51 @@ const WishlistHeartButton = ({ productId, productData, className = "" }) => {
   };
 
   const handleToggleWishlist = async () => {
-    if (!userId) {
+    // B2B users might not require login for wishlist functionality
+    // Or they might have different rules
+    
+    // OPTION 1: Allow B2B users even without userId
+    if (userRole !== "B2B" && !userId) {
       toast.error("Please login to add items to wishlist");
       navigate("/login");
       return;
     }
+    
+    // OPTION 2: Show different message for B2B users
+    // if (!userId) {
+    //   if (userRole === "B2B") {
+    //     toast.error("Please contact sales to manage B2B wishlist");
+    //   } else {
+    //     toast.error("Please login to add items to wishlist");
+    //     navigate("/login");
+    //   }
+    //   return;
+    // }
 
     setLoading(true);
     try {
-      const result = await wishlistService.toggleWishlist(productId, productData);
+      const result = await wishlistService.toggleWishlist(productId, productData, userRole);
       setInWishlist(result.inWishlist);
 
       if (result.inWishlist) {
-        toast.success(`Added to ${userRole === "b2b" ? "B2B" : "B2C"} wishlist`);
+        toast.success(`Added to ${userRole === "B2B" ? "B2B" : "B2C"} wishlist`);
       } else {
         toast.success("Removed from wishlist");
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-      toast.error("Failed to update wishlist. Please try again.");
+      
+      // More specific error handling
+      if (error.message?.includes("requires authentication")) {
+        if (userRole === "B2B") {
+          toast.error("B2B wishlist requires login. Please contact sales.");
+        } else {
+          toast.error("Please login to manage wishlist");
+          navigate("/login");
+        }
+      } else {
+        toast.error("Failed to update wishlist. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

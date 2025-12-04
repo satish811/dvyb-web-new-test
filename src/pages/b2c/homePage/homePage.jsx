@@ -30,7 +30,7 @@ export default function Home() {
 
   return (
     <div>
-      <section className="mt-32 w-full max-w-[95vw] md:h-[90vh] lg:mx-7  mx-auto overflow-hidden flex justify-center items-center ">
+      <section className=" w-full max-w-[95vw] md:h-[90vh] lg:mx-7  mx-auto overflow-hidden flex justify-center items-center ">
         <img
           onClick={() => navigate("/womenwear")}
           src={homeBanner}

@@ -17,7 +17,7 @@ export default defineConfig({
   ],
 
   server: {
-    proxy: { "/api": "http://localhost:3003" },  //5000
+    proxy: { "/api": "http://localhost:3004" },  //5000
   },
   // Tell Vite which file types are static assets
   assetsInclude: ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.gif", "**/*.webp"],

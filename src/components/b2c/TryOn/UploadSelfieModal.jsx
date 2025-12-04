@@ -719,7 +719,7 @@ const getModelsForDressType = (dressType) => {
 
       {/* Step 5: Error */}
       {step === 5 && (
-        <div className="p-8 flex flex-col items-center justify-center text-center">
+        <div className="p-8 flex bg-white  flex-col items-center justify-center text-center">
           <div className=" w-full max-w-sm ">
             <img
               src={selectedImage}

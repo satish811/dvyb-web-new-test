@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Camera, Upload, Check, ChevronRight, ChevronLeft, Edit2, Loader2,Save } from 'lucide-react';
 import women_ic from '../../../assets/ProfileCreation/women_ic.svg';
 import pink_star from '../../../assets/ProfileCreation/pink_star.svg';
 import yellow_star from '../../../assets/ProfileCreation/yellow_star.svg';
 import cornerLogo from '../../../assets/ProfileCreation/cornerLogo.svg'
 import tick from '../../../assets/ProfileCreation/tick.svg'
+import success_mark from '../../../assets/ProfileCreation/success_mark.svg'
+
+
 
 import { profileService } from '../../../services/profileService';   
 
@@ -31,7 +35,7 @@ const MyProfile = () => {
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
 
-
+const navigate = useNavigate(); 
 
   const [selectedOutfit, setSelectedOutfit] = useState(null); // Which outfit is clicked
 const [generatingOutfit, setGeneratingOutfit] = useState(null); // Which is loading
@@ -143,35 +147,121 @@ const handleImageFit = (e) => {
 
 
   // TRIGGER AI TRY-ON (Step 7 → Step 8)
-  const generateVirtualTryOns = async () => {
-    if (!profileData.photoUrl) return;
+ // TRIGGER AI TRY-ON (Step 7 → Step 8)
 
-    setLoadingTryOn(true);
-    try {
-      const base64 = profileData.photoUrl.split(',')[1]; // remove data:image/jpeg;base64,
-      const formData = new FormData();
-      formData.append('model', dataURLtoFile(profileData.photoUrl, 'user.jpg'));
+const generateVirtualTryOns = async () => {
+  if (!profileData.photoUrl) {
+    console.error("❌ No user photo available");
+    return;
+  }
 
-      const res = await fetch('http://localhost:3001/api/multi-tryon', {
-        method: 'POST',
-        body: formData
-      });
+  setLoadingTryOn(true);
+  console.log("🚀 Starting multi try-on generation...");
 
-      const data = await res.json();
-      if (data.results) {
-        setTryOnResults(data.results);
-      }else {
-  console.log("❌ AI failed, not saving fallback");
-  return;      // Prevent bad fallback
-}
+  try {
+    const formData = new FormData();
+    formData.append('model', dataURLtoFile(profileData.photoUrl, 'user.jpg'));
 
-    } catch (err) {
-      console.error(err);
-      alert('Try-on failed, please try again');
-    } finally {
-      setLoadingTryOn(false);
+    // ⭐ NEW: Use dedicated MyProfile endpoint
+    console.log("📤 Sending request to /api/myprofile-multi-tryon...");
+
+    // const res = await fetch('/api/myprofile-multi-tryon', {
+    const res = await fetch('/api/tryon?mode=myprofile-multi', {
+      method: 'POST',
+      body: formData
+    });
+
+    console.log(`📡 Server responded with status: ${res.status}`);
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("❌ Server error response:", errorText);
+      throw new Error(`Server error: ${res.status}`);
     }
-  };
+
+    const data = await res.json();
+    console.log("📥 Received data:", data);
+
+    if (data.success && data.results) {
+      console.log("✅ Multi try-on successful!");
+      console.log("Results:", Object.keys(data.results));
+      
+      setGeneratedResults(data.results);
+
+      const firstResult = Object.values(data.results).find(r => r !== null);
+      setCenterImage(firstResult || capturedImage);
+      
+    } else {
+      throw new Error(data.error || "No results from server");
+    }
+
+  } catch (err) {
+    console.error("❌ Multi try-on failed:", err);
+    alert(`Try-on failed: ${err.message}`);
+  } finally {
+    setLoadingTryOn(false);
+  }
+};
+
+
+
+//  last worked
+// const generateVirtualTryOns = async () => {
+//   if (!profileData.photoUrl) {
+//     console.error("❌ No user photo available");
+//     return;
+//   }
+
+//   setLoadingTryOn(true);
+//   console.log("🚀 Starting multi try-on generation...");
+
+//   try {
+//     const formData = new FormData();
+//     formData.append('model', dataURLtoFile(profileData.photoUrl, 'user.jpg'));
+
+//     console.log("📤 Sending request to /api/multi-tryon...");
+
+//     const res = await fetch('/api/multi-tryon', {
+//       method: 'POST',
+//       body: formData
+//     });
+
+//     console.log(`📡 Server responded with status: ${res.status}`);
+
+//     if (!res.ok) {
+//       const errorData = await res.json();
+//       throw new Error(errorData.details || `Server error: ${res.status}`);
+//     }
+
+//     const data = await res.json();
+//     console.log("📥 Received data:", data);
+
+//     if (data.success && data.results) {
+//       console.log("✅ Multi try-on successful!");
+//       console.log("Results:", Object.keys(data.results));
+      
+//       // Set results for all outfits
+//       setGeneratedResults(data.results);
+      
+//       // Set center image to first available result
+//       const firstResult = Object.values(data.results).find(r => r !== null);
+//       if (firstResult) {
+//         setCenterImage(firstResult);
+//       } else {
+//         setCenterImage(capturedImage);
+//       }
+      
+//     } else {
+//       throw new Error(data.error || "No results from server");
+//     }
+
+//   } catch (err) {
+//     console.error("❌ Multi try-on failed:", err);
+//     alert(`Try-on failed: ${err.message}`);
+//   } finally {
+//     setLoadingTryOn(false);
+//   }
+// };
 
   // Helper: convert base64 to File
   const dataURLtoFile = (dataurl, filename) => {
@@ -187,11 +277,11 @@ const handleImageFit = (e) => {
   useEffect(() => () => stopCamera(), []);
 
     useEffect(() => {
-    if (capturedImage && currentStep === 8) {
+    if (capturedImage && currentStep === 8 && capturedImage && Object.keys(generatedResults).length === 0 ) {
       setCenterImage(capturedImage); // Show user photo initially
+      generateVirtualTryOns();
     }
   }, [capturedImage, currentStep]);
-
 
 
 
@@ -203,7 +293,7 @@ const handleImageFit = (e) => {
   };
 
   const handleComplete = () => {
-    alert('Profile saved successfully!');
+    navigate("/womenwear")
     // redirect or whatever
   };
 
@@ -216,8 +306,7 @@ const handleImageFit = (e) => {
 
 
 
-
-  const generateSingleTryOn = async (outfitType, garmentUrl) => {
+const generateSingleTryOn = async (outfitType, garmentUrl) => {
   if (!profileData.photoUrl) {
     console.error("❌ No user photo available");
     return;
@@ -229,12 +318,12 @@ const handleImageFit = (e) => {
   try {
     const formData = new FormData();
     formData.append("model", dataURLtoFile(profileData.photoUrl, "user.jpg"));
-    formData.append("garmentUrl", garmentUrl);
+    formData.append("garmentUrl", garmentUrl); // ← Keep as URL (backend now handles it)
     formData.append("outfitType", outfitType);
 
     console.log(`📤 Sending request to server...`);
     
-    const res = await fetch("/api/single-tryon", {
+    const res = await fetch("/api/tryon?mode=single", { // ← CHANGED: Use query param
       method: "POST",
       body: formData
     });
@@ -243,13 +332,13 @@ const handleImageFit = (e) => {
 
     if (!res.ok) {
       const errorData = await res.json();
-      throw new Error(errorData.details || `Server error: ${res.status}`);
+      throw new Error(errorData.error || `Server error: ${res.status}`);
     }
 
     const data = await res.json();
     console.log(`✅ Try-on successful for ${outfitType}`);
 
-    if (data.result) {
+    if (data.success && data.result) {
       setGeneratedResults(prev => ({
         ...prev,
         [outfitType]: data.result
@@ -258,7 +347,7 @@ const handleImageFit = (e) => {
       setCenterImage(data.result);
       setSelectedOutfit(outfitType);
     } else {
-      throw new Error("No result image returned");
+      throw new Error(data.error || "No result image returned");
     }
   } catch (err) {
     console.error(`❌ Try-on failed for ${outfitType}:`, err);
@@ -733,14 +822,14 @@ case 7:
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
       {/* Top Progress + Back */}
-      <div className="px-6 pt-6">
+      {/* <div className="px-6 pt-6">
         <div className="text-center text-sm text-gray-500 mb-2">5 of 7</div>
         <div className="h-px bg-gray-300"></div>
-      </div>
+      </div> */}
 
       {/* Back Button */}
-      <div className="px-6 pt-4">
-        <button onClick={handleBack} className="flex items-center gap-1 text-gray-700">
+      <div className="px-6  pt-4">
+        <button onClick={handleBack} className="flex   items-center gap-1 text-gray-700">
           <ChevronLeft className="w-5 h-5" />
           <span className="text-sm font-medium">Back</span>
         </button>
@@ -815,12 +904,6 @@ case 8: // AI TRY-ON with side selection
   return (
     <div className="relative min-h-screen bg-[#FCFAF7] flex flex-col items-center px-6 pt-10 pb-24">
 
-      {/* Progress Section */}
-      <div className="w-full max-w-3xl text-center mb-6">
-        <p className="text-gray-500 text-sm">6 of 7</p>
-        <hr className="border-gray-300 mt-2" />
-      </div>
-
       {/* Title */}
       <h2 className="text-[28px] font-semibold text-gray-900 text-center max-w-2xl leading-snug">
         Your virtual look is ready — want to see how amazing you look?
@@ -833,175 +916,149 @@ case 8: // AI TRY-ON with side selection
       </p>
 
       {/* MAIN GRID */}
-   <div className="flex justify-center items-start gap-10 mt-12 w-full max-w-6xl">
-
+      <div className="flex justify-center items-start gap-10 mt-12 w-full max-w-6xl">
 
         {/* LEFT - 2 outfits */}
-<div className="flex gap-6 items-center">
-  {outfitOptions.slice(0, 2).map((outfit, index) => (
-    <button
-      key={outfit.id}
-      onClick={() => {
-        setSelectedOutfit(outfit.id);
-        if (generatedResults[outfit.id]) {
-          setCenterImage(generatedResults[outfit.id]);
-          return;
-        }
-        generateSingleTryOn(outfit.id, outfit.garmentUrl);
-      }}
-      disabled={generatingOutfit !== null}
-      className={`relative w-[160px] overflow-hidden shadow-md transition-all
-        ${index === 0 ? "h-[170px] w-[130px]" : "h-[198px] w-[150px]"}
-      `}
-    >
+        <div className="flex gap-6 items-center">
+          {outfitOptions.slice(0, 2).map((outfit, index) => (
+            <button
+              key={outfit.id}
+              onClick={() => {
+                setSelectedOutfit(outfit.id);
+                if (generatedResults[outfit.id]) {
+                  setCenterImage(generatedResults[outfit.id]);
+                } else {
+                  generateVirtualTryOns(outfit.id, outfit.garmentUrl);
+                }
+              }}
+              disabled={generatingOutfit !== null}
+              className={`relative w-[160px] overflow-hidden shadow-md transition-all
+                ${index === 0 ? "h-[170px] w-[130px]" : "h-[198px] w-[150px]"}
+              `}
+            >
+              {/* Image */}
+              <img
+                src={generatedResults[outfit.id] || outfit.staticImage}
+                alt={outfit.label}
+                className={`w-full h-full object-contain transition-all duration-300 ${
+                  !generatedResults[outfit.id] ? "grayscale brightness-50" : ""
+                }`}
+              />
 
-      <img
-        src={generatedResults[outfit.id] || outfit.staticImage}
-        alt={outfit.label}
-        className={`w-full h-full object-contain transition-all duration-300 ${
-          !generatedResults[outfit.id] ? "grayscale brightness-50" : ""
-        }`}
-      />
+              {/* Not generated yet → CTA Overlay */}
+              {!generatedResults[outfit.id] && (
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
+                  <p className="text-xs font-medium mb-2">
+                    GENERATING {outfit.label.toUpperCase()}...
+                  </p>
+                  <Loader2 className="animate-spin" size={24} />
+                </div>
+              )}
 
-      {!generatedResults[outfit.id] && (
-        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
-          <p className="text-xs font-medium mb-2">
-            CLICK FOR {outfit.label.toUpperCase()}
-          </p>
-          <div > <img src={tick} className="w-6 h-6 " alt="" /></div>
+              {/* Generated → Bottom Label + Check */}
+              {generatedResults[outfit.id] && (
+                <>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
+                    <p className="text-white font-medium text-xs">{outfit.label.toUpperCase()}</p>
+                  </div>
+
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                </>
+              )}
+            </button>
+          ))}
         </div>
-      )}
 
-      {generatedResults[outfit.id] && (
-        <>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
-            <p className="text-white font-medium text-xs">
-              {outfit.label.toUpperCase()}
-            </p>
-          </div>
-
-          <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
-            <Check className="w-3 h-3 text-white" />
-          </div>
-        </>
-      )}
-
-      {generatingOutfit === outfit.id && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <Loader2 className="animate-spin text-white" size={32} />
+        {/* CENTER IMAGE */}
+        <div className="flex justify-center items-center">
+          <img
+            src={  capturedImage}  // || centerImage || "https://i.imgur.com/1Qw2X3j.jpg"}
+            alt="You"
+            className="w-[180px] h-[250px] max-w-full -mt-6 shadow-2xl object-cover"
+          />
         </div>
-      )}
-    </button>
-  ))}
-</div>
-
-
-    
-{/* CENTER IMAGE */}
-<div className="flex justify-center items-center">
-  <img
-    src={centerImage || capturedImage}
-    alt="You"
-    className="w-[180px] h-[250px] max-w-full -mt-6 shadow-2xl object-cover"
-  />
-</div>
-
-
-
 
         {/* RIGHT - 2 outfits */}
- <div className="flex  gap-6 items-center">
-  {outfitOptions.slice(2, 4).map((outfit, index) => (
-    <button
-      key={outfit.id}
-      onClick={() => {
-        setSelectedOutfit(outfit.id);
-        if (generatedResults[outfit.id]) {
-          setCenterImage(generatedResults[outfit.id]);
-          return;
-        }
-        generateSingleTryOn(outfit.id, outfit.garmentUrl);
-      }}
-      disabled={generatingOutfit !== null}
-      className={`relative w-[160px]  overflow-hidden shadow-md transition-all
-         ${index === 0 ? "h-[198px] w-[150px]" : "h-[170px] w-[130px] "}
-      `}
-    >
+        <div className="flex gap-6 items-center">
+          {outfitOptions.slice(2, 4).map((outfit, index) => (
+            <button
+              key={outfit.id}
+              onClick={() => {
+                setSelectedOutfit(outfit.id);
+                if (generatedResults[outfit.id]) {
+                  setCenterImage(generatedResults[outfit.id]);
+                } else {
+                  generateVirtualTryOns(outfit.id, outfit.garmentUrl);
+                }
+              }}
+              disabled={generatingOutfit !== null}
+              className={`relative w-[160px] overflow-hidden shadow-md transition-all
+                ${index === 0 ? "h-[198px] w-[150px]" : "h-[170px] w-[130px]"}
+              `}
+            >
+              <img
+                src={generatedResults[outfit.id] || outfit.staticImage}
+                alt={outfit.label}
+                className={`w-full h-full object-cover transition-all duration-300 ${
+                  !generatedResults[outfit.id] ? "grayscale brightness-50" : ""
+                }`}
+              />
 
-      <img
-        src={generatedResults[outfit.id] || outfit.staticImage}
-        alt={outfit.label}
-        className={`w-full h-full object-cover transition-all duration-300 ${
-          !generatedResults[outfit.id] ? "grayscale brightness-50" : ""
-        }`}
-      />
+              {!generatedResults[outfit.id] && (
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
+                  <p className="text-xs font-medium mb-2">
+                    GENERATING {outfit.label.toUpperCase()}...
+                  </p>
+                  <Loader2 className="animate-spin" size={24} />
+                </div>
+              )}
 
-      {!generatedResults[outfit.id] && (
-        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
-          <p className="text-xs font-medium mb-2">
-            CLICK FOR {outfit.label.toUpperCase()}
-          </p>
-                   <div > <img src={tick} className="w-6 h-6 " alt="" /></div>
+              {generatedResults[outfit.id] && (
+                <>
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
+                    <p className="text-white font-medium text-xs">{outfit.label.toUpperCase()}</p>
+                  </div>
+
+                  <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                </>
+              )}
+            </button>
+          ))}
         </div>
-      )}
-
-      {generatedResults[outfit.id] && (
-        <>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
-            <p className="text-white font-medium text-xs">
-              {outfit.label.toUpperCase()}
-              
-            </p>
-            
-          </div>
-
-          <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
-            <Check className="w-3 h-3 text-white" />
-          </div>
-        </>
-      )}
-
-      {generatingOutfit === outfit.id && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <Loader2 className="animate-spin text-white" size={32} />
-        </div>
-      )}
-    </button>
-  ))}
-</div>
-
       </div>
 
-      {/* BUTTONS */}
+      {/* SAVE & EDIT BUTTONS */}
       <div className="flex justify-center items-center gap-8 mt-14">
-   <button
-  onClick={async () => {
-    try {
-      // ✅ FIX: Ensure photoUrl is in profileData
-      const dataToSave = {
-        ...profileData,
-        photoUrl: capturedImage || profileData.photoUrl  // Make sure photo is included
-      };
-      
-      await profileService.saveProfile(dataToSave);
-      
-      // Save try-on results
-      for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
-        await profileService.saveTryOnResult(outfitType, imageUrl);
-      }
-      
-      setCurrentStep(9);
-    } catch (error) {
-      console.error("❌ Save error:", error);  // Check what error you're getting
-      alert(`Error saving profile: ${error.message}`);
-    }
-  }}
-  disabled={Object.keys(generatedResults).length === 0}
-  className="w-[210px] h-14 bg-gradient-to-r from-red-500 to-orange-400 
-  text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50"
->
-  SAVE & CONTINUE
-</button>
+        <button
+          onClick={async () => {
+            try {
+              const dataToSave = {
+                ...profileData,
+                photoUrl: capturedImage || profileData.photoUrl,
+              };
+
+              await profileService.saveProfile(dataToSave);
+
+              for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
+                await profileService.saveTryOnResult(outfitType, imageUrl);
+              }
+
+              setCurrentStep(9);
+            } catch (error) {
+              console.error("❌ Save error:", error);
+              alert(`Error saving profile: ${error.message}`);
+            }
+          }}
+          disabled={Object.keys(generatedResults).length === 0}
+          className="w-[210px] h-14 bg-gradient-to-r from-red-500 to-orange-400 
+            text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+        >
+          SAVE & CONTINUE
+        </button>
 
         <button
           onClick={() => setCurrentStep(5)}
@@ -1011,30 +1068,65 @@ case 8: // AI TRY-ON with side selection
           EDIT PROFILE
         </button>
       </div>
-
-      {/* Corner Logo Graphic */}
-      <img 
-        src={cornerLogo}
-        alt=""
-        className="absolute left-0  -ml-32 bottom-0 -mb-14 w-auto opacity-80 pointer-events-none"
-      />
-
     </div>
   );
-  
+
   
   case 9: // Success
         return (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-12 h-12 text-white" />
+    <div className="-mt-36 flex flex-col justify-between">
+
+        {/* Main content - centered */}
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md w-full">
+            {/* Check icon circle */}
+            <div className="w-20 h-20  rounded-full flex items-center justify-center mx-auto mb-8">
+              {/* <Check className="w-12 h-12 text-white" /> */}
+              <img src={success_mark} className="h-4/5 w-4/5" alt="" />
             </div>
-            <h2 className="text-3xl font-bold mb-4">Your Tryon Profile is Ready!</h2>
-            <p className="text-gray-600 mb-8">Now see any outfit on YOU while shopping</p>
-            <button onClick={handleComplete} className="h-14 px-12 bg-gradient-to-r from-red-500 to-orange-400 text-white font-bold text-lg rounded-lg">
-              START SHOPPING
+
+            {/* Title */}
+            <h2 className="text-3xl md:text-3xl font-semibold text-black mb-6">
+              Your Tryon Profile is Ready
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-[#45556C] text-lg mb-10 leading-relaxed">
+              You can now see how clothes will look on your virtual avatar while shopping.
+            </p>
+
+            {/* Gradient button - exact colors from your photo */}
+            <button
+              onClick={handleComplete}
+              className="h-14 px-12 bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 text-white font-bold text-lg  shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              START TRYING ON
             </button>
           </div>
+        </div>
+
+        {/* Bottom profile summary */}
+        {/* <div className="px-6 pb-12">
+          <p className="text-gray-500 text-sm text-center mb-6">
+            Your profile summary:
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
+              5.7 ft
+            </span>
+            <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
+              Straight
+            </span>
+            <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
+              Dark Brown Hair
+            </span>
+            <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
+              Light Tone
+            </span>
+          </div>
+        </div> */}
+      </div>
         );
 
       default:
@@ -1059,7 +1151,7 @@ case 8: // AI TRY-ON with side selection
 
       {/* Back Button */}
       {currentStep > 0 && currentStep !== 9 && (
-        <div className="max-w-4xl mx-auto px-6 pt-4">
+        <div className="max-w-4xl  px-6 pt-4">
           <button onClick={handleBack} className="flex items-center gap-2 text-gray-600 hover:text-black">
             <ChevronLeft size={20} /> Back
           </button>

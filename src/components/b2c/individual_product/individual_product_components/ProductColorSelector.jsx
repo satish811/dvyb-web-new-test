@@ -15,16 +15,14 @@ const ProductColorSelector = ({ colors = [] }) => {
 
   return (
     <div
-      className="flex flex-col"
+      className="flex flex-col w-full max-w-[159px]"
       style={{
         gap: "25px",
-        width: "159px",
       }}
     >
       {/* Title */}
       <p
         style={{
-          width: "125px",
           height: "22px",
           fontFamily: "Outfit, sans-serif",
           fontWeight: 600,
@@ -41,11 +39,10 @@ const ProductColorSelector = ({ colors = [] }) => {
 
       {/* Color Row */}
       <div
-        className="flex items-center"
+        className="flex items-center flex-wrap"
         style={{
           gap: "19px",
-          width: "159px",
-          height: "30px",
+          minHeight: "30px",
         }}
       >
         {displayColors.map((hex, index) => {

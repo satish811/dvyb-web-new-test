@@ -76,9 +76,8 @@ const ProductSizeSelector = ({
   return (
     <>
       <div
-        className={`flex flex-col ${showError ? "animate-shake" : ""}`}
+        className={`flex flex-col w-full max-w-[539px] ${showError ? "animate-shake" : ""}`}
         style={{
-          width: "539.22px",
           gap: "16px", // Figma GAP
         }}
       >
@@ -145,8 +144,6 @@ const ProductSizeSelector = ({
         <div
           className={`flex flex-wrap `}
           style={{
-            width: "539.22px",
-            height: "51.56px",
             gap: "16px",
           }}
         >

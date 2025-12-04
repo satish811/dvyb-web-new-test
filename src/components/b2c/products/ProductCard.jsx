@@ -20,71 +20,66 @@ const ProductCard = ({ product, onClose }) => {
 
   return (
     <div
-      className="bg-white cursor-pointer overflow-hidden duration-300 group flex flex-col"
+      className="bg-white cursor-pointer overflow-hidden duration-300 group flex flex-col w-full"
       style={{
-        width: "207px",
-        height: "386px",
-        gap: "12px",
+        height: "auto", // Let content determine height
+        gap: "8px", // Smaller gap on mobile
         borderRadius: "0px",
       }}
       onClick={() => {
         navigate(`/products/${product.id}`);
-        onClose();
+        onClose?.();
       }}
     >
-      {/* Product Image */}
+      {/* Product Image Container */}
       <div
-        className="bg-gray-50 overflow-hidden relative"
-        style={{ width: "207px", height: "288px", flexShrink: 0 }}
+        className="bg-gray-50 overflow-hidden relative w-full"
+        style={{
+          aspectRatio: "3/4", // Maintain 3:4 aspect ratio
+          flexShrink: 0,
+        }}
       >
         <img
           src={displayImage}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
           onError={handleImageError}
-          style={{
-            maxWidth: "207px",
-            maxHeight: "288px",
-          }}
         />
       </div>
 
       {/* Product Info */}
       <div
-        className="px-1 pt-2 flex flex-col items-start"
+        className="px-1 pt-1 sm:pt-2 flex flex-col items-start w-full"
         style={{
-          width: "207px",
-          height: "89px",
+          height: "auto",
           overflow: "hidden",
-          gap: "10px",
+          gap: "6px", // Smaller gap on mobile
         }}
       >
         {/* Product Name */}
         <h3
-          className="uppercase"
+          className="uppercase w-full truncate"
           style={{
             fontFamily: "Outfit, sans-serif",
             fontWeight: 600,
-            fontSize: "14px",
-            lineHeight: "12.11px",
-            letterSpacing: "0.45px",
+            fontSize: "12px", // Smaller on mobile
+            lineHeight: "1.1",
+            letterSpacing: "0.35px",
             color: "#101828",
           }}
         >
-          {(product.name || "Product Name").length > 10
-            ? (product.name || "Product Name").slice(0, 10) + "..."
-            : product.name || "Product Name"}
+          {product.name || "Product Name"}
         </h3>
 
-        {/* Product Description */}
+        {/* Product Description - Hide on mobile, show on tablet+ */}
         <p
-          className="line-clamp-2"
+          className="hidden xs:block line-clamp-2 w-full"
           style={{
             fontFamily: "Outfit, sans-serif",
             fontWeight: 400,
-            fontSize: "14px",
-            lineHeight: "14px",
-            letterSpacing: "0.5px",
+            fontSize: "11px", // Smaller on mobile
+            lineHeight: "1.2",
+            letterSpacing: "0.4px",
             color: "#545555",
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -97,18 +92,18 @@ const ProductCard = ({ product, onClose }) => {
         </p>
 
         {/* Price Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full">
           <span
             style={{
               fontFamily: "Outfit, sans-serif",
               fontWeight: 500,
-              fontSize: "14px",
-              lineHeight: "15.14px",
+              fontSize: "13px", // Smaller on mobile
+              lineHeight: "1.2",
               letterSpacing: "0px",
               color: "#400000",
             }}
           >
-            ₹{product.price?.toLocaleString()}
+            ₹{product.price?.toLocaleString() || "0"}
           </span>
         </div>
       </div>

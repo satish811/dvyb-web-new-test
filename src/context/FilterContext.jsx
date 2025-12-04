@@ -40,6 +40,7 @@ export const FilterProvider = ({ children }) => {
     priceMin: null,
     priceMax: null,
     discounts: [],
+    blouses: [],
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -74,6 +75,12 @@ export const FilterProvider = ({ children }) => {
           }
           break;
 
+        case "blouses":
+          newFilters.blouses = newFilters.blouses?.includes(value)
+            ? newFilters.blouses.filter((item) => item !== value)
+            : [...(newFilters.blouses || []), value];
+          break;
+
         case "sizes":
         case "colors":
         case "discounts":
@@ -106,6 +113,7 @@ export const FilterProvider = ({ children }) => {
       priceMin: null,
       priceMax: null,
       discounts: [],
+      blouses: [],
     });
     setNavbarCategory("");
   };

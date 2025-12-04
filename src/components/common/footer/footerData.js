@@ -4,11 +4,11 @@ export const footerSections = [
     title: "Quick Links",
     key: "quick",
     links: [
-      { label: "Virtual Try On", to: "/tryon" },
+      { label: "Virtual Try On", to: "/virtual-tryon" },
       { label: "Exclusives", to: "/exclusives" },
-      { label: "Best Sellers", to: "/bestsellers" },
-      { label: "Closet Icon", to: "/closet-icon" },
-      { label: "Bridal Closet", to: "/bridal-closet" },
+      { label: "Best Sellers", to: "/womenwear" },
+      { label: "Closet Icon", to: "/womenwear" },
+      { label: "Bridal Closet", to: "/womenwear?category=wedding" },
     ],
   },
   {

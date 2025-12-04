@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { wishlistService } from "../../../services/wishlistService";
-import { cartService } from "../../../services/cartService";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Trash2,
   ShoppingCart,
-  Heart,
-  ChevronDown,
-  ChevronUp,
   Edit2,
-  Minus,
-  Plus,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+
+// Contexts
 import { usePopup } from "../../../context/ToastPopupContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 
+// Services
+import { wishlistService } from "../../../services/wishlistService";
+import { cartService } from "../../../services/cartService";
+
+// Assets
 import empty_wishlistIc from "../../../assets/ProfileImages/empty_wishlistIc.png";
 
-// Reusable Wishlist Button Component
+// --- Reusable Wishlist Button Component ---
 export const WishlistButton = ({ productId, productData, className = "", variants = [] }) => {
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -72,18 +72,15 @@ export const WishlistButton = ({ productId, productData, className = "", variant
   );
 };
 
-// B2B Wishlist Item Component (Same as B2B Cart Design)
+// --- B2B Wishlist Item Component ---
 const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
   const variants = item.variants || [];
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   return (
     <div
-      className="border border-gray-200 p-6 mb-4 bg-white"
-      style={{
-        width: "619px",
-        borderRadius: "0px",
-      }}
+      className="border border-gray-200 p-6 mb-4 bg-white w-full max-w-[619px]"
+      style={{ borderRadius: "0px" }}
     >
       {/* ROW 1: Image, Details, Price & Actions */}
       <div className="flex gap-4 mb-4">
@@ -97,18 +94,17 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
 
         {/* Product Details */}
         <div className="flex-1 min-w-0">
-          {/* Product Name - Auto size and multi-line */}
           <h2 className="text-[14px] font-semibold text-gray-900 uppercase tracking-wide mb-1 leading-tight line-clamp-3">
             {item.name}
           </h2>
 
-          {/* Product Description - 2 lines with show more/less */}
+          {/* Product Description */}
           <div className="mb-1">
             <p
               className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
                 }`}
             >
-              {item.description || "mustard spun silk anarkali set"}
+              {item.description || "No description available"}
             </p>
             {(item.description || "").length > 60 && (
               <button
@@ -120,9 +116,9 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
             )}
           </div>
 
-          {/* Code and Shipping Date */}
-          <p className="text-[11px] text-gray-600 mb-1">CODE: {item.productId || "SUSC0425127"}</p>
-          <p className="text-[11px] text-gray-600">ESTIMATED SHIPPING DATE: 4TH OF NOVEMBER</p>
+          <p className="text-[11px] text-gray-600 mb-1">
+            CODE: {item.productId || "N/A"}
+          </p>
         </div>
 
         {/* Price & Actions */}
@@ -141,6 +137,7 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
             <button
               onClick={() => onRemove(item.productId || item.id)}
               className="hover:text-red-500 text-gray-400"
+              title="Remove"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -148,7 +145,7 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
         </div>
       </div>
 
-      {/* ROW 2: Variants - Color, Size, Quantity */}
+      {/* ROW 2: Variants */}
       {variants.length > 0 && (
         <div className="space-y-2 mb-4">
           {variants.map((variant, idx) => (
@@ -157,7 +154,6 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
               className="flex items-center justify-between"
               style={{ borderRadius: "0px" }}
             >
-              {/* Left: Color, Size, Quantity */}
               <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 ps-3 pe-3 p-2">
                 <div
                   className="w-6 h-6 border border-gray-300 flex-shrink-0"
@@ -167,14 +163,15 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
                   }}
                 />
                 <div className="text-[12px] text-gray-700">
-                  <span className="font-medium text-[14px]">Size: {variant.size}</span>
+                  <span className="font-medium text-[14px]">
+                    Size: {variant.size}
+                  </span>
                   <span className="ml-3 text-[14px]">
                     Quantity: {variant.quantity < 10 ? `0${variant.quantity}` : variant.quantity}
                   </span>
                 </div>
               </div>
 
-              {/* Right: Quantity Display (Read-only in wishlist) */}
               <div
                 className="flex items-center border border-gray-300 bg-gray-50 flex-shrink-0"
                 style={{ borderRadius: "0px" }}
@@ -201,17 +198,13 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
   );
 };
 
-// B2C Wishlist Item Component (Grid Card)
+// --- B2C Wishlist Item Component ---
 const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
-  const [showFullTitle, setShowFullTitle] = useState(false);
-  const [showFullDescription, setShowFullDescription] = useState(false);
-
-  const shouldTruncateTitle = item.name && item.name.length > 60;
-  const shouldTruncateDescription = item.description && item.description.length > 80;
+  const [showFullTitle] = useState(false); // Can be expanded if you want title toggling
 
   return (
     <div
-      className={`group w-full overflow-hidden transition bg-white border border-gray-200 ${showFullTitle ? "min-h-[550px]" : "min-h-[502px]"
+      className={`group w-full overflow-hidden transition bg-white ${showFullTitle ? "min-h-[550px]" : "min-h-[502px]"
         }`}
     >
       {/* Fixed Image Area */}
@@ -225,57 +218,20 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
         </div>
       </Link>
 
-      {/* Fixed Content Areas */}
+      {/* Content Areas */}
       <div className="p-4">
-        {/* Fixed Title Area - Grows when expanded */}
-        <div className="h-[48px] mb-3">
-          <div className="flex items-start justify-between h-full">
-            <div className="flex-1 min-w-0">
-              <h3
-                className={`text-sm font-medium text-gray-900 ${showFullTitle ? "" : "line-clamp-2"
-                  }`}
-                style={{
-                  lineHeight: "1.2",
-                  maxHeight: showFullTitle ? "none" : "2.4rem",
-                }}
-              >
-                {item.name || " "}
-              </h3>
-            </div>
-            {shouldTruncateTitle && (
-              <button
-                onClick={() => setShowFullTitle(!showFullTitle)}
-                className="ml-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0 mt-0.5"
-              >
-                {showFullTitle ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            )}
-          </div>
+        {/* Title Area */}
+        <div className="h-[48px] mb-1">
+          <h3
+            className="text-sm font-medium text-gray-900 line-clamp-2"
+            style={{ lineHeight: "1.2" }}
+            title={item.name}
+          >
+            {item.name || "Product Name"}
+          </h3>
         </div>
 
-        {/* Fixed Description Area */}
-        <div className="h-[40px] mb-3">
-          {item.description ? (
-            <>
-              <p className={`text-xs text-gray-600 ${showFullDescription ? "" : "line-clamp-2"}`}>
-                {item.description}
-              </p>
-              {shouldTruncateDescription && (
-                <button
-                  onClick={() => setShowFullDescription(!showFullDescription)}
-                  className="text-xs text-gray-500 hover:text-gray-700 mt-1 flex items-center gap-1"
-                >
-                  {showFullDescription ? "Show Less" : "Show More"}
-                  {showFullDescription ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                </button>
-              )}
-            </>
-          ) : (
-            <div className="h-full"></div>
-          )}
-        </div>
-
-        {/* Fixed Price Area */}
+        {/* Price Area */}
         <div className="h-[24px] mb-4 flex items-center">
           {item.price ? (
             <p className="text-sm font-semibold text-gray-900">
@@ -286,7 +242,7 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
           )}
         </div>
 
-        {/* Fixed Button Area */}
+        {/* Buttons */}
         <div className="h-[36px]">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -311,27 +267,24 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
   );
 };
 
-// Main Wishlist Page
+// --- Main Wishlist Page ---
 const WishlistPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { wishlistItems, loading, removeFromWishlist, clearWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { wishlistItems, loading, removeFromWishlist } = useWishlist();
+  const { } = useCart(); // addToCart extracted but using service directly below
   const [userRole, setUserRole] = useState("B2C");
 
   // Safe popup access
   const popupContext = usePopup();
   const showPopup = popupContext?.showPopup;
 
-  // Get user role on component mount
+  // Get user role
   useEffect(() => {
     const getUserRole = async () => {
       try {
         const role = await wishlistService.getCurrentUserRole();
         setUserRole(role);
-        if (role === "B2B") {
-          console.log("👑 B2B ROLE DETECTED — Wishlist Data:", wishlistItems);
-        }
       } catch (error) {
         console.error("Error getting user role:", error);
         setUserRole("B2C");
@@ -353,21 +306,16 @@ const WishlistPage = () => {
       }
     } catch (err) {
       console.error("Error removing item:", err);
-      toast.error("Failed to remove item. Please try again.");
+      toast.error("Failed to remove item.");
     }
   };
 
   const handleAddToCart = async (item) => {
     try {
-      console.log("🛒 Adding to cart:", item);
-
       let result;
 
-      // B2B Items with variants
+      // Logic for B2B Items (with variants)
       if ((userRole === "B2B" || item.isB2B) && item.variants && item.variants.length > 0) {
-        console.log("🛒 B2B item detected, variants:", item.variants);
-
-        // Use the existing cartService.addToCart method for B2B
         result = await cartService.addToCart(
           item.productId || item.id,
           {
@@ -376,15 +324,11 @@ const WishlistPage = () => {
             image: item.image || item.imageUrls?.[0],
             description: item.description,
           },
-          item.variants // This should be an array of variants
+          item.variants
         );
       } else {
-        // B2C Items
-        console.log("🛒 B2C item detected");
-
-        // For B2C, use the first variant or default values
+        // Logic for B2C Items
         const firstVariant = item.variants?.[0] || {};
-
         result = await cartService.addToCart(
           item.productId || item.id,
           {
@@ -395,17 +339,14 @@ const WishlistPage = () => {
             color: firstVariant.color || item.color || "Default",
             size: firstVariant.size || item.size || "M",
           },
-          firstVariant.quantity || item.quantity || 1 // Single quantity for B2C
+          firstVariant.quantity || item.quantity || 1
         );
       }
-
-      console.log("🛒 Cart service result:", result);
 
       if (result === true) {
         // Remove from wishlist after successful cart addition
         await removeFromWishlist(item.productId || item.id);
 
-        // Show success notification
         if (showPopup) {
           showPopup("cart", {
             id: item.productId || item.id,
@@ -426,7 +367,6 @@ const WishlistPage = () => {
   };
 
   const handleEditItem = (item) => {
-    console.log("🛒 [Wishlist] Editing B2B item:", item);
     sessionStorage.setItem(
       "editingWishlistItem",
       JSON.stringify({
@@ -437,7 +377,7 @@ const WishlistPage = () => {
     navigate(`/product/${item.productId}`);
   };
 
-  // Filter items by role for display
+  // Filter items logic
   const displayItems = wishlistItems.filter((item) => {
     if (userRole === "B2B") {
       return true;
@@ -446,20 +386,19 @@ const WishlistPage = () => {
     }
   });
 
-  // Separate B2B and B2C items for different rendering
   const b2bItems = displayItems.filter((item) => item.isB2B === true);
   const b2cItems = displayItems.filter((item) => !item.isB2B);
 
-  // Loading state
+  // Loading State
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">Loading your wishlist...</div>
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="text-gray-600">Loading your wishlist...</div>
       </div>
     );
   }
 
-  // Not logged in
+  // Not Logged In State
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen max-w-7xl mx-auto px-6 py-16 text-center">
@@ -472,9 +411,6 @@ const WishlistPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Please Login to View Your Wishlist
           </h2>
-          <p className="text-gray-600 mb-8">
-            Sign in to see your saved items and continue shopping
-          </p>
           <button
             onClick={() => navigate("/")}
             className="px-8 py-4 bg-[#9C0000] text-white font-semibold rounded-lg hover:bg-[#7A0000] transition"
@@ -487,18 +423,11 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="mt-23 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">My Wishlist ({userRole})</h1>
-        </div>
-      </div>
-
+    <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-0 md:py-30">
       {/* Empty Wishlist UI */}
       {displayItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24">
-          <div className="h-[400px] w-[800px] flex items-center justify-center rounded-full">
+          <div className="h-[400px] w-full max-w-[800px] flex items-center justify-center rounded-full">
             <img
               src={empty_wishlistIc}
               className="object-cover h-auto w-auto"
@@ -515,25 +444,6 @@ const WishlistPage = () => {
           >
             CONTINUE SHOPPING
           </Link>
-
-          {/* Trending section */}
-          <div className="w-full mt-20">
-            <h2 className="text-base font-semibold tracking-wide text-gray-900 mb-6">
-              TRENDING PRODUCTS
-            </h2>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="border rounded-md overflow-hidden">
-                  <div className="w-full h-64 bg-gray-100" />
-                  <div className="p-3">
-                    <p className="text-sm text-gray-700 font-medium">Sample Product</p>
-                    <p className="text-sm text-gray-900 font-semibold mt-1">₹12345</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       ) : (
         /* Populated Wishlist UI */
@@ -545,7 +455,7 @@ const WishlistPage = () => {
             </span>
           </h1>
 
-          {/* B2B Items - Same design as B2B Cart */}
+          {/* B2B Items Section */}
           {b2bItems.length > 0 && (
             <div className="mb-8">
               <h2 className="text-lg font-semibold mb-4">B2B Items ({b2bItems.length})</h2>
@@ -563,7 +473,7 @@ const WishlistPage = () => {
             </div>
           )}
 
-          {/* B2C Items - Grid Layout */}
+          {/* B2C Items Section */}
           {b2cItems.length > 0 && (
             <div>
               {b2bItems.length > 0 && (

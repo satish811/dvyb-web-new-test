@@ -203,31 +203,6 @@ class B2BAuthService {
     }
   }
 
-  /**
-   * Do not get all the details
-   * So I commented this part
-   */
-  // async getUserById(uid) {
-  //     try {
-  //         if (!uid) throw new Error("User ID is required");
-
-  //         const userRef = doc(db, "B2BBulkOrders_users", uid);
-  //         const snapshot = await getDoc(userRef);
-
-  //         if (!snapshot.exists()) {
-  //             throw new Error("User not found");
-  //         }
-
-  //         return {
-  //             success: true,
-  //             data: snapshot.data(),
-  //         };
-  //     } catch (error) {
-  //         console.error("Get user error:", error);
-  //         throw new Error(error.message || "Failed to fetch user");
-  //     }
-  // }
-
   async getUserCompleteProfile(uid) {
     try {
       console.log("Getting user complete profile for:", uid);

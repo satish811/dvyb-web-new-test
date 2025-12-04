@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { FilterSection, ColorFilter, PriceRange, DiscountFilter } from "../filters";
 import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
+import BlouseFilter from "../filters/BlouseFilter";
 
 const Sidebar = ({ products = [] }) => {
   const location = useLocation();
@@ -89,54 +90,37 @@ const Sidebar = ({ products = [] }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky lg:top-0 left-0 z-30 w-64 bg-white transform ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out overflow-visible`}
+        className={`
+    fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl
+    transform transition-transform duration-300 ease-in-out
+    ${isOpen ? "translate-x-0" : "-translate-x-full"}
+    lg:translate-x-0 lg:static lg:inset-0 lg:shadow-none lg:sticky lg:top-20
+    flex flex-col h-screen lg:h-auto
+    overflow-hidden
+  `}
       >
-        <div className="h-full flex flex-col">
-          {/* Filters Section - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
-            <div className="space-y-6">
-              {/* CATEGORY FILTER */}
-              <FilterSection
-                title="CATEGORY"
-                items={customCategories}
-                searchable
-                defaultOpen={true}
-                filterType="categories"
-              />
+        <div className="flex-1 overflow-y-auto p-5 space-y-7 no-scrollbar">
+          {/* ← ALL YOUR FILTERS — NOW SCROLL PERFECTLY */}
+          <FilterSection title="CATEGORY" items={customCategories} searchable defaultOpen={true} filterType="categories" />
+          <BlouseFilter />
+          {!isSareeCategory && (
+            <FilterSection title="SIZE" items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes} defaultOpen={true} filterType="sizes" />
+          )}
+          {filterData.colors.length > 0 && <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />}
+          <DiscountFilter title="DISCOUNT" discounts={customDiscounts} defaultOpen={true} />
+          {filterData.priceRange.max > 0 && (
+            <PriceRange min={filterData.priceRange.min} max={filterData.priceRange.max} defaultOpen={true} />
+          )}
+        </div>
 
-              {/* Blouse Filter */}
-              {/* <BlouseFilter /> */}
-
-              {/* SIZE FILTER - Hide for saree category */}
-              {!isSareeCategory && (
-                <FilterSection
-                  title="SIZE"
-                  items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes}
-                  defaultOpen={true}
-                  filterType="sizes"
-                />
-              )}
-
-              {/* COLORS FILTER */}
-              {filterData.colors.length > 0 && (
-                <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />
-              )}
-
-              {/* DISCOUNT FILTER (Custom - always show) */}
-              <DiscountFilter title="DISCOUNT" discounts={customDiscounts} defaultOpen={true} />
-
-              {/* PRICE FILTER */}
-              {filterData.priceRange.max > 0 && (
-                <PriceRange
-                  min={filterData.priceRange.min}
-                  max={filterData.priceRange.max}
-                  defaultOpen={true}
-                />
-              )}
-            </div>
-          </div>
+        {/* Optional: Nice Apply Button */}
+        <div className="p-5 border-t lg:hidden">
+          <button
+            onClick={() => setIsOpen(false)}
+            className="w-full bg-black text-white py-3.5 rounded-lg font-medium hover:bg-gray-900 transition"
+          >
+            Apply Filters
+          </button>
         </div>
       </aside>
     </>

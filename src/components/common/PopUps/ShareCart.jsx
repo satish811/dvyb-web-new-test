@@ -12,7 +12,7 @@ import { faEnvelope, faShareAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default function ShareCart({ onClose }) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = "http://www.adc.com";
+  const shareUrl = window.location.href;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -21,17 +21,6 @@ export default function ShareCart({ onClose }) {
   };
 
   const socialPlatforms = [
-    { name: "WhatsApp", color: "bg-green-500", icon: faWhatsapp },
-    { name: "Gmail", color: "bg-red-500", icon: faEnvelope },
-    {
-      name: "Instagram",
-      color: "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400",
-      icon: faInstagram,
-    },
-    { name: "Quickshare", color: "bg-blue-500", icon: faShareAlt },
-    { name: "Facebook", color: "bg-blue-600", icon: faFacebook },
-    { name: "Telegram", color: "bg-sky-500", icon: faTelegram },
-    { name: "Snapchat", color: "bg-yellow-400", icon: faSnapchat },
     { name: "WhatsApp", color: "bg-green-500", icon: faWhatsapp },
     { name: "Gmail", color: "bg-red-500", icon: faEnvelope },
     {

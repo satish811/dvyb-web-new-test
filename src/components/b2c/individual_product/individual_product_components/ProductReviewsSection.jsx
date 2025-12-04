@@ -118,8 +118,8 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
   const currentAvgRating =
     displayReviews.length > 0
       ? (
-          displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
-        ).toFixed(1)
+        displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
+      ).toFixed(1)
       : 0;
 
   // Handle review submission
@@ -246,21 +246,21 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
 
   return (
     <ErrorBoundary>
-      <div className="w-[615px] flex flex-col">
+      <div className="w-full max-w-[615px] flex flex-col">
         {/* Write Review Button - ALWAYS SHOWS */}
         <button
           onClick={handleWriteReviewClick}
-          className="w-[615px] h-[40px] bg-red-800 text-white text-[14px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-[40px] md:h-[40px] bg-red-800 text-white text-[12px] md:text-[14px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!canWriteReview}
-          style={{ minHeight: "40px", maxHeight: "40px" }}
+          style={{ minHeight: "36px", maxHeight: "40px" }}
         >
           {canWriteReview ? "WRITE A REVIEW" : "LOGIN TO WRITE REVIEW"}
         </button>
 
         {/* Reviews Container - ONLY SHOWS WHEN THERE ARE REVIEWS */}
         {displayReviews.length > 0 && (
-          <div className="w-[615px] mt-4 flex flex-col" style={{ height: "372px" }}>
-            <div className="w-full flex flex-col overflow-y-auto" style={{ height: "372px" }}>
+          <div className="w-full max-w-[615px] mt-4 flex flex-col">
+            <div className="w-full flex flex-col overflow-y-auto" style={{ maxHeight: "300px" }}>
               {displayReviews.map((review, index) => (
                 <ReviewCard key={review?.id || index} review={review} />
               ))}
@@ -270,7 +270,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
 
         {/* No Reviews Message */}
         {displayReviews.length === 0 && (
-          <div className="w-[615px] mt-4 flex items-center justify-center h-[100px]">
+          <div className="w-full max-w-[615px] mt-4 flex items-center justify-center h-[100px]">
             <p className="text-gray-500 text-[14px]">No reviews yet. Be the first to write one!</p>
           </div>
         )}

@@ -2,6 +2,7 @@
 import React from "react";
 import { FilterProvider } from "./context/FilterContext";
 import { AuthProvider } from "./context/AuthContext";
+import { UIProvider } from "./context/UIContext";
 import AppRoutes from "./routes";
 import ScrollToTop from "./components/utils/scrollToTop";
 import { CartProvider } from "./context/CartContext";
@@ -12,14 +13,16 @@ function App() {
   return (
     <FilterProvider>
       <AuthProvider>
-        <ErrorBoundary>
-          <WishlistProvider>
-            <CartProvider>
-              <ScrollToTop />
-              <AppRoutes />
-            </CartProvider>
-          </WishlistProvider>
-        </ErrorBoundary>
+        <UIProvider>
+          <ErrorBoundary>
+            <WishlistProvider>
+              <CartProvider>
+                <ScrollToTop />
+                <AppRoutes />
+              </CartProvider>
+            </WishlistProvider>
+          </ErrorBoundary>
+        </UIProvider>
       </AuthProvider>
     </FilterProvider>
   );

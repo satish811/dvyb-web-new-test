@@ -8,154 +8,75 @@ const TrendingProductsSection = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-10 text-gray-500 text-sm">Loading similar products...</div>
+      <div className="text-center py-10 text-gray-500 text-sm">Loading trending products...</div>
     );
   }
 
   if (error || !products || products.length === 0) {
-    return <div className="text-center py-10 text-red-600 text-sm">No similar products found.</div>;
+    return null;
   }
 
-  const displayProducts = products.slice(0, 6);
+  // Sort by createdAt desc (or id desc if createdAt missing) to get "Latest"
+  // Assuming higher ID = newer if no date
+  const sortedProducts = [...products].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0);
+    const dateB = new Date(b.createdAt || 0);
+    return dateB - dateA;
+  });
+
+  const displayProducts = sortedProducts.slice(0, 6);
 
   return (
-    <div
-      className="mt-8 pt-6 flex flex-col"
-      style={{
-        gap: "24px",
-        width: "100%",
-      }}
-    >
+    <div className="mt-8 pt-6 flex flex-col w-full gap-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 600,
-            fontSize: "18px",
-            textTransform: "uppercase",
-            color: "#000",
-            margin: 0,
-          }}
-        >
+        <h2 className="font-[Outfit,sans-serif] font-semibold text-xl uppercase text-black m-0">
           TRENDING PRODUCTS
         </h2>
 
         <button
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 600,
-            fontSize: "14px",
-            color: "#B71C1C",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-          }}
-          className="hover:underline"
+          onClick={() => navigate("/womenwear")}
+          className="font-[Outfit,sans-serif] font-medium text-sm text-primary hover:text-black hover:border-b border-primary transition-colors duration-200 pb-1 uppercase bg-transparent border-none cursor-pointer"
         >
           VIEW ALL
         </button>
       </div>
 
       {/* Product Grid */}
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(184.33px, 1fr))",
-          gap: "12px",
-        }}
-      >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {displayProducts.map((product) => (
-          <div
+          <article
             key={product.id}
+            className="bg-white  overflow-hidden shadow-sm transition flex flex-col cursor-pointer group"
+            style={{ minHeight: 360, zIndex: 10 }}
             onClick={() => navigate(`/products/${product.id}`)}
-            style={{
-              width: "184.33px",
-              height: "386px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              cursor: "pointer",
-            }}
           >
-            {/* Product Image */}
-            <div
-              style={{
-                width: "178px",
-                height: "287px",
-                overflow: "hidden",
-                background: "#f5f5f5",
-              }}
-            >
+            {/* Image wrapper */}
+            <div className="w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden bg-gray-100">
               <img
-                src={product.imageUrls?.[0]}
+                src={product.imageUrls?.[0] || ""}
                 alt={product.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
+                className="w-full h-full object-cover block group-hover:scale-105 transition-transform duration-300"
               />
             </div>
 
-            {/* Product Details */}
-            <div
-              style={{
-                width: "184.33px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px",
-                height: "85px",
-              }}
-            >
-              {/* Title */}
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "#000",
-                  margin: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
+            {/* Content */}
+            <div className="p-3 flex-1 flex flex-col">
+              <h3 className="text-sm sm:text-base font-medium text-slate-800 mb-1 line-clamp-2 font-[Outfit,sans-serif]">
                 {product.name}
-              </p>
+              </h3>
 
-              {/* Description */}
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "13px",
-                  color: "#444",
-                  margin: 0,
-                  lineHeight: "1.3",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
+              <p className="text-xs text-slate-500 mb-3 line-clamp-2 font-[Outfit,sans-serif]">
                 {product.description}
               </p>
 
-              {/* Price */}
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  color: "#400000",
-                  margin: 0,
-                }}
-              >
-                ₹{product.price.toLocaleString("en-IN")}
-              </p>
+              <div className="mt-auto flex items-center justify-between">
+                <div className="text-lg font-semibold text-rose-700 font-[Outfit,sans-serif]">
+                  ₹{product.price ? product.price.toLocaleString("en-IN") : "—"}
+                </div>
+              </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </div>

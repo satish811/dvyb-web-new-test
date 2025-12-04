@@ -1,79 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cartService } from "../../../services/cartService";
-import { wishlistService } from "../../../services/wishlistService";
 import { auth } from "../../../config";
 import { toast } from "react-toastify";
 import B2BAuthService from "../../../services/b2bAuthService";
-import { Minus, Plus, X, Heart, Edit2, Trash2 } from "lucide-react";
+import { Minus, Plus, X, Edit2, Trash2 } from "lucide-react";
 import WishlistHeartButton from "../../../components/common/WishlistHeartButton";
 import TrendingProducts from "../../../components/common/TrendingProducts/TrendingProducts";
 
-// --- MOCK DATA FOR NEW SECTIONS ---
-const trendingProducts = [
-  {
-    id: 1,
-    name: "SURINO",
-    description: "Mustard Chiniya Silk & Zari Embroidered Lehenga Set",
-    price: 44900,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-  {
-    id: 2,
-    name: "KANCHIVARAM",
-    description: "Pink Weaving Silk Saree With Gold Zari Work",
-    price: 35000,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-  {
-    id: 3,
-    name: "ARANYA",
-    description: "Embellished Black Printed Kurta Set",
-    price: 19500,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-  {
-    id: 4,
-    name: "RANGRAGE",
-    description: "Embroidered Green Anarkali Suit With Dupatta",
-    price: 18750,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-  {
-    id: 5,
-    name: "MEERA",
-    description: "Cherry Floral Print Anarkali With Belt",
-    price: 24500,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-  {
-    id: 6,
-    name: "KALYAN",
-    description: "Traditional Banarasi Brocade Saree",
-    price: 45000,
-    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=600&fit=crop",
-  },
-];
-
-const recentlyViewedProducts = [...trendingProducts.slice(0, 6).reverse()];
-
-// --- PRODUCT CARD COMPONENT ---
-const ProductCard = ({ product }) => (
-  <div className="w-full h-[386px] flex flex-col space-y-3">
-    <img src={product.image} alt={product.name} className="w-full h-[276px] object-cover" />
-    <div className="flex flex-col space-y-2">
-      <h3 className="font-[Outfit,sans-serif] font-medium text-[14px] tracking-[0.45px] uppercase">
-        {product.name}
-      </h3>
-      <p className="font-[Outfit,sans-serif] font-normal text-[13px] leading-[100%]">
-        {product.description}
-      </p>
-      <p className="font-[Outfit,sans-serif] font-medium text-[14px] pt-1">
-        ₹{product.price.toLocaleString()}
-      </p>
-    </div>
-  </div>
-);
+// --- UTILS ---
+const getEstimatedDeliveryDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 5);
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+  });
+};
 
 // --- POPUP COMPONENTS ---
 const GiftPopup = ({ onClose }) => (
@@ -113,18 +56,29 @@ const CodeAppliedPopup = ({ onClose, code }) => (
 );
 
 // --- B2B CART ITEM COMPONENT ---
-const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
+const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit, updatingItemId }) => {
   const variants = item.variants || [];
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const isUpdating = updatingItemId === item.uniqueId;
 
   return (
     <div
-      className="border border-gray-200 p-6 mb-4 bg-white"
+      className="border border-gray-200 p-6 mb-4 bg-white relative"
       style={{
         width: "619px",
         borderRadius: "0px",
       }}
     >
+      {/* Loading overlay */}
+      {isUpdating && (
+        <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000]"></div>
+            <p className="text-sm text-gray-600 mt-2">Updating...</p>
+          </div>
+        </div>
+      )}
+
       {/* ROW 1: Image, Details, Price & Actions */}
       <div className="flex gap-4 mb-4">
         {/* Product Image */}
@@ -142,14 +96,13 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
             {item.name}
           </h2>
 
-          {/* Product Description - 2 lines with show more/less */}
+          {/* Product Description */}
           <div className="mb-1">
             <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${
-                showFullDescription ? "" : "line-clamp-2"
-              }`}
+              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
+                }`}
             >
-              {item.description || "mustard spun silk anarkali set"}
+              {item.description || "Product description unavailable"}
             </p>
             {(item.description || "").length > 60 && (
               <button
@@ -163,6 +116,7 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
 
           {/* Code and Shipping Date */}
           <p className="text-[11px] text-gray-600 mb-1">CODE: {item.productId || "SUSC0425127"}</p>
+          <p className="text-[11px] text-red-600 font-medium mb-1">MINIMUM: 6 PIECES PER VARIANT</p>
           <p className="text-[11px] text-gray-600">ESTIMATED SHIPPING DATE: 4TH OF NOVEMBER</p>
         </div>
 
@@ -182,10 +136,14 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
                 variants: item.variants,
               }}
               className="hover:text-red-500 text-gray-400"
+              disabled={isUpdating}
+              userRole={role}
+              userId={auth.currentUser?.uid}
             />
             <button
               onClick={() => onRemove(item.uniqueId)}
               className="hover:text-red-500 text-gray-400"
+              disabled={isUpdating}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -193,16 +151,15 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
         </div>
       </div>
 
-      {/* ROW 2: Variants - Color, Size, Quantity with +/- buttons */}
+      {/* ROW 2: Variants */}
       {variants.length > 0 && (
         <div className="space-y-2 mb-4">
           {variants.map((variant, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between"
+              className="flex items-center justify-between relative"
               style={{ borderRadius: "0px" }}
             >
-              {/* Left: Color, Size, Quantity */}
               <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 ps-3 pe-3 p-2">
                 <div
                   className="w-6 h-6 border border-gray-300 flex-shrink-0"
@@ -219,15 +176,19 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
                 </div>
               </div>
 
-              {/* Right: Quantity Controls */}
               <div
-                className="flex items-center border border-gray-300 bg-white flex-shrink-0"
+                className="flex items-center border border-gray-300 bg-white flex-shrink-0 relative"
                 style={{ borderRadius: "0px" }}
               >
+                {isUpdating && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#800000]"></div>
+                  </div>
+                )}
                 <button
                   onClick={() => onQuantityChange(item.uniqueId, -1, idx)}
-                  className="px-2 py-1 text-[14px] hover:bg-gray-100 text-amber-800"
-                  disabled={variant.quantity <= 1}
+                  className="px-2 py-1 text-[14px] hover:bg-gray-100 text-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={variant.quantity <= 6 || isUpdating}
                 >
                   <Minus className="w-4 h-4 cursor-pointer" />
                 </button>
@@ -236,7 +197,8 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
                 </span>
                 <button
                   onClick={() => onQuantityChange(item.uniqueId, 1, idx)}
-                  className="px-2 py-1 text-[14px] hover:bg-gray-100 text-amber-800"
+                  className="px-2 py-1 text-[14px] hover:bg-gray-100 text-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isUpdating}
                 >
                   <Plus className="w-4 h-4 text-[14px] cursor-pointer" />
                 </button>
@@ -248,9 +210,10 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
 
       {/* ROW 3: Edit Button */}
       <button
-        className="flex items-center gap-2 px-3 py-2 border border-gray-800 hover:bg-gray-50 transition text-[14px] font-medium"
+        className="flex items-center gap-2 px-3 py-2 border border-gray-800 hover:bg-gray-50 transition text-[14px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ borderRadius: "0px" }}
         onClick={() => onEdit(item)}
+        disabled={isUpdating}
       >
         <Edit2 className="w-3 h-3" />
         <span>Edit</span>
@@ -258,6 +221,52 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit }) => {
     </div>
   );
 };
+
+// --- MINIMUM QUANTITY POPUP ---
+const MinimumQuantityPopup = ({ onClose, onRemove, itemName, variant }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200] p-4">
+    <div className="bg-white p-6 shadow-xl max-w-md w-full">
+      <div className="text-center mb-4">
+        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.196 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Minimum Quantity Required</h2>
+      </div>
+
+      <p className="text-gray-600 mb-4 text-center">
+        For B2B orders, minimum quantity per variant is <strong>6 pieces</strong>.
+      </p>
+
+      <div className="bg-gray-50 p-4 rounded-md mb-4">
+        <p className="text-sm font-medium text-gray-700 mb-1">Item: {itemName}</p>
+        <p className="text-sm text-gray-600">
+          Variant: {variant.color} | Size: {variant.size}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">
+          Current Quantity: <span className="font-semibold">{variant.currentQuantity}</span>
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-[#800000] text-white font-medium hover:bg-[#600000] transition"
+        >
+          Keep Minimum 6 Pieces
+        </button>
+
+        <button
+          onClick={onRemove}
+          className="w-full py-3 border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition"
+        >
+          Remove This Variant
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 // --- MAIN CART PAGE COMPONENT ---
 function CartPage() {
@@ -277,10 +286,14 @@ function CartPage() {
   const [showBulkPopup, setShowBulkPopup] = useState(false);
   const [bulkProduct, setBulkProduct] = useState(null);
 
+  const [showMinQuantityPopup, setShowMinQuantityPopup] = useState(false);
+  const [minQuantityItem, setMinQuantityItem] = useState(null);
+
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
+  const deliveryDate = getEstimatedDeliveryDate();
 
   const fontStyles =
-    "font-[Outfit,sans-serif] font-medium uppercase tracking-[0.27px] leading-[100%] text-[#000]";
+    "font-[Outfit,sans-serif] , uppercase";
 
   // Get user role
   useEffect(() => {
@@ -289,14 +302,12 @@ function CartPage() {
         const user = auth.currentUser;
 
         if (!user) {
-          console.log("🛒 [Cart] No user found, setting role to B2C");
           setRole("B2C");
           return;
         }
 
         const userData = await B2BAuthService.getUserById(user.uid);
         const userRole = userData?.data?.role || "B2C";
-        console.log("🛒 [Cart] User role detected:", userRole);
         setRole(userRole);
       } catch (error) {
         console.error("🛒 [Cart] Error getting user role:", error);
@@ -316,15 +327,8 @@ function CartPage() {
       const user = auth.currentUser;
       setLoading(true);
 
-      console.log("🛒 [Cart] ========== LOADING CART ==========");
-      console.log("🛒 [Cart] User:", user);
-      console.log("🛒 [Cart] User Role:", role);
-
       if (!user) {
         const guestCart = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
-        console.log("🛒 [Cart] Loading guest cart from sessionStorage:", guestCart);
-        console.log("🛒 [Cart] Guest cart items count:", guestCart.length);
-
         setRawCart(guestCart);
         const simplified = simplifyCart(guestCart);
         setCartItems(simplified);
@@ -334,9 +338,7 @@ function CartPage() {
       }
 
       try {
-        console.log("🛒 [Cart] Loading from Firestore...");
         unsubscribe = await cartService.subscribeToCart((cartData) => {
-          console.log("🛒 [Cart] Firestore cart data received:", cartData);
           setRawCart(cartData);
           const simplified = simplifyCart(cartData);
           setCartItems(simplified);
@@ -346,7 +348,6 @@ function CartPage() {
       } catch (error) {
         console.error("🛒 [Cart] Error subscribing to cart:", error);
         const guestCart = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
-        console.log("🛒 [Cart] Fallback to guest cart:", guestCart);
         setRawCart(guestCart);
         const simplified = simplifyCart(guestCart);
         setCartItems(simplified);
@@ -364,17 +365,11 @@ function CartPage() {
     };
   }, [role]);
 
-  // Enhanced simplifyCart function with detailed B2B detection
+  // Enhanced simplifyCart function
   const simplifyCart = (items) => {
     const simplified = [];
-    console.log("🛒 [Cart] ========== SIMPLIFY CART START ==========");
-    console.log("🛒 [Cart] Raw input items:", items);
 
     items.forEach((item, index) => {
-      console.log(`🛒 [Cart] --- Processing Item ${index} ---`);
-      console.log("🛒 [Cart] Full item:", item);
-      console.log("🛒 [Cart] Item keys:", Object.keys(item));
-
       // Check for B2B indicators
       const hasB2BFlag = item.isB2BVariant === true;
       const hasB2BFlag2 = item.b2bItem === true;
@@ -382,23 +377,10 @@ function CartPage() {
       const hasVariantsData = hasVariantsArray && item.variants.length > 0;
       const hasVariantStructure =
         hasVariantsData && item.variants.some((v) => v && v.color && v.size);
-      const hasTotalQuantity = item.totalQuantity > 0;
-
-      console.log("🛒 [Cart] B2B Detection Check:");
-      console.log("  - isB2BVariant:", hasB2BFlag);
-      console.log("  - b2bItem:", hasB2BFlag2);
-      console.log("  - hasVariantsArray:", hasVariantsArray);
-      console.log("  - hasVariantsData:", hasVariantsData);
-      console.log("  - hasVariantStructure:", hasVariantStructure);
-      console.log("  - hasTotalQuantity:", hasTotalQuantity);
-      console.log("  - variants count:", item.variants?.length || 0);
-      console.log("  - variants content:", item.variants);
 
       // B2B Item Detection Logic
       const isB2BItem =
         hasB2BFlag || hasB2BFlag2 || (hasVariantsArray && hasVariantsData && hasVariantStructure);
-
-      console.log(`🛒 [Cart] Final Decision: isB2BItem = ${isB2BItem}`);
 
       if (isB2BItem) {
         // Process as B2B item
@@ -416,8 +398,6 @@ function CartPage() {
             (item.variants ? item.variants.reduce((sum, v) => sum + (v.quantity || 1), 0) : 0),
           rawItem: item,
         };
-
-        console.log("🛒 [Cart] Created B2B Item:", b2bItem);
         simplified.push(b2bItem);
       } else {
         // Process as B2C item
@@ -434,24 +414,9 @@ function CartPage() {
           isB2BVariant: false,
           rawItem: item,
         };
-
-        console.log("🛒 [Cart] Created B2C Item:", b2cItem);
         simplified.push(b2cItem);
       }
     });
-
-    console.log("🛒 [Cart] ========== SIMPLIFY CART RESULTS ==========");
-    console.log("🛒 [Cart] Final simplified array:", simplified);
-    console.log("🛒 [Cart] Total items:", simplified.length);
-
-    const b2bItems = simplified.filter((item) => item.isB2BVariant);
-    const b2cItems = simplified.filter((item) => !item.isB2BVariant);
-
-    console.log("🛒 [Cart] B2B items count:", b2bItems.length);
-    console.log("🛒 [Cart] B2B items:", b2bItems);
-    console.log("🛒 [Cart] B2C items count:", b2cItems.length);
-    console.log("🛒 [Cart] B2C items:", b2cItems);
-    console.log("🛒 [Cart] ========== SIMPLIFY CART END ==========");
 
     return simplified;
   };
@@ -482,36 +447,6 @@ function CartPage() {
     }
   };
 
-  // Move to Wishlist
-  const handleMoveToWishlist = async (item) => {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Please log in to move items to your wishlist.");
-      return;
-    }
-
-    try {
-      const inWishlist = await wishlistService.isInWishlist(item.productId);
-
-      if (!inWishlist) {
-        const productData = {
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          description: item.description,
-          size: item.size,
-        };
-        await wishlistService.toggleWishlist(item.productId, productData);
-      }
-
-      await handleRemove(item.uniqueId);
-      toast.success("Moved to Wishlist");
-    } catch (error) {
-      console.error("Error moving to wishlist:", error);
-      toast.error("Failed to move to wishlist");
-    }
-  };
-
   // Quantity change with B2B bulk functionality
   const handleQuantityChange = async (uniqueId, delta, variantIndex = null) => {
     if (updatingItemId) return;
@@ -520,6 +455,24 @@ function CartPage() {
     if (!item) return;
 
     const user = auth.currentUser;
+
+    if (role === "B2B" && item.isB2BVariant && variantIndex !== null) {
+      const variant = item.variants[variantIndex];
+      const newQty = variant.quantity + delta;
+
+      if (delta < 0 && newQty < 6) {
+        setMinQuantityItem({
+          itemName: item.name,
+          variant: {
+            color: variant.color,
+            size: variant.size,
+            currentQuantity: variant.quantity
+          }
+        });
+        setShowMinQuantityPopup(true);
+        return;
+      }
+    }
 
     try {
       setUpdatingItemId(uniqueId);
@@ -532,7 +485,7 @@ function CartPage() {
           const productIndex = guestCart.findIndex((p) => (p.productId || p.id) === item.productId);
           if (productIndex !== -1) {
             const currentQty = guestCart[productIndex].variants[variantIndex].quantity;
-            const newQty = Math.max(1, currentQty + delta);
+            const newQty = Math.max(6, currentQty + delta); // Enforce minimum 6
 
             if (newQty >= 5) {
               setBulkProduct(item.rawItem);
@@ -574,11 +527,13 @@ function CartPage() {
         if (item.isB2BVariant && variantIndex !== null) {
           // Update B2B variant quantity in Firestore
           const variant = item.rawItem.variants[variantIndex];
+          const newQty = Math.max(6, variant.quantity + delta); // Enforce minimum 6
+
           await cartService.updateB2BVariantQuantity(
             item.productId,
             variant.color,
             variant.size,
-            variant.quantity + delta
+            newQty
           );
         } else if (!item.isB2BVariant) {
           // Update B2C item quantity in Firestore
@@ -595,7 +550,6 @@ function CartPage() {
 
   // Edit B2B item
   const handleEditItem = (item) => {
-    console.log("🛒 [Cart] Editing B2B item:", item);
     sessionStorage.setItem(
       "editingCartItem",
       JSON.stringify({
@@ -624,7 +578,6 @@ function CartPage() {
         return;
       }
 
-      // For logged-in users, implement Firestore update
       if (useFirestore) {
         console.log("Size change for logged-in user not implemented yet");
       }
@@ -634,7 +587,7 @@ function CartPage() {
     }
   };
 
-  // Calculate totals with B2B support
+  // Calculate totals
   const calculateSubtotal = () => {
     return cartItems.reduce((sum, item) => {
       if (item.isB2BVariant) {
@@ -646,8 +599,8 @@ function CartPage() {
   };
 
   const subtotal = calculateSubtotal();
-  const discount = subtotal * 0.12;
-  const shipping = cartItems.length > 0 ? 50 : 0;
+  const discount = subtotal * 0.12; // In real app, this should come from a DiscountService
+  const shipping = cartItems.length > 0 ? 50 : 0; // In real app, this should come from ShippingService
   const total = subtotal - discount + shipping;
 
   const handleProceedToCheckout = () => {
@@ -656,23 +609,12 @@ function CartPage() {
       return;
     }
 
-    console.log("🛒 [Cart] Proceeding to checkout with:", { role, cartItems: rawCart });
-
-    if (role === "B2B") {
-      navigate("/checkout", {
-        state: {
-          cartItems: rawCart,
-          role: role,
-        },
-      });
-    } else {
-      navigate("/checkout", {
-        state: {
-          cartItems: rawCart,
-          role: role,
-        },
-      });
-    }
+    navigate("/checkout", {
+      state: {
+        cartItems: rawCart,
+        role: role,
+      },
+    });
   };
 
   // Handle coupon apply
@@ -687,109 +629,176 @@ function CartPage() {
     toast.success("Coupon applied successfully!");
   };
 
+  const handleRemoveVariant = async (uniqueId, variantIndex) => {
+    const item = cartItems.find((i) => i.uniqueId === uniqueId);
+    if (!item) return;
+
+    const user = auth.currentUser;
+
+    try {
+      if (!user) {
+        let guestCart = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
+        const productIndex = guestCart.findIndex((p) => (p.productId || p.id) === item.productId);
+
+        if (productIndex !== -1) {
+
+          guestCart[productIndex].variants.splice(variantIndex, 1);
+
+
+          if (guestCart[productIndex].variants.length === 0) {
+            guestCart.splice(productIndex, 1);
+          } else {
+
+            guestCart[productIndex].totalQuantity = guestCart[productIndex].variants.reduce(
+              (sum, v) => sum + v.quantity,
+              0
+            );
+          }
+        }
+
+        sessionStorage.setItem("guest_cart", JSON.stringify(guestCart));
+        setRawCart(guestCart);
+        setCartItems(simplifyCart(guestCart));
+        toast.success("Variant removed from cart");
+      } else {
+
+        console.log("Variant removal for logged-in user not implemented yet");
+      }
+    } catch (error) {
+      console.error("Error removing variant:", error);
+      toast.error("Failed to remove variant");
+    } finally {
+      setShowMinQuantityPopup(false);
+    }
+  };
+
   // B2C Cart Item Render
-  const renderB2CItem = (item) => (
-    <div
-      key={item.uniqueId}
-      className="flex flex-col md:flex-row p-4 sm:p-6 border border-[#A4A4A4]"
-    >
-      <img
-        src={item.image}
-        alt={item.name}
-        className="w-[120px] h-[150px] object-cover rounded-md flex-shrink-0"
-      />
-      <div className="flex-1 flex flex-col justify-between mt-4 md:mt-0 md:ml-4">
-        <div>
-          <h2 className="font-[Outfit,sans-serif] font-medium text-[16px] leading-[15px] tracking-[0.27px] uppercase text-[#000000]">
-            {item.name}
-          </h2>
-          <p className="text-[14px] text-gray-600 capitalize pt-1">{item.description}</p>
-          <p className="text-[14px] text-gray-600 mt-3 uppercase">
-            CODE: {item.productId || "SUSC0425127"}
-          </p>
-          <div className="flex items-center gap-4 pt-3 flex-wrap">
-            <div className="flex items-center border border-gray-300 rounded-sm px-3 py-1.5">
-              <span className="text-[14px] text-gray-700 mr-2">Size :</span>
-              <select
-                value={item.size || "S"}
-                onChange={(e) => handleSizeChange(item.uniqueId, e.target.value)}
-                className="appearance-none bg-transparent border-none p-0 text-[14px] font-medium text-black focus:outline-none focus:ring-0 cursor-pointer pr-5"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.25rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.25em 1.25em",
-                }}
-              >
-                {sizeOptions.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </div>
+  const renderB2CItem = (item) => {
+    const isUpdating = updatingItemId === item.uniqueId;
 
-            <div className="flex items-center border border-gray-300 rounded-sm">
-              <button
-                onClick={() => handleQuantityChange(item.uniqueId, -1)}
-                disabled={item.quantity <= 1 || updatingItemId === item.uniqueId}
-                className={`px-3 py-1.5 ${
-                  item.quantity <= 1 || updatingItemId === item.uniqueId
+    return (
+      <div
+        key={item.uniqueId}
+        className="flex flex-col md:flex-row p-4 sm:p-6 border border-[#A4A4A4] relative"
+      >
+        {/* Loading overlay for B2C items */}
+        {/* {isUpdating && (
+          // <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
+          //   <div className="flex flex-col items-center">
+          //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000]"></div>
+          //     <p className="text-sm text-gray-600 mt-2">Updating...</p>
+          //   </div>
+          // </div>
+        )} */}
+
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-[120px] h-[150px] object-cover flex-shrink-0"
+        />
+        <div className="flex-1 flex flex-col justify-between mt-4 md:mt-0 md:ml-4">
+          <div>
+            <h2 className="font-[Outfit,sans-serif] font-medium text-[16px] leading-[15px] tracking-[0.27px] uppercase text-[#000000]">
+              {item.name}
+            </h2>
+            <p className="text-[14px] text-gray-600 capitalize pt-1">{item.description}</p>
+            <p className="text-[14px] text-gray-600 mt-3 uppercase">
+              CODE: {item.productId || "SUSC0425127"}
+            </p>
+            <div className="flex items-center gap-4 pt-3 flex-wrap">
+              <div className="flex items-center border border-gray-300  px-3 py-1.5">
+                <span className="text-[14px] text-gray-700 mr-2">Size :</span>
+                <select
+                  value={item.size || "S"}
+                  onChange={(e) => handleSizeChange(item.uniqueId, e.target.value)}
+                  className="appearance-none bg-transparent border-none p-0 text-[14px] font-medium text-black focus:outline-none focus:ring-0 cursor-pointer pr-5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: "right 0.25rem center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "1.25em 1.25em",
+                  }}
+                  disabled={isUpdating}
+                >
+                  {sizeOptions.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center border border-gray-300  relative">
+                {isUpdating && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+
+                  </div>
+                )}
+                <button
+                  onClick={() => handleQuantityChange(item.uniqueId, -1)}
+                  disabled={item.quantity <= 1 || isUpdating}
+                  className={`px-3 py-1.5 ${item.quantity <= 1 || isUpdating
                     ? "text-gray-400 cursor-not-allowed"
                     : "hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <Minus className="w-4 h-4" />
-              </button>
+                    }`}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
 
-              <span className="px-4 text-[14px] font-medium min-w-[40px] text-center">
-                {item.quantity}
-              </span>
+                <span className="px-4 text-[14px] font-medium min-w-[40px] text-center">
+                  {item.quantity}
+                </span>
 
-              <button
-                onClick={() => handleQuantityChange(item.uniqueId, 1)}
-                disabled={item.quantity >= 5 || updatingItemId === item.uniqueId}
-                className={`px-3 py-1.5 ${
-                  item.quantity >= 5 || updatingItemId === item.uniqueId
+                <button
+                  onClick={() => handleQuantityChange(item.uniqueId, 1)}
+                  disabled={item.quantity >= 5 || isUpdating}
+                  className={`px-3 py-1.5 ${item.quantity >= 5 || isUpdating
                     ? "text-gray-400 cursor-not-allowed"
                     : "hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+                    }`}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
+          <p className="text-[13px] text-gray-600 mt-2">ESTIMATED SHIPPING DATE: 4TH OF NOVEMBER</p>
         </div>
-        <p className="text-[13px] text-gray-600 mt-2">ESTIMATED SHIPPING DATE: 4TH OF NOVEMBER</p>
-      </div>
-      <div className="flex flex-col justify-between items-start md:items-end mt-4 md:mt-0 md:ml-5">
-        <p className="text-[18px] font-medium text-gray-900 text-left md:text-right">
-          ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-        </p>
-        <div className="flex gap-5 mt-4 md:mt-0">
-          <WishlistHeartButton
-            productId={item.productId}
-            productData={{
-              name: item.name,
-              price: item.price,
-              image: item.image,
-              color: item.color,
-              size: item.size,
-              description: item.description,
-            }}
-            className="hover:text-red-500 text-gray-400"
-          />
-          <button
-            onClick={() => handleRemove(item.uniqueId)}
-            className="hover:text-red-500 text-gray-400"
-            title="Remove from Cart"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="flex flex-col justify-between items-start md:items-end mt-4 md:mt-0 md:ml-5">
+          <p className="text-[18px] font-medium text-gray-900 text-left md:text-right">
+            ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+          </p>
+          <div className="flex gap-5 mt-4 md:mt-0">
+
+            <WishlistHeartButton
+              productId={item.productId}
+              productData={{
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                color: item.color,
+                size: item.size,
+                description: item.description,
+              }}
+              className="hover:text-red-500 text-gray-400"
+              disabled={isUpdating}
+              userRole={role}
+              userId={auth.currentUser?.uid}
+            />
+
+            <button
+              onClick={() => handleRemove(item.uniqueId)}
+              className="hover:text-red-500 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Remove from Cart"
+              disabled={isUpdating}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -801,44 +810,30 @@ function CartPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white py-22 mt-15">
+      <div className="min-h-screen bg-white py-1 lg:py-32">
         <div className="max-w-[1166px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* --- LEFT COLUMN --- */}
             <div className="lg:col-span-2">
               <div className="mb-6">
-                <h1 className={`${fontStyles} text-[20px] font-medium md:text-[22px]`}>
+                <h1
+                  className={`${fontStyles} font-outfit font-medium text-[10px] leading-[24px] tracking-[0.02em] md:text-[22px]`}
+                >
                   Your Shopping <span>Cart</span>
                 </h1>
-                <p className="text-sm text-gray-600 mt-2">
-                  {role === "B2B" ? "B2B Bulk Order Cart" : "B2C Shopping Cart"}
-                </p>
-              </div>
 
-              {/* <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-sm">
-                  <strong>Debug Info:</strong> Role: <span className="font-mono">{role}</span> |
-                  Cart Items: <span className="font-mono">{cartItems.length}</span> |
-                  B2B Items: <span className="font-mono">{cartItems.filter(item => item.isB2BVariant).length}</span>
-                </p>
-              </div> */}
+                {/* <p className="text-sm text-gray-600 mt-2">
+                  {role === "B2B" ? "B2B Bulk Order Cart" : "B2C Shopping Cart"}
+                </p> */}
+              </div>
 
               <div>
                 {cartItems.length === 0 ? (
                   <p className="text-gray-600 text-center py-10">Your cart is empty.</p>
                 ) : (
-                  cartItems.map((item, index) => {
-                    console.log("🛒 [Cart Rendering] Item:", {
-                      role,
-                      itemId: item.uniqueId,
-                      isB2BVariant: item.isB2BVariant,
-                      name: item.name,
-                      variants: item.variants,
-                    });
-
+                  cartItems.map((item) => {
                     // B2B Users see B2B design for B2B items
                     if (role === "B2B" && item.isB2BVariant === true) {
-                      console.log("🛒 [Cart] Rendering as B2B item");
                       return (
                         <B2BCartItem
                           key={item.uniqueId}
@@ -846,11 +841,11 @@ function CartPage() {
                           onRemove={handleRemove}
                           onQuantityChange={handleQuantityChange}
                           onEdit={handleEditItem}
+                          updatingItemId={updatingItemId}
                         />
                       );
                     } else {
                       // B2C users OR B2B users with simple items see B2C design
-                      console.log("🛒 [Cart] Rendering as B2C item");
                       return renderB2CItem(item);
                     }
                   })
@@ -1003,13 +998,13 @@ function CartPage() {
           <div className="mt-16 space-y-8">
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => {}} heading="Trending Products" />
+                <TrendingProducts column={6} onClose={() => { }} heading="Trending Products" />
               </div>
             </section>
 
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => {}} heading="Recently Viewed" />
+                <TrendingProducts column={6} onClose={() => { }} heading="Recently Viewed" />
               </div>
             </section>
           </div>
@@ -1020,6 +1015,28 @@ function CartPage() {
       {showGiftPopup && <GiftPopup onClose={() => setShowGiftPopup(false)} />}
       {showCodeApplied && (
         <CodeAppliedPopup onClose={() => setShowCodeApplied(false)} code={appliedCoupon} />
+      )}
+
+      {/* Minimum Quantity Warning Popup */}
+      {showMinQuantityPopup && minQuantityItem && (
+        <MinimumQuantityPopup
+          onClose={() => setShowMinQuantityPopup(false)}
+          onRemove={() => {
+            // Find the item and variant index to remove
+            const item = cartItems.find(i => i.name === minQuantityItem.itemName);
+            if (item) {
+              const variantIndex = item.variants.findIndex(v =>
+                v.color === minQuantityItem.variant.color &&
+                v.size === minQuantityItem.variant.size
+              );
+              if (variantIndex !== -1) {
+                handleRemoveVariant(item.uniqueId, variantIndex);
+              }
+            }
+          }}
+          itemName={minQuantityItem.itemName}
+          variant={minQuantityItem.variant}
+        />
       )}
 
       {/* Bulk Order Popup */}

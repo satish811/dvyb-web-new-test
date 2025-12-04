@@ -15,7 +15,6 @@
     "format": "prettier --write .",
     "prepare": "husky"
   },
-  
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
@@ -31,11 +30,13 @@
     "firebase": "^12.5.0",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
+    "framer-motion": "^12.23.25",
     "fuse.js": "^7.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "lucide-react": "^0.552.0",
     "multer": "^2.0.2",
+    "multiparty": "^4.2.3",
     "razorpay": "^2.9.6",
     "react": "^19.1.1",
     "react-barcode": "^1.6.1",

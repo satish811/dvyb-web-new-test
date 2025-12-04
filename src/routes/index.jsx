@@ -1,4 +1,3 @@
-// src/routes/AppRoutes.jsx
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../components/protectedRoute";
 import MainLayout from "../layout/mainLayout";
@@ -11,7 +10,6 @@ import Home from "../pages/b2c/homePage/homePage";
 import CartPage from "../pages/b2c/cartPage/cartPage";
 import CheckoutPage from "../pages/b2c/cartPage/CheckoutPage";
 import ProductDetailsPageIndividual from "../pages/b2c/ProductDetailsPageIndividual";
-// import OrderSuccessPage from "../pages/b2c/cartPage/OrderSuccessPage";
 
 // 📰 Common Pages
 import BlogPage from "../components/common/BlogPage/BlogPage";
@@ -28,6 +26,11 @@ import Navbar from "../components/common/navbar/navbar";
 import { EmptyWishlist } from "../components/b2c";
 import WishlistPage from "../pages/b2c/WishlistPage/WishlistPage";
 import OrderSuccessPage from "../pages/b2c/orders/OrderSuccessPage";
+
+import TryOnStartPage from "../components/b2c/TryOnMobile_Pages/TryOnStartPage";
+import TryOnUploadPage from "../components/b2c/TryOnMobile_Pages/TryOnUploadPage";
+import TryOnProcessingPage from "../components/b2c/TryOnMobile_Pages/TryOnProcessingPage";
+import TryOnPreviewPage from "../components/b2c/TryOnMobile_Pages/TryOnPreviewPage";
 
 export default function AppRoutes() {
   const { products, loading, error } = useProducts();
@@ -65,6 +68,7 @@ export default function AppRoutes() {
       />
 
       {/* 🧷 Product listing page */}
+      
       <Route
         path="/womenwear"
         element={
@@ -75,6 +79,7 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
       {/* 🧷 Product details page */}
       <Route
         path="/products/:id"
@@ -203,6 +208,18 @@ export default function AppRoutes() {
           // </ProtectedRoute>
         }
       />
+
+
+
+
+      {/* Mobile tryon pages */}
+
+      <Route path="/tryon/start/:productId" element={<TryOnStartPage />} />
+      <Route path="/tryon/upload" element={<TryOnUploadPage />} />
+      <Route path="/tryon/processing" element={<TryOnProcessingPage />} />
+      <Route path="/tryon/preview" element={<TryOnPreviewPage />} />
+
+
     </Routes>
   );
 }

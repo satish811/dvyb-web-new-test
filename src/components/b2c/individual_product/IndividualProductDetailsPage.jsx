@@ -5,7 +5,7 @@ import { cartService } from "../../../services/cartService";
 import { useWishlist } from "../../../context/WishlistContext";
 import { auth } from "../../../config";
 import B2BAuthService from "../../../services/b2bAuthService";
-import { B2BCartItemModel } from "../../../models/B2BCartItemModel";
+
 
 import ProductImageGallery from "./individual_product_components/ProductImageGallery";
 import ProductTitleSection from "./individual_product_components/ProductTitleSection";
@@ -22,6 +22,7 @@ import ProductReviewsSection from "./individual_product_components/ProductReview
 import ProductStockAndShipping from "./individual_product_components/ProductStockAndShipping";
 import ProductStarRatingSection from "./individual_product_components/ProductStarRatingSection";
 import AvailColorsPopup from "../../b2b/common/AvailColorsPopup";
+import MobileProductHeader from "./individual_product_components/MobileProductHeader";
 
 import img1 from "../../../assets/lazyloading/logoimg1.svg";
 import img2 from "../../../assets/lazyloading/logoimg2.svg";
@@ -63,6 +64,10 @@ const IndividualProductDetailsPage = () => {
   const [userId, setUserId] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  const isMobile = () => window.innerWidth <= 768;
+
+
 
   const images = [img1, img2, img3, img4, img5, img6];
 
@@ -215,8 +220,6 @@ const IndividualProductDetailsPage = () => {
           setShowAddToWishlistPopup(true);
           setTimeout(() => setShowAddToWishlistPopup(false), 3000);
         }
-      } else {
-        alert(`Failed: ${result.error}`);
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
@@ -240,7 +243,8 @@ const IndividualProductDetailsPage = () => {
       return;
     }
 
-    setTryOnData({
+    // ✅ CREATE tryOnPayload (was missing!)
+    const tryOnPayload = {
       garmentImage,
       garmentName: product.title || product.name,
       productId: product.id,
@@ -253,9 +257,19 @@ const IndividualProductDetailsPage = () => {
       selectedSize: requiresSizeSelection ? selectedSize : "One Size",
       dressType: product.dressType || 'lehenga',
       outfitType: product.dressType?.toLowerCase() || "lehenga",
-    });
+    };
 
-    setShowUploadSelfieModal(true);
+    // ✅ NOW check if mobile or desktop
+    if (isMobile()) {
+      // Mobile: Navigate to page with state
+      navigate(`/tryon/start/${product.id}`, {
+        state: tryOnPayload
+      });
+    } else {
+      // Desktop: Show modal
+      setTryOnData(tryOnPayload);
+      setShowUploadSelfieModal(true);
+    }
   };
 
   const handleUploadSelfieNext = (data) => {
@@ -271,7 +285,9 @@ const IndividualProductDetailsPage = () => {
   };
 
   const handleBuyNow = async (event) => {
-    event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+    }
 
     if (userRole === "B2B") {
       alert("B2B accounts cannot purchase directly. Please contact sales.");
@@ -510,15 +526,67 @@ const IndividualProductDetailsPage = () => {
     setShowSizeError(false);
   };
 
+  const handleB2BWishlist = async (variantsArray) => {
+    try {
+      console.log("💖 [B2B Wishlist] Starting B2B wishlist handler");
+      console.log("💖 [B2B Wishlist] Variants:", variantsArray);
+
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Please login to save items to wishlist");
+        return false;
+      }
+
+      const wishlistItem = {
+        productId: product.id,
+        id: product.id,
+        isB2BVariant: true,
+        name: product.name,
+        price: Number(product.price) || 0,
+        image: imageUrls[0],
+        description: product.description || "",
+        variants: variantsArray.map((v) => ({
+          color: v.color,
+          size: v.size,
+          quantity: v.quantity || 1,
+          selected: true,
+        })),
+        totalQuantity: variantsArray.reduce((sum, v) => sum + (v.quantity || 1), 0),
+        addedAt: new Date().toISOString(),
+      };
+
+      const result = await toggleWishlist(
+        wishlistItem,
+        "B2B_VARIANT",
+        "B2B_MULTI_COLOR"
+      );
+
+      if (result.success) {
+        const totalItems = wishlistItem.totalQuantity;
+        alert(`${totalItems} item${totalItems > 1 ? 's' : ''} added to your wishlist!`);
+        return true;
+      } else {
+        throw new Error(result.error || "Failed to add to wishlist");
+      }
+    } catch (error) {
+      console.error("❌ [B2B Wishlist] Error:", error);
+      alert("Failed to add items to wishlist. Please try again.");
+      return false;
+    }
+  };
+
   return (
     <div
-      className="mx-auto flex flex-col mt-30"
+      className="mx-auto flex flex-col md:mt-30 w-full max-w-[1166px] px-1 md:px-0"
       style={{
-        width: "1166px",
         gap: "16px",
         height: "auto",
       }}
     >
+      {/* Mobile Header */}
+      <MobileProductHeader productName={product?.dressType || "PRODUCT"} />
+
       {showAddToBagPopup && (
         <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300">
           <div className="flex items-center gap-2">
@@ -555,17 +623,16 @@ const IndividualProductDetailsPage = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="lg:w-1/2 sticky top-0 self-start">
+      <div className="flex flex-col lg:flex-row gap-4 mt-16 md:mt-0">
+        <div className="lg:w-1/2 sticky top-16 md:top-0 self-start z-10">
           <ProductImageGallery images={imageUrls} product={product} />
         </div>
 
         <div
-          className="space-y-6 overflow-y-scroll"
+          className="space-y-6 w-full lg:w-[663px] lg:overflow-y-scroll"
           style={{
-            width: "663px",
             height: "auto",
-            maxHeight: "calc(100vh - 4rem)",
+            maxHeight: "none",
             gap: "24px",
             paddingRight: "8px",
             scrollbarWidth: "none",
@@ -577,6 +644,7 @@ const IndividualProductDetailsPage = () => {
             userRole={userRole}
             product={product}
             onAddToWishlist={handleAddToWishlist}
+            onAddToB2BWishlist={handleB2BWishlist}
             addingToWishlist={wishlistLoading}
           />
 
@@ -606,9 +674,13 @@ const IndividualProductDetailsPage = () => {
             onBuyNow={handleBuyNow}
             onVirtualTryOn={handleTryOnClick}
             onAddToWishlist={handleAddToWishlist}
+            onB2BBuyNow={handleB2BCartConfirm}
             addingToCart={addingToCart}
             addingToWishlist={addingToWishlist}
             isB2BUser={isB2BUser}
+            product={product}
+            selectedSize={selectedSize}
+            selectedColor={product.selectedColors?.[0]}
           />
 
           {showB2BPopup && (

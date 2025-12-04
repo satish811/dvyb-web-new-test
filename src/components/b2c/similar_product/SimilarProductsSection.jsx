@@ -1,157 +1,118 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useProducts } from "../../../hooks/useProducts";
 
 const SimilarProductsSection = () => {
   const { products, loading, error } = useProducts();
-
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  // --- Error or no data ---
-  if (error || !products || products.length === 0) {
-    return <div className="text-center py-10 text-red-600 text-sm">No similar products found.</div>;
-  }
+  const similarProducts = useMemo(() => {
+    if (!products || !id) return [];
 
-  const displayProducts = products.slice(0, 6);
+    const currentProduct = products.find((p) => p.id === id);
+    if (!currentProduct) return [];
+
+    return products
+      .filter(
+        (p) =>
+          p.id !== id &&
+          p.category &&
+          currentProduct.category &&
+          p.category.toLowerCase() === currentProduct.category.toLowerCase()
+      )
+      .slice(0, 6);
+  }, [products, id]);
+
+  const currentCategory = products?.find((p) => p.id === id)?.category;
+
+  if (loading) return null;
+  if (error || similarProducts.length === 0) return null;
 
   return (
-    <div
-      className="mt-8 pt-6 flex flex-col"
-      style={{
-        gap: "24px",
-        width: "100%",
-      }}
-    >
+    <div className="mt-8 pt-6 flex flex-col w-full gap-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 600,
-            fontSize: "18px",
-            textTransform: "uppercase",
-            color: "#000",
-            margin: 0,
-          }}
-        >
-          SIMILAR PRODUCTS
+      <div className="flex justify-between items-center px-1 sm:px-0">
+        <h2 className="font-[Outfit,sans-serif] font-semibold text-lg sm:text-xl uppercase text-black m-0">
+          Similar Products
         </h2>
 
         <button
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            fontWeight: 600,
-            fontSize: "14px",
-            color: "#B71C1C",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
+          onClick={() => {
+            if (currentCategory) {
+              const catParam = currentCategory
+                .toLowerCase()
+                .replace(/\s+/g, "-");
+              navigate(`/womenwear?category=${catParam}`);
+            } else {
+              navigate("/womenwear");
+            }
           }}
-          className="hover:underline"
+          className="font-[Outfit,sans-serif] font-medium text-xs sm:text-sm text-primary 
+          hover:text-black hover:border-b border-primary transition pb-1 uppercase"
         >
-          VIEW ALL
+          View All
         </button>
       </div>
 
-      {/* Product Grid */}
+      {/* Mobile Responsive Product Grid */}
       <div
-        className="grid"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(184.33px, 1fr))",
-          gap: "12px",
-        }}
+        className="
+          grid gap-3 sm:gap-4 
+          grid-cols-2           /* Mobile */ 
+          sm:grid-cols-3        /* Small Devices */
+          md:grid-cols-4        /* Tablets */
+          lg:grid-cols-6        /* Desktop */
+        "
       >
-        {displayProducts.map((product) => (
-          <div
+        {similarProducts.map((product) => (
+          <article
             key={product.id}
-            onClick={() => navigate(`/products/${product.id}`)}
-            style={{
-              width: "184.33px",
-              height: "386px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              cursor: "pointer",
+            className="bg-white border border-slate-100 overflow-hidden shadow-sm 
+            transition flex flex-col cursor-pointer group"
+            style={{ minHeight: 320 }}
+            onClick={() => {
+              navigate(`/products/${product.id}`);
+              window.scrollTo(0, 0);
             }}
           >
-            {/* Product Image */}
-            <div
-              style={{
-                width: "178px",
-                height: "287px",
-                overflow: "hidden",
-                background: "#f5f5f5",
-              }}
-            >
+            {/* Responsive Image Wrapper */}
+            <div className="w-full h-40 sm:h-48 md:h-52 lg:h-56 overflow-hidden bg-gray-100">
               <img
-                src={product.imageUrls?.[0]}
+                src={product.imageUrls?.[0] || ""}
                 alt={product.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
+                className="w-full h-full object-cover block group-hover:scale-105 
+                transition-transform duration-300"
               />
             </div>
 
-            {/* Product Details */}
-            <div
-              style={{
-                width: "184.33px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px",
-                height: "85px",
-              }}
-            >
-              {/* Title */}
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "#000",
-                  margin: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
+            {/* Content */}
+            <div className="p-2 sm:p-3 flex-1 flex flex-col">
+              <h3
+                className="text-xs sm:text-sm md:text-base 
+              font-medium text-slate-800 mb-1 line-clamp-2 
+              font-[Outfit,sans-serif]"
               >
                 {product.name}
-              </p>
+              </h3>
 
-              {/* Description */}
               <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "13px",
-                  color: "#444",
-                  margin: 0,
-                  lineHeight: "1.3",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
+                className="text-[11px] sm:text-xs md:text-sm 
+              text-slate-500 mb-3 line-clamp-2 font-[Outfit,sans-serif]"
               >
                 {product.description}
               </p>
 
-              {/* Price */}
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  color: "#400000",
-                  margin: 0,
-                }}
-              >
-                ₹{product.price.toLocaleString("en-IN")}
-              </p>
+              <div className="mt-auto flex items-center justify-between">
+                <div
+                  className="text-base sm:text-lg font-semibold text-rose-700 
+                font-[Outfit,sans-serif]"
+                >
+                  ₹{product.price ? product.price.toLocaleString("en-IN") : "—"}
+                </div>
+              </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </div>

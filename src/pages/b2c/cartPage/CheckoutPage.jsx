@@ -101,17 +101,26 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchUserDetails = async () => {
       const currentUser = auth.currentUser;
+      console.log("👤 CHECKOUT - Current User:", currentUser?.email || "No user");
+
       if (currentUser) {
         try {
           const firebaseEmail = currentUser.email || "";
           try {
             const userData = await B2BAuthService.getUserById(currentUser.uid);
+            console.log("👤 CHECKOUT - User Data:", userData?.data);
+
             if (userData?.data) {
               const addressesResponse = await B2BAddressService.getAddresses(
                 currentUser.uid,
                 userData.data.role || "B2C"
               );
+              console.log("📬 CHECKOUT - Addresses Response:", addressesResponse);
+
               const addresses = addressesResponse.success ? addressesResponse.data : [];
+              console.log("🏠 CHECKOUT - All Addresses:", addresses);
+              console.log("🏠 CHECKOUT - Number of addresses:", addresses.length);
+
               setUserDetails({
                 id: currentUser.uid,
                 email: userData.data.email || firebaseEmail,
@@ -120,6 +129,7 @@ export default function CheckoutPage() {
                 addresses,
               });
             } else {
+              console.log("⚠️ CHECKOUT - No user data found");
               setUserDetails({
                 id: currentUser.uid,
                 email: firebaseEmail,
@@ -129,6 +139,7 @@ export default function CheckoutPage() {
               });
             }
           } catch (b2bError) {
+            console.error("❌ CHECKOUT - B2B Service Error:", b2bError);
             setUserDetails({
               id: currentUser.uid,
               email: firebaseEmail,
@@ -138,6 +149,7 @@ export default function CheckoutPage() {
             });
           }
         } catch (error) {
+          console.error("❌ CHECKOUT - General Error:", error);
           setUserDetails({
             id: currentUser.uid,
             email: currentUser.email || "",
@@ -147,6 +159,7 @@ export default function CheckoutPage() {
           });
         }
       } else {
+        console.log("👤 CHECKOUT - No user logged in");
         setUserDetails({
           id: null,
           email: "",
@@ -161,12 +174,15 @@ export default function CheckoutPage() {
     return () => unsub();
   }, []);
 
+
   useEffect(() => {
     if (userDetails.isLoggedIn && userDetails.addresses.length > 0) {
       const defaultAddr = userDetails.addresses.find((a) => a.isDefault);
-      if (defaultAddr) {
+      if (defaultAddr && !defaultAddress) {
         setDefaultAddress(defaultAddr);
         setSelectedAddress(defaultAddr);
+
+
         setShippingForm({
           firstName: defaultAddr.firstName || "",
           lastName: defaultAddr.lastName || "",
@@ -177,12 +193,39 @@ export default function CheckoutPage() {
           country: defaultAddr.country || "India",
           phone: defaultAddr.phone || "",
         });
+
+
+        const countryObj = Country.getAllCountries().find(c => c.name === defaultAddr.country);
+        if (countryObj) {
+          setSelectedCountryCode(countryObj.isoCode);
+
+
+          setTimeout(() => {
+            const stateObj = State.getStatesOfCountry(countryObj.isoCode)
+              .find(s => s.name === defaultAddr.stateProvince);
+            if (stateObj) {
+              setSelectedStateCode(stateObj.isoCode);
+            }
+          }, 50);
+        }
+
+
         setStep2Unlocked(true);
         setStep3Unlocked(true);
         setOpenStep(3);
       }
     }
-  }, [userDetails]);
+  }, [userDetails.addresses, userDetails.isLoggedIn]);
+
+  useEffect(() => {
+    if (userDetails.addresses.length > 0) {
+      const latestDefault = userDetails.addresses.find(a => a.isDefault);
+      if (latestDefault && defaultAddress?.id !== latestDefault.id) {
+        setDefaultAddress(latestDefault);
+        setSelectedAddress(latestDefault);
+      }
+    }
+  }, [userDetails.addresses, defaultAddress?.id])
 
   useEffect(() => {
     if (userDetails.isLoggedIn && userDetails.email) {
@@ -465,7 +508,7 @@ export default function CheckoutPage() {
                   style={{ borderColor: openStep === 1 ? MAROON : "transparent" }}
                   onClick={() => openRequestedStep(1)}
                 >
-                  <h2 className="font-semibold uppercase">1. User Details</h2>
+                  <h2 className="font-semibold uppercase">1. User Email</h2>
                   {email && openStep !== 1 && (
                     <span className="text-sm text-gray-600">{email}</span>
                   )}
@@ -523,7 +566,7 @@ export default function CheckoutPage() {
 
             {userDetails.isLoggedIn && userDetails.email && openStep !== 1 && (
               <div className="bg-gray-100 border-l-4 border-l-maroon px-5 py-4 flex justify-between items-center">
-                <h2 className="font-semibold uppercase">1. User Details</h2>
+                <h2 className="font-semibold uppercase">1. User Email</h2>
                 <span className="text-sm text-gray-600">{userDetails.email}</span>
               </div>
             )}
@@ -536,16 +579,18 @@ export default function CheckoutPage() {
               >
                 <h2 className="font-semibold uppercase">2. Shipping Address</h2>
 
-                {userDetails.isLoggedIn && userDetails.addresses.length > 0 && defaultAddress && (
-                  <p className="text-xs text-green-600 mt-1">✓ Default address auto-selected</p>
+                {defaultAddress && (
+                  <div className="text-sm mt-1">
+                    <span className="text-green-700 font-medium">
+                      {defaultAddress.firstName} {defaultAddress.lastName}
+                    </span>
+                    <span className="text-gray-600">, {defaultAddress.city}</span>
+                    <span className="text-gray-500 text-xs ml-2">— click to edit</span>
+                  </div>
                 )}
 
-                {userDetails.isLoggedIn && userDetails.addresses.length === 0 && (
-                  <p className="text-xs text-gray-500 mt-1">No saved addresses found</p>
-                )}
-
-                {!userDetails.isLoggedIn && (
-                  <p className="text-xs text-gray-500 mt-1">Guest checkout</p>
+                {!defaultAddress && userDetails.isLoggedIn && (
+                  <p className="text-xs text-gray-500 mt-1">No saved address</p>
                 )}
               </div>
 
@@ -689,6 +734,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               )}
+
             </div>
 
             <div className="border border-gray-200 rounded-sm">
@@ -706,9 +752,8 @@ export default function CheckoutPage() {
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
-                        className={`border border-gray-300 py-4 rounded-sm uppercase ${
-                          paymentMethod === method ? "bg-[#800000] text-white" : ""
-                        }`}
+                        className={`border border-gray-300 py-4 rounded-sm uppercase ${paymentMethod === method ? "bg-[#800000] text-white" : ""
+                          }`}
                       >
                         {method === "cod"
                           ? "Cash on Delivery"
@@ -734,30 +779,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-6">
-            {userDetails.isLoggedIn && (
-              <div className="border rounded-sm p-4 bg-blue-50 border-blue-200">
-                <h3 className="font-bold text-blue-800 mb-2">Account Summary</h3>
-                <div className="space-y-1 text-sm">
-                  <p>
-                    <strong>Email:</strong> {userDetails.email}
-                  </p>
-                  <p>
-                    <strong>Account Type:</strong> {userDetails.role || "B2C"}
-                  </p>
-                  <p>
-                    <strong>Saved Addresses:</strong> {userDetails.addresses.length}
-                  </p>
-                  <p>
-                    <strong>Status:</strong> Logged In ✓
-                  </p>
-                  {defaultAddress && (
-                    <p className="text-green-600 font-medium">
-                      ✓ Default address auto-selected for faster checkout
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+
 
             <div className="border rounded-sm p-6">
               <h3 className="font-bold uppercase mb-4">Order Summary</h3>

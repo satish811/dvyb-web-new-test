@@ -11,6 +11,7 @@ import { MdOutlineArrowDropDown } from "react-icons/md";
 import MobileMenu from "./MobileMenu";
 import { useFilter } from "../../../context/FilterContext";
 import AuthContainer from "../../../pages/b2b/AuthContainer/AuthContainer";
+import { useUI } from "../../../context/UIContext";
 
 // --- Your original Virtual Try-On assets ---
 import twodpopup from "../../../assets/Navbar/twodpopup.svg";
@@ -30,7 +31,9 @@ export default function Navbar() {
   const location = useLocation();
 
   // Virtual Try-On modal states
-  const [showModal, setShowModal] = useState(false);
+  const { isTryOnModalOpen, setTryOnModalOpen } = useUI();
+  const showModal = isTryOnModalOpen;
+  const setShowModal = setTryOnModalOpen;
   const [selectedProduct, setSelectedProduct] = useState("");
 
   // Filter context
@@ -153,12 +156,42 @@ export default function Navbar() {
     });
   }, []);
 
+  // Remove recent search
+  const removeRecentSearch = useCallback((term) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((s) => s !== term);
+      localStorage.setItem("recentSearches", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   // Handlers for dropdown interactions
   const handleSuggestionClick = useCallback(
     (suggestion) => {
       saveRecentSearch(suggestion);
       setSearchQuery(suggestion);
-      navigate(`/womenwear?query=${encodeURIComponent(suggestion)}`);
+
+      const queryLower = suggestion.toLowerCase().trim();
+      const categoryMap = {
+        saree: "saree",
+        sarees: "saree",
+        kurti: "kurta-sets",
+        kurtis: "kurta-sets",
+        lehenga: "lehenga",
+        lehengas: "lehenga",
+        anarkali: "anarkalis",
+        sharara: "shararas",
+        gown: "gown",
+        fusion: "fusion",
+        wedding: "wedding"
+      };
+
+      if (categoryMap[queryLower]) {
+        navigate(`/womenwear?category=${categoryMap[queryLower]}`);
+      } else {
+        navigate(`/womenwear?query=${encodeURIComponent(suggestion)}`);
+      }
+
       setSearchOpen(false);
       setSearchQuery("");
     },
@@ -178,7 +211,7 @@ export default function Navbar() {
   const cartCount = 0;
 
   return (
-    <header className="sticky top-0 z-50 bg-white">
+    <header className="sticky top-0 z-50 bg-white w-full overflow-hidden">
       {searchOpen ? (
         <SearchDropdown
           searchResults={searchResults}
@@ -196,6 +229,7 @@ export default function Navbar() {
           onSuggestionClick={handleSuggestionClick}
           onResultClick={handleResultClick}
           onSaveRecent={saveRecentSearch}
+          onRemoveRecent={removeRecentSearch}
         />
       ) : (
         <>
@@ -216,11 +250,13 @@ export default function Navbar() {
           </div>
 
           {/* Main bar */}
-          <div className="flex items-center justify-between px-2 md:px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-2 sm:px-4 md:px-3">
+
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden flex items-center gap-1 font-medium text-sm text-gray-800"
+              className="lg:hidden flex items-center gap-1 font-medium text-sm text-gray-800 ml-1"
             >
+
               WOMEN <MdOutlineArrowDropDown className="text-xl" />
             </button>
 
@@ -228,7 +264,7 @@ export default function Navbar() {
               <img
                 src={mainlogo}
                 alt="Logo"
-                className="h-14 sm:ml-1 lg:ml-34 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
+                className="h-12 xs:h-14 sm:ml-1 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
               />
             </div>
 
@@ -243,7 +279,27 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="flex text-[10px] sm:text-sm md:text-[13px] gap-5 sm:gap-8 md:gap-14 px-4 sm:px-8 md:px-12 overflow-x-auto scrollbar-none hide-scrollbar justify-start sm:justify-center pb-0.5 font-medium whitespace-nowrap">
+          <nav
+            className="
+              flex 
+              text-[11px] 
+              gap-4 
+              px-3 
+              overflow-x-auto 
+              hide-scrollbar 
+              whitespace-nowrap 
+              sm:text-sm 
+              sm:gap-8 
+              sm:px-8 
+              md:text-[13px] 
+              md:gap-14 
+              md:px-12 
+              justify-start 
+              sm:justify-center 
+              pb-1
+            "
+          >
+
             {navItems.map((item) => (
               <button
                 key={item.label}
@@ -256,11 +312,10 @@ export default function Navbar() {
                 }}
                 className={`
         relative pb-1 transition-all duration-200
-        ${
-          isActive(item)
-            ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
-            : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
-        }
+        ${isActive(item)
+                    ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                    : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
+                  }
         ${item.isHighlight ? "text-primary" : ""}
         cursor-pointer
       `}
@@ -327,11 +382,10 @@ export default function Navbar() {
                     <button
                       key={product}
                       onClick={() => setSelectedProduct(product)}
-                      className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${
-                        selectedProduct === product
-                          ? "bg-[#F0E0E0] text-primary border-none"
-                          : "border-primary bg-white text-primary"
-                      } focus:outline-none focus:ring-black`}
+                      className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${selectedProduct === product
+                        ? "bg-[#F0E0E0] text-primary border-none"
+                        : "border-primary bg-white text-primary"
+                        } focus:outline-none focus:ring-black`}
                     >
                       {product}
                     </button>
@@ -350,11 +404,10 @@ export default function Navbar() {
                     }
                   }}
                   disabled={!selectedProduct}
-                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${
-                    selectedProduct
-                      ? "bg-primary hover:bg-hoverBg cursor-pointer"
-                      : "bg-[#BF8080] opacity-60 cursor-not-allowed"
-                  } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
+                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${selectedProduct
+                    ? "bg-primary hover:bg-hoverBg cursor-pointer"
+                    : "bg-[#BF8080] opacity-60 cursor-not-allowed"
+                    } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
                 >
                   Continue Try On
                 </button>

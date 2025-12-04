@@ -1,169 +1,154 @@
-import { auth, db, envConfig } from "../config";
+// services/order
+import { auth, db } from "../config/firebaseConfig";
+import B2BAuthService from "./b2bAuthService";
 import {
   collection,
   doc,
   setDoc,
   getDocs,
-  getDoc,
   query,
   orderBy,
   onSnapshot,
   Timestamp,
 } from "firebase/firestore";
 
-/**
- * OrderService — Singleton class managing order operations
- */
 class OrderOperationalService {
   static instance = null;
 
   constructor() {
     if (OrderOperationalService.instance) return OrderOperationalService.instance;
-
-    this.b2cCollection = envConfig.firebaseStorage?.b2cCollection || "b2c_users";
-    this.b2bCollection = envConfig.firebaseStorage?.b2bCollection || "B2BBulkOrders_users";
-    this.ordersSubcollection = envConfig.firebaseStorage?.ordersSubcollection || "orders";
-
     OrderOperationalService.instance = this;
+
+    this.b2cCollection = "b2c_users";
+    this.b2bCollection = "B2BBulkOrders_users";
+    this.ordersSubcollection = "orders";
   }
 
-  /**
-   * Determine user's collection type (b2c or b2b)
-   */
-  async getUserCollection(userId) {
+  
+  async getUserRoleAndCollection() {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
     try {
-      const b2cUserRef = doc(db, this.b2cCollection, userId);
-      const b2cDoc = await getDoc(b2cUserRef);
-      if (b2cDoc.exists()) return this.b2cCollection;
+      const profile = await B2BAuthService.getUserCompleteProfile(user.uid);
 
-      const b2bUserRef = doc(db, this.b2bCollection, userId);
-      const b2bDoc = await getDoc(b2bUserRef);
-      if (b2bDoc.exists()) return this.b2bCollection;
+      if (!profile.success) throw new Error("Failed to fetch user profile");
 
-      throw new Error("User not found in any collection");
+      return {
+        role: profile.role.toLowerCase(), 
+        collection:
+          profile.role.toLowerCase() === "b2b"
+            ? this.b2bCollection
+            : this.b2cCollection,
+      };
     } catch (error) {
-      console.error("🔥 Error determining user collection:", error);
-      throw error;
+      console.error("Failed to determine user role:", error);
+      throw new Error("Unable to determine user type");
     }
   }
 
-  /**
-   * Create a new order
-   */
   async createOrder(orderData) {
     const user = auth.currentUser;
     if (!user) throw new Error("User must be authenticated");
 
     try {
-      const userCollection = await this.getUserCollection(user.uid);
+      const { collection } = await this.getUserRoleAndCollection();
       const orderId = `ORD${Date.now()}`;
-      const orderRef = doc(db, userCollection, user.uid, this.ordersSubcollection, orderId);
+      const orderRef = doc(db, collection, user.uid, this.ordersSubcollection, orderId);
 
       const order = {
         orderId,
         userId: user.uid,
+        userRole: collection === this.b2bCollection ? "B2B" : "B2C",
         status: "Active",
         createdAt: Timestamp.now(),
         ...orderData,
       };
 
       await setDoc(orderRef, order);
-      console.info(`✅ Order created: ${orderId}`);
+      console.log("Order created for", order.userRole, "user:", orderId);
       return { success: true, orderId, order };
     } catch (error) {
-      console.error("🔥 Error creating order:", error);
+      console.error("Error creating order:", error);
       throw error;
     }
   }
 
-  /**
-   * Get all orders for current user
-   */
   async getUserOrders() {
     const user = auth.currentUser;
     if (!user) throw new Error("User must be authenticated");
 
     try {
-      const userCollection = await this.getUserCollection(user.uid);
-      const ordersRef = collection(db, userCollection, user.uid, this.ordersSubcollection);
+      const { collection } = await this.getUserRoleAndCollection();
+      const ordersRef = collection(db, collection, user.uid, this.ordersSubcollection);
       const q = query(ordersRef, orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
+      const snapshot = await getDocs(q);
 
-      const orders = querySnapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-        date: docSnap.data().createdAt?.toDate?.() || new Date(),
+      return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().createdAt?.toDate() || new Date(),
       }));
-
-      return orders;
     } catch (error) {
-      console.error("🔥 Error fetching user orders:", error);
+      console.error("Error fetching orders:", error);
       throw error;
     }
   }
 
-  /**
-   * Subscribe to real-time order updates
-   */
   async subscribeToOrders(callback) {
     const user = auth.currentUser;
     if (!user) {
       callback([]);
-      return () => {};
+      return () => { };
     }
+
+    let collectionName = null;
 
     try {
-      const userCollection = await this.getUserCollection(user.uid);
-      const ordersRef = collection(db, userCollection, user.uid, this.ordersSubcollection);
-      const q = query(ordersRef, orderBy("createdAt", "desc"));
-
-      const unsubscribe = onSnapshot(
-        q,
-        (querySnapshot) => {
-          const orders = querySnapshot.docs.map((docSnap) => ({
-            id: docSnap.id,
-            ...docSnap.data(),
-            date: docSnap.data().createdAt?.toDate?.() || new Date(),
-          }));
-          callback(orders);
-        },
-        (error) => {
-          console.error("🔥 Error in orders subscription:", error);
-          callback([]);
-        }
-      );
-
-      return unsubscribe;
+      const result = await this.getUserRoleAndCollection();
+      collectionName = result.collection;
     } catch (error) {
-      console.error("🔥 Error setting up order listener:", error);
       callback([]);
-      return () => {};
+      return () => { };
     }
+
+    const ordersRef = collection(db, collectionName, user.uid, this.ordersSubcollection);
+    const q = query(ordersRef, orderBy("createdAt", "desc"));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const orders = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().createdAt?.toDate() || new Date(),
+        }));
+        callback(orders);
+      },
+      (error) => {
+        console.error("Orders subscription error:", error);
+        callback([]);
+      }
+    );
+
+    return unsubscribe;
   }
 
-  /**
-   * Update order status
-   */
   async updateOrderStatus(orderId, newStatus) {
     const user = auth.currentUser;
     if (!user) throw new Error("User must be authenticated");
 
     try {
-      const userCollection = await this.getUserCollection(user.uid);
-      const orderRef = doc(db, userCollection, user.uid, this.ordersSubcollection, orderId);
-
+      const { collection } = await this.getUserRoleAndCollection();
+      const orderRef = doc(db, collection, user.uid, this.ordersSubcollection, orderId);
       await setDoc(orderRef, { status: newStatus }, { merge: true });
-      console.info(`✅ Order status updated to ${newStatus}`);
       return true;
     } catch (error) {
-      console.error("🔥 Error updating order status:", error);
+      console.error("Error updating order:", error);
       throw error;
     }
   }
 }
 
-/**
- * Export a Singleton instance of the OrderService
- */
 const orderService = new OrderOperationalService();
 export default orderService;

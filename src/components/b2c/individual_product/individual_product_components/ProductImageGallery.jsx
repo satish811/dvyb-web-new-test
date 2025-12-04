@@ -26,39 +26,25 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     if (!images.length) return null;
 
     return (
-      <div className="relative w-full h-[400px] flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden">
-        {/* Main image */}
-        <img
-          src={images[currentIndex]}
-          alt={`Product ${currentIndex}`}
-          className="w-full h-full object-cover transition-transform duration-300 border"
-          onError={handleImageError}
-        />
+      <div className="flex flex-col w-full gap-3">
+        {/* Image Container */}
+        <div className="relative w-full h-[500px] md:h-[400px] flex items-center justify-center bg-gray-50 overflow-hidden">
+          {/* Main image */}
+          <img
+            src={images[currentIndex]}
+            alt={`Product ${currentIndex}`}
+            className="w-full h-full object-cover transition-transform duration-300"
+            onError={handleImageError}
+          />
+        </div>
 
-        {/* Left arrow */}
-        <button
-          onClick={goPrev}
-          className="absolute left-3 bg-white/70 p-2 rounded-full hover:bg-white shadow-md border"
-        >
-          <ChevronLeft size={20} />
-        </button>
-
-        {/* Right arrow */}
-        <button
-          onClick={goNext}
-          className="absolute right-3 bg-white/70 p-2 rounded-full hover:bg-white shadow-md border"
-        >
-          <ChevronRight size={20} />
-        </button>
-
-        {/* Dots Indicator */}
-        <div className="absolute bottom-3 flex gap-1">
+        {/* Dots Indicator - Below Image */}
+        <div className="flex justify-center gap-1.5 pb-2">
           {images.map((_, i) => (
             <div
               key={i}
-              className={`w-2 h-2 rounded-full border ${
-                i === currentIndex ? "bg-gray-800" : "bg-gray-400"
-              }`}
+              className={`w-2.5 h-2.5 rounded-full transition-colors ${i === currentIndex ? "bg-[#573131]" : "bg-[#573131]/30"
+                }`}
             />
           ))}
         </div>

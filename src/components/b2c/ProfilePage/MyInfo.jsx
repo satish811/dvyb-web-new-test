@@ -6,12 +6,16 @@ import b2cValidator from "../../../utils/B2CValidator";
 import B2BAddressValidator from "../../../utils/validators/b2bAddressValidator";
 import B2BAuthService from "../../../services/b2bAuthService";
 import B2BAddressService from "../../../services/b2bAddressService";
+import { Country, State, City } from "country-state-city";
+import LazyImageLoader from "../LazyImageLoader/LazyImageLoader";
 
 const MyInfo = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState("");
   const [loading, setLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+  const [selectedStateCode, setSelectedStateCode] = useState("");
 
   // B2C Data Structure
   const [b2cData, setB2cData] = useState({
@@ -28,8 +32,6 @@ const MyInfo = () => {
     username: "",
     email: "",
     mobile: "",
-    companyName: "",
-    businessType: "",
     pan: "",
     aadhaar: "",
     addresses: [],
@@ -47,13 +49,10 @@ const MyInfo = () => {
     city: "",
     stateProvince: "",
     zipPostalCode: "",
-    country: "India",
+    country: "",
   });
 
-  const [validationErrors, setValidationErrors] = useState({});
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({});
-
+  // Fetch user data on mount
   useEffect(() => {
     const getUserRoleAndData = async () => {
       if (!user?.uid) return;
@@ -66,46 +65,33 @@ const MyInfo = () => {
         try {
           const completeProfile = await B2BAuthService.getUserCompleteProfile(user.uid);
 
-          // Only set as B2B if we have valid B2B data with essential fields
           if (completeProfile && completeProfile.success && completeProfile.data) {
             const userData = completeProfile.data;
-            // Check if we have B2B-specific data that wouldn't exist for B2C
-            const hasB2BData = userData.companyName || userData.businessType || userData.pan;
+            const hasB2BData = userData.pan || userData.aadhaar;
 
             if (hasB2BData) {
               setUserRole("B2B");
               console.log("User is B2B with complete profile:", completeProfile.data);
 
-              // Fetch B2B addresses - FIXED: Use service directly
               const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
-              console.log("B2B Addresses response:", addressesResponse);
 
-              // Set B2B data from complete profile
               setB2bData({
                 username: userData.username || "",
                 email: userData.email || user.email || "",
                 mobile: userData.mobile || "",
-                companyName: userData.companyName || "",
-                businessType: userData.businessType || "",
                 pan: userData.pan || "",
                 aadhaar: userData.aadhaar || "",
                 addresses: addressesResponse.success ? addressesResponse.data : [],
               });
             } else {
-              // No B2B-specific data found, treat as B2C
-              console.log("No B2B data found, treating as B2C");
               setUserRole("B2C");
               await fetchB2CData();
             }
           } else {
-            // B2B profile fetch failed or returned no data
-            console.log("B2B profile fetch failed, treating as B2C");
             setUserRole("B2C");
             await fetchB2CData();
           }
         } catch (b2bError) {
-          // If B2B user not found or any error, default to B2C
-          console.log("B2B user not found or error, treating as B2C:", b2bError);
           setUserRole("B2C");
           await fetchB2CData();
         }
@@ -140,74 +126,6 @@ const MyInfo = () => {
     getUserRoleAndData();
   }, [user]);
 
-  // Real-time validation only for touched fields
-  useEffect(() => {
-    if (Object.keys(touchedFields).length > 0) {
-      validateForm();
-    }
-  }, [newAddress, touchedFields]);
-
-  const validateForm = async () => {
-    try {
-      const result = await B2BAddressValidator.validateCompleteAddress(newAddress);
-      const filteredErrors = {};
-      Object.keys(result.errors).forEach((field) => {
-        if (touchedFields[field]) {
-          filteredErrors[field] = result.errors[field];
-        }
-      });
-      setValidationErrors(filteredErrors);
-      setIsFormValid(result.isValid);
-    } catch (error) {
-      console.error("Validation error:", error);
-    }
-  };
-
-  const validateField = async (fieldName, value) => {
-    try {
-      let error = null;
-      switch (fieldName) {
-        case "firstName":
-          error = await B2BAddressValidator.validateFirstName(value);
-          break;
-        case "lastName":
-          error = await B2BAddressValidator.validateLastName(value);
-          break;
-        case "email":
-          error = await B2BAddressValidator.validateEmail(value);
-          break;
-        case "address":
-          error = await B2BAddressValidator.validateAddress(value);
-          break;
-        case "city":
-          error = await B2BAddressValidator.validateCity(value);
-          break;
-        case "stateProvince":
-          error = await B2BAddressValidator.validateStateProvince(value);
-          break;
-        case "zipPostalCode":
-          error = await B2BAddressValidator.validateZipPostalCode(value);
-          break;
-        case "country":
-          error = await B2BAddressValidator.validateCountry(value);
-          break;
-        default:
-          break;
-      }
-      if (touchedFields[fieldName]) {
-        setValidationErrors((prev) => ({ ...prev, [fieldName]: error }));
-      }
-      return error;
-    } catch (error) {
-      console.error(`Validation error for ${fieldName}:`, error);
-      return "Validation error occurred";
-    }
-  };
-
-  const markFieldAsTouched = (fieldName) => {
-    setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
-  };
-
   // B2C Handlers
   const handleB2cChange = (e) => {
     setB2cData({ ...b2cData, [e.target.name]: e.target.value });
@@ -218,17 +136,9 @@ const MyInfo = () => {
     setB2bData({ ...b2bData, [e.target.name]: e.target.value });
   };
 
-  const handleNewAddressChange = async (e) => {
+  const handleNewAddressChange = (e) => {
     const { name, value } = e.target;
-    setNewAddress((prev) => ({ ...prev, [name]: value }));
-    if (!touchedFields[name]) markFieldAsTouched(name);
-    setTimeout(() => {
-      if (touchedFields[name]) validateField(name, value);
-    }, 300);
-  };
-
-  const handleFieldBlur = (fieldName) => {
-    markFieldAsTouched(fieldName);
+    setNewAddress({ ...newAddress, [name]: value });
   };
 
   const saveUserData = async () => {
@@ -259,32 +169,23 @@ const MyInfo = () => {
     }
   };
 
-  const addOrUpdateAddress = async () => {
-    const finalValidation = await B2BAddressValidator.validateCompleteAddress(newAddress);
-    if (!finalValidation.isValid) {
-      const allFields = [
-        "firstName",
-        "lastName",
-        "email",
-        "address",
-        "city",
-        "stateProvince",
-        "zipPostalCode",
-        "country",
-      ];
-      const allTouched = {};
-      allFields.forEach((field) => {
-        allTouched[field] = true;
-      });
-      setTouchedFields(allTouched);
-      setValidationErrors(finalValidation.errors);
-      alert("Please fix the validation errors before saving.");
+  const addAddress = async () => {
+    const errors = [
+      b2cValidator.validateName(newAddress.firstName),
+      b2cValidator.validateAddress(newAddress.address),
+      b2cValidator.validateEmail(newAddress.email),
+      b2cValidator.validateCity(newAddress.city),
+      b2cValidator.validateState(newAddress.stateProvince),
+      b2cValidator.validateZip(newAddress.zipPostalCode),
+    ].filter(Boolean);
+
+    if (errors.length > 0) {
+      alert(errors[0]);
       return;
     }
 
     try {
       if (userRole === "B2B") {
-        // FIXED: Use service directly
         if (editingAddress) {
           await B2BAddressService.updateAddress(user.uid, "B2B", editingAddress.id, newAddress);
         } else {
@@ -299,7 +200,6 @@ const MyInfo = () => {
       }
       await refreshUserData();
       cancelAddressForm();
-      alert(editingAddress ? "Address updated successfully!" : "Address added successfully!");
     } catch (error) {
       console.error("Address save failed:", error);
       alert(error.message || "Failed to save address");
@@ -311,7 +211,6 @@ const MyInfo = () => {
     try {
       if (userRole === "B2B") {
         const completeProfile = await B2BAuthService.getUserCompleteProfile(user.uid);
-        // Fetch B2B addresses separately - FIXED: Use service directly
         const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
 
         if (completeProfile.success) {
@@ -321,8 +220,6 @@ const MyInfo = () => {
             username: userData.username || prev.username,
             email: userData.email || prev.email,
             mobile: userData.mobile || prev.mobile,
-            companyName: userData.companyName || prev.companyName,
-            businessType: userData.businessType || prev.businessType,
             pan: userData.pan || prev.pan,
             aadhaar: userData.aadhaar || prev.aadhaar,
             addresses: addressesResponse.success ? addressesResponse.data : prev.addresses,
@@ -348,7 +245,6 @@ const MyInfo = () => {
     if (!window.confirm("Are you sure you want to remove this address?")) return;
     try {
       if (userRole === "B2B") {
-        // FIXED: Use service directly
         await B2BAddressService.deleteAddress(user.uid, "B2B", address.id);
       } else {
         await userService.deleteAddress(user.uid, address.id);
@@ -364,7 +260,6 @@ const MyInfo = () => {
   const setDefaultAddress = async (address) => {
     try {
       if (userRole === "B2B") {
-        // FIXED: Use service directly
         await B2BAddressService.setDefaultAddress(user.uid, "B2B", address.id);
       } else {
         await userService.setDefaultAddress(user.uid, address.id);
@@ -379,6 +274,21 @@ const MyInfo = () => {
 
   const startEditAddress = (address) => {
     setEditingAddress(address);
+
+
+    const country = Country.getAllCountries().find(c => c.name === address.country);
+    const countryCode = country?.isoCode || "";
+
+
+    let stateCode = "";
+    if (countryCode && address.stateProvince) {
+      const state = State.getStatesOfCountry(countryCode).find(s => s.name === address.stateProvince);
+      stateCode = state?.isoCode || "";
+    }
+
+    setSelectedCountryCode(countryCode);
+    setSelectedStateCode(stateCode);
+
     setNewAddress({
       firstName: address.firstName || "",
       lastName: address.lastName || "",
@@ -387,13 +297,8 @@ const MyInfo = () => {
       city: address.city || "",
       stateProvince: address.stateProvince || "",
       zipPostalCode: address.zipPostalCode || "",
-      country: address.country || "India",
+      country: address.country || "",
     });
-    const allTouched = {};
-    Object.keys(newAddress).forEach((field) => {
-      allTouched[field] = true;
-    });
-    setTouchedFields(allTouched);
     setShowAddAddress(true);
   };
 
@@ -408,153 +313,120 @@ const MyInfo = () => {
       city: "",
       stateProvince: "",
       zipPostalCode: "",
-      country: "India",
+      country: "",
     });
-    setValidationErrors({});
-    setIsFormValid(false);
-    setTouchedFields({});
+    setSelectedCountryCode("");
+    setSelectedStateCode("");
   };
 
-  const getInputClassName = (fieldName) => {
-    const baseClass =
-      "w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500";
-    if (validationErrors[fieldName] && touchedFields[fieldName]) {
-      return `${baseClass} border-2 border-red-500 text-red-900`;
-    }
-    return `${baseClass} border border-gray-300 text-gray-900`;
-  };
-
-  // Loading state
   if (loading || roleLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin h-10 w-10 border-4 border-red-600 border-t-transparent rounded-full" />
+      <div className="flex  mt-44 items-center justify-center h-64">
+       < LazyImageLoader isProcessing={true} />
+        {/* <div className="animate-spin h-8 w-8 border-b-2 border-amber-400"></div> */}
       </div>
     );
   }
 
-  // Edit Profile Modal - Different for B2B and B2C
+  // User Details Edit Modal - Same design for both B2B and B2C
   if (editUserMode) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Edit Profile {userRole === "B2B" && "(B2B)"}
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-md mx-auto bg-white shadow-sm">
+          <div className="border-b border-gray-200 p-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {userRole === "B2B" ? "Business Details (B2B)" : "User Details"}
             </h2>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 space-y-4">
             {userRole === "B2B" ? (
-              // B2B Edit Form
-              <div className="grid md:grid-cols-2 gap-6">
+              // B2B Edit Form - Same design as B2C
+              <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                   <input
                     name="username"
                     value={b2bData.username}
                     onChange={handleB2bChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter username"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
                   <input
-                    value={b2bData.email}
+                    value={b2bData.mobile || "Not provided"}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 rounded-lg"
+                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Mobile number cannot be changed</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Mobile Number
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
-                    value={b2bData.mobile}
+                    value={b2bData.email || "Not provided"}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 rounded-lg"
+                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
                   <input
-                    name="companyName"
-                    value={b2bData.companyName}
-                    onChange={handleB2bChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="Enter company name"
+                    value={b2bData.pan || "Not provided"}
+                    disabled
+                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">PAN number cannot be changed</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Business Type
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Aadhaar Number</label>
                   <input
-                    name="businessType"
-                    value={b2bData.businessType}
-                    onChange={handleB2bChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="Enter business type"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">PAN Number</label>
-                  <input
-                    value={b2bData.pan}
+                    value={b2bData.aadhaar || "Not provided"}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 rounded-lg"
+                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Aadhaar number cannot be changed</p>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Aadhaar Number
-                  </label>
-                  <input
-                    value={b2bData.aadhaar}
-                    disabled
-                    className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 rounded-lg"
-                  />
-                </div>
-              </div>
+              </>
             ) : (
-              // B2C Edit Form
-              <div className="space-y-5">
+              // B2C Edit Form - Original design
+              <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
                     name="name"
                     value={b2cData.name}
                     onChange={handleB2cChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter your name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                   <input
+                    name="phoneNumber"
                     value={b2cData.phoneNumber}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-gray-600 rounded-lg"
+                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
+                    placeholder="Phone Number"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Phone number cannot be changed</p>
                 </div>
-              </div>
+              </>
             )}
 
-            <div className="flex gap-4 pt-6">
+            <div className="flex gap-3 pt-4">
               <button
                 onClick={saveUserData}
-                className="flex-1 bg-red-700 text-white py-3 rounded-lg font-medium hover:bg-red-800 transition"
+                className="flex-1 bg-red-700 text-white py-2.5 hover:bg-red-800 font-medium"
               >
-                Save Changes
+                Save
               </button>
               <button
                 onClick={() => setEditUserMode(false)}
-                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition"
+                className="flex-1 bg-white text-gray-700 py-2.5 border border-gray-300 hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
@@ -565,387 +437,372 @@ const MyInfo = () => {
     );
   }
 
-  // Add/Edit Address Modal
+  // Add/Edit Address Modal - Same design as the working version
   if (showAddAddress) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200 p-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingAddress ? "Edit Address" : "Add Your Shipping Address"}
-                {userRole === "B2B" && " (B2B)"}
-              </h2>
-              <button onClick={cancelAddressForm}>
-                <X size={24} className="text-gray-500 hover:text-gray-700" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">Fields marked with * are required</p>
+      <div className="min-h-screen p-4 bg-white">
+        <div className="max-w-2xl mx-auto">
+          {/* HEADER */}
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {editingAddress ? "Edit Shipping Address" : "Add Your Shipping Address"}
+              {userRole === "B2B" && " (B2B)"}
+            </h2>
           </div>
 
-          <div className="p-6 grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+          {/* FORM */}
+          <div className="md:p-6 flex flex-col md:grid md:grid-cols-2 gap-7">
+            {/* First Name */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                First Name *
+              </label>
               <input
                 type="text"
                 name="firstName"
                 value={newAddress.firstName}
                 onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("firstName")}
-                className={getInputClassName("firstName")}
-                placeholder="Enter first name"
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
+                required
               />
-              {validationErrors.firstName && touchedFields.firstName && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.firstName}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+            {/* Last Name */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                Last Name
+              </label>
               <input
                 type="text"
                 name="lastName"
                 value={newAddress.lastName}
                 onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("lastName")}
-                className={getInputClassName("lastName")}
-                placeholder="Enter last name"
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
               />
-              {validationErrors.lastName && touchedFields.lastName && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.lastName}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address *
+            {/* Email */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                Email Address
               </label>
               <input
                 type="email"
                 name="email"
                 value={newAddress.email}
                 onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("email")}
-                className={getInputClassName("email")}
-                placeholder="Enter email address"
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
               />
-              {validationErrors.email && touchedFields.email && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zip / Postal Code *
+            {/* Zip Code */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                Zip / Postal Code
               </label>
               <input
                 type="text"
                 name="zipPostalCode"
                 value={newAddress.zipPostalCode}
                 onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("zipPostalCode")}
-                className={getInputClassName("zipPostalCode")}
-                placeholder="Enter zip/postal code"
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
               />
-              {validationErrors.zipPostalCode && touchedFields.zipPostalCode && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.zipPostalCode}</p>
-              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
-              <input
-                type="text"
-                name="city"
-                value={newAddress.city}
-                onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("city")}
-                className={getInputClassName("city")}
-                placeholder="Enter city"
-              />
-              {validationErrors.city && touchedFields.city && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.city}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                State / Province *
-              </label>
-              <input
-                type="text"
-                name="stateProvince"
-                value={newAddress.stateProvince}
-                onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("stateProvince")}
-                className={getInputClassName("stateProvince")}
-                placeholder="Enter state/province"
-              />
-              {validationErrors.stateProvince && touchedFields.stateProvince && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.stateProvince}</p>
-              )}
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Landmark / Bridge Nearby *
+            {/* Address */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                Address / Landmark *
               </label>
               <textarea
                 name="address"
                 value={newAddress.address}
                 onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("address")}
-                rows="3"
-                className={getInputClassName("address")}
-                placeholder="Enter full address with landmark and street details"
+                rows="2"
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 resize-none"
+                required
               />
-              {validationErrors.address && touchedFields.address && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.address}</p>
-              )}
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+            {/* Country */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                Country *
+              </label>
               <select
-                name="country"
-                value={newAddress.country}
-                onChange={handleNewAddressChange}
-                onBlur={() => handleFieldBlur("country")}
-                className={getInputClassName("country")}
+                value={selectedCountryCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setSelectedCountryCode(code);
+                  const country = Country.getCountryByCode(code);
+                  setNewAddress(prev => ({
+                    ...prev,
+                    country: country?.name || "",
+                    stateProvince: "",
+                    city: ""
+                  }));
+                  setSelectedStateCode("");
+                }}
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                required
               >
-                <option value="India">India</option>
-                <option value="USA">USA</option>
-                <option value="UK">UK</option>
-                <option value="Canada">Canada</option>
-                <option value="Australia">Australia</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
+                <option value="">Select Country</option>
+                {Country.getAllCountries().map((country) => (
+                  <option key={country.isoCode} value={country.isoCode}>
+                    {country.name}
+                  </option>
+                ))}
               </select>
-              {validationErrors.country && touchedFields.country && (
-                <p className="text-red-500 text-xs mt-1">{validationErrors.country}</p>
-              )}
             </div>
 
-            <div className="md:col-span-2 flex gap-4 pt-4">
-              <button
-                onClick={addOrUpdateAddress}
-                disabled={!isFormValid && Object.keys(touchedFields).length > 0}
-                className={`flex-1 py-4 rounded-lg font-medium transition ${
-                  isFormValid || Object.keys(touchedFields).length === 0
-                    ? "bg-red-700 text-white hover:bg-red-800"
-                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                }`}
+            {/* State */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                State / Province *
+              </label>
+              <select
+                value={selectedStateCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setSelectedStateCode(code);
+                  const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
+                  setNewAddress(prev => ({
+                    ...prev,
+                    stateProvince: state?.name || "",
+                    city: ""
+                  }));
+                }}
+                disabled={!selectedCountryCode}
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                required
               >
-                {editingAddress ? "Update Address" : "Save Address"}
+                <option value="">Select State</option>
+                {selectedCountryCode &&
+                  State.getStatesOfCountry(selectedCountryCode).map((state) => (
+                    <option key={state.isoCode} value={state.isoCode}>
+                      {state.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+
+            {/* City */}
+            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
+              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
+                City *
+              </label>
+              <select
+                name="city"
+                value={newAddress.city}
+                onChange={handleNewAddressChange}
+                disabled={!selectedStateCode}
+                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                required
+              >
+                <option value="">Select City</option>
+                {selectedStateCode &&
+                  City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+
+
+            {/* BUTTONS */}
+            <div className="flex gap-3 pt-6 col-span-2">
+              <button
+                onClick={addAddress}
+                className="flex-1 bg-red-700 text-white py-2.5 hover:bg-red-800 font-medium"
+              >
+                {editingAddress ? "Update" : "Save"}
               </button>
               <button
                 onClick={cancelAddressForm}
-                className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-lg font-medium hover:bg-gray-200 transition"
+                className="flex-1 bg-white text-gray-700 py-2.5 border border-gray-300 hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
             </div>
-
-            {!isFormValid && Object.keys(validationErrors).length > 0 && (
-              <div className="md:col-span-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700 text-sm font-medium mb-2 flex items-center gap-2">
-                  <X size={16} />
-                  Please fix the following errors:
-                </p>
-                <ul className="text-red-600 text-xs list-disc list-inside space-y-1">
-                  {Object.entries(validationErrors).map(
-                    ([field, error]) =>
-                      error &&
-                      touchedFields[field] && (
-                        <li key={field}>
-                          <span className="font-medium">{field}:</span> {error}
-                        </li>
-                      )
-                  )}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // Main View - Different for B2B and B2C
+  // Main View - Same design for both B2B and B2C
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* User Details - Different for B2B and B2C */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b">
-            <h2 className="text-xl font-bold text-gray-900">
-              {userRole === "B2B" ? "Business Information (B2B)" : "Personal Information"}
+    <div className="min-h-screen mt-24 bg-gray-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* User Details Section */}
+        <div className="bg-white shadow-sm mb-4">
+          <div className="border-b border-gray-200 p-4">
+            <h2 className="text-base font-semibold text-gray-900">
+              {userRole === "B2B" ? "Business Information (B2B)" : "User Details"}
             </h2>
           </div>
 
-          <div className="p-6 space-y-6">
-            {userRole === "B2B" ? (
-              // B2B Display
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm text-gray-600">Username</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2bData.username || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Email</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2bData.email || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Mobile Number</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2bData.mobile || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Company Name</label>
-                  <p className="mt-1 text-lg font-medium text-blue-900">
-                    {b2bData.companyName || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Business Type</label>
-                  <p className="mt-1 text-lg font-medium text-blue-900">
-                    {b2bData.businessType || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">PAN Number</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2bData.pan || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Aadhaar Number</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2bData.aadhaar || "Not set"}
-                  </p>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm text-gray-600">Account Type</label>
-                  <p className="mt-1 text-lg font-medium text-blue-900">Business Account (B2B)</p>
-                </div>
-              </div>
-            ) : (
-              // B2C Display
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm text-gray-600">Full Name</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2cData.name || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Phone Number</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2cData.phoneNumber || "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Email</label>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    {b2cData.email || "Not set"}
-                  </p>
-                </div>
-                {b2cData.gender && (
+          <div className="p-6">
+            <div className="space-y-3 mb-4">
+              {userRole === "B2B" ? (
+                // B2B Display - Same design as B2C
+                <>
                   <div>
-                    <label className="text-sm text-gray-600">Gender</label>
-                    <p className="mt-1 text-lg font-medium text-gray-900">{b2cData.gender}</p>
+                    <label className="text-xs text-gray-500">Username</label>
+                    <input
+                      value={b2bData.username || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
                   </div>
-                )}
-              </div>
-            )}
+                  <div>
+                    <label className="text-xs text-gray-500">Mobile Number</label>
+                    <input
+                      value={b2bData.mobile || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Email</label>
+                    <input
+                      value={b2bData.email || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">PAN Number</label>
+                    <input
+                      value={b2bData.pan || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Aadhaar Number</label>
+                    <input
+                      value={b2bData.aadhaar || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                </>
+              ) : (
+                // B2C Display - Original design
+                <>
+                  <div>
+                    <label className="text-xs text-gray-500">Name</label>
+                    <input
+                      value={b2cData.name || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Phone Number</label>
+                    <input
+                      value={b2cData.phoneNumber || "Not provided"}
+                      disabled
+                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
 
             <button
               onClick={() => setEditUserMode(true)}
-              className="flex items-center gap-2 text-red-700 hover:text-red-800 font-medium"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 text-sm font-medium"
             >
-              <Edit2 size={18} />
-              Edit Profile
+              <Edit2 size={16} />
+              Edit
             </button>
           </div>
         </div>
 
-        {/* Addresses Section - Same for both but uses different data */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">
-              My Addresses {userRole === "B2B" && "(B2B)"}
-            </h2>
+        {/* Address Section - Same design for both */}
+        <div className="bg-white shadow-sm">
+          <div className="border-b border-gray-200 p-4 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900">Addresses</h2>
             <button
               onClick={() => setShowAddAddress(true)}
-              className="flex items-center gap-2 text-red-700 hover:text-red-800 font-medium"
+              className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 text-sm font-medium"
             >
-              <Plus size={20} />
-              Add New Address
+              <Plus size={18} />
+              Add New
             </button>
           </div>
 
-          <div className="p-6">
-            {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length === 0 ? (
-              <div className="text-center py-16 text-gray-500">
-                <p className="text-lg">No addresses saved yet</p>
-                <p className="text-sm mt-2">Add your first address to get started</p>
-                {userRole === "B2B" && (
-                  <p className="text-xs mt-1 text-blue-600">Business account detected</p>
-                )}
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-6">
-                {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((addr) => (
-                  <div
-                    key={addr.id}
-                    className="border border-gray-200 rounded-lg p-6 relative hover:shadow-md transition"
-                  >
-                    {addr.isDefault && (
-                      <span className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
+                (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
+                  <div key={address.id} className="bg-[#F6F6F6] p-8 relative">
+                    {address.isDefault && (
+                      <span className="absolute top-2 right-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
                         Default
                       </span>
                     )}
-                    <h3 className="font-semibold text-gray-900">
-                      {addr.firstName} {addr.lastName}
-                    </h3>
-                    {addr.email && <p className="text-sm text-gray-600 mt-1">{addr.email}</p>}
-                    <p className="text-gray-700 mt-3">{addr.address}</p>
-                    <p className="text-gray-600 text-sm mt-1">
-                      {addr.city}, {addr.stateProvince} {addr.zipPostalCode}
-                    </p>
-                    <p className="text-gray-600 text-sm">{addr.country}</p>
 
-                    <div className="flex gap-3 mt-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-medium text-gray-900 text-sm mb-1">
+                          {address.firstName} {address.lastName}
+                        </h3>
+                        {address.email && (
+                          <p className="text-sm pt-5 text-gray-600">{address.email}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-700 pt-4 leading-relaxed mb-2">
+                      {address.address}
+                    </p>
+
+                    {(address.city || address.stateProvince || address.zipPostalCode) && (
+                      <p className="text-sm text-gray-600 mb-4">
+                        {[address.city, address.stateProvince, address.zipPostalCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {address.country && ` - ${address.country}`}
+                      </p>
+                    )}
+
+                    <div className="flex gap-2 pt-5 mb-3">
+                      {!address.isDefault && (
+                        <button
+                          onClick={() => setDefaultAddress(address)}
+                          className="px-4 py-1.5 bg-white border border-[#807D7E] text-sm text-[#807D7E] hover:bg-gray-100 font-medium"
+                        >
+                          Set as Default Address
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex pt-5 gap-3">
+                      <button onClick={() => removeAddress(address)} className="text-s font-medium">
+                        Remove
+                      </button>
                       <button
-                        onClick={() => startEditAddress(addr)}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        onClick={() => startEditAddress(address)}
+                        className="text-sm font-medium"
                       >
                         Edit
                       </button>
-                      {!addr.isDefault && (
-                        <button
-                          onClick={() => setDefaultAddress(addr)}
-                          className="text-green-600 hover:text-green-800 font-medium text-sm"
-                        >
-                          Set Default
-                        </button>
-                      )}
-                      <button
-                        onClick={() => removeAddress(addr)}
-                        className="text-red-600 hover:text-red-800 font-medium text-sm"
-                      >
-                        Remove
-                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-12 text-gray-500">
+                  <p className="text-sm">No addresses added yet</p>
+                  <p className="text-xs mt-1">Click "Add New" to add your first address</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

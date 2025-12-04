@@ -32,7 +32,7 @@ const ProductGrid = ({ products, category }) => {
   return (
     <div className="flex flex-col">
       {/* Ads */}
-      <div className="mb-8">
+      <div className="mb-5">
         <AdsCarousel />
       </div>
 
@@ -67,7 +67,7 @@ const ProductGrid = ({ products, category }) => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {sortedAndFilteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

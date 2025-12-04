@@ -3,7 +3,14 @@ import { Heart, Share2 } from "lucide-react";
 import ShareCart from "../../../common/PopUps/ShareCart";
 import HeartColorsPopup from "../../../b2b/common/HeartColorPopup";
 
-const ProductTitleSection = ({ user, userRole, onAddToWishlist, addingToWishlist, product }) => {
+const ProductTitleSection = ({
+  user,
+  userRole,
+  onAddToWishlist,
+  onAddToB2BWishlist,
+  addingToWishlist,
+  product
+}) => {
   const { title, name, description } = product || {};
   const [isExpanded, setIsExpanded] = useState(false);
   const [openShare, setOpenShare] = useState(false);
@@ -55,19 +62,16 @@ const ProductTitleSection = ({ user, userRole, onAddToWishlist, addingToWishlist
    */
   const handleB2BWishlistConfirm = async (variants) => {
     try {
-      // Prepare product data for wishlist
-      const productData = {
-        name: product?.title || product?.name,
-        price: product?.price,
-        image: product?.imageUrls?.[0] || product?.image,
-        description: product?.description,
-        variants: variants,
-        isB2B: true,
-      };
+      if (!onAddToB2BWishlist) {
+        console.error("B2B wishlist handler not provided");
+        alert("B2B wishlist functionality not available");
+        return;
+      }
 
-      // Use the wishlist service with variants for B2B
-      await onAddToWishlist(product?.id, productData, variants);
-      setOpenHeartPopup(false);
+      const success = await onAddToB2BWishlist(variants);
+      if (success) {
+        setOpenHeartPopup(false);
+      }
     } catch (error) {
       console.error("Error adding B2B item to wishlist:", error);
       alert("Failed to add item to wishlist");
@@ -83,7 +87,6 @@ const ProductTitleSection = ({ user, userRole, onAddToWishlist, addingToWishlist
           {displayTitle && (
             <h1
               style={{
-                width: "384.12px",
                 fontFamily: "Outfit, sans-serif",
                 fontWeight: 500,
                 fontSize: "22px",
@@ -142,8 +145,8 @@ const ProductTitleSection = ({ user, userRole, onAddToWishlist, addingToWishlist
         {/* Description */}
         {description && (
           <div
+            className="w-full max-w-[384px]"
             style={{
-              width: "384.12px",
               fontFamily: "Outfit, sans-serif",
               fontWeight: 400,
               fontSize: "14px",
