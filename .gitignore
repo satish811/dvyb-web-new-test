@@ -21,6 +21,7 @@ dist-ssr
 firebase-debug.log
 
 
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
