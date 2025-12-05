@@ -256,37 +256,51 @@ export default async function handler(req, res) {
     }
 
     // ======== ENDPOINT 3: /api/tryon?mode=multi ========
-    if (mode === "multi") {
-      if (!modelFile) return res.status(400).json({ error: "model file missing" });
+// ======== ENDPOINT 3: /api/tryon?mode=multi ========
+if (mode === "multi") {
+  if (!modelFile) return res.status(400).json({ error: "model file missing" });
 
-      console.log(`🎨 Processing multi try-on...`);
-      const modelBase64 = modelFile.buffer.toString("base64");
+  console.log(`🎨 Processing multi try-on...`);
+  const modelBase64 = modelFile.buffer.toString("base64");
 
-      const garments = [
-        { name: "saree", url: "https://res.cloudinary.com/.../saree2.jpg" },
-        { name: "kurti", url: "https://res.cloudinary.com/.../kurti.webp" },
-        { name: "lehenga", url: "https://res.cloudinary.com/.../lehenga.png" },
-        { name: "anarkali", url: "https://res.cloudinary.com/.../anarkali.png" },
-      ];
+  // ⭐ UPDATED: Real Cloudinary URLs from your frontend
+  const garments = [
+    { 
+      name: "saree", 
+      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
+    },
+    { 
+      name: "kurti", 
+      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
+    },
+    { 
+      name: "lehenga", 
+      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
+    },
+    { 
+      name: "anarkali", 
+      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
+    },
+  ];
 
-      const results = {};
-      for (const g of garments) {
-        try {
-          console.log(`📸 Processing ${g.name}...`);
-          const garmentBase64 = await downloadAsBase64(g.url);
+  const results = {};
+  for (const g of garments) {
+    try {
+      console.log(`📸 Processing ${g.name}...`);
+      const garmentBase64 = await downloadAsBase64(g.url);
 
-          const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
+      const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
 
-          results[g.name] = `data:image/png;base64,${output}`;
-          console.log(`✅ ${g.name} done`);
-        } catch (err) {
-          console.error(`❌ ${g.name} failed:`, err.message);
-          results[g.name] = null;
-        }
-      }
-
-      return res.json({ success: true, results });
+      results[g.name] = `data:image/png;base64,${output}`;
+      console.log(`✅ ${g.name} done`);
+    } catch (err) {
+      console.error(`❌ ${g.name} failed:`, err.message);
+      results[g.name] = null;
     }
+  }
+
+  return res.json({ success: true, results });
+}
 
     // ======== ENDPOINT 4: test (Preview Modal test mode) ========
     if (mode === "test") {

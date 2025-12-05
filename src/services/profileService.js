@@ -1,6 +1,15 @@
-import { auth, db, storage, envConfig } from "../config";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { auth, db, storage, envConfig } from "../config"; 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import {
+  ref,
+  uploadString,
+  getDownloadURL,
+} from "firebase/storage";
 
 class ProfileService {
   constructor() {
@@ -21,13 +30,13 @@ class ProfileService {
   async uploadTryOnImage(userId, outfitType, base64Image) {
     try {
       const storageRef = ref(this.storage, `try-on/${userId}/${outfitType}_${Date.now()}.jpg`);
-
+      
       // Upload base64 string
-      await uploadString(storageRef, base64Image, "data_url");
-
+      await uploadString(storageRef, base64Image, 'data_url');
+      
       // Get download URL
       const downloadURL = await getDownloadURL(storageRef);
-
+      
       console.log(`✅ Uploaded ${outfitType} image to Storage`);
       return downloadURL;
     } catch (error) {
@@ -36,44 +45,65 @@ class ProfileService {
     }
   }
 
+
   // Add this method in profileService.js
+async getTryOnByDressType(dressType) {
+  try {
+    const user = this.auth.currentUser;
+    if (!user) return null;
 
-  async getTryOnByDressType(dressType) {
-    try {
-      const user = this.auth.currentUser;
-      if (!user) return null;
+    const userCollection = "b2c_users";
+    const userDocRef = doc(this.db, userCollection, user.uid);
+    const docSnap = await getDoc(userDocRef);
 
-      const userCollection = "b2c_users";
-      const userDocRef = doc(this.db, userCollection, user.uid);
-      const docSnap = await getDoc(userDocRef);
+    if (!docSnap.exists()) return null;
 
-      if (docSnap.exists()) {
-        const profile = docSnap.data().profile;
+    const profile = docSnap.data().profile;
+    if (!profile) return null;
+// ⭐ Normalize incoming
+let normalized = dressType?.toLowerCase().trim();
 
-        // Map dress type to saved outfit type
-        const normalizedType = dressType?.toLowerCase().trim();
+// ⭐ Fix hyphens to spaces
+normalized = normalized.replace(/-/g, " ");
 
-        // Mapping
-        let outfitKey = null;
-        if (normalizedType === "lehenga" || normalizedType === "wedding") {
-          outfitKey = "lehenga";
-        } else if (normalizedType === "saree") {
-          outfitKey = "saree";
-        } else if (normalizedType === "kurti" || normalizedType === "kurta set") {
-          outfitKey = "kurti";
-        } else if (normalizedType === "anarkali") {
-          outfitKey = "anarkali";
-        }
+console.log("🎯 Final normalized:", normalized);
 
-        // Return the saved image URL from Firebase Storage
-        return profile?.tryOnResults?.[outfitKey] || null;
-      }
-      return null;
-    } catch (error) {
-      console.error("❌ Error fetching try-on by dress type:", error);
-      return null;
-    }
+// ⭐ Updated mapping table
+const map = {
+  lehenga: "lehenga",
+  wedding: "lehenga",
+
+  saree: "saree",
+  sari: "saree",
+
+  kurti: "kurti",
+  kurta: "kurti",
+  kurtha: "kurti",
+  "kurta set": "kurti",
+  "kurtha set": "kurti",
+  "kurta sets": "kurti",
+  "kurtha sets": "kurti",
+
+  anarkali: "anarkali",
+  anarkalis: "anarkali",
+};
+
+const outfitKey = map[normalized] || null;
+
+console.log("🎯 Mapped Outfit Key:", outfitKey);
+console.log("🎯 Now Stored Results:", profile?.tryOnResults);
+
+if (!outfitKey) return null;
+
+return profile?.tryOnResults?.[outfitKey] || null;
+
+  } catch (error) {
+    console.error("❌ Error fetching try-on by dress type:", error);
+    return null;
   }
+}
+
+
 
   async saveProfile(profileData) {
     try {
@@ -168,12 +198,12 @@ class ProfileService {
 
       if (docSnap.exists()) {
         const profile = docSnap.data().profile || null;
-
+        
         // Get photo from localStorage
         if (profile && profile.hasPhoto) {
           profile.photoUrl = localStorage.getItem(`userPhoto_${user.uid}`);
         }
-
+        
         return profile;
       }
       return null;
