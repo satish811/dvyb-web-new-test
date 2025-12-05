@@ -386,7 +386,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
   const performTryOn = async () => {
     const { modelImage, garmentImage, garmentName } = tryOnData || {};
-    if (!modelImage || !garmentImage) return;
+    if (!modelImage || !garmentImage || !garmentName) return;
 
     setIsProcessing(true);
     setErrorMsg("");

@@ -42,9 +42,11 @@ async function downloadAsBase64(url) {
 
 async function generateTryOn(modelBase64, garmentBase64, outfitType) {
 
+ const lowerType = (outfitType || "").toLowerCase();
 
-  const isSaree = garmentName.toLowerCase() === 'saree';
-  const isBackgroundSwap = garmentName.toLowerCase() === 'background-swap';
+  const isSaree = lowerType === "saree";
+  const isBackgroundSwap = lowerType === "background-swap";
+
 
   const prompt = isBackgroundSwap ? `
 You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
