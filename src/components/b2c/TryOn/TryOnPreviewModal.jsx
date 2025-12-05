@@ -80,7 +80,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   }, [currentIndex]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {}, 30000); // Change from 35000 to 30000 (30 seconds)
+    const timer = setTimeout(() => { }, 30000); // Change from 35000 to 30000 (30 seconds)
 
     return () => clearTimeout(timer);
   }, []);
@@ -383,6 +383,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     { id: "trees", name: "Trees", image: bg3 },
   ];
 
+
   const performTryOn = async () => {
     const { modelImage, garmentImage, garmentName } = tryOnData || {};
     if (!modelImage || !garmentImage) return;
@@ -390,66 +391,65 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     setIsProcessing(true);
     setErrorMsg("");
     setTryOnResult(null);
-    setTryOnResultNoBg(null);
 
     try {
-      // Convert data URLs to blobs
-      const modelBlob = await fetch(modelImage).then((r) => r.blob());
-      const garmentBlob = await fetch(garmentImage).then((r) => r.blob());
-
       const formData = new FormData();
-      formData.append("model", modelBlob, "model.png");
-      formData.append("garment", garmentBlob, "garment.png"); // ← CHANGED: Send as file
+
+      // Convert modelImage to File — SAME AS working function
+      const modelBlob = await fetch(modelImage).then(r => r.blob());
+      formData.append("model", modelBlob, "user.jpg");
+
+      // Send garment as URL
+      formData.append("garmentUrl", garmentImage);
+
+      // Outfit type (saree / lehenga / gown etc)
       formData.append("outfitType", garmentName || "saree");
 
-      console.log("Calling Gemini Try-On API...");
+      console.log("🚀 Performing try-on using LIVE endpoint...");
 
-      const response = await fetch("/api/test-tryon", {
-        // ← CHANGED: Use mode=test
+      const response = await fetch("/api/tryon?mode=single", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`Server error: ${err}`);
+        const errData = await response.json();
+        throw new Error(errData.error || `Server error: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("🎯 Try-on API response:", data);
 
       if (data.success && data.result) {
         const resultUrl = data.result;
         setTryOnResult(resultUrl);
 
-        // Auto remove background
-        setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
+        console.log("✨ Try-on completed:", resultUrl);
 
-        // Save to backend gallery
-        try {
-          await saveTryOnResult({
-            ...tryOnData,
-            tryOnResult: resultUrl,
-            is3D: false,
-          });
-          toast.success("Try-on saved to your gallery!");
-        } catch (error) {
-          console.error("Failed to save try-on:", error);
+        // Optional same features
+        if (is3DMode) {
+          setTimeout(() => generateVideo(resultUrl), 1000);
         }
 
-        // Auto-generate 3D video
-        if (is3DMode && resultUrl) {
-          setTimeout(() => generateVideo(resultUrl), 1500);
-        }
+        setTimeout(async () => {
+          await saveToGallery(resultUrl);
+        }, 1200);
+
       } else {
-        throw new Error(data.error || "No result from server");
+        throw new Error(data.error || "No try-on result received");
       }
+
     } catch (error) {
-      console.error("Try-On failed:", error);
-      setErrorMsg(error.message || "AI try-on failed. Please try again.");
+      console.error("❌ Modal TryOn Error:", error);
+      setErrorMsg(error.message || "Try-on failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
+
+
+
+
 
   //it worked last time
   // const performTryOn = async () => {
@@ -1094,21 +1094,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         <div className="flex gap-4 mb-5  border-b p-1 bg-[#F0E0E0] border-gray-200">
           <button
             onClick={() => setSelectedTab("colours")}
-            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${
-              selectedTab === "colours"
+            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${selectedTab === "colours"
                 ? "text-primary  bg-white border-gray-900"
                 : "text-primary hover:text-hoverBg"
-            }`}
+              }`}
           >
             Colours
           </button>
           <button
             onClick={() => setSelectedTab("fabrics")}
-            className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${
-              selectedTab === "fabrics"
+            className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${selectedTab === "fabrics"
                 ? "text-gray-900  bg-white border-gray-900"
                 : "text-gray-500 hover:text-hoverBg"
-            }`}
+              }`}
           >
             Fabrics
           </button>
@@ -1126,11 +1124,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={color.name}
                   onClick={() => viewMode === "2D" && setSelectedColor(color.name)}
                   disabled={viewMode === "3D"}
-                  className={`aspect-square rounded-lg transition-all ${
-                    selectedColor === color.name
+                  className={`aspect-square rounded-lg transition-all ${selectedColor === color.name
                       ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
                       : "hover:scale-105 border border-gray-200"
-                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                    } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
                   style={{ backgroundColor: color.color }}
                 />
               ))}
@@ -1146,11 +1143,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 key={fabric.id}
                 onClick={() => viewMode === "2D" && setSelectedFabric(fabric.id)}
                 disabled={viewMode === "3D"}
-                className={`w-full p-3 rounded-lg text-left transition-all ${
-                  selectedFabric === fabric.id
+                className={`w-full p-3 rounded-lg text-left transition-all ${selectedFabric === fabric.id
                     ? "bg-gray-900 text-white"
                     : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
-                } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="font-medium text-sm mb-1">{fabric.name}</div>
                 <div
@@ -1168,14 +1164,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                  }`}
               />
             </button>
           </div>
@@ -1199,11 +1193,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={bg.id}
                   onClick={() => changeBackground(bg.id)}
                   disabled={!tryOnResultNoBg || isChangingBackground}
-                  className={`relative rounded-lg overflow-hidden transition-all ${
-                    selectedBackground === bg.id
+                  className={`relative rounded-lg overflow-hidden transition-all ${selectedBackground === bg.id
                       ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
                       : "hover:scale-105 border border-gray-200"
-                  } ${!tryOnResultNoBg ? "opacity-50 cursor-not-allowed" : ""}`}
+                    } ${!tryOnResultNoBg ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <div className="aspect-square">
                     <img
@@ -1242,11 +1235,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${
-                isInWishlistState
+              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${isInWishlistState
                   ? " text-primary pl-3 "
                   : "bg-white border-2 justify-center border-primary text-primary"
-              }`}
+                }`}
             >
               <Heart
                 className={`w-5 h-5 ${isInWishlistState ? "fill-current text-red-600" : ""}`}
@@ -1278,14 +1270,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                  }`}
               />
             </button>
           </div>
@@ -1299,21 +1289,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           <div className="flex gap-4 mb-4 border-b border-gray-200">
             <button
               onClick={() => setSelectedTab("colours")}
-              className={`pb-2 text-sm font-medium ${
-                selectedTab === "colours"
+              className={`pb-2 text-sm font-medium ${selectedTab === "colours"
                   ? "text-gray-900 border-b-2 border-gray-900"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Colours
             </button>
             <button
               onClick={() => setSelectedTab("fabrics")}
-              className={`pb-2 text-sm font-medium ${
-                selectedTab === "fabrics"
+              className={`pb-2 text-sm font-medium ${selectedTab === "fabrics"
                   ? "text-gray-900 border-b-2 border-gray-900"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Fabrics
             </button>
@@ -1330,11 +1318,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
-                    className={`aspect-square rounded-lg ${
-                      selectedColor === color.name
+                    className={`aspect-square rounded-lg ${selectedColor === color.name
                         ? "ring-2 ring-gray-800 ring-offset-2"
                         : "border border-gray-200"
-                    }`}
+                      }`}
                     style={{ backgroundColor: color.color }}
                   />
                 ))}
@@ -1349,11 +1336,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 <button
                   key={fabric.id}
                   onClick={() => setSelectedFabric(fabric.id)}
-                  className={`w-full p-3 rounded-lg text-left ${
-                    selectedFabric === fabric.id
+                  className={`w-full p-3 rounded-lg text-left ${selectedFabric === fabric.id
                       ? "bg-gray-900 text-white"
                       : "bg-gray-50 border border-gray-200"
-                  }`}
+                    }`}
                 >
                   <div className="text-sm font-medium">{fabric.name}</div>
                   <div
@@ -1377,11 +1363,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={bg.id}
                   onClick={() => changeBackground(bg.id)}
                   disabled={!tryOnResultNoBg || isChangingBackground}
-                  className={`relative rounded-lg overflow-hidden ${
-                    selectedBackground === bg.id
+                  className={`relative rounded-lg overflow-hidden ${selectedBackground === bg.id
                       ? "ring-2 ring-gray-800 ring-offset-2"
                       : "border border-gray-200"
-                  } ${!tryOnResultNoBg ? "opacity-50" : ""}`}
+                    } ${!tryOnResultNoBg ? "opacity-50" : ""}`}
                 >
                   <div className="aspect-square">
                     <img src={bg.image} alt={bg.name} className="w-full h-full object-cover" />
@@ -1410,11 +1395,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${
-                isInWishlistState
+              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${isInWishlistState
                   ? "bg-red-50 border-2 border-red-500 text-red-500"
                   : "border-2 border-gray-300 text-gray-700"
-              }`}
+                }`}
             >
               <Heart className={`w-4 h-4 ${isInWishlistState ? "fill-current" : ""}`} />
               Wishlist
