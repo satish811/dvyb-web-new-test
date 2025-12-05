@@ -7,7 +7,7 @@ export const config = {
 };
 
 // ============ MULTER SETUP ============
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
 });
@@ -41,26 +41,87 @@ async function downloadAsBase64(url) {
 }
 
 async function generateTryOn(modelBase64, garmentBase64, outfitType) {
-  const isSaree = outfitType?.toLowerCase() === "saree";
 
-  const prompt = `
-Dress the person with strict photorealism.
 
-${
-  isSaree
-    ? `
-SAREE RULES:
-- Nivi style
-- Pallu over left shoulder
-- Accurate pleats, folds, borders
-`
-    : `
-GARMENT RULES:
-- Maintain fabric, color, texture
-`
-}
-OUTPUT: One realistic image only.
+  const isSaree = garmentName.toLowerCase() === 'saree';
+  const isBackgroundSwap = garmentName.toLowerCase() === 'background-swap';
+
+  const prompt = isBackgroundSwap ? `
+You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
+
+CORE TASK:
+- Take the person from the first image (with transparent/removed background)
+- Place them realistically into the background scene from the second image
+- Make it look like the person is actually standing/present in that location
+
+CRITICAL REQUIREMENTS:
+1. PRESERVE THE PERSON 100%:
+   - Keep their EXACT pose, outfit, face, body, and all details unchanged
+   - Do NOT modify their clothing, appearance, or any aspect of them
+   - Only change the background/environment around them
+
+2. NATURAL INTEGRATION:
+   - Match lighting direction and intensity from the background scene
+   - Add appropriate shadows on the ground/floor where person stands
+   - Adjust color temperature to match the scene (warm/cool tones)
+   - Ensure perspective matches (person's size should fit the scene naturally)
+   - Add subtle ambient occlusion where person meets the ground
+
+3. DEPTH & REALISM:
+   - If background has depth of field, apply slight blur to match
+   - Ensure person's edges blend naturally (no harsh cutouts)
+   - Add reflected light from the environment onto the person
+   - Match the scene's atmosphere (indoor/outdoor, time of day)
+
+4. PROHIBITED:
+   - NO changes to the person's clothing, face, or body
+   - NO text, watermarks, or multiple images
+   - NO floating or unrealistic placement
+   - NEVER return the unchanged reference image
+
+OUTPUT:
+ONLY one high-resolution inline_data image showing the person naturally integrated into the new background scene.
+NO text, JSON, explanations, or additional content.
+` : `
+You are performing a STRICT photo-realistic virtual try-on. Dress the person in the EXACT garment from the reference image.
+
+CORE TASK:
+- Replace ONLY the person's clothing with the garment from the reference image
+- Preserve person's exact face, skin tone, hair, body shape, pose, lighting, shadows, and background 100% unchanged
+
+GARMENT-SPECIFIC GUIDELINES:
+${isSaree ? `
+SAREE REQUIREMENTS:
+- Drape saree in Nivi style (most common): pleats tucked at waist, pallu flowing naturally over LEFT shoulder
+- Create 8-10 realistic pleats at waist with proper folds/shadows
+- Show fitted blouse underneath pallu (match reference blouse color/style)
+- Saree length reaches ankles; pallu extends to mid-back
+- Replicate ALL fabric texture, borders, embroidery, patterns exactly from reference
+` : `
+GENERAL GARMENT REQUIREMENTS:
+- Adapt garment to fit person's exact pose/body naturally
+- Match fabric material, color, texture, patterns, sleeves, neckline, length precisely
+- Ensure realistic draping following body curves/gravity
+`}
+
+UNIVERSAL REALISM RULES:
+- Perfect edge blending (NO floating, jagged, or visible seams)
+- Fabric follows body's exact perspective/curvature
+- Lighting/shadows match original image completely
+- Photo-realistic quality, high-resolution
+
+STRICTLY PROHIBITED:
+- NO changes to face, expression, hair, body, pose, or background
+- NO added jewelry, accessories, makeup, or props
+- NO text, watermarks, or multiple images
+- NEVER return unchanged reference image
+
+OUTPUT:
+ONLY one high-resolution inline_data image of the person wearing the garment correctly.
+NO text, JSON, explanations, or additional content.
 `;
+
+
 
   const payload = {
     contents: [
@@ -109,10 +170,10 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
     try {
       return await generateTryOn(m, g, type);
     } catch (err) {
-      const isRateLimit = err.response?.status === 429 || 
-                         err.response?.status === 503 ||
-                         err.message?.includes('quota');
-      
+      const isRateLimit = err.response?.status === 429 ||
+        err.response?.status === 503 ||
+        err.message?.includes('quota');
+
       if (isRateLimit && i < max) {
         await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
         continue;
