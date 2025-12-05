@@ -38,7 +38,7 @@ const BlouseFilter = () => {
     { name: "Padded Blouse", count: 10 },
     { name: "Backless Blouse", count: 13 },
     { name: "Peplum Blouse", count: 5 },
-    { name: "Crop Blouse", count: 16 }
+    { name: "Crop Blouse", count: 16 },
   ];
 
   const isChecked = (blouseName) => {

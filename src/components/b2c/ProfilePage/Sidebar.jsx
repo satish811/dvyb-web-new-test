@@ -38,15 +38,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const profileCreationItem = {
     id: "profile-creation",
     label: "Profile Creation",
-    icon: <FaUserPlus />
+    icon: <FaUserPlus />,
   };
 
   // Safe URL creation helper
   const safeGetUserCompleteProfile = async (uid) => {
     try {
       // Ensure uid is valid
-      if (!uid || typeof uid !== 'string') {
-        throw new Error('Invalid user ID');
+      if (!uid || typeof uid !== "string") {
+        throw new Error("Invalid user ID");
       }
 
       return await B2BAuthService.getUserCompleteProfile(uid);
@@ -110,16 +110,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           console.log("ℹ️ [Sidebar] No B2C user data found");
           // Try to get basic user info from auth
           setData({
-            name: user.displayName || user.email?.split('@')[0] || "User",
-            email: user.email || ""
+            name: user.displayName || user.email?.split("@")[0] || "User",
+            email: user.email || "",
           });
         }
       } catch (error) {
         console.error("❌ [Sidebar] Error fetching B2C data:", error);
         // Fallback to basic auth info
         setData({
-          name: user.displayName || user.email?.split('@')[0] || "User",
-          email: user.email || ""
+          name: user.displayName || user.email?.split("@")[0] || "User",
+          email: user.email || "",
         });
       }
     };
@@ -142,7 +142,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       console.log("➖ [Sidebar] Skipping Profile Creation for B2B user");
     }
 
-    console.log("📋 [Sidebar] Final menu items:", menuItems.map(item => item.label));
+    console.log(
+      "📋 [Sidebar] Final menu items:",
+      menuItems.map((item) => item.label)
+    );
     return menuItems;
   };
 
@@ -192,7 +195,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             Hello {data?.name || data?.username || "User"}
           </h2>
           {userRole && (
-            <div className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>
+            <div
+              className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+            >
               {userRole === "B2B" ? "Business Account" : "Personal Account"}
             </div>
           )}
@@ -204,8 +209,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             <li
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`cursor-pointer flex items-center gap-3 p-3 rounded-md transition-all duration-200 ${activeTab === item.id ? "text-primary font-semibold" : "text-gray-700"
-                }`}
+              className={`cursor-pointer flex items-center gap-3 p-3 rounded-md transition-all duration-200 ${
+                activeTab === item.id ? "text-primary font-semibold" : "text-gray-700"
+              }`}
             >
               {item.icon && <span className="text-lg">{item.icon}</span>}
               <span>{item.label}</span>
@@ -232,7 +238,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               MY ACCOUNT
             </h2>
             {userRole && (
-              <div className={`px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>
+              <div
+                className={`px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+              >
                 {userRole}
               </div>
             )}

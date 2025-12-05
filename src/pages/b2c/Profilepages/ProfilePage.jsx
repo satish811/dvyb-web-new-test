@@ -10,7 +10,6 @@ import WishlistPage from "../WishlistPage/WishlistPage";
 import TryOnGallery from "../../../components/b2c/ProfilePage/TryOnGallery";
 import MyProfile from "../ProfileCreation/MyProfile";
 
-
 const ProfilePage = () => {
   // const [activeTab, setActiveTab] = useState("menu");
   const userId = "USER_ID_HERE";
@@ -23,7 +22,13 @@ const ProfilePage = () => {
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl) {
-      const validTabs = ["my-info", "my-orders", "wishlist", "my-tryon-gallery","profile-creation"];
+      const validTabs = [
+        "my-info",
+        "my-orders",
+        "wishlist",
+        "my-tryon-gallery",
+        "profile-creation",
+      ];
       if (validTabs.includes(tabFromUrl)) {
         setActiveTab(tabFromUrl);
       } else {
@@ -46,8 +51,8 @@ const ProfilePage = () => {
         return "My Wishlist";
       case "my-tryon-gallery":
         return "My Try-On Gallery";
-       case "profile-creation":
-  return "Profile Creation";
+      case "profile-creation":
+        return "Profile Creation";
       default:
         return "";
     }
@@ -58,20 +63,20 @@ const ProfilePage = () => {
       {/* DESKTOP VIEW - Sidebar + Content */}
       <div className="hidden md:flex min-h-screen mt-0 bg-gray-50">
         {/* Fixed Sidebar */}
-    {activeTab !== "profile-creation" && (
-  <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-)}
+        {activeTab !== "profile-creation" && (
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        )}
 
         {/* Main Content Area - offset by sidebar width */}
-      <div className={`flex-1 p-6 min-h-screen -mt-28 ${activeTab !== "profile-creation" ? "ml-64" : ""}`}>
-
+        <div
+          className={`flex-1 p-6 min-h-screen -mt-28 ${activeTab !== "profile-creation" ? "ml-64" : ""}`}
+        >
           <div className="max-w-7xl mx-auto">
             {activeTab === "my-info" && <MyInfo userId={userId} />}
             {activeTab === "my-orders" && <MyOrders />}
             {activeTab === "wishlist" && <WishlistPage />}
             {activeTab === "my-tryon-gallery" && <TryOnGallery />}
-          {activeTab === "profile-creation" &&  <MyProfile />}
-
+            {activeTab === "profile-creation" && <MyProfile />}
           </div>
         </div>
       </div>
@@ -99,7 +104,6 @@ const ProfilePage = () => {
               {activeTab === "wishlist" && <WishlistPage />}
               {activeTab === "my-tryon-gallery" && <TryOnGallery />}
               {activeTab === "profile-creation" && <MyProfile />}
-
             </div>
           </div>
         )}

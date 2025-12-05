@@ -101,15 +101,32 @@ const Sidebar = ({ products = [] }) => {
       >
         <div className="flex-1 overflow-y-auto p-5 space-y-7 no-scrollbar">
           {/* ← ALL YOUR FILTERS — NOW SCROLL PERFECTLY */}
-          <FilterSection title="CATEGORY" items={customCategories} searchable defaultOpen={true} filterType="categories" />
+          <FilterSection
+            title="CATEGORY"
+            items={customCategories}
+            searchable
+            defaultOpen={true}
+            filterType="categories"
+          />
           <BlouseFilter />
           {!isSareeCategory && (
-            <FilterSection title="SIZE" items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes} defaultOpen={true} filterType="sizes" />
+            <FilterSection
+              title="SIZE"
+              items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes}
+              defaultOpen={true}
+              filterType="sizes"
+            />
           )}
-          {filterData.colors.length > 0 && <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />}
+          {filterData.colors.length > 0 && (
+            <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />
+          )}
           <DiscountFilter title="DISCOUNT" discounts={customDiscounts} defaultOpen={true} />
           {filterData.priceRange.max > 0 && (
-            <PriceRange min={filterData.priceRange.min} max={filterData.priceRange.max} defaultOpen={true} />
+            <PriceRange
+              min={filterData.priceRange.min}
+              max={filterData.priceRange.max}
+              defaultOpen={true}
+            />
           )}
         </div>
 

@@ -1,7 +1,6 @@
-// utils/scroll.js
 export const scrollLeft = (id) => {
   const element = document.getElementById(id);
-  console.log("Scroll element:", element); // Debug log
+  console.log("Scroll element:", element);
   if (element) {
     element.scrollBy({
       left: -300,
@@ -14,7 +13,7 @@ export const scrollLeft = (id) => {
 
 export const scrollRight = (id) => {
   const element = document.getElementById(id);
-  console.log("Scroll element:", element); // Debug log
+  console.log("Scroll element:", element);
   if (element) {
     element.scrollBy({
       left: 300,

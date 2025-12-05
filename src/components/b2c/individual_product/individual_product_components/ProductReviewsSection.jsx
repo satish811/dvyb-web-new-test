@@ -118,8 +118,8 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
   const currentAvgRating =
     displayReviews.length > 0
       ? (
-        displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
-      ).toFixed(1)
+          displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
+        ).toFixed(1)
       : 0;
 
   // Handle review submission

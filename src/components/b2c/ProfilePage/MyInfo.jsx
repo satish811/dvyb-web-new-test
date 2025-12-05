@@ -275,14 +275,14 @@ const MyInfo = () => {
   const startEditAddress = (address) => {
     setEditingAddress(address);
 
-
-    const country = Country.getAllCountries().find(c => c.name === address.country);
+    const country = Country.getAllCountries().find((c) => c.name === address.country);
     const countryCode = country?.isoCode || "";
-
 
     let stateCode = "";
     if (countryCode && address.stateProvince) {
-      const state = State.getStatesOfCountry(countryCode).find(s => s.name === address.stateProvince);
+      const state = State.getStatesOfCountry(countryCode).find(
+        (s) => s.name === address.stateProvince
+      );
       stateCode = state?.isoCode || "";
     }
 
@@ -322,7 +322,7 @@ const MyInfo = () => {
   if (loading || roleLoading) {
     return (
       <div className="flex  mt-44 items-center justify-center h-64">
-       < LazyImageLoader isProcessing={true} />
+        <LazyImageLoader isProcessing={true} />
         {/* <div className="animate-spin h-8 w-8 border-b-2 border-amber-400"></div> */}
       </div>
     );
@@ -354,7 +354,9 @@ const MyInfo = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Mobile Number
+                  </label>
                   <input
                     value={b2bData.mobile || "Not provided"}
                     disabled
@@ -381,7 +383,9 @@ const MyInfo = () => {
                   <p className="text-xs text-gray-500 mt-1">PAN number cannot be changed</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Aadhaar Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Aadhaar Number
+                  </label>
                   <input
                     value={b2bData.aadhaar || "Not provided"}
                     disabled
@@ -404,7 +408,9 @@ const MyInfo = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
                   <input
                     name="phoneNumber"
                     value={b2cData.phoneNumber}
@@ -535,11 +541,11 @@ const MyInfo = () => {
                   const code = e.target.value;
                   setSelectedCountryCode(code);
                   const country = Country.getCountryByCode(code);
-                  setNewAddress(prev => ({
+                  setNewAddress((prev) => ({
                     ...prev,
                     country: country?.name || "",
                     stateProvince: "",
-                    city: ""
+                    city: "",
                   }));
                   setSelectedStateCode("");
                 }}
@@ -566,10 +572,10 @@ const MyInfo = () => {
                   const code = e.target.value;
                   setSelectedStateCode(code);
                   const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
-                  setNewAddress(prev => ({
+                  setNewAddress((prev) => ({
                     ...prev,
                     stateProvince: state?.name || "",
-                    city: ""
+                    city: "",
                   }));
                 }}
                 disabled={!selectedCountryCode}
@@ -582,8 +588,7 @@ const MyInfo = () => {
                     <option key={state.isoCode} value={state.isoCode}>
                       {state.name}
                     </option>
-                  ))
-                }
+                  ))}
               </select>
             </div>
 
@@ -606,11 +611,9 @@ const MyInfo = () => {
                     <option key={city.name} value={city.name}>
                       {city.name}
                     </option>
-                  ))
-                }
+                  ))}
               </select>
             </div>
-
 
             {/* BUTTONS */}
             <div className="flex gap-3 pt-6 col-span-2">

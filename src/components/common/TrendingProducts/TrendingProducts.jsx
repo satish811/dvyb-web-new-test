@@ -6,11 +6,7 @@ import { getDailyRandomProducts } from "../../utils/getDailyRandomProducts";
 import ProductCard from "../../product/ProductCard";
 import { useNavigate } from "react-router-dom";
 
-const TrendingProducts = ({
-  onClose,
-  column = 4,
-  heading = "Trending Products",
-}) => {
+const TrendingProducts = ({ onClose, column = 4, heading = "Trending Products" }) => {
   const { products } = useProducts();
   const [dailyPicks, setDailyPicks] = useState([]);
   const navigate = useNavigate();
@@ -39,11 +35,7 @@ const TrendingProducts = ({
     <div className="p-4 sm:p-5 w-full">
       <div className="flex items-start justify-between mb-4">
         <div>
-          {heading && (
-            <h2 className="text-base sm:text-lg md:text-xl font-semibold">
-              {heading}
-            </h2>
-          )}
+          {heading && <h2 className="text-base sm:text-lg md:text-xl font-semibold">{heading}</h2>}
         </div>
 
         {/* View All Button */}
@@ -68,59 +60,57 @@ const TrendingProducts = ({
         "
         style={gridStyle} /* Desktop dynamic override */
       >
-        {dailyPicks && dailyPicks.length > 0 ? (
-          dailyPicks.map((product) => (
-            <article
-              key={product.id}
-              className="
+        {dailyPicks && dailyPicks.length > 0
+          ? dailyPicks.map((product) => (
+              <article
+                key={product.id}
+                className="
                 bg-white border border-slate-100 overflow-hidden shadow-sm 
                 transition flex flex-col cursor-pointer group
               "
-              style={{ minHeight: 340, zIndex: 10 }}
-              onClick={() => {
-                navigate(`/products/${product.id}`);
-                if (onClose) onClose();
-              }}
-            >
-              {/* Improved responsive image heights */}
-              <div className="w-full h-40 sm:h-48 md:h-52 lg:h-56 overflow-hidden">
-                <img
-                  src={product.imageUrls[0] || ""}
-                  alt={product.name}
-                  className="w-full h-full object-cover block group-hover:scale-105 
+                style={{ minHeight: 340, zIndex: 10 }}
+                onClick={() => {
+                  navigate(`/products/${product.id}`);
+                  if (onClose) onClose();
+                }}
+              >
+                {/* Improved responsive image heights */}
+                <div className="w-full h-40 sm:h-48 md:h-52 lg:h-56 overflow-hidden">
+                  <img
+                    src={product.imageUrls[0] || ""}
+                    alt={product.name}
+                    className="w-full h-full object-cover block group-hover:scale-105 
                   transition-transform duration-300"
-                />
-              </div>
+                  />
+                </div>
 
-              <div className="p-3 flex-1 flex flex-col">
-                <h3 className="text-xs sm:text-sm md:text-base font-medium 
-                  text-slate-800 mb-1 line-clamp-2">
-                  {product.name}
-                </h3>
+                <div className="p-3 flex-1 flex flex-col">
+                  <h3
+                    className="text-xs sm:text-sm md:text-base font-medium 
+                  text-slate-800 mb-1 line-clamp-2"
+                  >
+                    {product.name}
+                  </h3>
 
-                <p className="text-[11px] sm:text-xs md:text-sm text-slate-500 mb-3 line-clamp-2">
-                  {product.shortDescription || product.description || ""}
-                </p>
+                  <p className="text-[11px] sm:text-xs md:text-sm text-slate-500 mb-3 line-clamp-2">
+                    {product.shortDescription || product.description || ""}
+                  </p>
 
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="text-base sm:text-lg font-semibold text-rose-700">
-                    {product.price
-                      ? `₹${product.price.toLocaleString()}`
-                      : "—"}
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="text-base sm:text-lg font-semibold text-rose-700">
+                      {product.price ? `₹${product.price.toLocaleString()}` : "—"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))
-        ) : (
-          // Skeletons
-          Array.from({ length: cols }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse bg-slate-100 dark:bg-slate-700 h-64 sm:h-72 rounded"
-            />
-          ))
-        )}
+              </article>
+            ))
+          : // Skeletons
+            Array.from({ length: cols }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse bg-slate-100 dark:bg-slate-700 h-64 sm:h-72 rounded"
+              />
+            ))}
       </div>
     </div>
   );

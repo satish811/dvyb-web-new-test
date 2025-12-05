@@ -24,7 +24,6 @@ class OrderOperationalService {
     this.ordersSubcollection = "orders";
   }
 
-  
   async getUserRoleAndCollection() {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -35,11 +34,8 @@ class OrderOperationalService {
       if (!profile.success) throw new Error("Failed to fetch user profile");
 
       return {
-        role: profile.role.toLowerCase(), 
-        collection:
-          profile.role.toLowerCase() === "b2b"
-            ? this.b2bCollection
-            : this.b2cCollection,
+        role: profile.role.toLowerCase(),
+        collection: profile.role.toLowerCase() === "b2b" ? this.b2bCollection : this.b2cCollection,
       };
     } catch (error) {
       console.error("Failed to determine user role:", error);
@@ -99,7 +95,7 @@ class OrderOperationalService {
     const user = auth.currentUser;
     if (!user) {
       callback([]);
-      return () => { };
+      return () => {};
     }
 
     let collectionName = null;
@@ -109,7 +105,7 @@ class OrderOperationalService {
       collectionName = result.collection;
     } catch (error) {
       callback([]);
-      return () => { };
+      return () => {};
     }
 
     const ordersRef = collection(db, collectionName, user.uid, this.ordersSubcollection);

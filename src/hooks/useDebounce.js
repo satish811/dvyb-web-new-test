@@ -1,18 +1,18 @@
 // src/hooks/useDebounce.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Custom hook for debouncing values
  * Delays updating the value until after the specified delay has passed
- * 
+ *
  * @param {any} value - The value to debounce
  * @param {number} delay - Delay in milliseconds (default: 500ms)
  * @returns {any} - Debounced value
- * 
+ *
  * Example usage:
  * const [searchTerm, setSearchTerm] = useState('');
  * const debouncedSearchTerm = useDebounce(searchTerm, 300);
- * 
+ *
  * useEffect(() => {
  *   // This will only run 300ms after user stops typing
  *   if (debouncedSearchTerm) {

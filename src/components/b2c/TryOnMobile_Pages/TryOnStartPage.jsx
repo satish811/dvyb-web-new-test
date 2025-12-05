@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { X } from 'lucide-react';
-import Tickic from '../../../assets/TryOn/tick_ic.svg';
-import step1img from '../../../assets/TryOn/step1img.svg';
-import { profileService } from '../../../services/profileService';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { X } from "lucide-react";
+import Tickic from "../../../assets/TryOn/tick_ic.svg";
+import step1img from "../../../assets/TryOn/step1img.svg";
+import { profileService } from "../../../services/profileService";
 
 const TryOnStartPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { productId } = useParams();
-  
+
   const tryOnData = location.state;
   const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [userTryOnImage, setUserTryOnImage] = useState(null);
@@ -17,7 +17,7 @@ const TryOnStartPage = () => {
   useEffect(() => {
     const checkUserTryOn = async () => {
       if (!tryOnData?.dressType) return;
-      
+
       try {
         const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
         if (savedImage) {
@@ -33,20 +33,20 @@ const TryOnStartPage = () => {
   }, [tryOnData]);
 
   const handleUploadClick = () => {
-    navigate('/tryon/upload', { 
-      state: { 
-        ...tryOnData, 
-        selectModel: false 
-      } 
+    navigate("/tryon/upload", {
+      state: {
+        ...tryOnData,
+        selectModel: false,
+      },
     });
   };
 
   const handleSelectModel = () => {
-    navigate('/tryon/upload', { 
-      state: { 
-        ...tryOnData, 
-        selectModel: true 
-      } 
+    navigate("/tryon/upload", {
+      state: {
+        ...tryOnData,
+        selectModel: true,
+      },
     });
   };
 
@@ -76,11 +76,7 @@ const TryOnStartPage = () => {
       </button> */}
 
       <div className="w-full h-[560px] p-2 md:h-[300px] bg-gray-100 flex items-center justify-center">
-        <img 
-          src={step1img} 
-          alt="Try-on guide"
-          className="w-full h-full object-cover"
-        />
+        <img src={step1img} alt="Try-on guide" className="w-full h-full object-cover" />
       </div>
 
       <div className="px-4 pt-6 pb-20">
@@ -96,14 +92,12 @@ const TryOnStartPage = () => {
           </div>
 
           <div className="flex gap-3 items-center">
-            <img 
-              src={tryOnData.garmentImage} 
-              className="h-14 w-14  object-cover border border-gray-200 flex-shrink-0" 
-              alt="Product" 
+            <img
+              src={tryOnData.garmentImage}
+              className="h-14 w-14  object-cover border border-gray-200 flex-shrink-0"
+              alt="Product"
             />
-            <p className="text-xs text-gray-700 line-clamp-2 flex-1">
-              {tryOnData.garmentName}
-            </p>
+            <p className="text-xs text-gray-700 line-clamp-2 flex-1">{tryOnData.garmentName}</p>
           </div>
         </div>
 
@@ -124,23 +118,23 @@ const TryOnStartPage = () => {
         </div>
 
         <p className="text-[11px] text-gray-600 leading-relaxed">
-          Hey! To use the 2D TRY ON feature, just upload or take a selfie or{" "}
-          Press <span className="text-[#8B0000] text-xs font-semibold">SKIP</span> to check out the models you can try on!
+          Hey! To use the 2D TRY ON feature, just upload or take a selfie or Press{" "}
+          <span className="text-[#8B0000] text-xs font-semibold">SKIP</span> to check out the models
+          you can try on!
         </p>
       </div>
 
-<div className=' flex justify-end  bottom-0 right-0 mb-4 mr-4'>
-
-      <button
-        onClick={handleSkip}
-        className="bottom-6 right-4 bg-white border border-gray-300 px-5 py-2  text-sm font-medium text-gray-700 hover:border-[#8B0000] hover:text-[#8B0000] transition-all shadow-md flex items-center gap-2 z-10"
-      >
-        SKIP
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-</div>
+      <div className=" flex justify-end  bottom-0 right-0 mb-4 mr-4">
+        <button
+          onClick={handleSkip}
+          className="bottom-6 right-4 bg-white border border-gray-300 px-5 py-2  text-sm font-medium text-gray-700 hover:border-[#8B0000] hover:text-[#8B0000] transition-all shadow-md flex items-center gap-2 z-10"
+        >
+          SKIP
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };

@@ -6,7 +6,6 @@ import { useWishlist } from "../../../context/WishlistContext";
 import { auth } from "../../../config";
 import B2BAuthService from "../../../services/b2bAuthService";
 
-
 import ProductImageGallery from "./individual_product_components/ProductImageGallery";
 import ProductTitleSection from "./individual_product_components/ProductTitleSection";
 import ProductColorSelector from "./individual_product_components/ProductColorSelector";
@@ -66,8 +65,6 @@ const IndividualProductDetailsPage = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
   const isMobile = () => window.innerWidth <= 768;
-
-
 
   const images = [img1, img2, img3, img4, img5, img6];
 
@@ -255,7 +252,7 @@ const IndividualProductDetailsPage = () => {
       discount: product.discount || 0,
       imageUrls: product.imageUrls || [garmentImage],
       selectedSize: requiresSizeSelection ? selectedSize : "One Size",
-      dressType: product.dressType || 'lehenga',
+      dressType: product.dressType || "lehenga",
       outfitType: product.dressType?.toLowerCase() || "lehenga",
     };
 
@@ -263,7 +260,7 @@ const IndividualProductDetailsPage = () => {
     if (isMobile()) {
       // Mobile: Navigate to page with state
       navigate(`/tryon/start/${product.id}`, {
-        state: tryOnPayload
+        state: tryOnPayload,
       });
     } else {
       // Desktop: Show modal
@@ -556,15 +553,11 @@ const IndividualProductDetailsPage = () => {
         addedAt: new Date().toISOString(),
       };
 
-      const result = await toggleWishlist(
-        wishlistItem,
-        "B2B_VARIANT",
-        "B2B_MULTI_COLOR"
-      );
+      const result = await toggleWishlist(wishlistItem, "B2B_VARIANT", "B2B_MULTI_COLOR");
 
       if (result.success) {
         const totalItems = wishlistItem.totalQuantity;
-        alert(`${totalItems} item${totalItems > 1 ? 's' : ''} added to your wishlist!`);
+        alert(`${totalItems} item${totalItems > 1 ? "s" : ""} added to your wishlist!`);
         return true;
       } else {
         throw new Error(result.error || "Failed to add to wishlist");

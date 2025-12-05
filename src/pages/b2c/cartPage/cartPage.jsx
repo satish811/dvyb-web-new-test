@@ -99,8 +99,9 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit, updatingItemId 
           {/* Product Description */}
           <div className="mb-1">
             <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
-                }`}
+              className={`text-[12px] text-gray-600 lowercase leading-tight ${
+                showFullDescription ? "" : "line-clamp-2"
+              }`}
             >
               {item.description || "Product description unavailable"}
             </p>
@@ -228,8 +229,18 @@ const MinimumQuantityPopup = ({ onClose, onRemove, itemName, variant }) => (
     <div className="bg-white p-6 shadow-xl max-w-md w-full">
       <div className="text-center mb-4">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.196 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          <svg
+            className="w-6 h-6 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.196 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
         </div>
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Minimum Quantity Required</h2>
@@ -292,8 +303,7 @@ function CartPage() {
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
   const deliveryDate = getEstimatedDeliveryDate();
 
-  const fontStyles =
-    "font-[Outfit,sans-serif] , uppercase";
+  const fontStyles = "font-[Outfit,sans-serif] , uppercase";
 
   // Get user role
   useEffect(() => {
@@ -466,8 +476,8 @@ function CartPage() {
           variant: {
             color: variant.color,
             size: variant.size,
-            currentQuantity: variant.quantity
-          }
+            currentQuantity: variant.quantity,
+          },
         });
         setShowMinQuantityPopup(true);
         return;
@@ -600,7 +610,7 @@ function CartPage() {
 
   const subtotal = calculateSubtotal();
   const discount = subtotal * 0.12; // In real app, this should come from a DiscountService
-  const shipping = cartItems.length > 0 ? 50 : 0; // In real app, this should come from ShippingService
+  const shipping = cartItems.length > 0 ? 0 : 0; // In real app, this should come from ShippingService
   const total = subtotal - discount + shipping;
 
   const handleProceedToCheckout = () => {
@@ -641,14 +651,11 @@ function CartPage() {
         const productIndex = guestCart.findIndex((p) => (p.productId || p.id) === item.productId);
 
         if (productIndex !== -1) {
-
           guestCart[productIndex].variants.splice(variantIndex, 1);
-
 
           if (guestCart[productIndex].variants.length === 0) {
             guestCart.splice(productIndex, 1);
           } else {
-
             guestCart[productIndex].totalQuantity = guestCart[productIndex].variants.reduce(
               (sum, v) => sum + v.quantity,
               0
@@ -661,7 +668,6 @@ function CartPage() {
         setCartItems(simplifyCart(guestCart));
         toast.success("Variant removed from cart");
       } else {
-
         console.log("Variant removal for logged-in user not implemented yet");
       }
     } catch (error) {
@@ -730,17 +736,16 @@ function CartPage() {
 
               <div className="flex items-center border border-gray-300  relative">
                 {isUpdating && (
-                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-
-                  </div>
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center"></div>
                 )}
                 <button
                   onClick={() => handleQuantityChange(item.uniqueId, -1)}
                   disabled={item.quantity <= 1 || isUpdating}
-                  className={`px-3 py-1.5 ${item.quantity <= 1 || isUpdating
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                    }`}
+                  className={`px-3 py-1.5 ${
+                    item.quantity <= 1 || isUpdating
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100 text-gray-700"
+                  }`}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
@@ -752,10 +757,11 @@ function CartPage() {
                 <button
                   onClick={() => handleQuantityChange(item.uniqueId, 1)}
                   disabled={item.quantity >= 5 || isUpdating}
-                  className={`px-3 py-1.5 ${item.quantity >= 5 || isUpdating
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                    }`}
+                  className={`px-3 py-1.5 ${
+                    item.quantity >= 5 || isUpdating
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100 text-gray-700"
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -769,7 +775,6 @@ function CartPage() {
             ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
           </p>
           <div className="flex gap-5 mt-4 md:mt-0">
-
             <WishlistHeartButton
               productId={item.productId}
               productData={{
@@ -998,13 +1003,13 @@ function CartPage() {
           <div className="mt-16 space-y-8">
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => { }} heading="Trending Products" />
+                <TrendingProducts column={6} onClose={() => {}} heading="Trending Products" />
               </div>
             </section>
 
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => { }} heading="Recently Viewed" />
+                <TrendingProducts column={6} onClose={() => {}} heading="Recently Viewed" />
               </div>
             </section>
           </div>
@@ -1023,11 +1028,12 @@ function CartPage() {
           onClose={() => setShowMinQuantityPopup(false)}
           onRemove={() => {
             // Find the item and variant index to remove
-            const item = cartItems.find(i => i.name === minQuantityItem.itemName);
+            const item = cartItems.find((i) => i.name === minQuantityItem.itemName);
             if (item) {
-              const variantIndex = item.variants.findIndex(v =>
-                v.color === minQuantityItem.variant.color &&
-                v.size === minQuantityItem.variant.size
+              const variantIndex = item.variants.findIndex(
+                (v) =>
+                  v.color === minQuantityItem.variant.color &&
+                  v.size === minQuantityItem.variant.size
               );
               if (variantIndex !== -1) {
                 handleRemoveVariant(item.uniqueId, variantIndex);

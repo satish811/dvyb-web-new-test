@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  Trash2,
-  ShoppingCart,
-  Edit2,
-} from "lucide-react";
+import { Trash2, ShoppingCart, Edit2 } from "lucide-react";
 
 // Contexts
 import { usePopup } from "../../../context/ToastPopupContext";
@@ -101,8 +97,9 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
           {/* Product Description */}
           <div className="mb-1">
             <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
-                }`}
+              className={`text-[12px] text-gray-600 lowercase leading-tight ${
+                showFullDescription ? "" : "line-clamp-2"
+              }`}
             >
               {item.description || "No description available"}
             </p>
@@ -116,9 +113,7 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
             )}
           </div>
 
-          <p className="text-[11px] text-gray-600 mb-1">
-            CODE: {item.productId || "N/A"}
-          </p>
+          <p className="text-[11px] text-gray-600 mb-1">CODE: {item.productId || "N/A"}</p>
         </div>
 
         {/* Price & Actions */}
@@ -163,9 +158,7 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
                   }}
                 />
                 <div className="text-[12px] text-gray-700">
-                  <span className="font-medium text-[14px]">
-                    Size: {variant.size}
-                  </span>
+                  <span className="font-medium text-[14px]">Size: {variant.size}</span>
                   <span className="ml-3 text-[14px]">
                     Quantity: {variant.quantity < 10 ? `0${variant.quantity}` : variant.quantity}
                   </span>
@@ -204,8 +197,9 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
 
   return (
     <div
-      className={`group w-full overflow-hidden transition bg-white ${showFullTitle ? "min-h-[550px]" : "min-h-[502px]"
-        }`}
+      className={`group w-full overflow-hidden transition bg-white ${
+        showFullTitle ? "min-h-[550px]" : "min-h-[502px]"
+      }`}
     >
       {/* Fixed Image Area */}
       <Link to={`/products/${item.productId || item.id}`}>
@@ -272,7 +266,7 @@ const WishlistPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
-  const { } = useCart(); // addToCart extracted but using service directly below
+  const {} = useCart(); // addToCart extracted but using service directly below
   const [userRole, setUserRole] = useState("B2C");
 
   // Safe popup access
@@ -403,11 +397,7 @@ const WishlistPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen max-w-7xl mx-auto px-6 py-16 text-center">
         <div className="max-w-md w-full flex flex-col items-center justify-center">
-          <img
-            src={empty_wishlistIc}
-            alt="Login required"
-            className="w-50 h-50 mb-8 mx-auto"
-          />
+          <img src={empty_wishlistIc} alt="Login required" className="w-50 h-50 mb-8 mx-auto" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Please Login to View Your Wishlist
           </h2>
@@ -423,7 +413,7 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-0 md:py-30">
+    <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-3 py-0 md:py-8">
       {/* Empty Wishlist UI */}
       {displayItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24">
@@ -448,7 +438,7 @@ const WishlistPage = () => {
       ) : (
         /* Populated Wishlist UI */
         <>
-          <h1 className="font-medium text-[12.07px] py-2 leading-[18.67px] tracking-[0.27px] uppercase align-middle font-outfit">
+          <h1 className="font-medium text-[12.07px] py-2  leading-[18.67px] tracking-[0.27px] uppercase align-middle font-outfit">
             MY WISHLIST ITEMS{" "}
             <span className="text-sm font-medium text-gray-600">
               ({displayItems.length} products)

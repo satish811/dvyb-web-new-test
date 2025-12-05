@@ -15,16 +15,16 @@ import bg2 from "../../../assets/ProductsPage/bg2.svg";
 import bg3 from "../../../assets/ProductsPage/bg3.svg";
 import bg4 from "../../../assets/ProductsPage/bg4.svg";
 
-import beach from '../../../assets/TryOn/beach2.jpg'
-import temple from '../../../assets/TryOn/temple3.jpg'
-import wed from '../../../assets/TryOn/wed4.jpg'
+import beach from "../../../assets/TryOn/beach2.jpg";
+import temple from "../../../assets/TryOn/temple3.jpg";
+import wed from "../../../assets/TryOn/wed4.jpg";
 
-import img1 from '../../../assets/lazyloading/logoimg1.svg'
-import img2 from '../../../assets/lazyloading/logoimg2.svg'
-import img3 from '../../../assets/lazyloading/logoimg3.svg'
-import img4 from '../../../assets/lazyloading/logoimg4.svg'
-import img5 from '../../../assets/lazyloading/logoimg5.svg'
-import img6 from '../../../assets/lazyloading/logoimg6.svg'
+import img1 from "../../../assets/lazyloading/logoimg1.svg";
+import img2 from "../../../assets/lazyloading/logoimg2.svg";
+import img3 from "../../../assets/lazyloading/logoimg3.svg";
+import img4 from "../../../assets/lazyloading/logoimg4.svg";
+import img5 from "../../../assets/lazyloading/logoimg5.svg";
+import img6 from "../../../assets/lazyloading/logoimg6.svg";
 
 import { usePopup } from "../../../context/ToastPopupContext";
 import { wishlistService } from "../../../services/wishlistService";
@@ -67,30 +67,24 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const auth = useAuth();
   const user = auth?.user || null;
 
-
-
-
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-    const images = [img1, img2, img3, img4, img5, img6];
-  
+
+  const images = [img1, img2, img3, img4, img5, img6];
+
   useEffect(() => {
     const imgTimer = setTimeout(() => {
-      setCurrentIndex(prev => (prev + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 200); // Change this to make rotation faster/slower
-  
+
     return () => clearTimeout(imgTimer);
   }, [currentIndex]);
-  
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-  
-    }, 30000); // Change from 35000 to 30000 (30 seconds)
-  
+    const timer = setTimeout(() => {}, 30000); // Change from 35000 to 30000 (30 seconds)
+
     return () => clearTimeout(timer);
   }, []);
- 
-  
+
   // const { user } = useAuth();
   // const { showPopup } = usePopup();
 
@@ -381,249 +375,234 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     {
       id: "hallway",
       name: "Hallway",
-      image:
-        temple,
+      image: temple,
     },
-   
-    { id: "pool", name: "Pool", image: beach},
+
+    { id: "pool", name: "Pool", image: beach },
     { id: "wedding", name: "Wedding", image: wed },
-     { id: "trees", name: "Trees", image: bg3 },
+    { id: "trees", name: "Trees", image: bg3 },
+  ];
 
-  ]; 
+  const performTryOn = async () => {
+    const { modelImage, garmentImage, garmentName } = tryOnData || {};
+    if (!modelImage || !garmentImage) return;
 
+    setIsProcessing(true);
+    setErrorMsg("");
+    setTryOnResult(null);
+    setTryOnResultNoBg(null);
 
-const performTryOn = async () => {
-  const { modelImage, garmentImage, garmentName } = tryOnData || {};
-  if (!modelImage || !garmentImage) return;
+    try {
+      // Convert data URLs to blobs
+      const modelBlob = await fetch(modelImage).then((r) => r.blob());
+      const garmentBlob = await fetch(garmentImage).then((r) => r.blob());
 
-  setIsProcessing(true);
-  setErrorMsg("");
-  setTryOnResult(null);
-  setTryOnResultNoBg(null);
+      const formData = new FormData();
+      formData.append("model", modelBlob, "model.png");
+      formData.append("garment", garmentBlob, "garment.png"); // ← CHANGED: Send as file
+      formData.append("outfitType", garmentName || "saree");
 
-  try {
-    // Convert data URLs to blobs
-    const modelBlob = await fetch(modelImage).then(r => r.blob());
-    const garmentBlob = await fetch(garmentImage).then(r => r.blob());
+      console.log("Calling Gemini Try-On API...");
 
-    const formData = new FormData();
-    formData.append("model", modelBlob, "model.png");
-    formData.append("garment", garmentBlob, "garment.png"); // ← CHANGED: Send as file
-    formData.append("outfitType", garmentName || "saree");
+      const response = await fetch("/api/test-tryon", {
+        // ← CHANGED: Use mode=test
+        method: "POST",
+        body: formData,
+      });
 
-    console.log("Calling Gemini Try-On API...");
-
-    // const response = await fetch("/api/test-tryon", {
-    const response = await fetch("/api/tryon?mode=test", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Server error: ${err}`);
-    }
-
-    const data = await response.json();
-
-    if (data.success && data.result) {
-      const resultUrl = data.result;
-      setTryOnResult(resultUrl);
-
-      // Auto remove background
-      setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
-
-      // Save to backend gallery
-      try {
-        await saveTryOnResult({
-          ...tryOnData,
-          tryOnResult: resultUrl,
-          is3D: false,
-        });
-        toast.success("Try-on saved to your gallery!");
-      } catch (error) {
-        console.error("Failed to save try-on:", error);
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Server error: ${err}`);
       }
 
-      // Auto-generate 3D video
-      if (is3DMode && resultUrl) {
-        setTimeout(() => generateVideo(resultUrl), 1500);
+      const data = await response.json();
+
+      if (data.success && data.result) {
+        const resultUrl = data.result;
+        setTryOnResult(resultUrl);
+
+        // Auto remove background
+        setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
+
+        // Save to backend gallery
+        try {
+          await saveTryOnResult({
+            ...tryOnData,
+            tryOnResult: resultUrl,
+            is3D: false,
+          });
+          toast.success("Try-on saved to your gallery!");
+        } catch (error) {
+          console.error("Failed to save try-on:", error);
+        }
+
+        // Auto-generate 3D video
+        if (is3DMode && resultUrl) {
+          setTimeout(() => generateVideo(resultUrl), 1500);
+        }
+      } else {
+        throw new Error(data.error || "No result from server");
       }
-    } else {
-      throw new Error(data.error || "No result from server");
+    } catch (error) {
+      console.error("Try-On failed:", error);
+      setErrorMsg(error.message || "AI try-on failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
-  } catch (error) {
-    console.error("Try-On failed:", error);
-    setErrorMsg(error.message || "AI try-on failed. Please try again.");
-  } finally {
-    setIsProcessing(false);
-  }
-};
+  };
 
   //it worked last time
-// const performTryOn = async () => {
-//   const { modelImage, garmentImage, garmentName } = tryOnData || {};
-//   if (!modelImage || !garmentImage) return;
+  // const performTryOn = async () => {
+  //   const { modelImage, garmentImage, garmentName } = tryOnData || {};
+  //   if (!modelImage || !garmentImage) return;
 
-//   setIsProcessing(true);
-//   setErrorMsg("");
-//   setTryOnResult(null);
-//   setTryOnResultNoBg(null);
+  //   setIsProcessing(true);
+  //   setErrorMsg("");
+  //   setTryOnResult(null);
+  //   setTryOnResultNoBg(null);
 
-//   try {
-//     // Convert data URLs to blobs
-//     const modelBlob = await fetch(modelImage).then(r => r.blob());
-//     const garmentBlob = await fetch(garmentImage).then(r => r.blob());
+  //   try {
+  //     // Convert data URLs to blobs
+  //     const modelBlob = await fetch(modelImage).then(r => r.blob());
+  //     const garmentBlob = await fetch(garmentImage).then(r => r.blob());
 
-//     const formData = new FormData();
-//     formData.append("model", modelBlob, "model.png");
-//     formData.append("garmentUrl", garmentImage); // Send as URL instead of file
-//     formData.append("outfitType", garmentName || "saree");
+  //     const formData = new FormData();
+  //     formData.append("model", modelBlob, "model.png");
+  //     formData.append("garmentUrl", garmentImage); // Send as URL instead of file
+  //     formData.append("outfitType", garmentName || "saree");
 
-//     console.log("Calling Gemini Try-On API...");
-//     const response = await fetch("/api/single-tryon", { // Use relative URL
-//       method: "POST",
-//       body: formData,
-//     });
+  //     console.log("Calling Gemini Try-On API...");
+  //     const response = await fetch("/api/single-tryon", { // Use relative URL
+  //       method: "POST",
+  //       body: formData,
+  //     });
 
-//     if (!response.ok) {
-//       const err = await response.text();
-//       throw new Error(`Server error: ${err}`);
-//     }
+  //     if (!response.ok) {
+  //       const err = await response.text();
+  //       throw new Error(`Server error: ${err}`);
+  //     }
 
-//     const data = await response.json();
+  //     const data = await response.json();
 
-//     if (data.success && data.result) {
-//       const resultUrl = data.result;
-//       setTryOnResult(resultUrl);
+  //     if (data.success && data.result) {
+  //       const resultUrl = data.result;
+  //       setTryOnResult(resultUrl);
 
-//       // Auto-remove background
-//       setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
+  //       // Auto-remove background
+  //       setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
 
-//       // Save to gallery
-//       try {
-//         await saveTryOnResult({
-//           ...tryOnData,
-//           tryOnResult: resultUrl,
-//           is3D: false,
-//         });
-//         toast.success("Try-on saved to your gallery!");
-//       } catch (error) {
-//         console.error("Failed to save try-on:", error);
-//       }
+  //       // Save to gallery
+  //       try {
+  //         await saveTryOnResult({
+  //           ...tryOnData,
+  //           tryOnResult: resultUrl,
+  //           is3D: false,
+  //         });
+  //         toast.success("Try-on saved to your gallery!");
+  //       } catch (error) {
+  //         console.error("Failed to save try-on:", error);
+  //       }
 
-//       // Auto-trigger 3D if needed
-//       if (is3DMode && resultUrl) {
-//         setTimeout(() => generateVideo(resultUrl), 1500);
-//       }
-//     } else {
-//       throw new Error(data.error || "No result from server");
-//     }
-//   } catch (error) {
-//     console.error("Try-On failed:", error);
-//     setErrorMsg(error.message || "AI try-on failed. Please try again.");
-//   } finally {
-//     setIsProcessing(false);
-//   }
-// };
+  //       // Auto-trigger 3D if needed
+  //       if (is3DMode && resultUrl) {
+  //         setTimeout(() => generateVideo(resultUrl), 1500);
+  //       }
+  //     } else {
+  //       throw new Error(data.error || "No result from server");
+  //     }
+  //   } catch (error) {
+  //     console.error("Try-On failed:", error);
+  //     setErrorMsg(error.message || "AI try-on failed. Please try again.");
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
 
+  // const performTryOn = async () => {
+  //   const { modelImage, garmentImage, garmentName } = tryOnData || {};
+  //   if (!modelImage || !garmentImage) return;
 
+  //   setIsProcessing(true);
+  //   setErrorMsg("");
+  //   setTryOnResult(null);
+  //   setTryOnResultNoBg(null);
 
+  //   try {
+  //     console.log("📸 Starting try-on process...");
+  //     console.log("Model URL:", modelImage?.substring(0, 80));
+  //     console.log("Garment URL:", garmentImage?.substring(0, 80));
 
+  //     const requestBody = {
+  //       modelUrl: modelImage,
+  //       garmentUrl: garmentImage,
+  //       outfitType: garmentName || "saree"
+  //     };
 
+  //     console.log("🚀 Calling backend API...");
 
+  //     const response = await fetch("/api/tryon-from-urls", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify(requestBody)
+  //     });
 
+  //     console.log("📡 Response status:", response.status);
 
+  //     // ⭐ FIX: Read response body only ONCE
+  //     const contentType = response.headers.get("content-type");
+  //     let data;
 
+  //     if (contentType && contentType.includes("application/json")) {
+  //       data = await response.json();
+  //     } else {
+  //       const text = await response.text();
+  //       console.error("❌ Non-JSON response:", text);
+  //       throw new Error(text || `Server error: ${response.status}`);
+  //     }
 
+  //     if (!response.ok) {
+  //       console.error("❌ Server error:", data);
+  //       const errorMessage = data.details || data.error || `Server error: ${response.status}`;
+  //       throw new Error(errorMessage);
+  //     }
 
-// const performTryOn = async () => {
-//   const { modelImage, garmentImage, garmentName } = tryOnData || {};
-//   if (!modelImage || !garmentImage) return;
+  //     console.log("📦 Response:", data.success ? "Success!" : "Failed");
 
-//   setIsProcessing(true);
-//   setErrorMsg("");
-//   setTryOnResult(null);
-//   setTryOnResultNoBg(null);
+  //     if (data.success && data.result) {
+  //       const resultUrl = data.result;
+  //       setTryOnResult(resultUrl);
 
-//   try {
-//     console.log("📸 Starting try-on process...");
-//     console.log("Model URL:", modelImage?.substring(0, 80));
-//     console.log("Garment URL:", garmentImage?.substring(0, 80));
-    
-//     const requestBody = {
-//       modelUrl: modelImage,
-//       garmentUrl: garmentImage,
-//       outfitType: garmentName || "saree"
-//     };
+  //       // Auto-remove background
+  //       setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
 
-//     console.log("🚀 Calling backend API...");
-    
-//     const response = await fetch("/api/tryon-from-urls", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json"
-//       },
-//       body: JSON.stringify(requestBody)
-//     });
+  //       // Save to gallery
+  //       try {
+  //         await saveTryOnResult({
+  //           ...tryOnData,
+  //           tryOnResult: resultUrl,
+  //           is3D: false,
+  //         });
+  //         toast.success("Try-on saved to your gallery!");
+  //       } catch (error) {
+  //         console.error("Failed to save try-on:", error);
+  //       }
 
-//     console.log("📡 Response status:", response.status);
-
-//     // ⭐ FIX: Read response body only ONCE
-//     const contentType = response.headers.get("content-type");
-//     let data;
-    
-//     if (contentType && contentType.includes("application/json")) {
-//       data = await response.json();
-//     } else {
-//       const text = await response.text();
-//       console.error("❌ Non-JSON response:", text);
-//       throw new Error(text || `Server error: ${response.status}`);
-//     }
-
-//     if (!response.ok) {
-//       console.error("❌ Server error:", data);
-//       const errorMessage = data.details || data.error || `Server error: ${response.status}`;
-//       throw new Error(errorMessage);
-//     }
-
-//     console.log("📦 Response:", data.success ? "Success!" : "Failed");
-
-//     if (data.success && data.result) {
-//       const resultUrl = data.result;
-//       setTryOnResult(resultUrl);
-      
-//       // Auto-remove background
-//       setTimeout(() => removeBackgroundFromResult(resultUrl), 800);
-
-//       // Save to gallery
-//       try {
-//         await saveTryOnResult({
-//           ...tryOnData,
-//           tryOnResult: resultUrl,
-//           is3D: false,
-//         });
-//         toast.success("Try-on saved to your gallery!");
-//       } catch (error) {
-//         console.error("Failed to save try-on:", error);
-//       }
-
-//       // Auto-trigger 3D if needed
-//       if (is3DMode && resultUrl) {
-//         setTimeout(() => generateVideo(resultUrl), 1500);
-//       }
-//     } else {
-//       throw new Error(data.error || "No result from server");
-//     }
-//   } catch (error) {
-//     console.error("❌ Try-On failed:", error);
-//     setErrorMsg(error.message || "AI try-on failed. Please try again.");
-//   } finally {
-//     setIsProcessing(false);
-//   }
-// };
-
-
+  //       // Auto-trigger 3D if needed
+  //       if (is3DMode && resultUrl) {
+  //         setTimeout(() => generateVideo(resultUrl), 1500);
+  //       }
+  //     } else {
+  //       throw new Error(data.error || "No result from server");
+  //     }
+  //   } catch (error) {
+  //     console.error("❌ Try-On failed:", error);
+  //     setErrorMsg(error.message || "AI try-on failed. Please try again.");
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
 
   const removeBackgroundFromResult = async (imageUrl) => {
     setIsRemovingBg(true);
@@ -966,21 +945,21 @@ const performTryOn = async () => {
       {/* STAGE: centered preview area - FIXED: Added padding bottom for mobile */}
       <div className="absolute inset-0 w-full h-full flex items-center justify-center pb-[60vh] lg:pb-0">
         {isProcessing ? (
-<div className="w-full h-full flex flex-col items-center justify-center text-gray-700">
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-    <img
-      src={images[currentIndex]}
-      alt="loader"
-      style={{
-        width: "150px",
-        height: "150px",
-        objectFit: "cover",
-        transition: "opacity 0.3s",
-      }}
-    />
-  </div>
-  <p className="text-xl text-center text-primary font-Outfit mt-4">Creating your Vibe</p>
-</div>
+          <div className="w-full h-full flex flex-col items-center justify-center text-gray-700">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <img
+                src={images[currentIndex]}
+                alt="loader"
+                style={{
+                  width: "150px",
+                  height: "150px",
+                  objectFit: "cover",
+                  transition: "opacity 0.3s",
+                }}
+              />
+            </div>
+            <p className="text-xl text-center text-primary font-Outfit mt-4">Creating your Vibe</p>
+          </div>
         ) : errorMsg ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-center p-6">
             <div className="text-red-500 text-5xl mb-4">⚠️</div>
@@ -1062,8 +1041,7 @@ const performTryOn = async () => {
             <img
               src={getCurrentDisplayImage()}
               alt="Try-on result"
-              className={`${tryOnResultNoBg? 'mt-48' : 'mt-4'} w-[500px] h-[656px] mt-4 object-contain`}
-              
+              className={`${tryOnResultNoBg ? "mt-48" : "mt-4"} w-[500px] h-[656px] mt-4 object-contain`}
               // "w-[500px] h-[656px] mt-4 object-contain"
               draggable={false}
             />

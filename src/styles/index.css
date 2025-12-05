@@ -81,7 +81,6 @@ body::-webkit-scrollbar {
 }
 
 @media (min-width: 640px) and (max-width: 767px) {
-
   /* Small devices */
   .ads-carousel-container {
     height: 220px !important;
@@ -89,7 +88,6 @@ body::-webkit-scrollbar {
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-
   /* Tablet */
   .ads-carousel-container {
     height: 280px !important;
@@ -99,7 +97,6 @@ body::-webkit-scrollbar {
 }
 
 @media (min-width: 1024px) {
-
   /* Desktop */
   .ads-carousel-container {
     height: 334.68px !important;
@@ -214,4 +211,8 @@ body::-webkit-scrollbar {
     transform: scale(0.98);
     transition: transform 0.1s ease;
   }
+}
+@keyframes productScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }

@@ -32,7 +32,6 @@ const LazyImageLoader = ({ isProcessing }) => {
         alt="loader"
         className="w-[150px] h-[150px] object-cover transition-opacity"
       />
-    
     </div>
   );
 };

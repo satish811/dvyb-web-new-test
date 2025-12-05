@@ -98,7 +98,7 @@ export default function SearchDropdown({
         sharara: "shararas",
         gown: "gown",
         fusion: "fusion",
-        wedding: "wedding"
+        wedding: "wedding",
       };
 
       if (categoryMap[queryLower]) {

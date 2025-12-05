@@ -12,7 +12,7 @@
 //   useEffect(() => {
 //     const params = new URLSearchParams(location.search);
 //     const categoryParam = params.get("category");
-``
+``;
 //     // Map URL param → display label
 //     const paramToLabel = {
 //       lehenga: "LEHENGA",

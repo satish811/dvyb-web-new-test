@@ -5,13 +5,7 @@ import { LuHeart } from "react-icons/lu";
 import { GoPerson } from "react-icons/go";
 import { MdOutlineShoppingBag } from "react-icons/md";
 
-export default function MobileMenu({
-  isOpen,
-  onClose,
-  navItems,
-  onNavClick,
-  onProtectedClick,
-}) {
+export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onProtectedClick }) {
   if (!isOpen) return null;
   const { signOutUser } = useAuth();
 

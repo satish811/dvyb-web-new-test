@@ -1,10 +1,5 @@
-import { auth, db, envConfig } from "../config"; 
-import {
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { auth, db, envConfig } from "../config";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 class ProfileService {
   static instance = null;
@@ -39,22 +34,26 @@ class ProfileService {
       const userCollection = await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
 
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        phoneNumber: user.phoneNumber,
-        profile: {
-          height: profileData.height,
-          unit: profileData.unit,
-          bodyShape: profileData.bodyShape,
-          skinTone: profileData.skinTone,
-          hairType: profileData.hairType,
-          hairLength: profileData.hairLength,
-          hairColor: profileData.hairColor,
-          photoUrl: profileData.photoUrl,
+      await setDoc(
+        userDocRef,
+        {
+          uid: user.uid,
+          phoneNumber: user.phoneNumber,
+          profile: {
+            height: profileData.height,
+            unit: profileData.unit,
+            bodyShape: profileData.bodyShape,
+            skinTone: profileData.skinTone,
+            hairType: profileData.hairType,
+            hairLength: profileData.hairLength,
+            hairColor: profileData.hairColor,
+            photoUrl: profileData.photoUrl,
+            updatedAt: new Date(),
+          },
           updatedAt: new Date(),
         },
-        updatedAt: new Date(),
-      }, { merge: true });
+        { merge: true }
+      );
 
       console.log("✅ Profile saved successfully");
       return true;

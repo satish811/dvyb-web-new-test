@@ -106,9 +106,6 @@ class TryOnOperationalService {
     }
   }
 
-
-
-  
   /**
    * Delete try-on by document ID
    * @param {string} tryOnId - Firestore document ID

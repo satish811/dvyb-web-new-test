@@ -73,7 +73,7 @@ const staticProducts = [
   },
   {
     id: "discount-3",
-    title: "Floral Kurta ",
+    title: "Floral Charm Kurta ",
     price: 4080,
     originalPrice: 4800,
     discountPercent: 15,

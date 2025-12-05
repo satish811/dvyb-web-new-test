@@ -40,9 +40,7 @@ const SimilarProductsSection = () => {
         <button
           onClick={() => {
             if (currentCategory) {
-              const catParam = currentCategory
-                .toLowerCase()
-                .replace(/\s+/g, "-");
+              const catParam = currentCategory.toLowerCase().replace(/\s+/g, "-");
               navigate(`/womenwear?category=${catParam}`);
             } else {
               navigate("/womenwear");

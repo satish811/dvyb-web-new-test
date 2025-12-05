@@ -43,8 +43,9 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
           {images.map((_, i) => (
             <div
               key={i}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${i === currentIndex ? "bg-[#573131]" : "bg-[#573131]/30"
-                }`}
+              className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                i === currentIndex ? "bg-[#573131]" : "bg-[#573131]/30"
+              }`}
             />
           ))}
         </div>

@@ -6,7 +6,7 @@ import AdsCarousel from "../../common/AdSection/AdsCarousel";
 
 const ProductGrid = ({ products, category }) => {
   const { selectedFilters, clearAllFilters } = useFilter();
-  
+
   // Filter once
   const filteredProducts = useProductFilter(products || []);
 
@@ -56,13 +56,8 @@ const ProductGrid = ({ products, category }) => {
       {/* Show ALL products — no slicing, no loading, no bugs */}
       {sortedAndFilteredProducts.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 text-lg mb-4">
-            No products match your filters.
-          </p>
-          <button
-            onClick={clearAllFilters}
-            className="text-[#9C0000] hover:underline font-medium"
-          >
+          <p className="text-gray-500 text-lg mb-4">No products match your filters.</p>
+          <button onClick={clearAllFilters} className="text-[#9C0000] hover:underline font-medium">
             Clear all filters
           </button>
         </div>

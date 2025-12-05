@@ -31,10 +31,28 @@ import TryOnStartPage from "../components/b2c/TryOnMobile_Pages/TryOnStartPage";
 import TryOnUploadPage from "../components/b2c/TryOnMobile_Pages/TryOnUploadPage";
 import TryOnProcessingPage from "../components/b2c/TryOnMobile_Pages/TryOnProcessingPage";
 import TryOnPreviewPage from "../components/b2c/TryOnMobile_Pages/TryOnPreviewPage";
+import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
+import { useEffect, useState } from "react";
 
 export default function AppRoutes() {
+  const [showLoader, setShowLoader] = useState(true);
   const { products, loading, error } = useProducts();
-  if (loading) return <div>Loading...</div>;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  
+  if (loading || showLoader) return (
+  <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <LazyImageLoader isProcessing={true} />
+  </div>
+);
+
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -68,7 +86,7 @@ export default function AppRoutes() {
       />
 
       {/* 🧷 Product listing page */}
-      
+
       <Route
         path="/womenwear"
         element={
@@ -209,17 +227,12 @@ export default function AppRoutes() {
         }
       />
 
-
-
-
       {/* Mobile tryon pages */}
 
       <Route path="/tryon/start/:productId" element={<TryOnStartPage />} />
       <Route path="/tryon/upload" element={<TryOnUploadPage />} />
       <Route path="/tryon/processing" element={<TryOnProcessingPage />} />
       <Route path="/tryon/preview" element={<TryOnPreviewPage />} />
-
-
     </Routes>
   );
 }

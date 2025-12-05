@@ -11,7 +11,7 @@ export default function SectionTitle({ children, viewAll }) {
         <button
           type="button"
           onClick={() => navigate("/womenwear")}
-          className="text-[8px] px-1 font-normal sm:text-[8px] sm:mx-2 lg:m-0 md:text-[10px] pt-2 lg:text-base hover:text-primary uppercase cursor-pointer"
+          className="text-[8px] px-1 font-bold sm:text-[8px] sm:mx-2 lg:m-0 md:text-[10px] pt-2 lg:text-base hover:text-primary uppercase cursor-pointer"
         >
           view all
         </button>

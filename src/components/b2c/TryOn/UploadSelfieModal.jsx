@@ -83,41 +83,35 @@ const UploadSelfieModal = ({
   // ⭐ Conditional based on garment type
 
   const [userHasTryOn, setUserHasTryOn] = useState(false);
-const [userTryOnImage, setUserTryOnImage] = useState(null);
-const [useUserModel, setUseUserModel] = useState(false); // Toggle state
+  const [userTryOnImage, setUserTryOnImage] = useState(null);
+  const [useUserModel, setUseUserModel] = useState(false); // Toggle state
 
+  useEffect(() => {
+    const checkUserTryOn = async () => {
+      if (!isOpen || !tryOnData?.dressType) return;
 
-useEffect(() => {
-  const checkUserTryOn = async () => {
-    if (!isOpen || !tryOnData?.dressType) return;
-    
-    try {
-      const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
-      if (savedImage) {
-        setUserHasTryOn(true);
-        setUserTryOnImage(savedImage);
-        setUseUserModel(true); // Default to user model if available
-      } else {
-        setUserHasTryOn(false);
-        setUserTryOnImage(null);
-        setUseUserModel(false);
+      try {
+        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
+        if (savedImage) {
+          setUserHasTryOn(true);
+          setUserTryOnImage(savedImage);
+          setUseUserModel(true); // Default to user model if available
+        } else {
+          setUserHasTryOn(false);
+          setUserTryOnImage(null);
+          setUseUserModel(false);
+        }
+      } catch (error) {
+        console.error("Error checking user try-on:", error);
       }
-    } catch (error) {
-      console.error("Error checking user try-on:", error);
-    }
-  };
+    };
 
-  checkUserTryOn();
-}, [isOpen, tryOnData]);
+    checkUserTryOn();
+  }, [isOpen, tryOnData]);
 
-
-
-const getModelsForDressType = (dressType) => {
-  // Normalize dress type to lowercase and remove extra spaces
-  const normalizedType = dressType?.toLowerCase().trim();
-
-
-
+  const getModelsForDressType = (dressType) => {
+    // Normalize dress type to lowercase and remove extra spaces
+    const normalizedType = dressType?.toLowerCase().trim();
 
     // Define all model arrays
     const sareeModels = [
@@ -764,171 +758,173 @@ const getModelsForDressType = (dressType) => {
       )}
 
       {/* Model Selector - Image 1 UI */}
-{/* Model Selector - Image 1 UI */}
-{showModelSelector && !showModelPreview && (
-  <div className="p-6 w-full bg-white md:w-[818px] relative">
-    {/* Close Button */}
-    <button
-      onClick={() => {
-        setShowModelSelector(false);
-        setStep(1);
-      }}
-      className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
-    >
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-
-    {/* Header */}
-    <h2 className="text-md font-semibold mb-1">Select a model:</h2>
-    <p className="text-xs text-gray-600 mb-4">You can only choose one model</p>
-
-    {/* ✅ ADD TOGGLE HERE - Only show if user has saved try-on */}
-    {userHasTryOn && (
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* User's saved model thumbnail */}
-            <img 
-              src={userTryOnImage} 
-              alt="Your model" 
-              className="w-12 h-16 object-cover rounded border-2 border-primary"
-            />
-            <div>
-              <p className="text-sm font-semibold text-gray-800">Your Model</p>
-              <p className="text-xs text-gray-600">Created from your profile</p>
-            </div>
-          </div>
-          
-          {/* Toggle Switch */}
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={useUserModel}
-              onChange={(e) => {
-                setUseUserModel(e.target.checked);
-                if (e.target.checked) {
-                  // Auto-select user model
-                  setSelectedModel({
-                    image: userTryOnImage,
-                    name: "Your Model",
-                  });
-                } else {
-                  // Clear selection to force user to pick static model
-                  setSelectedModel(null);
-                }
-              }}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
-          </label>
-        </div>
-        
-        <p className="text-xs text-gray-500 mt-2">
-          {useUserModel 
-            ? "Using your personalized model" 
-            : "Toggle ON to use static DVYB models below"}
-        </p>
-      </div>
-    )}
-
-    {/* Model Grid - Only show if toggle is OFF or user has no saved model */}
-    {(!userHasTryOn || !useUserModel) && (
-      <div className="grid grid-cols-2 md:grid-cols-4 w-[550px] mb-6">
-        {models.map((model, index) => (
-          <div
-            key={index}
+      {/* Model Selector - Image 1 UI */}
+      {showModelSelector && !showModelPreview && (
+        <div className="p-6 w-full bg-white md:w-[818px] relative">
+          {/* Close Button */}
+          <button
             onClick={() => {
-              setSelectedModel({
-                image: model.modelimg,
-                name: model.modelName,
-              });
+              setShowModelSelector(false);
+              setStep(1);
             }}
-            className="cursor-pointer flex flex-col items-center relative"
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
           >
-            <img
-              src={model.modelimg}
-              alt={model.modelName}
-              className="w-[95px] h-[180px] object-contain rounded-lg"
-            />
-            <p className="text-center mt-2 text-sm font-medium capitalize">{model.modelName}</p>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
 
-            {selectedModel?.name === model.modelName && (
-              <div className="absolute inset-0 border-2 border-[#8B0000] rounded-none pointer-events-none">
-                <div className="absolute top-2 right-2 w-5 h-5 bg-[#8B0000] flex items-center justify-center">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+          {/* Header */}
+          <h2 className="text-md font-semibold mb-1">Select a model:</h2>
+          <p className="text-xs text-gray-600 mb-4">You can only choose one model</p>
+
+          {/* ✅ ADD TOGGLE HERE - Only show if user has saved try-on */}
+          {userHasTryOn && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* User's saved model thumbnail */}
+                  <img
+                    src={userTryOnImage}
+                    alt="Your model"
+                    className="w-12 h-16 object-cover rounded border-2 border-primary"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Your Model</p>
+                    <p className="text-xs text-gray-600">Created from your profile</p>
+                  </div>
                 </div>
+
+                {/* Toggle Switch */}
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useUserModel}
+                    onChange={(e) => {
+                      setUseUserModel(e.target.checked);
+                      if (e.target.checked) {
+                        // Auto-select user model
+                        setSelectedModel({
+                          image: userTryOnImage,
+                          name: "Your Model",
+                        });
+                      } else {
+                        // Clear selection to force user to pick static model
+                        setSelectedModel(null);
+                      }
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                </label>
               </div>
-            )}
+
+              <p className="text-xs text-gray-500 mt-2">
+                {useUserModel
+                  ? "Using your personalized model"
+                  : "Toggle ON to use static DVYB models below"}
+              </p>
+            </div>
+          )}
+
+          {/* Model Grid - Only show if toggle is OFF or user has no saved model */}
+          {(!userHasTryOn || !useUserModel) && (
+            <div className="grid grid-cols-2 md:grid-cols-4 w-[550px] mb-6">
+              {models.map((model, index) => (
+                <div
+                  key={index}
+                  onClick={() => {
+                    setSelectedModel({
+                      image: model.modelimg,
+                      name: model.modelName,
+                    });
+                  }}
+                  className="cursor-pointer flex flex-col items-center relative"
+                >
+                  <img
+                    src={model.modelimg}
+                    alt={model.modelName}
+                    className="w-[95px] h-[180px] object-contain rounded-lg"
+                  />
+                  <p className="text-center mt-2 text-sm font-medium capitalize">
+                    {model.modelName}
+                  </p>
+
+                  {selectedModel?.name === model.modelName && (
+                    <div className="absolute inset-0 border-2 border-[#8B0000] rounded-none pointer-events-none">
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-[#8B0000] flex items-center justify-center">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Warning Box */}
+          <div className="flex items-start gap-2 p-3 rounded-lg">
+            <input type="checkbox" className="mt-0.5" />
+            <p className="text-xs text-black">
+              Make it default model for All future try ons you can always change the model in the
+              settings
+            </p>
           </div>
-        ))}
-      </div>
-    )}
 
-    {/* Warning Box */}
-    <div className="flex items-start gap-2 p-3 rounded-lg">
-      <input type="checkbox" className="mt-0.5" />
-      <p className="text-xs text-black">
-        Make it default model for All future try ons you can always change the model in the
-        settings
-      </p>
-    </div>
+          {/* Footer Buttons */}
+          <div className="flex justify-between items-center mt-6">
+            <button
+              onClick={() => {
+                setShowModelSelector(false);
+                setStep(1);
+              }}
+              className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 hover:border-red-900 hover:text-red-900 transition-colors"
+            >
+              <ArrowLeft size={16} /> BACK
+            </button>
 
-    {/* Footer Buttons */}
-    <div className="flex justify-between items-center mt-6">
-      <button
-        onClick={() => {
-          setShowModelSelector(false);
-          setStep(1);
-        }}
-        className="flex items-center gap-2 text-gray-600 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 hover:border-red-900 hover:text-red-900 transition-colors"
-      >
-        <ArrowLeft size={16} /> BACK
-      </button>
-
-      <button
-        onClick={() => {
-          if (!selectedModel) {
-            alert("Please select a model to continue");
-            return;
-          }
-          setShowModelPreview(true);
-          setShowModelSelector(false);
-        }}
-        className={`px-6 py-2 rounded-md transition-colors ${
-          selectedModel
-            ? "bg-[#8B0000] text-white hover:bg-[#A30000] hover:text-white"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
-        disabled={!selectedModel}
-      >
-        NEXT →
-      </button>
-    </div>
-  </div>
-)}
+            <button
+              onClick={() => {
+                if (!selectedModel) {
+                  alert("Please select a model to continue");
+                  return;
+                }
+                setShowModelPreview(true);
+                setShowModelSelector(false);
+              }}
+              className={`px-6 py-2 rounded-md transition-colors ${
+                selectedModel
+                  ? "bg-[#8B0000] text-white hover:bg-[#A30000] hover:text-white"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              disabled={!selectedModel}
+            >
+              NEXT →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Model Preview - Image 2 UI */}
 

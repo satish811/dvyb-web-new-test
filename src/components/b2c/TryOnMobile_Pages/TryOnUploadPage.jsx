@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { X, ArrowLeft, Check } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { X, ArrowLeft, Check } from "lucide-react";
 
 const TryOnUploadPage = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const TryOnUploadPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [selectedModel, setSelectedModel] = useState(null);
-  const [uploadError, setUploadError] = useState('');
+  const [uploadError, setUploadError] = useState("");
   const [showComparison, setShowComparison] = useState(false); // ⭐ NEW
 
   const isModelSelection = tryOnData?.selectModel;
@@ -20,38 +20,46 @@ const TryOnUploadPage = () => {
     const sareeModels = [
       {
         modelName: "Model 1",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/modeltryon_wsilt2.jpg",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/modeltryon_wsilt2.jpg",
       },
       {
         modelName: "Model 2",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_5maj435maj435maj_zsikdk.png",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_5maj435maj435maj_zsikdk.png",
       },
       {
         modelName: "Model 3",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_784di8784di8784d_ra30uh.png",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_784di8784di8784d_ra30uh.png",
       },
       {
         modelName: "Model 4",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763213101/Gemini_Generated_Image_1vnwft1vnwft1vnw_gvxeta.png",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213101/Gemini_Generated_Image_1vnwft1vnwft1vnw_gvxeta.png",
       },
     ];
 
     const universalModels = [
       {
         modelName: "Fair & Slim",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
       },
       {
         modelName: "Dusky & Curvy",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
       },
       {
         modelName: "Wheatist & Athletic",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
       },
       {
         modelName: "Medium",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
       },
     ];
 
@@ -72,29 +80,29 @@ const TryOnUploadPage = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    setUploadError('');
+    setUploadError("");
 
-    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-      setUploadError('Please select a valid image (JPEG, PNG, JPG).');
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      setUploadError("Please select a valid image (JPEG, PNG, JPG).");
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setUploadError('File size exceeds 2MB. Please choose a smaller image.');
+      setUploadError("File size exceeds 2MB. Please choose a smaller image.");
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
       console.log("✅ Image selected:", file.name);
-      
-      navigate('/tryon/processing', {
+
+      navigate("/tryon/processing", {
         state: {
           ...tryOnData,
           uploadedFile: file,
           uploadedImagePreview: reader.result,
-          processingType: 'upload'
-        }
+          processingType: "upload",
+        },
       });
     };
     reader.readAsDataURL(file);
@@ -112,12 +120,12 @@ const TryOnUploadPage = () => {
       return;
     }
 
-    navigate('/tryon/preview', {
+    navigate("/tryon/preview", {
       state: {
         ...tryOnData,
         modelImage: selectedModel.image,
-        processingType: 'model'
-      }
+        processingType: "model",
+      },
     });
   };
 
@@ -134,7 +142,8 @@ const TryOnUploadPage = () => {
     navigate(`/products/${tryOnData?.productId}`);
   };
 
-  const exampleImage = "https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg";
+  const exampleImage =
+    "https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg";
 
   if (!tryOnData) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -144,7 +153,7 @@ const TryOnUploadPage = () => {
   if (isModelSelection && showComparison && selectedModel) {
     return (
       <div className="min-h-screen bg-white relative overflow-auto pb-24">
-        <button 
+        <button
           onClick={handleClose}
           className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
         >
@@ -196,8 +205,13 @@ const TryOnUploadPage = () => {
           {/* Warning Message */}
           <div className=" text-black p-4  mb-6">
             <p className="text-sm leading-relaxed">
-              <span className="font-bold">Note:</span> Virtual try-on results depend on your photo quality. 
-              <span className="text-primary"> (cut-off head, missing hands/face/Dress etc.)</span> are not our responsibility.
+              <span className="font-bold">Note:</span> Virtual try-on results depend on your photo
+              quality.
+              <span className="text-primary">
+                {" "}
+                (cut-off head, missing hands/face/Dress etc.)
+              </span>{" "}
+              are not our responsibility.
             </p>
           </div>
 
@@ -270,9 +284,9 @@ const TryOnUploadPage = () => {
         <div className="px-4 pt-6 pb-8 max-w-3xl mx-auto">
           <div className="mb-8 text-center">
             <p className="text-xl md:text-2xl text-gray-900 leading-tight">
-              <span className='font-bold'>
+              <span className="font-bold">
                 Upload your full photo for the best try-on experience —
-              </span> 
+              </span>
               <span className="text-lg md:text-xl text-gray-700 ml-2">we'll do the rest!</span>
             </p>
           </div>
@@ -280,16 +294,12 @@ const TryOnUploadPage = () => {
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Example Image */}
             <div className="flex-shrink-0 w-full md:w-[280px]">
-              <img 
-                src={exampleImage}
-                alt="Example"
-                className="w-full h-auto shadow-lg "
-              />
+              <img src={exampleImage} alt="Example" className="w-full h-auto shadow-lg " />
             </div>
 
             {/* Instructions & Upload */}
             <div className="flex-1 space-y-5">
-              <div 
+              <div
                 className=" p-6 bg-[#FFF8F4]"
                 style={{
                   backgroundImage: `
@@ -298,9 +308,9 @@ const TryOnUploadPage = () => {
                     repeating-linear-gradient(180deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
                     repeating-linear-gradient(270deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px)
                   `,
-                  backgroundSize: '2px 100%, 100% 2px, 2px 100%, 100% 2px',
-                  backgroundPosition: '0 0, 0 0, 100% 0, 0 100%',
-                  backgroundRepeat: 'no-repeat'
+                  backgroundSize: "2px 100%, 100% 2px, 2px 100%, 100% 2px",
+                  backgroundPosition: "0 0, 0 0, 100% 0, 0 100%",
+                  backgroundRepeat: "no-repeat",
                 }}
               >
                 <h3 className="font-bold text-gray-900 mb-4 text-base">INSTRUCTIONS:</h3>
@@ -319,7 +329,8 @@ const TryOnUploadPage = () => {
               )}
 
               <p className="text-sm text-gray-600 leading-relaxed">
-                Your photos are never stored in our system. We respect your privacy and are committed to protecting your personal data.
+                Your photos are never stored in our system. We respect your privacy and are
+                committed to protecting your personal data.
               </p>
 
               <input
@@ -334,14 +345,14 @@ const TryOnUploadPage = () => {
               <label
                 htmlFor="uploadInput"
                 className={`block w-full bg-[#8B0000] hover:bg-[#A30000] text-white py-3.5 text-center font-semibold cursor-pointer transition-all  ${
-                  isUploading ? 'opacity-60 cursor-not-allowed' : ''
+                  isUploading ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
-                {isUploading ? 'Uploading...' : 'CLICK TO UPLOAD'}
+                {isUploading ? "Uploading..." : "CLICK TO UPLOAD"}
               </label>
 
-              <button 
-                onClick={() => document.getElementById('uploadInput').click()}
+              <button
+                onClick={() => document.getElementById("uploadInput").click()}
                 disabled={isUploading}
                 className="w-full border-2 border-[#8B0000] text-[#8B0000] py-3.5 font-semibold hover:bg-[#8B0000] hover:text-white transition-all "
               >

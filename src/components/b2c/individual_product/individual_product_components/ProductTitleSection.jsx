@@ -9,7 +9,7 @@ const ProductTitleSection = ({
   onAddToWishlist,
   onAddToB2BWishlist,
   addingToWishlist,
-  product
+  product,
 }) => {
   const { title, name, description } = product || {};
   const [isExpanded, setIsExpanded] = useState(false);

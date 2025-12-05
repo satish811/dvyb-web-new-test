@@ -7,8 +7,8 @@ export const useProductFilter = (products = []) => {
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products) || products.length === 0) return [];
 
-    console.log('Selected Filters:', selectedFilters);
-    console.log('Products count:', products.length);
+    console.log("Selected Filters:", selectedFilters);
+    console.log("Products count:", products.length);
 
     const hasFilters =
       selectedFilters.categories?.length > 0 ||
@@ -21,7 +21,7 @@ export const useProductFilter = (products = []) => {
       selectedFilters.blouses?.length > 0;
 
     if (!hasFilters) {
-      console.log('No filters applied, returning all products');
+      console.log("No filters applied, returning all products");
       return products;
     }
 
@@ -35,18 +35,18 @@ export const useProductFilter = (products = []) => {
         const matchesCategory =
           productCat === selectedCat ||
           productDressType === selectedCat ||
-          (selectedCat === 'saree' && productDressType === 'sarees') ||
-          (selectedCat === 'lehenga' && productDressType === 'lehengas');
+          (selectedCat === "saree" && productDressType === "sarees") ||
+          (selectedCat === "lehenga" && productDressType === "lehengas");
 
         if (!matchesCategory) return false;
       }
 
       // === BLOUSE FILTER === (FIXED - Only apply to blouse products)
       if (selectedFilters.blouses?.length > 0) {
-        console.log('Applying blouse filter:', selectedFilters.blouses);
-        console.log('Product dressType:', product.dressType);
-        console.log('Product subDressType:', product.subDressType);
-        const isBlouseProduct = product.dressType?.toLowerCase() === 'blouses';
+        console.log("Applying blouse filter:", selectedFilters.blouses);
+        console.log("Product dressType:", product.dressType);
+        console.log("Product subDressType:", product.subDressType);
+        const isBlouseProduct = product.dressType?.toLowerCase() === "blouses";
 
         if (isBlouseProduct) {
           const productBlouseType = product.subDressType?.trim()?.toLowerCase();
@@ -54,7 +54,7 @@ export const useProductFilter = (products = []) => {
           if (!productBlouseType) return false;
 
           const hasBlouseMatch = selectedFilters.blouses.some(
-            selectedBlouse => selectedBlouse.toLowerCase() === productBlouseType
+            (selectedBlouse) => selectedBlouse.toLowerCase() === productBlouseType
           );
 
           if (!hasBlouseMatch) return false;
@@ -64,11 +64,11 @@ export const useProductFilter = (products = []) => {
 
       // === SUBCATEGORY FILTER ===
       if (selectedFilters.subcategories?.length > 0) {
-        const productSub = product.subcategory?.trim()?.toLowerCase() ||
-          product.subDressType?.trim()?.toLowerCase();
+        const productSub =
+          product.subcategory?.trim()?.toLowerCase() || product.subDressType?.trim()?.toLowerCase();
 
         const matchSub = selectedFilters.subcategories.some(
-          sub => sub.toLowerCase() === productSub
+          (sub) => sub.toLowerCase() === productSub
         );
 
         if (!matchSub) return false;

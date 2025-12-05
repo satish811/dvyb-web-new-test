@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { AlertCircle, CheckCircle } from 'lucide-react';
-import black_warnIc from '../../../assets/TryOn/black_warnIc.svg';
-import red_warnIc from '../../../assets/TryOn/red_warnIc.svg';
-import img1 from '../../../assets/lazyloading/logoimg1.svg';
-import img2 from '../../../assets/lazyloading/logoimg2.svg';
-import img3 from '../../../assets/lazyloading/logoimg3.svg';
-import img4 from '../../../assets/lazyloading/logoimg4.svg';
-import img5 from '../../../assets/lazyloading/logoimg5.svg';
-import img6 from '../../../assets/lazyloading/logoimg6.svg';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { AlertCircle, CheckCircle } from "lucide-react";
+import black_warnIc from "../../../assets/TryOn/black_warnIc.svg";
+import red_warnIc from "../../../assets/TryOn/red_warnIc.svg";
+import img1 from "../../../assets/lazyloading/logoimg1.svg";
+import img2 from "../../../assets/lazyloading/logoimg2.svg";
+import img3 from "../../../assets/lazyloading/logoimg3.svg";
+import img4 from "../../../assets/lazyloading/logoimg4.svg";
+import img5 from "../../../assets/lazyloading/logoimg5.svg";
+import img6 from "../../../assets/lazyloading/logoimg6.svg";
 
 const TryOnProcessingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const tryOnData = location.state;
 
-  const [state, setState] = useState('uploading'); // 'uploading' | 'processing' | 'success' | 'error'
+  const [state, setState] = useState("uploading"); // 'uploading' | 'processing' | 'success' | 'error'
   const [uploadedImage, setUploadedImage] = useState(null);
-  const [uploadError, setUploadError] = useState('');
+  const [uploadError, setUploadError] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const images = [img1, img2, img3, img4, img5, img6];
 
   // Rotate loader images
   useEffect(() => {
-    if (state === 'uploading' || state === 'processing') {
+    if (state === "uploading" || state === "processing") {
       const timer = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % images.length);
       }, 200);
@@ -68,14 +68,14 @@ const TryOnProcessingPage = () => {
   useEffect(() => {
     const processImage = async () => {
       if (!tryOnData) {
-        navigate('/products');
+        navigate("/products");
         return;
       }
 
       try {
-        if (tryOnData.processingType === 'upload' && tryOnData.uploadedFile) {
+        if (tryOnData.processingType === "upload" && tryOnData.uploadedFile) {
           // UPLOAD FLOW
-          setState('uploading');
+          setState("uploading");
 
           const cloudinaryUrl = await uploadToCloudinary(tryOnData.uploadedFile);
           setUploadedImage(cloudinaryUrl);
@@ -83,25 +83,25 @@ const TryOnProcessingPage = () => {
           const isValid = await validateImage(cloudinaryUrl);
 
           if (isValid) {
-            setState('success');
+            setState("success");
           } else {
-            setUploadError('Image you uploaded was blurred or pixelated');
-            setState('error');
+            setUploadError("Image you uploaded was blurred or pixelated");
+            setState("error");
           }
-        } else if (tryOnData.processingType === 'model' && tryOnData.modelImage) {
+        } else if (tryOnData.processingType === "model" && tryOnData.modelImage) {
           // MODEL SELECTION FLOW
-          setState('uploading');
+          setState("uploading");
           setUploadedImage(tryOnData.modelImage);
 
           // Simulate processing delay
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          
-          setState('success');
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          setState("success");
         }
       } catch (error) {
-        console.error('Processing error:', error);
-        setUploadError(error.message || 'Failed to process image');
-        setState('error');
+        console.error("Processing error:", error);
+        setUploadError(error.message || "Failed to process image");
+        setState("error");
       }
     };
 
@@ -112,21 +112,21 @@ const TryOnProcessingPage = () => {
     if (!uploadedImage) return;
 
     // Navigate to preview with model image
-    navigate('/tryon/preview', {
+    navigate("/tryon/preview", {
       state: {
         ...tryOnData,
         modelImage: uploadedImage,
         garmentImage: tryOnData.garmentImage,
-      }
+      },
     });
   };
 
   const handleReupload = () => {
-    navigate('/tryon/upload', { 
-      state: { 
-        ...tryOnData, 
-        selectModel: false 
-      } 
+    navigate("/tryon/upload", {
+      state: {
+        ...tryOnData,
+        selectModel: false,
+      },
     });
   };
 
@@ -141,9 +141,8 @@ const TryOnProcessingPage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6">
-        
         {/* === UPLOADING/PROCESSING STATE === */}
-        {(state === 'uploading' || state === 'processing') && (
+        {(state === "uploading" || state === "processing") && (
           <>
             <div className="flex flex-col items-center justify-center">
               <img
@@ -152,7 +151,7 @@ const TryOnProcessingPage = () => {
                 className="w-[150px] h-[150px] object-cover transition-opacity duration-300"
               />
               <p className="text-xl text-center text-primary font-Outfit mt-4">
-                {state === 'uploading' ? 'Uploading your photo...' : 'Creating your Vibe...'}
+                {state === "uploading" ? "Uploading your photo..." : "Creating your Vibe..."}
               </p>
             </div>
 
@@ -178,14 +177,10 @@ const TryOnProcessingPage = () => {
         )}
 
         {/* === SUCCESS STATE === */}
-        {state === 'success' && (
+        {state === "success" && (
           <>
             <div className="relative  overflow-hidden shadow-lg">
-              <img
-                src={uploadedImage}
-                alt="Success"
-                className="w-full h-72 object-contain"
-              />
+              <img src={uploadedImage} alt="Success" className="w-full h-72 object-contain" />
             </div>
 
             <div className="flex items-center gap-2 text-green-700 bg-green-50 px-4 py-3  border border-green-200">
@@ -207,13 +202,14 @@ const TryOnProcessingPage = () => {
             </button>
 
             <p className="text-xs text-gray-600 text-center leading-relaxed">
-              Your photos are never stored in our system. We respect your privacy and are committed to protecting your personal data.
+              Your photos are never stored in our system. We respect your privacy and are committed
+              to protecting your personal data.
             </p>
           </>
         )}
 
         {/* === ERROR STATE === */}
-        {state === 'error' && (
+        {state === "error" && (
           <>
             <div className="relative  overflow-hidden">
               <img
@@ -230,7 +226,7 @@ const TryOnProcessingPage = () => {
               <div className="flex items-start gap-3">
                 <img src={red_warnIc} className="h-5 w-5 flex-shrink-0 mt-0.5" alt="error" />
                 <p className="text-red-600 text-base font-medium">
-                  {uploadError || 'Image you uploaded was blurred or pixelated'}
+                  {uploadError || "Image you uploaded was blurred or pixelated"}
                 </p>
               </div>
 
@@ -244,7 +240,10 @@ const TryOnProcessingPage = () => {
               <ul className="text-sm text-gray-800 space-y-2 ml-2">
                 <li>• Keep file size under 2MB</li>
                 <li>• Ensure image is clear and not pixelated</li>
-                <li>• Maintain <span className="text-[#8B0000] font-medium">good lighting and contrast</span></li>
+                <li>
+                  • Maintain{" "}
+                  <span className="text-[#8B0000] font-medium">good lighting and contrast</span>
+                </li>
                 <li>• Keep background clean or neutral</li>
               </ul>
             </div>
@@ -257,7 +256,8 @@ const TryOnProcessingPage = () => {
             </button>
 
             <p className="text-xs text-gray-600 text-center leading-relaxed">
-              Your photos are never stored in our system. We respect your privacy and are committed to protecting your personal data.
+              Your photos are never stored in our system. We respect your privacy and are committed
+              to protecting your personal data.
             </p>
           </>
         )}

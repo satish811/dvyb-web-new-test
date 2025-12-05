@@ -6,9 +6,10 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Node dependencies
 
+# Node dependencies
 node_modules
+
 
 # Build output
 dist
@@ -20,7 +21,9 @@ dist-ssr
 .firebaserc
 firebase-debug.log
 
-
+# Environment variables
+.env
+.env.*.local
 
 # Editor directories and files
 .vscode/*

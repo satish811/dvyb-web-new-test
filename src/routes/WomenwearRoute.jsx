@@ -10,9 +10,7 @@ export default function WomenwearRoute({ products }) {
   // ✅ MEMOIZED filtering (fixes infinite re-render)
   const filteredProducts = useMemo(() => {
     return category
-      ? products.filter((p) =>
-        p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase()
-      )
+      ? products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase())
       : products;
   }, [category, products]);
 

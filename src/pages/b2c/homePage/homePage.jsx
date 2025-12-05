@@ -21,7 +21,6 @@ export default function Home() {
 
   const productsArray = Array.isArray(staticProducts) ? staticProducts : [];
   const wedding = productsArray.filter((p) => p.category === "Wedding");
-  // const discount = productsArray.filter((p) => p.discountPercent && p.discountPercent > 0);
   const discount = productsArray.filter((p) => p.category === "Discount");
   const bestsellers = productsArray.filter((p) => p.category === "Bestselling").slice(0, 8);
   const spotlight = productsArray.find((p) => p.category === "Spotlight");
@@ -30,7 +29,7 @@ export default function Home() {
 
   return (
     <div>
-      <section className=" w-full max-w-[95vw] md:h-[90vh] lg:mx-7  mx-auto overflow-hidden flex justify-center items-center ">
+      <section className="lg:mt-7 md:mt-7 w-full max-w-[95vw] md:h-[90vh] lg:mx-7  mx-auto overflow-hidden flex justify-center items-center ">
         <img
           onClick={() => navigate("/womenwear")}
           src={homeBanner}
@@ -56,12 +55,11 @@ export default function Home() {
       {/* 4. DISCOUNT COLLECTION */}
       <section className="container mx-auto px-3 pt-12">
         <SectionTitle viewAll>Discount Collection</SectionTitle>
-        <ProductGrid products={discount} columns={4} />
+        <ProductGrid products={discount} columns={4} showDiscount={false} />
       </section>
 
       {/* Luxurious Picks of the Day (from image) */}
       <section className="container mx-auto pt-12">
-        {/* <ProductGrid products={luxuryPicks} columns={4} /> */}
         <LuxuryPicks products={luxuryPicks} columns={4} />
       </section>
 
@@ -87,11 +85,12 @@ export default function Home() {
           <section>
             <SectionTitle viewAll>Closet icons</SectionTitle>
             <ClosetIconsSection products={closetIcons} columns={5} />
-            <ProductGrid products={discount} columns={4} />
+            <ProductGrid products={discount} columns={4} showShopNow={false} />
             <BestProducts products={bestsellers} columns={3} buttonText="Upto 50%" />
           </section>
         )}
       </section>
+      
     </div>
   );
 }

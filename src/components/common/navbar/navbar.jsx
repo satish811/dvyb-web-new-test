@@ -20,7 +20,7 @@ import twodpopup from "../../../assets/Navbar/twodpopup.svg";
 import { searchService } from "../../../services/searchService";
 import useDebounce from "../../../hooks/useDebounce";
 
-export default function Navbar() {
+export default function Navbar({ setShowLoader }) {
   // ==== Existing states from your old code ====
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,6 +29,7 @@ export default function Navbar() {
   const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [logoLoading, setLogoLoading] = useState(false);
 
   // Virtual Try-On modal states
   const { isTryOnModalOpen, setTryOnModalOpen } = useUI();
@@ -138,11 +139,6 @@ export default function Navbar() {
     };
 
     performSearch();
-
-    // Save to recent searches if query is long enough
-    if (debouncedSearchQuery?.trim().length >= 2) {
-      saveRecentSearch(debouncedSearchQuery.trim());
-    }
   }, [debouncedSearchQuery]);
 
   // Save recent search (max 5)
@@ -183,7 +179,7 @@ export default function Navbar() {
         sharara: "shararas",
         gown: "gown",
         fusion: "fusion",
-        wedding: "wedding"
+        wedding: "wedding",
       };
 
       if (categoryMap[queryLower]) {
@@ -242,7 +238,7 @@ export default function Navbar() {
               CATEGORIES
             </span>
             <span
-              onClick={() => setShowModal(true)} // Added Virtual Try-On click handler
+              onClick={() => setShowModal(true)} 
               className="text-[12px] font-medium tracking-wider cursor-pointer hover:underline"
             >
               VIRTUAL TRY-ON
@@ -251,22 +247,35 @@ export default function Navbar() {
 
           {/* Main bar */}
           <div className="flex items-center justify-between px-3 py-2 sm:px-4 md:px-3">
-
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="lg:hidden flex items-center gap-1 font-medium text-sm text-gray-800 ml-1"
             >
-
               WOMEN <MdOutlineArrowDropDown className="text-xl" />
             </button>
 
-            <div className="flex-1 flex justify-center" onClick={() => navigate("/")}>
-              <img
-                src={mainlogo}
-                alt="Logo"
-                className="h-12 xs:h-14 sm:ml-1 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
-              />
+            <div
+              className="flex-1 flex justify-center"
+              onClick={() => {
+                if (setShowLoader) setShowLoader(true);
+                setTimeout(() => {
+                  navigate("/");
+                  setShowLoader(false);
+                }, 1200); 
+              }}
+            >
+
+              {logoLoading ? (
+                <div className="w-8 h-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+              ) : (
+                <img
+                  src={mainlogo}
+                  alt="Logo"
+                  className="h-12 xs:h-14 sm:ml-1 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
+                />
+              )}
             </div>
+
 
             <NavIcons
               wishlistCount={wishlistCount}
@@ -281,39 +290,38 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <nav
             className="
-              flex 
-              text-[11px] 
-              gap-4 
-              px-3 
-              overflow-x-auto 
-              hide-scrollbar 
-              whitespace-nowrap 
-              sm:text-sm 
-              sm:gap-8 
-              sm:px-8 
-              md:text-[13px] 
-              md:gap-14 
-              md:px-12 
-              justify-start 
-              sm:justify-center 
-              pb-1
-            "
+    flex 
+    text-[11px] 
+    gap-4 
+    px-3 
+    overflow-x-auto 
+    hide-scrollbar 
+    whitespace-nowrap 
+    sm:text-sm 
+    sm:gap-8 
+    sm:px-8 
+    md:text-[13px] 
+    md:gap-14 
+    md:px-12 
+    justify-start 
+    sm:justify-center 
+    pb-1
+  "
           >
-
             {navItems.map((item) => (
               <button
                 key={item.label}
                 onClick={() => {
                   if (item.isTryOn) {
-                    setShowModal(true); // Open Virtual Try-On modal
+                    setShowModal(true);
                   } else {
-                    navigate(item.path); // Normal navigation
+                    navigate(item.path);
                   }
                 }}
                 className={`
-        relative pb-1 transition-all duration-200
+        relative pb-1 transition-all duration-200 font-semibold
         ${isActive(item)
-                    ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                    ? "text-primary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
                     : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
                   }
         ${item.isHighlight ? "text-primary" : ""}
@@ -377,20 +385,19 @@ export default function Navbar() {
               <p className="text-sm font-medium text-primary mb-4">SELECT ONE</p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
-                {["Saree", "Salwar Suits", "Lehengas", "Kurti", "Dupattas", "Ethnic Jacket"].map(
-                  (product) => (
-                    <button
-                      key={product}
-                      onClick={() => setSelectedProduct(product)}
-                      className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${selectedProduct === product
-                        ? "bg-[#F0E0E0] text-primary border-none"
-                        : "border-primary bg-white text-primary"
-                        } focus:outline-none focus:ring-black`}
-                    >
-                      {product}
-                    </button>
-                  )
-                )}
+                {/* {["Saree", "Salwar Suits", "Lehengas", "Kurti", "Dupattas", "Ethnic Jacket"].map( */}
+                {["Saree", "Salwar Suits", "Lehengas", "Kurti", "Ethnic Jacket"].map((product) => (
+                  <button
+                    key={product}
+                    onClick={() => setSelectedProduct(product)}
+                    className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${selectedProduct === product
+                      ? "bg-[#F0E0E0] text-primary border-none"
+                      : "border-primary bg-white text-primary"
+                      } focus:outline-none focus:ring-black`}
+                  >
+                    {product}
+                  </button>
+                ))}
               </div>
 
               <div className="space-y-3">

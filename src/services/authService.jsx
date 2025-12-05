@@ -1,12 +1,12 @@
-  /**
-   * Authentication service file
-   * ------------------------------
-   * Class based approach
-   * ------------------------------
-   * Handles user registration, login, Google sign-in, and logout
-   * Supports both email and phone number authentication
-   * Uses Firebase Authentication and Firestore
-   */
+/**
+ * Authentication service file
+ * ------------------------------
+ * Class based approach
+ * ------------------------------
+ * Handles user registration, login, Google sign-in, and logout
+ * Supports both email and phone number authentication
+ * Uses Firebase Authentication and Firestore
+ */
 
 import { B2CUserModel, B2BUserModel } from "../models";
 import { auth, db, envConfig } from "../config";
@@ -21,53 +21,53 @@ import {
   updateProfile,
 } from "firebase/auth";
 
-  class AuthenticationService {
-    static instance = null;
+class AuthenticationService {
+  static instance = null;
 
-    static getInstance() {
-      if (!AuthenticationService.instance) {
-        AuthenticationService.instance = new AuthenticationService();
-      }
-      return AuthenticationService.instance;
+  static getInstance() {
+    if (!AuthenticationService.instance) {
+      AuthenticationService.instance = new AuthenticationService();
     }
+    return AuthenticationService.instance;
+  }
 
-    constructor() {
-      this.auth = auth;
-      this.db = db;
-      this.googleProvider = new GoogleAuthProvider();
+  constructor() {
+    this.auth = auth;
+    this.db = db;
+    this.googleProvider = new GoogleAuthProvider();
 
-      this.b2cCollection = envConfig.firebaseStorage.b2cCollection;
-      this.b2bCollection = envConfig.firebaseStorage.b2bCollection;
-      this.b2cRole = envConfig.userRole.b2cUserRole;
-      this.b2bRole = envConfig.userRole.b2bUserRole;
+    this.b2cCollection = envConfig.firebaseStorage.b2cCollection;
+    this.b2bCollection = envConfig.firebaseStorage.b2bCollection;
+    this.b2cRole = envConfig.userRole.b2cUserRole;
+    this.b2bRole = envConfig.userRole.b2bUserRole;
+  }
+
+  /** Converting phone → dummy email */
+  phoneToEmail(phone) {
+    return `${phone.replace(/[^0-9+]/g, "")}@phone.dvyb.com`;
+  }
+
+  /** Saving Firebase token */
+  async saveAuthToken(user) {
+    try {
+      const token = await user.getIdToken();
+      localStorage.setItem("authToken", token);
+      window.dispatchEvent(new Event("authChange"));
+    } catch (error) {
+      console.error("Token save error:", error);
     }
+  }
 
-    /** Converting phone → dummy email */
-    phoneToEmail(phone) {
-      return `${phone.replace(/[^0-9+]/g, "")}@phone.dvyb.com`;
-    }
+  /** Register user (Email or Phone) */
+  async register(input, password, roleType, extraData = {}) {
+    const isPhone = input.startsWith("+");
+    const email = isPhone ? this.phoneToEmail(input) : input;
 
-    /** Saving Firebase token */
-    async saveAuthToken(user) {
-      try {
-        const token = await user.getIdToken();
-        localStorage.setItem("authToken", token);
-        window.dispatchEvent(new Event("authChange"));
-      } catch (error) {
-        console.error("Token save error:", error);
-      }
-    }
+    try {
+      const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
 
-    /** Register user (Email or Phone) */
-    async register(input, password, roleType, extraData = {}) {
-      const isPhone = input.startsWith("+");
-      const email = isPhone ? this.phoneToEmail(input) : input;
-
-      try {
-        const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
-
-        const isB2B = roleType === "B2B";
-        const collection = isB2B ? this.b2bCollection : this.b2cCollection;
+      const isB2B = roleType === "B2B";
+      const collection = isB2B ? this.b2bCollection : this.b2cCollection;
 
       /**
        * Create structured user data using models
@@ -178,41 +178,41 @@ import {
         };
       }
 
-        // First check B2B collection
-        const b2bUserRef = doc(this.db, this.b2bCollection, uid);
-        const b2bSnapshot = await getDoc(b2bUserRef);
+      // First check B2B collection
+      const b2bUserRef = doc(this.db, this.b2bCollection, uid);
+      const b2bSnapshot = await getDoc(b2bUserRef);
 
-        if (b2bSnapshot.exists()) {
-          const user = b2bSnapshot.data();
-          const filteredUser = {
-            userId: user.uid || user.id,
-            username: user.username || "",
-            email: user.email || "",
-            role: user.role || this.b2bRole,
-          };
-          return {
-            success: true,
-            data: filteredUser,
-          };
-        }
+      if (b2bSnapshot.exists()) {
+        const user = b2bSnapshot.data();
+        const filteredUser = {
+          userId: user.uid || user.id,
+          username: user.username || "",
+          email: user.email || "",
+          role: user.role || this.b2bRole,
+        };
+        return {
+          success: true,
+          data: filteredUser,
+        };
+      }
 
-        // Then check B2C collection
-        const b2cUserRef = doc(this.db, this.b2cCollection, uid);
-        const b2cSnapshot = await getDoc(b2cUserRef);
+      // Then check B2C collection
+      const b2cUserRef = doc(this.db, this.b2cCollection, uid);
+      const b2cSnapshot = await getDoc(b2cUserRef);
 
-        if (b2cSnapshot.exists()) {
-          const user = b2cSnapshot.data();
-          const filteredUser = {
-            userId: user.uid || user.id,
-            username: user.username || user.name || "",
-            email: user.email || "",
-            role: user.role || this.b2cRole,
-          };
-          return {
-            success: true,
-            data: filteredUser,
-          };
-        }
+      if (b2cSnapshot.exists()) {
+        const user = b2cSnapshot.data();
+        const filteredUser = {
+          userId: user.uid || user.id,
+          username: user.username || user.name || "",
+          email: user.email || "",
+          role: user.role || this.b2cRole,
+        };
+        return {
+          success: true,
+          data: filteredUser,
+        };
+      }
 
       console.log("User not found in both B2B and B2C collections for UID:", uid);
       return {
@@ -231,8 +231,8 @@ import {
   }
 }
 
-  /**
-   * Export a single instance (Singleton)
-   */
-  export const authService = AuthenticationService.getInstance();
-  export default authService;
+/**
+ * Export a single instance (Singleton)
+ */
+export const authService = AuthenticationService.getInstance();
+export default authService;

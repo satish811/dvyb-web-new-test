@@ -174,14 +174,12 @@ export default function CheckoutPage() {
     return () => unsub();
   }, []);
 
-
   useEffect(() => {
     if (userDetails.isLoggedIn && userDetails.addresses.length > 0) {
       const defaultAddr = userDetails.addresses.find((a) => a.isDefault);
       if (defaultAddr && !defaultAddress) {
         setDefaultAddress(defaultAddr);
         setSelectedAddress(defaultAddr);
-
 
         setShippingForm({
           firstName: defaultAddr.firstName || "",
@@ -194,21 +192,19 @@ export default function CheckoutPage() {
           phone: defaultAddr.phone || "",
         });
 
-
-        const countryObj = Country.getAllCountries().find(c => c.name === defaultAddr.country);
+        const countryObj = Country.getAllCountries().find((c) => c.name === defaultAddr.country);
         if (countryObj) {
           setSelectedCountryCode(countryObj.isoCode);
 
-
           setTimeout(() => {
-            const stateObj = State.getStatesOfCountry(countryObj.isoCode)
-              .find(s => s.name === defaultAddr.stateProvince);
+            const stateObj = State.getStatesOfCountry(countryObj.isoCode).find(
+              (s) => s.name === defaultAddr.stateProvince
+            );
             if (stateObj) {
               setSelectedStateCode(stateObj.isoCode);
             }
           }, 50);
         }
-
 
         setStep2Unlocked(true);
         setStep3Unlocked(true);
@@ -219,13 +215,13 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (userDetails.addresses.length > 0) {
-      const latestDefault = userDetails.addresses.find(a => a.isDefault);
+      const latestDefault = userDetails.addresses.find((a) => a.isDefault);
       if (latestDefault && defaultAddress?.id !== latestDefault.id) {
         setDefaultAddress(latestDefault);
         setSelectedAddress(latestDefault);
       }
     }
-  }, [userDetails.addresses, defaultAddress?.id])
+  }, [userDetails.addresses, defaultAddress?.id]);
 
   useEffect(() => {
     if (userDetails.isLoggedIn && userDetails.email) {
@@ -335,7 +331,7 @@ export default function CheckoutPage() {
     0
   );
   const discount = couponApplied?.amount || subtotal * 0.12;
-  const shippingFee = transformedCartItems.length > 0 ? 50 : 0;
+  const shippingFee = transformedCartItems.length > 0 ? 0 : 0;
   const totalPayable = Math.max(0, subtotal - discount + shippingFee);
 
   const handlePayNow = async () => {
@@ -734,7 +730,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               )}
-
             </div>
 
             <div className="border border-gray-200 rounded-sm">
@@ -752,8 +747,9 @@ export default function CheckoutPage() {
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
-                        className={`border border-gray-300 py-4 rounded-sm uppercase ${paymentMethod === method ? "bg-[#800000] text-white" : ""
-                          }`}
+                        className={`border border-gray-300 py-4 rounded-sm uppercase ${
+                          paymentMethod === method ? "bg-[#800000] text-white" : ""
+                        }`}
                       >
                         {method === "cod"
                           ? "Cash on Delivery"
@@ -779,8 +775,6 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-6">
-
-
             <div className="border rounded-sm p-6">
               <h3 className="font-bold uppercase mb-4">Order Summary</h3>
               <div className="space-y-2 text-sm">

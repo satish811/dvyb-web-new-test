@@ -6,12 +6,12 @@ import B2BAuthService from "../../services/b2bAuthService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const WishlistHeartButton = ({ 
-  productId, 
-  productData, 
+const WishlistHeartButton = ({
+  productId,
+  productData,
   className = "",
-  userRole: propUserRole, 
-  userId: propUserId 
+  userRole: propUserRole,
+  userId: propUserId,
 }) => {
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,6 @@ const WishlistHeartButton = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    
     if (!propUserRole || !propUserId) {
       const getUserRole = async () => {
         const user = auth.currentUser;
@@ -72,14 +71,14 @@ const WishlistHeartButton = ({
   const handleToggleWishlist = async () => {
     // B2B users might not require login for wishlist functionality
     // Or they might have different rules
-    
+
     // OPTION 1: Allow B2B users even without userId
     if (userRole !== "B2B" && !userId) {
       toast.error("Please login to add items to wishlist");
       navigate("/login");
       return;
     }
-    
+
     // OPTION 2: Show different message for B2B users
     // if (!userId) {
     //   if (userRole === "B2B") {
@@ -103,7 +102,7 @@ const WishlistHeartButton = ({
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-      
+
       // More specific error handling
       if (error.message?.includes("requires authentication")) {
         if (userRole === "B2B") {

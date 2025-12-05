@@ -51,10 +51,12 @@ const ProductActionButtons = ({
       navigate("/checkout", {
         state: {
           cartItems: [cartItem],
-          user: currentUser ? {
-            uid: currentUser.uid,
-            email: currentUser.email,
-          } : null,
+          user: currentUser
+            ? {
+                uid: currentUser.uid,
+                email: currentUser.email,
+              }
+            : null,
         },
       });
     } catch (error) {
@@ -65,7 +67,7 @@ const ProductActionButtons = ({
 
   // Main Buy Now handler
   const handleBuyNowClick = () => {
-    console.log('Buy Now clicked!', { isGuest, isB2BUser, user, product });
+    console.log("Buy Now clicked!", { isGuest, isB2BUser, user, product });
 
     if (isGuest) {
       handleLoginRequired();
@@ -108,7 +110,6 @@ const ProductActionButtons = ({
       <div className="flex flex-col gap-3 mt-4 w-full">
         {/* Row for Buy Now and Add to Bag */}
         <div className="flex gap-3">
-
           {/* BUY NOW */}
           <button
             onClick={(e) => {
@@ -118,12 +119,13 @@ const ProductActionButtons = ({
             }}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 py-3 font-semibold text-sm uppercase tracking-wide
-              ${isGuest || addingToCart
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-[#7a0000] text-white hover:bg-[#5a0000] active:bg-[#4a0000]"
+              ${
+                isGuest || addingToCart
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-[#7a0000] text-white hover:bg-[#5a0000] active:bg-[#4a0000]"
               }
               transition disabled:opacity-50`}
-            style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+            style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
           >
             {addingToCart ? (
               <>
@@ -143,9 +145,10 @@ const ProductActionButtons = ({
             onClick={isGuest ? handleLoginRequired : onAddToBag}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 border py-3 font-semibold text-sm uppercase tracking-wide
-              ${isGuest
-                ? "border-gray-400 text-gray-400 cursor-not-allowed"
-                : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white"
+              ${
+                isGuest
+                  ? "border-gray-400 text-gray-400 cursor-not-allowed"
+                  : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white"
               }
               transition disabled:opacity-50`}
           >
@@ -165,18 +168,23 @@ const ProductActionButtons = ({
 
         {/* VIRTUAL TRY ON */}
         <button
-          onClick={isVirtualTryOnDisabled ? () => {
-            if (isGuest) {
-              handleLoginRequired();
-            } else if (isB2BUser) {
-              handleB2BRestricted();
-            }
-          } : onVirtualTryOn}
+          onClick={
+            isVirtualTryOnDisabled
+              ? () => {
+                  if (isGuest) {
+                    handleLoginRequired();
+                  } else if (isB2BUser) {
+                    handleB2BRestricted();
+                  }
+                }
+              : onVirtualTryOn
+          }
           disabled={isVirtualTryOnDisabled}
           className={`flex items-center justify-center gap-2 py-3 font-semibold text-sm uppercase tracking-wide transition
-            ${isVirtualTryOnDisabled
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-[#FFC400] text-white hover:bg-[#e6b200]"
+            ${
+              isVirtualTryOnDisabled
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-[#FFC400] text-white hover:bg-[#e6b200]"
             } disabled:opacity-50`}
         >
           <Eye size={16} />

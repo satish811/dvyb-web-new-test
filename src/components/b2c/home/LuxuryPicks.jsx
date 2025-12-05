@@ -10,7 +10,7 @@ export default function LuxuryPicks() {
   const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
 
-  // NEW: Scroll Handlers using the ref
+  // Scroll Handlers
   const slideLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" });
@@ -30,62 +30,78 @@ export default function LuxuryPicks() {
 
   return (
     <section className="bg-lighted-bg mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-        {/* LEFT BLOCK */}
-        <div className="w-full lg:w-1/4 text-center lg:text-left">
-          <div className="flex flex-col items-center max-w-sm mx-auto lg:mx-0">
-            <img src={luxIcon} alt="Luxury Icon" className="w-20 md:w-24 lg:w-25 mb-4" />
-            <h2 className="text-sm tracking-wide text-gray-600 uppercase mb-2">
-              Luxurious Pick of the
+      {/* HEADER SECTION - Top aligned */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        {/* Left - Heading with icon */}
+        <div className="flex items-center gap-3">
+          <img
+            src={luxIcon}
+            alt="Luxury Icon"
+            className="w-12 h-12 md:w-14 md:h-14"
+          />
+          <div>
+            <h2 className="text-lg md:text-xl font-medium text-gray-800">
+              Luxurious Pick of the Day
             </h2>
-            <h2 className="text-sm tracking-wide text-gray-600 uppercase mb-2">DVYB Essence</h2>
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
+              DVYB Essence
+            </p>
+          </div>
+        </div>
 
-            <button
-              onClick={() => navigate("/womenwear")}
-              className="bg-[#400000] text-xs lg:text-sm mt-2 text-white px-8 py-4 transition-colors duration-300 w-full sm:w-auto"
+        {/* Right - Explore button */}
+        <button
+          onClick={() => navigate("/womenwear")}
+          className="bg-[#400000] text-white px-6 py-3 text-sm md:text-base 
+                   hover:bg-[#300000] transition-colors duration-300 
+                   whitespace-nowrap"
+        >
+          Explore All
+        </button>
+      </div>
+
+      {/* PRODUCTS SECTION WITH ARROWS */}
+      <div className="relative">
+        {/* LEFT ARROW - Positioned outside on left */}
+        <button
+          onClick={slideLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12
+                   hidden md:flex items-center justify-center
+                   w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                   transition-all duration-300 hover:shadow-xl z-10"
+        >
+          <IoIosArrowBack size={24} className="text-gray-700" />
+        </button>
+
+        {/* PRODUCT SCROLL CONTAINER */}
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-none 
+                   hide-scrollbar scroll-smooth py-2 px-1"
+        >
+          {products.map((product, index) => (
+            <div
+              key={index}
+              className="cursor-pointer flex-shrink-0 w-64 md:w-72 lg:w-80"
             >
-              Explore All
-            </button>
-          </div>
+              <ProductCard
+                product={product}
+                onClose={handleClose}
+              />
+            </div>
+          ))}
         </div>
 
-        {/* RIGHT CONTENT WITH ARROWS */}
-        <div className="w-full lg:w-3/4 flex items-center gap-2 md:gap-4">
-          {/* LEFT ARROW */}
-          <button
-            onClick={slideLeft}
-            className="hidden md:flex items-center justify-center flex-shrink-0
-            w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-50 
-            transition-all duration-300 hover:shadow-xl"
-          >
-            <IoIosArrowBack size={20} className="text-gray-700" />
-          </button>
-
-          {/* PRODUCT SCROLL ROW */}
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-2 md:gap-4 overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth py-4 whitespace-nowrap"
-          >
-            {products.map((product, index) => (
-              <div key={index} className=" cursor-pointer">
-                <ProductCard
-                  product={product}
-                  onClose={handleClose} // Add this line
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* RIGHT ARROW */}
-          <button
-            onClick={slideRight}
-            className="hidden md:flex items-center justify-center flex-shrink-0
-            w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-50 
-            transition-all duration-300 hover:shadow-xl"
-          >
-            <IoIosArrowForward size={20} className="text-gray-700" />
-          </button>
-        </div>
+        {/* RIGHT ARROW - Positioned outside on right */}
+        <button
+          onClick={slideRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12
+                   hidden md:flex items-center justify-center
+                   w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                   transition-all duration-300 hover:shadow-xl z-10"
+        >
+          <IoIosArrowForward size={24} className="text-gray-700" />
+        </button>
       </div>
     </section>
   );

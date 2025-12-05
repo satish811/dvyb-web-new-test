@@ -9,7 +9,7 @@ const navItems = [
   { label: "WEDDING", path: "/womenwear?category=wedding" },
   { label: "SALE", path: "/womenwear?category=sale", isHighlight: true },
   // { label: "VIRTUAL TRYON", path: "/virtual-tryon", isHighlight: true },
-  { label: "VIRTUAL TRYON", path: "/virtual-tryon", isHighlight: true, isTryOn: true },
+  // { label: "VIRTUAL TRYON", path: "/virtual-tryon", isHighlight: true, isTryOn: true },
 ];
 
 export default navItems;

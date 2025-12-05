@@ -67,8 +67,9 @@ const AdsCarousel = () => {
         {ads.map((ad, index) => (
           <div
             key={ad.id}
-            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${index === currentIndex ? "opacity-100" : "opacity-0"
-              }`}
+            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
           >
             <img
               src={ad.image}
