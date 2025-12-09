@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Star } from "lucide-react";
 import ReviewFormModal from "./reviewSection/ProductReviewModal";
 import { auth } from "../../../../config";
@@ -14,11 +14,18 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [displayReviews, setDisplayReviews] = useState([]);
 
-  console.log("The reviews we are getting", reviews);
+  // Use ref for callback to prevent infinite loops
+  const onAverageRatingChangeRef = useRef(onAverageRatingChange);
 
-  const transformFirebaseReviews = (firebaseReviews) => {
+  // Update ref when callback changes
+  useEffect(() => {
+    onAverageRatingChangeRef.current = onAverageRatingChange;
+  }, [onAverageRatingChange]);
+
+  const transformFirebaseReviews = useCallback((firebaseReviews) => {
+    if (!firebaseReviews || !Array.isArray(firebaseReviews)) return [];
+
     return firebaseReviews.map((review, index) => {
-      // Safely get the name
       let name = "Anonymous User";
       if (review.userName) {
         name = review.userName;
@@ -35,24 +42,20 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
         images: review.images || [],
       };
     });
-  };
+  }, []);
 
-  // Helper function to format Firestore timestamp
-  const formatDate = (timestamp) => {
+  const formatDate = useCallback((timestamp) => {
     if (!timestamp) return "Recently";
 
     try {
-      // If Firestore Timestamp
       if (timestamp.toDate) {
         timestamp = timestamp.toDate();
       }
 
-      // If raw JS Date object
       if (timestamp instanceof Date) {
         return timestamp.toLocaleDateString();
       }
 
-      // If already string
       if (typeof timestamp === "string") {
         return timestamp;
       }
@@ -61,58 +64,55 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
     } catch (error) {
       return "Recently";
     }
-  };
+  }, []);
 
-  // Calculate average rating
-  const calculateAverageRating = (reviewsArray) => {
-    if (!reviewsArray || reviewsArray.length === 0) return 0;
-
-    const totalRating = reviewsArray.reduce((sum, review) => {
-      return sum + (review.rating || 0);
-    }, 0);
-
-    return totalRating / reviewsArray.length;
-  };
-
-  // Notify parent component about average rating change
-  const notifyAverageRating = (reviewsArray) => {
-    const avgRating = calculateAverageRating(reviewsArray);
-    if (onAverageRatingChange) {
-      onAverageRatingChange(avgRating);
-    }
-  };
-
-  // Replace the problematic useEffect with this:
+  // Load reviews only when productId or reviews prop changes
   useEffect(() => {
+    let isMounted = true;
+
     const loadReviews = async () => {
       try {
         let reviewsToUse = [];
 
-        if (productId) {
+        // If reviews are passed as props, use them
+        if (reviews && reviews.length > 0) {
+          reviewsToUse = transformFirebaseReviews(reviews);
+        }
+        // Otherwise, fetch from service if we have productId
+        else if (productId) {
           const result = await ReviewService.getProductReviews(productId);
-          console.log("ReviewService result:", result);
-
           if (result.success && result.reviews && result.reviews.length > 0) {
             reviewsToUse = transformFirebaseReviews(result.reviews);
-          } else {
-            reviewsToUse = reviews.length > 0 ? transformFirebaseReviews(reviews) : [];
           }
-        } else {
-          reviewsToUse = reviews.length > 0 ? transformFirebaseReviews(reviews) : [];
         }
 
-        setDisplayReviews(reviewsToUse);
-        notifyAverageRating(reviewsToUse);
+        if (isMounted) {
+          setDisplayReviews(reviewsToUse);
+
+          // Calculate average rating
+          if (reviewsToUse.length > 0) {
+            const avgRating =
+              reviewsToUse.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsToUse.length;
+            if (onAverageRatingChangeRef.current) {
+              onAverageRatingChangeRef.current(avgRating);
+            }
+          } else {
+            if (onAverageRatingChangeRef.current) {
+              onAverageRatingChangeRef.current(0);
+            }
+          }
+        }
       } catch (error) {
         console.error("Error loading reviews:", error);
-        const reviewsToUse = reviews.length > 0 ? transformFirebaseReviews(reviews) : [];
-        setDisplayReviews(reviewsToUse);
-        notifyAverageRating(reviewsToUse);
       }
     };
 
     loadReviews();
-  }, [productId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [productId, reviews, transformFirebaseReviews]); // Only these dependencies
 
   // Calculate current average rating for display
   const currentAvgRating =
@@ -139,18 +139,28 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
         comment: comment.trim(),
       };
 
-      console.log("Submitting review:", reviewData); // Debug log
+      console.log("Submitting review:", reviewData);
 
       const result = await ReviewService.submitReview(reviewData);
 
       if (result.success) {
-        // Refresh reviews after successful submission
-        const updatedReviews = await ReviewService.getProductReviews(productId);
-        if (updatedReviews.success) {
-          const transformedReviews = transformFirebaseReviews(updatedReviews.reviews);
-          setDisplayReviews(transformedReviews);
-          // Notify parent about updated average rating
-          notifyAverageRating(transformedReviews);
+        // Only reload if we have productId
+        if (productId) {
+          const updatedReviews = await ReviewService.getProductReviews(productId);
+          if (updatedReviews.success) {
+            const transformedReviews = transformFirebaseReviews(updatedReviews.reviews);
+            setDisplayReviews(transformedReviews);
+
+            // Update average rating
+            if (transformedReviews.length > 0) {
+              const avgRating =
+                transformedReviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                transformedReviews.length;
+              if (onAverageRatingChangeRef.current) {
+                onAverageRatingChangeRef.current(avgRating);
+              }
+            }
+          }
         }
 
         // Reset form
@@ -186,7 +196,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
   };
 
   // Review Card Component
-  const ReviewCard = ({ review }) => {
+  const ReviewCard = React.memo(({ review }) => {
     const hasImages = Array.isArray(review.images) && review.images.length > 0;
 
     return (
@@ -242,7 +252,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
         {review.date && <span className="text-gray-500 text-[12px]">{String(review.date)}</span>}
       </div>
     );
-  };
+  });
 
   return (
     <ErrorBoundary>

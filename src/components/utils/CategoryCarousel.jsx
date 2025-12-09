@@ -15,12 +15,10 @@ export default function CategoryCarousel() {
   useEffect(() => {
     // Only auto-rotate for mobile
     const isMobile = window.innerWidth < 768;
-    
+
     if (isMobile && categories.length > 1) {
       intervalRef.current = setInterval(() => {
-        setCurrentIndex((prevIndex) => 
-          prevIndex === categories.length - 1 ? 0 : prevIndex + 1
-        );
+        setCurrentIndex((prevIndex) => (prevIndex === categories.length - 1 ? 0 : prevIndex + 1));
       }, 3000); // Change slide every 3 seconds
     }
 
@@ -35,7 +33,7 @@ export default function CategoryCarousel() {
     <section className="relative">
       {/* MOBILE CAROUSEL (1 by 1 sliding) - Hidden on desktop */}
       <div className="md:hidden relative overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
@@ -55,8 +53,8 @@ export default function CategoryCarousel() {
                     <p className="text-lg font-semibold tracking-wide uppercase text-white cursor-default">
                       {c.name}
                     </p>
-                    <p 
-                      className="text-sm mt-3 text-white font-medium cursor-pointer hover:underline" 
+                    <p
+                      className="text-sm mt-3 text-white font-medium cursor-pointer hover:underline"
                       onClick={() => navigate(c.slug)}
                     >
                       SHOP NOW
@@ -75,9 +73,7 @@ export default function CategoryCarousel() {
               <button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex 
-                    ? 'bg-black scale-125' 
-                    : 'bg-gray-300'
+                  index === currentIndex ? "bg-black scale-125" : "bg-gray-300"
                 }`}
                 onClick={() => setCurrentIndex(index)}
               />
@@ -114,7 +110,10 @@ export default function CategoryCarousel() {
                   <p className="text-base font-semibold tracking-wide uppercase text-white cursor-default">
                     {c.name}
                   </p>
-                  <p className="text-xs mt-2 text-white cursor-pointer hover:underline" onClick={() => navigate(c.slug)}>
+                  <p
+                    className="text-xs mt-2 text-white cursor-pointer hover:underline"
+                    onClick={() => navigate(c.slug)}
+                  >
                     SHOP NOW
                   </p>
                 </div>

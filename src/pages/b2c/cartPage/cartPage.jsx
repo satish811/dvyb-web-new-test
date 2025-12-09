@@ -7,6 +7,7 @@ import B2BAuthService from "../../../services/b2bAuthService";
 import { Minus, Plus, X, Edit2, Trash2 } from "lucide-react";
 import WishlistHeartButton from "../../../components/common/WishlistHeartButton";
 import TrendingProducts from "../../../components/common/TrendingProducts/TrendingProducts";
+import RecentlyViewedProducts from "../../../components/common/RecentlyViewedProducts/RecentlyViewedProducts";
 
 // --- UTILS ---
 const getEstimatedDeliveryDate = () => {
@@ -685,121 +686,126 @@ function CartPage() {
     return (
       <div
         key={item.uniqueId}
-        className="flex flex-col md:flex-row p-4 sm:p-6 border border-[#A4A4A4] relative"
+        className="flex p-4 sm:p-5 md:p-6 border border-black relative mx-0"
+        style={{ borderRadius: "0px" }}
       >
-        {/* Loading overlay for B2C items */}
-        {/* {isUpdating && (
-          // <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
-          //   <div className="flex flex-col items-center">
-          //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000]"></div>
-          //     <p className="text-sm text-gray-600 mt-2">Updating...</p>
-          //   </div>
-          // </div>
-        )} */}
+        {/* Heart and X icons - top right corner */}
+        <div className="absolute top-3 right-3 flex gap-3 z-10">
+          <WishlistHeartButton
+            productId={item.productId}
+            productData={{
+              name: item.name,
+              price: item.price,
+              image: item.image,
+              color: item.color,
+              size: item.size,
+              description: item.description,
+            }}
+            className="hover:text-red-500 text-gray-400"
+            disabled={isUpdating}
+            userRole={role}
+            userId={auth.currentUser?.uid}
+          />
+          <button
+            onClick={() => handleRemove(item.uniqueId)}
+            className="hover:text-red-500 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Remove from Cart"
+            disabled={isUpdating}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
+        {/* Product Image - left side */}
         <img
           src={item.image}
           alt={item.name}
-          className="w-[120px] h-[150px] object-cover flex-shrink-0"
+          className="w-[100px] h-[130px] sm:w-[120px] sm:h-[150px] object-cover flex-shrink-0"
         />
-        <div className="flex-1 flex flex-col justify-between mt-4 md:mt-0 md:ml-4">
+
+        {/* Product Details - right side */}
+        <div className="flex-1 flex flex-col justify-between ml-3 sm:ml-4 pr-8">
           <div>
-            <h2 className="font-[Outfit,sans-serif] font-medium text-[16px] leading-[15px] tracking-[0.27px] uppercase text-[#000000]">
+            {/* Product Name */}
+            <h2 className="font-[Outfit,sans-serif] font-semibold text-[13px] sm:text-[15px] leading-tight tracking-[0.27px] uppercase text-[#000000] line-clamp-2">
               {item.name}
             </h2>
-            <p className="text-[14px] text-gray-600 capitalize pt-1">{item.description}</p>
-            <p className="text-[14px] text-gray-600 mt-3 uppercase">
+
+            {/* Product Description */}
+            <p className="text-[11px] sm:text-[13px] text-gray-600 capitalize pt-1 line-clamp-2">
+              {item.description}
+            </p>
+
+            {/* Product Code */}
+            <p className="text-[10px] sm:text-[12px] text-gray-600 mt-2 uppercase">
               CODE: {item.productId || "SUSC0425127"}
             </p>
-            <div className="flex items-center gap-4 pt-3 flex-wrap">
-              <div className="flex items-center border border-gray-300  px-3 py-1.5">
-                <span className="text-[14px] text-gray-700 mr-2">Size :</span>
-                <select
-                  value={item.size || "S"}
-                  onChange={(e) => handleSizeChange(item.uniqueId, e.target.value)}
-                  className="appearance-none bg-transparent border-none p-0 text-[14px] font-medium text-black focus:outline-none focus:ring-0 cursor-pointer pr-5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                    backgroundPosition: "right 0.25rem center",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "1.25em 1.25em",
-                  }}
-                  disabled={isUpdating}
-                >
-                  {sizeOptions.map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          </div>
 
-              <div className="flex items-center border border-gray-300  relative">
-                {isUpdating && (
-                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center"></div>
-                )}
-                <button
-                  onClick={() => handleQuantityChange(item.uniqueId, -1)}
-                  disabled={item.quantity <= 1 || isUpdating}
-                  className={`px-3 py-1.5 ${
-                    item.quantity <= 1 || isUpdating
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
+          {/* Size and Quantity controls */}
+          <div className="flex items-center gap-2 sm:gap-3 mt-3 flex-wrap">
+            {/* Size Selector */}
+            <div className="flex items-center border border-gray-300 px-2 sm:px-3 py-1 sm:py-1.5">
+              <span className="text-[11px] sm:text-[13px] text-gray-700 mr-1 sm:mr-2">Size :</span>
+              <select
+                value={item.size || "S"}
+                onChange={(e) => handleSizeChange(item.uniqueId, e.target.value)}
+                className="appearance-none bg-transparent border-none p-0 text-[11px] sm:text-[13px] font-medium text-black focus:outline-none focus:ring-0 cursor-pointer pr-4 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: "right 0 center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1em 1em",
+                }}
+                disabled={isUpdating}
+              >
+                {sizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <span className="px-4 text-[14px] font-medium min-w-[40px] text-center">
-                  {item.quantity}
-                </span>
+            {/* Quantity Control */}
+            <div className="flex items-center border border-gray-300 relative">
+              {isUpdating && (
+                <div className="absolute inset-0 bg-white/70 flex items-center justify-center"></div>
+              )}
+              <button
+                onClick={() => handleQuantityChange(item.uniqueId, -1)}
+                disabled={item.quantity <= 1 || isUpdating}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
+                  item.quantity <= 1 || isUpdating
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "hover:bg-gray-100 text-amber-700"
+                }`}
+              >
+                <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+              </button>
 
-                <button
-                  onClick={() => handleQuantityChange(item.uniqueId, 1)}
-                  disabled={item.quantity >= 5 || isUpdating}
-                  className={`px-3 py-1.5 ${
-                    item.quantity >= 5 || isUpdating
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              <span className="px-2 sm:px-3 text-[12px] sm:text-[14px] font-medium min-w-[30px] sm:min-w-[40px] text-center">
+                {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
+              </span>
+
+              <button
+                onClick={() => handleQuantityChange(item.uniqueId, 1)}
+                disabled={item.quantity >= 5 || isUpdating}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
+                  item.quantity >= 5 || isUpdating
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "hover:bg-gray-100 text-amber-700"
+                }`}
+              >
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+              </button>
             </div>
           </div>
-          <p className="text-[13px] text-gray-600 mt-2">ESTIMATED SHIPPING DATE: 4TH OF NOVEMBER</p>
-        </div>
-        <div className="flex flex-col justify-between items-start md:items-end mt-4 md:mt-0 md:ml-5">
-          <p className="text-[18px] font-medium text-gray-900 text-left md:text-right">
-            ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-          </p>
-          <div className="flex gap-5 mt-4 md:mt-0">
-            <WishlistHeartButton
-              productId={item.productId}
-              productData={{
-                name: item.name,
-                price: item.price,
-                image: item.image,
-                color: item.color,
-                size: item.size,
-                description: item.description,
-              }}
-              className="hover:text-red-500 text-gray-400"
-              disabled={isUpdating}
-              userRole={role}
-              userId={auth.currentUser?.uid}
-            />
 
-            <button
-              onClick={() => handleRemove(item.uniqueId)}
-              className="hover:text-red-500 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Remove from Cart"
-              disabled={isUpdating}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          {/* Shipping Date */}
+          <p className="text-[10px] sm:text-[12px] text-gray-600 mt-2 uppercase">
+            ESTIMATED SHIPPING DATE : {deliveryDate.toUpperCase()}
+          </p>
         </div>
       </div>
     );
@@ -815,7 +821,7 @@ function CartPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-white py-1 lg:py-32">
+      <div className="min-h-screen bg-white py-1 lg:py-4">
         <div className="max-w-[1166px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* --- LEFT COLUMN --- */}
@@ -1003,13 +1009,23 @@ function CartPage() {
           <div className="mt-16 space-y-8">
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => {}} heading="Trending Products" />
+                <TrendingProducts
+                  column={6}
+                  onClose={() => {}}
+                  heading="Trending Products"
+                  cardSize="small"
+                />
               </div>
             </section>
 
             <section className="mt-16">
               <div>
-                <TrendingProducts column={6} onClose={() => {}} heading="Recently Viewed" />
+                <RecentlyViewedProducts
+                  column={6}
+                  onClose={() => {}}
+                  heading="Recently Viewed"
+                  cardSize="small"
+                />
               </div>
             </section>
           </div>

@@ -6,9 +6,8 @@ export default function ProductGrid({
   columns = 4,
   scroll = false,
   showDiscount = true,
-  showShopNow = true
+  showShopNow = true,
 }) {
-
   // ---------------------- FIXED STATES ----------------------
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef(null);
@@ -19,9 +18,7 @@ export default function ProductGrid({
 
     if (isMobile && products.length > 1) {
       intervalRef.current = setInterval(() => {
-        setCurrentIndex((prev) =>
-          prev === products.length - 1 ? 0 : prev + 1
-        );
+        setCurrentIndex((prev) => (prev === products.length - 1 ? 0 : prev + 1));
       }, 3000);
     }
 
@@ -35,11 +32,7 @@ export default function ProductGrid({
         <div className="flex gap-4 px-2 sm:px-4 md:px-10 min-w-max">
           {products.map((p) => (
             <div key={p.id} className="w-72 sm:w-80 md:w-95 flex-shrink-0">
-              <DisplayCard
-                product={p}
-                showDiscount={showDiscount}
-                showShopNow={showShopNow}
-              />
+              <DisplayCard product={p} showDiscount={showDiscount} showShopNow={showShopNow} />
             </div>
           ))}
         </div>
@@ -52,7 +45,7 @@ export default function ProductGrid({
     2: "md:grid-cols-2",
     3: "md:grid-cols-3",
     4: "md:grid-cols-4",
-    5: "md:grid-cols-5"
+    5: "md:grid-cols-5",
   };
 
   return (
@@ -65,11 +58,7 @@ export default function ProductGrid({
         >
           {products.map((p) => (
             <div key={p.id} className="w-full flex-shrink-0 px-2">
-              <DisplayCard
-                product={p}
-                showDiscount={showDiscount}
-                showShopNow={showShopNow}
-              />
+              <DisplayCard product={p} showDiscount={showDiscount} showShopNow={showShopNow} />
             </div>
           ))}
         </div>
@@ -81,9 +70,7 @@ export default function ProductGrid({
               <button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex
-                    ? "bg-black scale-125"
-                    : "bg-gray-300"
+                  index === currentIndex ? "bg-black scale-125" : "bg-gray-300"
                 }`}
                 onClick={() => setCurrentIndex(index)}
               />

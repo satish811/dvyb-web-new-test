@@ -11,8 +11,6 @@ import BestProducts from "../../../components/b2c/home/BestProducts";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
-  // const { products, loading, error } = useProducts();
-  // const { loading, error } = useProducts();
   const { staticProducts, loading, error } = useStaticProducts();
   const navigate = useNavigate();
 
@@ -28,8 +26,8 @@ export default function Home() {
   const closetIcons = productsArray.filter((p) => p.category === "Closet").slice(0, 8);
 
   return (
-    <div>
-      <section className="lg:mt-7 md:mt-7 w-full max-w-[95vw] md:h-[90vh] lg:mx-7  mx-auto overflow-hidden flex justify-center items-center ">
+    <div className="mt-4 sm:mt-0">
+      <section className="lg:mt-7 md:mt-7 w-full md:h-[90vh] lg:mx-7 mx-auto overflow-hidden flex justify-center items-center ">
         <img
           onClick={() => navigate("/womenwear")}
           src={homeBanner}
@@ -39,7 +37,7 @@ export default function Home() {
       </section>
 
       {/* 2. WEDDING TALES */}
-      <section className="container mx-auto py-12 px-3">
+      <section className="container mx-auto py-9">
         <SectionTitle viewAll>Wedding Tales</SectionTitle>
         <ProductGrid products={wedding} columns={3} />
       </section>
@@ -73,9 +71,11 @@ export default function Home() {
       )}
 
       {/* 6. BEST SELLING */}
-      <section className="container mx-auto pt-12 px-3">
+      <section className="container mx-auto pt-12 px-3 space-y-3">
         <SectionTitle viewAll>Bestselling</SectionTitle>
+
         <BestProducts products={bestsellers} columns={2} />
+
         <ProductGrid products={wedding} columns={3} />
       </section>
 
@@ -90,7 +90,6 @@ export default function Home() {
           </section>
         )}
       </section>
-      
     </div>
   );
 }

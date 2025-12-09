@@ -31,27 +31,12 @@ import TryOnStartPage from "../components/b2c/TryOnMobile_Pages/TryOnStartPage";
 import TryOnUploadPage from "../components/b2c/TryOnMobile_Pages/TryOnUploadPage";
 import TryOnProcessingPage from "../components/b2c/TryOnMobile_Pages/TryOnProcessingPage";
 import TryOnPreviewPage from "../components/b2c/TryOnMobile_Pages/TryOnPreviewPage";
-import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
-import { useEffect, useState } from "react";
+
+import BestSeller from "../components/common/footer/BestSeller/BestSeller";
+import OurStory from "../components/common/OurStory/ourStory";
 
 export default function AppRoutes() {
-  const [showLoader, setShowLoader] = useState(true);
   const { products, loading, error } = useProducts();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoader(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  
-  if (loading || showLoader) return (
-  <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-    <LazyImageLoader isProcessing={true} />
-  </div>
-);
 
   if (error) return <div>Error: {error}</div>;
 
@@ -63,6 +48,14 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <Home />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/our-story"
+        element={
+          <MainLayout>
+            <OurStory />
           </MainLayout>
         }
       />
@@ -81,6 +74,14 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <OrderSuccessPage />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/best-seller"
+        element={
+          <MainLayout>
+            <BestSeller />
           </MainLayout>
         }
       />

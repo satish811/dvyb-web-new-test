@@ -2,7 +2,12 @@ import React from "react";
 import { cn } from "../../lib/utils";
 import { useNavigate } from "react-router-dom";
 
-export default function DisplayCard({ product, className, showDiscount = true, showShopNow = true }) {
+export default function DisplayCard({
+  product,
+  className,
+  showDiscount = true,
+  showShopNow = true,
+}) {
   const navigate = useNavigate();
   return (
     <article

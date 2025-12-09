@@ -1,5 +1,5 @@
 // src/context/FilterContext.jsx
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback, useMemo } from "react";
 
 const FilterContext = createContext();
 
@@ -10,19 +10,21 @@ export const useFilter = () => {
 };
 
 export const FilterProvider = ({ children }) => {
-  // Define categoryPathMap inside the component
-  const categoryPathMap = {
-    LEHENGA: "/womenwear?category=lehenga",
-    SAREE: "/womenwear?category=saree",
-    "KURTA SETS": "/womenwear?category=kurta-sets",
-    ANARKALIS: "/womenwear?category=anarkalis",
-    SHARARAS: "/womenwear?category=shararas",
-    PRÊT: "/womenwear?category=pret",
-    FUSION: "/womenwear?category=fusion",
-    WEDDING: "/womenwear?category=wedding",
-    SALE: "/womenwear?category=sale",
-    "VIRTUAL TRYON": "/virtual-tryon",
-  };
+  const categoryPathMap = useMemo(
+    () => ({
+      LEHENGA: "/womenwear?category=lehenga",
+      SAREE: "/womenwear?category=saree",
+      "KURTA SETS": "/womenwear?category=kurta-sets",
+      ANARKALIS: "/womenwear?category=anarkalis",
+      SHARARAS: "/womenwear?category=shararas",
+      PRÊT: "/womenwear?category=pret",
+      FUSION: "/womenwear?category=fusion",
+      WEDDING: "/womenwear?category=wedding",
+      SALE: "/womenwear?category=sale",
+      "VIRTUAL TRYON": "/virtual-tryon",
+    }),
+    []
+  );
 
   const [filters, setFilters] = useState({
     categories: [],
@@ -45,69 +47,104 @@ export const FilterProvider = ({ children }) => {
 
   const [navbarCategory, setNavbarCategory] = useState("");
 
-  const updateFilter = (filterType, value) => {
-    setSelectedFilters((prev) => {
-      const newFilters = { ...prev };
+  const updateFilter = useCallback(
+    (filterType, value) => {
+      setSelectedFilters((prev) => {
+        // Quick optimization: Check if value actually changes
+        if (filterType === "categories" && prev.categories[0] === value) {
+          return prev; // No change
+        }
 
-      switch (filterType) {
-        case "categories":
-          const normalized = value.toLowerCase();
-          const isMainCategory = Object.keys(categoryPathMap).includes(value.toUpperCase());
+        const newFilters = { ...prev };
 
-          if (!isMainCategory) {
-            // SUBCATEGORY - toggle in subcategories array
-            newFilters.subcategories = newFilters.subcategories || []; // Ensure array exists
-            newFilters.subcategories = newFilters.subcategories.includes(normalized)
-              ? newFilters.subcategories.filter((v) => v !== normalized)
-              : [...newFilters.subcategories, normalized];
-          } else {
-            // MAIN CATEGORY - replace the categories array
-            if (newFilters.categories.includes(value)) {
-              newFilters.categories = [];
-              setNavbarCategory("");
-              newFilters.subcategories = []; // Clear subcategories when main category is deselected
+        switch (filterType) {
+          case "categories":
+            const normalized = value.toLowerCase();
+            const isMainCategory = Object.keys(categoryPathMap).includes(value.toUpperCase());
+
+            if (!isMainCategory) {
+              // SUBCATEGORY - toggle in subcategories array
+              const subcategories = newFilters.subcategories || [];
+              if (subcategories.includes(normalized)) {
+                newFilters.subcategories = subcategories.filter((v) => v !== normalized);
+              } else {
+                newFilters.subcategories = [...subcategories, normalized];
+              }
             } else {
-              newFilters.categories = [value];
-              setNavbarCategory(value);
-              // Optionally keep subcategories when switching main categories
-              // newFilters.subcategories = []; // Or clear them
+              // MAIN CATEGORY
+              if (newFilters.categories.includes(value)) {
+                // Deselect
+                newFilters.categories = [];
+                setNavbarCategory("");
+                newFilters.subcategories = [];
+              } else {
+                // Select
+                newFilters.categories = [value];
+                setNavbarCategory(value);
+              }
             }
-          }
-          break;
+            break;
 
-        case "blouses":
-          newFilters.blouses = newFilters.blouses?.includes(value)
-            ? newFilters.blouses.filter((item) => item !== value)
-            : [...(newFilters.blouses || []), value];
-          break;
+          case "blouses":
+            const blouses = newFilters.blouses || [];
+            if (blouses.includes(value)) {
+              newFilters.blouses = blouses.filter((item) => item !== value);
+            } else {
+              newFilters.blouses = [...blouses, value];
+            }
+            break;
 
-        case "sizes":
-        case "colors":
-        case "discounts":
-          newFilters[filterType] = newFilters[filterType].includes(value)
-            ? newFilters[filterType].filter((item) => item !== value)
-            : [...newFilters[filterType], value];
-          break;
+          case "sizes":
+            const sizes = newFilters.sizes || [];
+            if (sizes.includes(value)) {
+              newFilters.sizes = sizes.filter((item) => item !== value);
+            } else {
+              newFilters.sizes = [...sizes, value];
+            }
+            break;
 
-        case "priceMin":
-          newFilters.priceMin = value;
-          break;
+          case "colors":
+            const colors = newFilters.colors || [];
+            if (colors.includes(value)) {
+              newFilters.colors = colors.filter((item) => item !== value);
+            } else {
+              newFilters.colors = [...colors, value];
+            }
+            break;
 
-        case "priceMax":
-          newFilters.priceMax = value;
-          break;
+          case "discounts":
+            const discounts = newFilters.discounts || [];
+            if (discounts.includes(value)) {
+              newFilters.discounts = discounts.filter((item) => item !== value);
+            } else {
+              newFilters.discounts = [...discounts, value];
+            }
+            break;
 
-        default:
-          break;
-      }
+          case "priceMin":
+            if (newFilters.priceMin === value) return prev; // No change
+            newFilters.priceMin = value;
+            break;
 
-      return newFilters;
-    });
-  };
+          case "priceMax":
+            if (newFilters.priceMax === value) return prev; // No change
+            newFilters.priceMax = value;
+            break;
 
-  const clearAllFilters = () => {
+          default:
+            return prev;
+        }
+
+        return newFilters;
+      });
+    },
+    [categoryPathMap]
+  );
+
+  const clearAllFilters = useCallback(() => {
     setSelectedFilters({
       categories: [],
+      subcategories: [],
       sizes: [],
       colors: [],
       priceMin: null,
@@ -116,16 +153,19 @@ export const FilterProvider = ({ children }) => {
       blouses: [],
     });
     setNavbarCategory("");
-  };
+  }, []);
 
-  const value = {
-    filters,
-    setFilters,
-    selectedFilters,
-    updateFilter,
-    clearAllFilters,
-    navbarCategory,
-  };
+  const value = useMemo(
+    () => ({
+      filters,
+      setFilters,
+      selectedFilters,
+      updateFilter,
+      clearAllFilters,
+      navbarCategory,
+    }),
+    [filters, selectedFilters, updateFilter, clearAllFilters, navbarCategory]
+  );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
 };

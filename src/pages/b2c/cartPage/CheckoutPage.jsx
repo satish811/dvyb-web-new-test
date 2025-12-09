@@ -475,7 +475,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white font-[Outfit] py-10 mt-23">
+    <div className="min-h-screen bg-white font-[Outfit] py-10 lg:py-2">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
         {userDetails.isLoggedIn && (
           <div className="bg-gray-50 border-b border-t p-4 mb-6">

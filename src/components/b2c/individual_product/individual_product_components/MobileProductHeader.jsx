@@ -6,13 +6,13 @@ import { useWishlist } from "../../../../context/WishlistContext";
 import SearchDropdown from "../../../common/navbar/SearchDropdown";
 import { searchService } from "../../../../services/searchService";
 import useDebounce from "../../../../hooks/useDebounce";
+import { mainlogo } from "../../../../assets";
 
-const MobileProductHeader = ({ productName }) => {
+const MobileProductHeader = () => {
   const navigate = useNavigate();
   const { cartCount, loading: cartLoading } = useCart();
   const { wishlistCount, loading: wishlistLoading } = useWishlist();
 
-  // Search states
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -24,13 +24,13 @@ const MobileProductHeader = ({ productName }) => {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Load recent searches from localStorage
+  // Load recent searches
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
   }, []);
 
-  // Fetch popular searches once
+  // Fetch popular searches
   useEffect(() => {
     const fetchPopular = async () => {
       try {
@@ -43,7 +43,7 @@ const MobileProductHeader = ({ productName }) => {
     fetchPopular();
   }, []);
 
-  // Perform search when debounced query changes
+  // Perform search
   useEffect(() => {
     const performSearch = async () => {
       if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
@@ -75,10 +75,6 @@ const MobileProductHeader = ({ productName }) => {
     };
 
     performSearch();
-
-    if (debouncedSearchQuery?.trim().length >= 2) {
-      saveRecentSearch(debouncedSearchQuery.trim());
-    }
   }, [debouncedSearchQuery]);
 
   const saveRecentSearch = useCallback((query) => {
@@ -103,28 +99,7 @@ const MobileProductHeader = ({ productName }) => {
     (suggestion) => {
       saveRecentSearch(suggestion);
       setSearchQuery(suggestion);
-
-      const queryLower = suggestion.toLowerCase().trim();
-      const categoryMap = {
-        saree: "saree",
-        sarees: "saree",
-        kurti: "kurta-sets",
-        kurtis: "kurta-sets",
-        lehenga: "lehenga",
-        lehengas: "lehenga",
-        anarkali: "anarkalis",
-        sharara: "shararas",
-        gown: "gown",
-        fusion: "fusion",
-        wedding: "wedding",
-      };
-
-      if (categoryMap[queryLower]) {
-        navigate(`/womenwear?category=${categoryMap[queryLower]}`);
-      } else {
-        navigate(`/womenwear?query=${encodeURIComponent(suggestion)}`);
-      }
-
+      navigate(`/womenwear?query=${encodeURIComponent(suggestion)}`);
       setSearchOpen(false);
       setSearchQuery("");
     },
@@ -140,6 +115,7 @@ const MobileProductHeader = ({ productName }) => {
     [navigate]
   );
 
+  // When search mode → full search UI
   if (searchOpen) {
     return (
       <SearchDropdown
@@ -164,53 +140,67 @@ const MobileProductHeader = ({ productName }) => {
   }
 
   return (
-    <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Back Arrow */}
-        <button onClick={() => navigate(-1)} className="p-1" aria-label="Go back">
+    <div className="md:hidden fixed top-0 left-0 right-0 bg-white z-50">
+      <div className="flex items-center justify-between px-4 h-[60px]">
+        {/* Back Button */}
+        <button onClick={() => navigate(-1)} className="p-1">
           <ArrowLeft size={24} className="text-gray-900" />
         </button>
 
-        {/* Product Name */}
-        <h1 className="text-base font-medium uppercase text-gray-900 tracking-wide">
-          {productName || "PRODUCT"}
-        </h1>
+        {/* Center LOGO */}
+        <img
+          src={mainlogo}
+          alt="Logo"
+          className="h-9 object-contain cursor-pointer"
+          onClick={() => navigate("/")}
+        />
 
-        {/* Icons */}
+        {/* Right Icons - Now with 4 icons: Search → Wishlist → Cart → Profile */}
         <div className="flex items-center gap-4">
-          {/* Search Icon */}
-          <button onClick={() => setSearchOpen(true)} aria-label="Search">
+          {/* Search */}
+          <button onClick={() => setSearchOpen(true)}>
             <Search size={20} className="text-gray-900" />
           </button>
 
-          {/* Wishlist Icon */}
+          {/* Wishlist */}
           <button
             onClick={() => navigate("/wishlist")}
             className="relative"
-            aria-label="Wishlist"
             disabled={wishlistLoading}
           >
             <Heart size={20} className="text-gray-900" />
             {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                {wishlistLoading ? "..." : wishlistCount}
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                {wishlistCount}
               </span>
             )}
           </button>
 
-          {/* Cart Icon */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="relative"
-            aria-label="Cart"
-            disabled={cartLoading}
-          >
+          {/* Cart */}
+          <button onClick={() => navigate("/cart")} className="relative" disabled={cartLoading}>
             <ShoppingBag size={20} className="text-gray-900" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                {cartLoading ? "..." : cartCount}
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                {cartCount}
               </span>
             )}
+          </button>
+
+          {/* Profile - NEWLY ADDED (Person Icon) */}
+          <button onClick={() => navigate("/profile")}>
+            <svg
+              className="w-5 h-5 text-gray-900"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
           </button>
         </div>
       </div>

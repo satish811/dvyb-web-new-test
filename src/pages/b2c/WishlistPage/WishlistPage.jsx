@@ -15,6 +15,7 @@ import { cartService } from "../../../services/cartService";
 
 // Assets
 import empty_wishlistIc from "../../../assets/ProfileImages/empty_wishlistIc.png";
+import LoginModal from "../login/loginModel";
 
 // --- Reusable Wishlist Button Component ---
 export const WishlistButton = ({ productId, productData, className = "", variants = [] }) => {
@@ -249,10 +250,11 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
             </button>
             <button
               onClick={() => onRemove(item.productId || item.id)}
-              className="w-[36px] h-[36px] flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition rounded"
+              className="flex items-center justify-center gap-2 h-[36px] px-3 bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition rounded text-sm font-medium"
               title="Remove from Wishlist"
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} />
+              <span>Remove</span>
             </button>
           </div>
         </div>
@@ -268,6 +270,7 @@ const WishlistPage = () => {
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
   const {} = useCart(); // addToCart extracted but using service directly below
   const [userRole, setUserRole] = useState("B2C");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Safe popup access
   const popupContext = usePopup();
@@ -395,19 +398,20 @@ const WishlistPage = () => {
   // Not Logged In State
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen max-w-7xl mx-auto px-6 py-16 text-center">
-        <div className="max-w-md w-full flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center h-[80vh]  max-w-7xl mx-auto px-6 py-16 text-center">
+        <div className="max-w-md w-[30%] flex flex-col items-center justify-center">
           <img src={empty_wishlistIc} alt="Login required" className="w-50 h-50 mb-8 mx-auto" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Please Login to View Your Wishlist
           </h2>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => setShowLoginModal(true)}
             className="px-8 py-4 bg-[#9C0000] text-white font-semibold rounded-lg hover:bg-[#7A0000] transition"
           >
             LOGIN TO CONTINUE
           </button>
         </div>
+        {showLoginModal && <LoginModal isOpen={true} onClose={() => setShowLoginModal(false)} />}
       </div>
     );
   }
@@ -416,7 +420,7 @@ const WishlistPage = () => {
     <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-3 py-0 md:py-8">
       {/* Empty Wishlist UI */}
       {displayItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24">
+        <div className="flex flex-col items-center justify-center py-10">
           <div className="h-[400px] w-full max-w-[800px] flex items-center justify-center rounded-full">
             <img
               src={empty_wishlistIc}
@@ -425,7 +429,7 @@ const WishlistPage = () => {
             />
           </div>
 
-          <p className="text-lg font-semibold text-gray-800 mt-12">Your Wishlist is Empty</p>
+          <p className="text-lg font-semibold text-gray-800 mt-4">Your Wishlist is Empty</p>
           <p className="text-sm font-medium text-gray-700 mt-3 mb-6">Start adding your favorites</p>
 
           <Link

@@ -5,8 +5,8 @@ export const footerSections = [
     key: "quick",
     links: [
       { label: "Virtual Try On", to: "/virtual-tryon" },
-      { label: "Exclusives", to: "/exclusives" },
-      { label: "Best Sellers", to: "/womenwear" },
+      { label: "Exclusives", to: "/best-seller?type=exclusives" },
+      { label: "Best Sellers", to: "/best-seller?type=best-sellers" },
       { label: "Closet Icon", to: "/womenwear" },
       { label: "Bridal Closet", to: "/womenwear?category=wedding" },
     ],
@@ -15,7 +15,8 @@ export const footerSections = [
     title: "Our Company",
     key: "company",
     links: [
-      { label: "Contact Us", to: "/faq" },
+      { label: "Our Story", to: "/our-story" },
+      { label: "Contact Us", to: "/contact-us" },
       { label: "FAQ", to: "/faq" },
       { label: "Terms & Conditions", to: "/terms" },
       { label: "Privacy Policy", to: "/privacy" },

@@ -24,37 +24,28 @@ export default function LuxuryPicks() {
   };
 
   // Add empty onClose function
-  const handleClose = () => {
-    // This can be empty if you don't need to close anything
-  };
+  const handleClose = () => { };
 
   return (
     <section className="bg-lighted-bg mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-      {/* HEADER SECTION - Top aligned */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      {/* HEADER SECTION */}
+      <div className="flex flex-row justify-between items-center mb-4 md:mb-8 gap-2 md:gap-4">
         {/* Left - Heading with icon */}
-        <div className="flex items-center gap-3">
-          <img
-            src={luxIcon}
-            alt="Luxury Icon"
-            className="w-12 h-12 md:w-14 md:h-14"
-          />
+        <div className="flex items-center gap-2 md:gap-3">
+          <img src={luxIcon} alt="Luxury Icon" className="w-10 h-10 md:w-14 md:h-14" />
           <div>
-            <h2 className="text-lg md:text-xl font-medium text-gray-800">
+            <h2 className="text-base md:text-xl font-medium text-gray-800">
               Luxurious Pick of the Day
             </h2>
-            <p className="text-xs md:text-sm text-gray-600 mt-1">
-              DVYB Essence
-            </p>
+            <p className="text-xs md:text-sm text-gray-600 mt-1">DVYB Essence</p>
           </div>
         </div>
 
         {/* Right - Explore button */}
         <button
           onClick={() => navigate("/womenwear")}
-          className="bg-[#400000] text-white px-6 py-3 text-sm md:text-base 
-                   hover:bg-[#300000] transition-colors duration-300 
-                   whitespace-nowrap"
+          className="bg-[#400000] text-white px-3 py-2 text-xs md:px-6 md:py-3 md:text-base
+               hover:bg-[#300000] transition-colors duration-300 whitespace-nowrap"
         >
           Explore All
         </button>
@@ -62,43 +53,46 @@ export default function LuxuryPicks() {
 
       {/* PRODUCTS SECTION WITH ARROWS */}
       <div className="relative">
-        {/* LEFT ARROW - Positioned outside on left */}
+        {/* LEFT ARROW - Desktop only */}
         <button
           onClick={slideLeft}
           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12
-                   hidden md:flex items-center justify-center
-                   w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
-                   transition-all duration-300 hover:shadow-xl z-10"
+                     hidden md:flex items-center justify-center
+                     w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                     transition-all duration-300 hover:shadow-xl z-10"
         >
           <IoIosArrowBack size={24} className="text-gray-700" />
         </button>
 
         {/* PRODUCT SCROLL CONTAINER */}
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-none 
-                   hide-scrollbar scroll-smooth py-2 px-1"
-        >
-          {products.map((product, index) => (
-            <div
-              key={index}
-              className="cursor-pointer flex-shrink-0 w-64 md:w-72 lg:w-80"
-            >
-              <ProductCard
-                product={product}
-                onClose={handleClose}
-              />
-            </div>
-          ))}
+        <div className="relative">
+          {/* Desktop Scroll Container */}
+          <div className="hidden md:flex overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth py-2 px-1">
+            {products.map((product, index) => (
+              <div key={index} className="cursor-pointer flex-shrink-0 w-70 lg:w-75">
+                <ProductCard product={product} onClose={handleClose} />
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Scroll Container */}
+          <div className="flex md:hidden overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth py-2 px-1">
+            {products.map((product, index) => (
+              <div key={index} className="cursor-pointer flex-shrink-0 w-73 px-1">
+                <ProductCard product={product} onClose={handleClose} />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* RIGHT ARROW - Positioned outside on right */}
+
+        {/* RIGHT ARROW - Desktop only */}
         <button
           onClick={slideRight}
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12
-                   hidden md:flex items-center justify-center
-                   w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
-                   transition-all duration-300 hover:shadow-xl z-10"
+                     hidden md:flex items-center justify-center
+                     w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                     transition-all duration-300 hover:shadow-xl z-10"
         >
           <IoIosArrowForward size={24} className="text-gray-700" />
         </button>

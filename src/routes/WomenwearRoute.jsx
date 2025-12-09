@@ -7,7 +7,6 @@ export default function WomenwearRoute({ products }) {
   const queryParams = new URLSearchParams(location.search);
   const category = queryParams.get("category");
 
-  // ✅ MEMOIZED filtering (fixes infinite re-render)
   const filteredProducts = useMemo(() => {
     return category
       ? products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase())
@@ -15,7 +14,7 @@ export default function WomenwearRoute({ products }) {
   }, [category, products]);
 
   return (
-    <div className="px-6 py-8">
+    <div className="lg:px-6 lg:py-8">
       <ProductGrid products={filteredProducts} category={category} />
     </div>
   );

@@ -6,32 +6,32 @@ const FooterSocials = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupText, setPopupText] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
-  const [popupKey, setPopupKey] = useState(0); 
+  const [popupKey, setPopupKey] = useState(0);
 
   const socialIcons = [
     {
       icon: <FaFacebookF />,
       platform: "Facebook",
       color: "hover:text-blue-600",
-      title: "Facebook Coming Soon"
+      title: "Facebook Coming Soon",
     },
     {
       icon: <FaInstagram />,
       platform: "Instagram",
       color: "hover:text-pink-600",
-      title: "Instagram Coming Soon"
+      title: "Instagram Coming Soon",
     },
     {
       icon: <FaXTwitter />,
       platform: "Twitter",
       color: "hover:text-black",
-      title: "Twitter Coming Soon"
+      title: "Twitter Coming Soon",
     },
     {
       icon: <FaYoutube />,
       platform: "YouTube",
       color: "hover:text-red-600",
-      title: "YouTube Coming Soon"
+      title: "YouTube Coming Soon",
     },
   ];
 
@@ -39,7 +39,7 @@ const FooterSocials = () => {
     e.preventDefault();
     setPopupText(`${platform} page is under development and will be available soon!`);
     setPopupTitle(title);
-    setPopupKey(prev => prev + 1); 
+    setPopupKey((prev) => prev + 1);
     setShowPopup(true);
   };
 
@@ -66,16 +66,12 @@ const FooterSocials = () => {
       {/* Right Slide Popup */}
       {showPopup && (
         <RightSlidePopup
-          key={popupKey} 
-          keyProp={popupKey} 
+          key={popupKey}
+          keyProp={popupKey}
           content={
-            <div className="p-2">
-              <h3 className="font-bold text-lg mb-2 text-gray-800">{popupTitle}</h3>
-              <p className="text-gray-600 text-sm mb-3">{popupText}</p>
-              <div className="text-xs text-gray-400 flex items-center">
-                <span className="mr-2">🔄</span>
-                <span>Auto-hides in 5 seconds or swipe to close</span>
-              </div>
+            <div className="text-center p-2">
+              <p className="font-semibold text-gray-800 mb-1">{popupTitle}</p>
+              <p className="text-sm text-gray-600">{popupText}</p>
             </div>
           }
           autoHideDelay={5000}

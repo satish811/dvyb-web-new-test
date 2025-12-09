@@ -1,7 +1,5 @@
-// src/hooks/useProducts.js
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { productService } from "../services/firebaseServices";
-import { Product } from "../models/b2cProductModel";
 
 export function useProducts() {
   const [state, setState] = useState({
@@ -10,21 +8,42 @@ export function useProducts() {
     error: null,
   });
 
-  const fetch = useCallback(async () => {
-    try {
-      setState((s) => ({ ...s, loading: true, error: null }));
-      const data = await productService.fetchAllProducts();
-      setState({ products: data, loading: false, error: null });
-    } catch (err) {
-      console.error(err);
-      setState({ products: [], loading: false, error: err.message });
-    }
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetch = async () => {
+      try {
+        if (isMounted) {
+          setState((s) => ({ ...s, loading: true, error: null }));
+        }
+
+        const data = await productService.fetchAllProducts();
+
+        if (isMounted) {
+          setState({
+            products: data,
+            loading: false,
+            error: null,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        if (isMounted) {
+          setState({
+            products: [],
+            loading: false,
+            error: err.message,
+          });
+        }
+      }
+    };
+
+    fetch();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-    fetch();
-    // optional: real-time listener with onSnapshot
-  }, [fetch]);
-
-  return { ...state, refetch: fetch };
+  return state;
 }

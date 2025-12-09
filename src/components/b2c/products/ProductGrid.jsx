@@ -7,10 +7,8 @@ import AdsCarousel from "../../common/AdSection/AdsCarousel";
 const ProductGrid = ({ products, category }) => {
   const { selectedFilters, clearAllFilters } = useFilter();
 
-  // Filter once
   const filteredProducts = useProductFilter(products || []);
 
-  // Sort once (you said you have sortBy somewhere, we'll use a simple state)
   const [sortBy, setSortBy] = useState("");
 
   const sortedAndFilteredProducts = useMemo(() => {
@@ -30,14 +28,14 @@ const ProductGrid = ({ products, category }) => {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:mt-18">
       {/* Ads */}
-      <div className="mb-5">
+      <div className="mb-8">
         <AdsCarousel />
       </div>
 
-      {/* Title + Sort */}
-      <div className="flex justify-between items-center mb-8">
+      {/* Title + Sort - hidden on mobile */}
+      <div className="hidden sm:flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold capitalize">
           {category || "All Products"} ({sortedAndFilteredProducts.length})
         </h1>

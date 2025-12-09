@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
 import { FilterSection, ColorFilter, PriceRange, DiscountFilter } from "../filters";
 import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
@@ -13,7 +12,6 @@ const Sidebar = ({ products = [] }) => {
 
   const isURLSaree = urlCategory?.toLowerCase() === "saree";
 
-  const [isOpen, setIsOpen] = useState(false);
   const [filterData, setFilterData] = useState({
     categories: [],
     sizes: [],
@@ -21,13 +19,9 @@ const Sidebar = ({ products = [] }) => {
     priceRange: { min: 0, max: 0 },
   });
 
-  // Use filter context
-  const { selectedFilters, navbarCategory } = useFilter();
-
-  // Determine selected category - prioritize navbar selection, then sidebar selection
+  const { selectedFilters } = useFilter();
   const selectedCategory = selectedFilters.categories[0] || null;
 
-  // Custom category data from image (for fallback if no categories in API)
   const customCategories = [
     { name: "LEHENGA", count: 5 },
     { name: "SAREE", count: 4 },
@@ -41,14 +35,12 @@ const Sidebar = ({ products = [] }) => {
     { name: "VIRTUAL TRYON", count: 7 },
   ];
 
-  // Custom discount data from image
   const customDiscounts = [
     { range: "0% - 20%", count: 10 },
     { range: "21% - 30%", count: 12 },
     { range: "31% - 40%", count: 11 },
   ];
 
-  // Default sizes from image
   const defaultSizes = [
     { name: "XS", count: 12 },
     { name: "S", count: 3 },
@@ -66,85 +58,56 @@ const Sidebar = ({ products = [] }) => {
     }
   }, [products]);
 
-  // Check if current category is saree (case insensitive)
   const isSareeCategory =
     (selectedCategory && selectedCategory.toUpperCase().includes("SAREE")) || isURLSaree;
 
   return (
-    <>
-      {/* Mobile Toggle */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg"
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
+    <aside
+      className="
+        w-80 bg-white shadow-none 
+        lg:sticky lg:top-20 lg:h-fit 
+        h-auto
+      "
+    >
+      <div className="flex-1 overflow-y-auto p-5 space-y-7 no-scrollbar">
+        <FilterSection
+          title="CATEGORY"
+          items={customCategories}
+          searchable
+          defaultOpen={true}
+          filterType="categories"
         />
-      )}
 
-      {/* Sidebar */}
-      <aside
-        className={`
-    fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl
-    transform transition-transform duration-300 ease-in-out
-    ${isOpen ? "translate-x-0" : "-translate-x-full"}
-    lg:translate-x-0 lg:static lg:inset-0 lg:shadow-none lg:sticky lg:top-20
-    flex flex-col h-screen lg:h-auto
-    overflow-hidden
-  `}
-      >
-        <div className="flex-1 overflow-y-auto p-5 space-y-7 no-scrollbar">
-          {/* ← ALL YOUR FILTERS — NOW SCROLL PERFECTLY */}
+        <BlouseFilter />
+
+        {!isSareeCategory && (
           <FilterSection
-            title="CATEGORY"
-            items={customCategories}
-            searchable
+            title="SIZE"
+            items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes}
             defaultOpen={true}
-            filterType="categories"
+            filterType="sizes"
           />
-          <BlouseFilter />
-          {!isSareeCategory && (
-            <FilterSection
-              title="SIZE"
-              items={filterData.sizes.length > 0 ? filterData.sizes : defaultSizes}
-              defaultOpen={true}
-              filterType="sizes"
-            />
-          )}
-          {filterData.colors.length > 0 && (
-            <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />
-          )}
-          <DiscountFilter title="DISCOUNT" discounts={customDiscounts} defaultOpen={true} />
-          {filterData.priceRange.max > 0 && (
-            <PriceRange
-              min={filterData.priceRange.min}
-              max={filterData.priceRange.max}
-              defaultOpen={true}
-            />
-          )}
-        </div>
+        )}
 
-        {/* Optional: Nice Apply Button */}
-        <div className="p-5 border-t lg:hidden">
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-full bg-black text-white py-3.5 rounded-lg font-medium hover:bg-gray-900 transition"
-          >
-            Apply Filters
-          </button>
-        </div>
-      </aside>
-    </>
+        {filterData.colors.length > 0 && (
+          <ColorFilter title="COLORS" colors={filterData.colors} defaultOpen={true} />
+        )}
+
+        <DiscountFilter title="DISCOUNT" discounts={customDiscounts} defaultOpen={true} />
+
+        {filterData.priceRange.max > 0 && (
+          <PriceRange
+            min={filterData.priceRange.min}
+            max={filterData.priceRange.max}
+            defaultOpen={true}
+          />
+        )}
+      </div>
+    </aside>
   );
 };
 
-// Helper functions to extract dynamic data from products
+/* Helper Functions (unchanged) */
 function extractDynamicFilterData(products) {
   return {
     categories: extractCategories(products),
@@ -158,13 +121,11 @@ function extractCategories(products) {
   const map = new Map();
 
   products.forEach((product) => {
-    // MAIN CATEGORY — same as before
     if (product.category && product.category.trim()) {
       const category = product.category.trim();
       map.set(category, (map.get(category) || 0) + 1);
     }
 
-    // UPDATED: USE subDressType for subcategories
     if (product.subDressType && product.subDressType.trim()) {
       const sub = product.subDressType.trim();
       map.set(sub, (map.get(sub) || 0) + 1);
@@ -210,7 +171,7 @@ function extractSizes(products) {
     }
   });
 
-  const sizesArray = Array.from(sizeMap.entries())
+  return Array.from(sizeMap.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => {
       const sizeOrder = {
@@ -222,14 +183,9 @@ function extractSizes(products) {
         XXL: 6,
         "3XL": 7,
         "4XL": 8,
-        FREE: 9,
-        OS: 10,
-        "ONE SIZE": 11,
       };
       return (sizeOrder[a.name] || 99) - (sizeOrder[b.name] || 99);
     });
-
-  return sizesArray;
 }
 
 function extractColors(products) {
@@ -260,31 +216,24 @@ function extractColors(products) {
 
 function hexToClass(hex) {
   const colorMap = {
-    // Reds
     "#FF0000": "bg-red-500",
     "#B22222": "bg-red-600",
     "#8B0000": "bg-red-900",
 
-    // Purples
     "#800080": "bg-purple-600",
     "#9370DB": "bg-purple-500",
 
-    // Greens
     "#008000": "bg-green-600",
     "#32CD32": "bg-green-400",
 
-    // Yellow
     "#FFFF00": "bg-yellow-400",
 
-    // Pink
     "#FFB6C1": "bg-pink-300",
-    "#FFC0CB": "bg-pink-300", // same as above — kept once
+    "#FFC0CB": "bg-pink-300",
 
-    // Black & White
     "#000000": "bg-black",
     "#FFFFFF": "bg-white border border-gray-300",
 
-    // Blue
     "#0000FF": "bg-blue-500",
   };
 
@@ -295,7 +244,7 @@ function getPriceRange(products) {
   const prices = products.map((p) => Number(p.price)).filter((p) => !isNaN(p) && p > 0);
 
   if (prices.length === 0) {
-    return { min: 55, max: 37967 }; // Default from image
+    return { min: 55, max: 37967 };
   }
 
   return {

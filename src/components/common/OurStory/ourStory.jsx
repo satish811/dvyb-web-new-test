@@ -65,7 +65,7 @@ const ourStory = () => {
       <div className="w-full h-[80px]" />
 
       {/* Our Story */}
-      <section className="max-w-7xl w-full px-4 sm:px-1 lg:px-8 py-10  text-center">
+      <section className="max-w-7xl w-full px-4 sm:px-1 lg:px-8  text-center">
         <h1 className="font-semibold text-5xl mb-2">Our Story</h1>
 
         <div className="w-[40%] h-[30%]  flex justify-center mb-10 max-w-4xl mx-auto">

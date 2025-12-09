@@ -8,6 +8,7 @@ import ProductCard from "../../b2c/products/ProductCard";
 import Fuse from "fuse.js";
 import emptySearch from "../../../assets/common/emptysearch.png";
 import TrendingProducts from "../TrendingProducts/TrendingProducts";
+import RecentlyViewedProducts from "../RecentlyViewedProducts/RecentlyViewedProducts";
 import { bro01, bro02, bro03, bro04, bro05, bro06, bro07 } from "../../../assets";
 
 const browseCategories = [
@@ -290,6 +291,14 @@ export default function SearchDropdown({
             <CategoryCard key={cat.name} {...cat} onClose={onClose} />
           ))}
         </div>
+      </div>
+
+      {/* Recently Viewed Products */}
+      <div className="max-w-7xl mx-auto px-6 py-2">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold">RECENTLY VIEWED</h2>
+        </div>
+        <RecentlyViewedProducts onClose={onClose} column={6} heading="" />
       </div>
 
       {/* Trending Products */}

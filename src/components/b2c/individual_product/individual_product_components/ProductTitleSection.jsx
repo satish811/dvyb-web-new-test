@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Heart, Share2 } from "lucide-react";
 import ShareCart from "../../../common/PopUps/ShareCart";
 import HeartColorsPopup from "../../../b2b/common/HeartColorPopup";
+import RightSlidePopup from "../../../common/PopUps/RightSlidePopup";
 
 const ProductTitleSection = ({
   user,
@@ -15,6 +16,7 @@ const ProductTitleSection = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [openShare, setOpenShare] = useState(false);
   const [openHeartPopup, setOpenHeartPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const displayTitle = title || name;
 
@@ -29,7 +31,7 @@ const ProductTitleSection = ({
    * Guest Alert
    */
   const handleLoginRequired = () => {
-    alert("Please login to continue.");
+    setShowLoginPopup(true);
   };
 
   /**
@@ -49,10 +51,8 @@ const ProductTitleSection = ({
     }
 
     if (userRole === "B2B") {
-      // For B2B users, open the color/size selection popup
       setOpenHeartPopup(true);
     } else {
-      // For B2C users, use the normal wishlist functionality
       onAddToWishlist();
     }
   };
@@ -80,6 +80,20 @@ const ProductTitleSection = ({
 
   return (
     <>
+      {showLoginPopup && (
+        <RightSlidePopup
+          content={
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">Please sign in</div>
+              <div className="text-sm text-gray-600">Login to save items to your wishlist</div>
+            </div>
+          }
+          autoHideDelay={5000}
+          onClose={() => setShowLoginPopup(false)}
+          keyProp="login-required"
+        />
+      )}
+
       <div className="flex flex-col" style={{ gap: "1px" }}>
         {/* Title + Icons */}
         <div className="flex items-start justify-between">

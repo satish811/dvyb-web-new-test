@@ -55,11 +55,6 @@ export default function Footer() {
         {/* GUARANTEE SECTION - Both Mobile & Desktop */}
         <FooterGuarantee />
       </div>
-
-      {/* Copyright */}
-      {/* <div className="bg-gray-50 py-6 text-center text-xs text-gray-500 border-t">
-        © 2025 DVYB. All rights reserved.
-      </div> */}
     </footer>
   );
 }

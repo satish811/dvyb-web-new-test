@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ShoppingBag, Zap, Eye } from "lucide-react";
 import BuyNowColorsPopup from "../../../b2b/common/BuyNowColorPopup";
 import { useNavigate } from "react-router-dom";
+import RightSlidePopup from "../../../common/PopUps/RightSlidePopup";
 
 const ProductActionButtons = ({
   user,
@@ -21,15 +22,11 @@ const ProductActionButtons = ({
   const isGuest = !user;
   const isVirtualTryOnDisabled = isGuest || isB2BUser;
   const [showBulkPopup, setShowBulkPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   // Guest Alert
   const handleLoginRequired = () => {
-    alert("Please login to continue.");
-  };
-
-  // B2B Alert for virtual try-on
-  const handleB2BRestricted = () => {
-    alert("Virtual Try-On is not available for B2B users.");
+    setShowLoginPopup(true);
   };
 
   // B2C Buy Now handler (for regular users)
@@ -109,6 +106,7 @@ const ProductActionButtons = ({
     <>
       <div className="flex flex-col gap-3 mt-4 w-full">
         {/* Row for Buy Now and Add to Bag */}
+
         <div className="flex gap-3">
           {/* BUY NOW */}
           <button
@@ -119,12 +117,12 @@ const ProductActionButtons = ({
             }}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 py-3 font-semibold text-sm uppercase tracking-wide
-              ${
-                isGuest || addingToCart
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#7a0000] text-white hover:bg-[#5a0000] active:bg-[#4a0000]"
-              }
-              transition disabled:opacity-50`}
+    ${
+      addingToCart
+        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+        : "bg-[#7a0000] text-white hover:bg-[#5a0000] active:bg-[#4a0000]"
+    }
+    transition disabled:opacity-50`}
             style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
           >
             {addingToCart ? (
@@ -145,12 +143,12 @@ const ProductActionButtons = ({
             onClick={isGuest ? handleLoginRequired : onAddToBag}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 border py-3 font-semibold text-sm uppercase tracking-wide
-              ${
-                isGuest
-                  ? "border-gray-400 text-gray-400 cursor-not-allowed"
-                  : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white"
-              }
-              transition disabled:opacity-50`}
+    ${
+      addingToCart
+        ? "border-gray-400 text-gray-400 cursor-not-allowed"
+        : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white"
+    }
+    transition disabled:opacity-50`}
           >
             {addingToCart ? (
               <>
@@ -166,31 +164,16 @@ const ProductActionButtons = ({
           </button>
         </div>
 
-        {/* VIRTUAL TRY ON */}
-        <button
-          onClick={
-            isVirtualTryOnDisabled
-              ? () => {
-                  if (isGuest) {
-                    handleLoginRequired();
-                  } else if (isB2BUser) {
-                    handleB2BRestricted();
-                  }
-                }
-              : onVirtualTryOn
-          }
-          disabled={isVirtualTryOnDisabled}
-          className={`flex items-center justify-center gap-2 py-3 font-semibold text-sm uppercase tracking-wide transition
-            ${
-              isVirtualTryOnDisabled
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-[#FFC400] text-white hover:bg-[#e6b200]"
-            } disabled:opacity-50`}
-        >
-          <Eye size={16} />
-          Virtual Try On
-          {isB2BUser && !isGuest && <span className="ml-1 text-xs">(Not Available)</span>}
-        </button>
+        {/* VIRTUAL TRY ON - Only show for non-B2B users */}
+        {!isB2BUser && (
+          <button
+            onClick={isGuest ? handleLoginRequired : onVirtualTryOn}
+            className="flex items-center justify-center gap-2 py-3 font-semibold text-sm uppercase tracking-wide transition bg-[#FFC400] text-white hover:bg-[#e6b200]"
+          >
+            <Eye size={16} />
+            Virtual Try On
+          </button>
+        )}
       </div>
 
       {/* B2B Bulk Order Popup */}
@@ -200,6 +183,16 @@ const ProductActionButtons = ({
           onClose={() => setShowBulkPopup(false)}
           userRole="B2B"
           onConfirm={handleB2BPopupConfirm}
+        />
+      )}
+
+      {/* Login Required Popup */}
+      {showLoginPopup && (
+        <RightSlidePopup
+          keyProp="login-required"
+          content="Please login to continue."
+          autoHideDelay={4000}
+          onClose={() => setShowLoginPopup(false)}
         />
       )}
     </>

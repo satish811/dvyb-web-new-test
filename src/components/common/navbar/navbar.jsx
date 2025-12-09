@@ -238,7 +238,7 @@ export default function Navbar({ setShowLoader }) {
               CATEGORIES
             </span>
             <span
-              onClick={() => setShowModal(true)} 
+              onClick={() => setShowModal(true)}
               className="text-[12px] font-medium tracking-wider cursor-pointer hover:underline"
             >
               VIRTUAL TRY-ON
@@ -254,17 +254,8 @@ export default function Navbar({ setShowLoader }) {
               WOMEN <MdOutlineArrowDropDown className="text-xl" />
             </button>
 
-            <div
-              className="flex-1 flex justify-center"
-              onClick={() => {
-                if (setShowLoader) setShowLoader(true);
-                setTimeout(() => {
-                  navigate("/");
-                  setShowLoader(false);
-                }, 1200); 
-              }}
-            >
-
+            {/* Fix: Wrap only the logo in clickable container */}
+            <div className="flex-1 flex justify-center">
               {logoLoading ? (
                 <div className="w-8 h-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
               ) : (
@@ -272,41 +263,110 @@ export default function Navbar({ setShowLoader }) {
                   src={mainlogo}
                   alt="Logo"
                   className="h-12 xs:h-14 sm:ml-1 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
+                  onClick={() => {
+                    if (setShowLoader) setShowLoader(true);
+                    setTimeout(() => {
+                      navigate("/");
+                      setShowLoader(false);
+                    }, 1200);
+                  }}
                 />
               )}
             </div>
 
-
-            <NavIcons
+            {/* <NavIcons
               wishlistCount={wishlistCount}
               cartCount={cartCount}
               onSearch={() => setSearchOpen(true)}
               onWishlist={() => navigate("/wishlist")}
               onCart={() => navigate("/cart")}
               onProfile={() => guard("/profile")}
-            />
+            /> */}
+
+            <div className="flex items-center gap-5">
+              {/* Search */}
+              <button onClick={() => setSearchOpen(true)}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+
+              {/* Wishlist - Heart Icon (NEW) */}
+              <button onClick={() => navigate("/wishlist")} className="relative">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Cart - Shopping Bag Icon (your original style) */}
+              <button onClick={() => navigate("/cart")} className="relative">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Profile */}
+              <button onClick={() => guard("/profile")}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav
             className="
-    flex 
-    text-[11px] 
-    gap-4 
-    px-3 
-    overflow-x-auto 
-    hide-scrollbar 
-    whitespace-nowrap 
-    sm:text-sm 
-    sm:gap-8 
-    sm:px-8 
-    md:text-[13px] 
-    md:gap-14 
-    md:px-12 
-    justify-start 
-    sm:justify-center 
-    pb-1
-  "
+                flex 
+                text-[11px] 
+                gap-4 
+                px-3 
+                overflow-x-auto 
+                hide-scrollbar 
+                whitespace-nowrap 
+                sm:text-sm 
+                sm:gap-8 
+                sm:px-8 
+                md:text-[13px] 
+                md:gap-8 
+                md:px-10 
+                lg:gap-8 
+                xl:gap-18 
+                2xl:gap-14 
+                justify-start 
+                sm:justify-center 
+                pb-1
+            "
           >
             {navItems.map((item) => (
               <button
@@ -320,10 +380,11 @@ export default function Navbar({ setShowLoader }) {
                 }}
                 className={`
         relative pb-1 transition-all duration-200 font-semibold
-        ${isActive(item)
-                    ? "text-primary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
-                    : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
-                  }
+        ${
+          isActive(item)
+            ? "text-primary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
+            : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
+        }
         ${item.isHighlight ? "text-primary" : ""}
         cursor-pointer
       `}
@@ -390,10 +451,11 @@ export default function Navbar({ setShowLoader }) {
                   <button
                     key={product}
                     onClick={() => setSelectedProduct(product)}
-                    className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${selectedProduct === product
-                      ? "bg-[#F0E0E0] text-primary border-none"
-                      : "border-primary bg-white text-primary"
-                      } focus:outline-none focus:ring-black`}
+                    className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${
+                      selectedProduct === product
+                        ? "bg-[#F0E0E0] text-primary border-none"
+                        : "border-primary bg-white text-primary"
+                    } focus:outline-none focus:ring-black`}
                   >
                     {product}
                   </button>
@@ -411,10 +473,11 @@ export default function Navbar({ setShowLoader }) {
                     }
                   }}
                   disabled={!selectedProduct}
-                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${selectedProduct
-                    ? "bg-primary hover:bg-hoverBg cursor-pointer"
-                    : "bg-[#BF8080] opacity-60 cursor-not-allowed"
-                    } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
+                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${
+                    selectedProduct
+                      ? "bg-primary hover:bg-hoverBg cursor-pointer"
+                      : "bg-[#BF8080] opacity-60 cursor-not-allowed"
+                  } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
                 >
                   Continue Try On
                 </button>
