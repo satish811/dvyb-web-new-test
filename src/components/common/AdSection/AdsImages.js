@@ -14,8 +14,7 @@ import banner_2 from "@/assets/b2c/ads/Banner_3.png";
 import banner_mob_2 from "@/assets/b2c/ads/Banner_mob_3.png";
 
 import makar_sankranti from "@/assets/b2c/ads/lohari_banner.jpg";
-import saree_1 from "@/assets/b2c/ads/saree_1.jpg";
-import saree_2 from "@/assets/b2c/ads/saree_2.jpg";
+
 
 
 // --------------------------------------------
@@ -64,29 +63,23 @@ export const ads = [
     category: "other",
     link: "/womenwear",
   },
+  
   {
     id: 6,
-    image: saree_1,
-    alt: "Saree Banner Desktop",
-    category: "saree",
-    link: "/womenwear?category=saree",
-  },
-  {
-    id: 7,
     image: banner,
     alt: "Banner 2 Desktop",
     category: "other",
     link: "/womenwear",
   },
   {
-    id: 8,
+    id: 7,
     image: banner_2,
     alt: "Banner 3 Desktop",
     category: "other",
     link: "/womenwear",
   },
   {
-    id: 9,
+    id: 8,
     image: makar_sankranti,
     alt: "Banner 4 Desktop",
     category: "other",
