@@ -77,13 +77,6 @@ const ProductGrid = ({ products, category }) => {
           ))}
         </div>
       )}
-
-      {/* Optional: nice message at the end */}
-      {sortedAndFilteredProducts.length > 0 && (
-        <div className="text-center py-12 text-gray-500">
-          Showing all {sortedAndFilteredProducts.length} products
-        </div>
-      )}
     </div>
   );
 };
