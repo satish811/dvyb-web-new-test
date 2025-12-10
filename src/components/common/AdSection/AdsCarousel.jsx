@@ -41,17 +41,12 @@ const AdsCarousel = () => {
   };
 
   return (
-    <div
-      className={`w-full ${isMobile
-          ? "h-[140vw] sm:h-[100vw] md:h-[120vh] max-w-[100vw]"
-          : "h-72 sm:h-80 md:h-72 lg:h-80 xl:h-96 max-w-[100vw] lg:max-w-[95vw] xl:max-w-[90vw]"
-        }`}
-    >
-      <div className="relative w-full h-full lg:mx-auto lg:px-0">
+    <div className="w-full">
+      <div className="relative w-full h-full mx-auto">
         <img
           src={currentAds[currentIndex]?.image}
           alt={currentAds[currentIndex]?.alt}
-          className="w-full h-full object-contain cursor-pointer"
+          className={`w-full ${isMobile ? "h-auto" : "h-full"} object-contain cursor-pointer`}
           onClick={() => handleClick(currentAds[currentIndex])}
         />
       </div>

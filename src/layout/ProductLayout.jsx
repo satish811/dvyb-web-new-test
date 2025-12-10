@@ -289,7 +289,7 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* Main Layout */}
       {/* -------------------------------------------------------------- */}
-      <div className="lg:mt-10 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
+      <div className="lg:mt-15 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
 
           {/* -------------------------------------------------------------- */}

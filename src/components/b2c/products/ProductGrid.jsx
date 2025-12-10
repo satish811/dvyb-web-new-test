@@ -30,7 +30,7 @@ const ProductGrid = ({ products, category }) => {
   return (
     <div className="flex flex-col">
       {/* Ads */}
-      <div className="">
+      <div className="mb-5">
         <AdsCarousel />
       </div>
 
