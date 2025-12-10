@@ -1,15 +1,24 @@
+// ============================================================
+// FILE: api/tryon.js (Vercel Serverless Function)
+// Complete virtual try-on API with multiple modes
+// ============================================================
+
 import axios from "axios";
 import multer from "multer";
 
 // ============ VERCEL CONFIG ============
 export const config = {
-  api: { bodyParser: false, sizeLimit: "20mb" },
+  api: { 
+    bodyParser: false, 
+    sizeLimit: "20mb" 
+  },
+  maxDuration: 300, // 5 minutes for complex operations
 };
 
 // ============ MULTER SETUP ============
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
 });
 
 function runMiddleware(req, res, fn) {
@@ -44,22 +53,37 @@ const backgrounds = {
   }
 };
 
+// Garments for multi try-on
+const garments = [
+  { 
+    name: "saree", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
+  },
+  { 
+    name: "kurti", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
+  },
+  { 
+    name: "lehenga", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
+  },
+  { 
+    name: "anarkali", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
+  },
+];
+
+// ============ HELPER FUNCTIONS ============
 function getApiKeyByOutfit(outfitType) {
   switch (outfitType?.toLowerCase()) {
-    case "saree":
-      return process.env.GEMINI_SAREE_KEY || process.env.GEMINI_API_KEY;
-    case "lehenga":
-      return process.env.GEMINI_LEHENGA_KEY || process.env.GEMINI_API_KEY;
-    case "kurti":
-      return process.env.GEMINI_KURTI_KEY || process.env.GEMINI_API_KEY;
-    case "anarkali":
-      return process.env.GEMINI_ANARKALI_KEY || process.env.GEMINI_API_KEY;
-    default:
-      return process.env.GEMINI_API_KEY;
+    case "saree": return process.env.GEMINI_SAREE_KEY || process.env.GEMINI_API_KEY;
+    case "lehenga": return process.env.GEMINI_LEHENGA_KEY || process.env.GEMINI_API_KEY;
+    case "kurti": return process.env.GEMINI_KURTI_KEY || process.env.GEMINI_API_KEY;
+    case "anarkali": return process.env.GEMINI_ANARKALI_KEY || process.env.GEMINI_API_KEY;
+    default: return process.env.GEMINI_API_KEY;
   }
 }
 
-// ============ HELPER FUNCTIONS ============
 async function downloadAsBase64(url) {
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data).toString("base64");
@@ -106,8 +130,7 @@ CRITICAL REQUIREMENTS:
 OUTPUT:
 ONLY one high-resolution inline_data image showing the person naturally integrated into the new background scene.
 NO text, JSON, explanations, or additional content.
-`
-    : `
+` : `
 You are performing a STRICT photo-realistic virtual try-on. Dress the person in the EXACT garment from the reference image.
 
 CORE TASK:
@@ -115,23 +138,19 @@ CORE TASK:
 - Preserve person's exact face, skin tone, hair, body shape, pose, lighting, shadows, and background 100% unchanged
 
 GARMENT-SPECIFIC GUIDELINES:
-${
-  isSaree
-    ? `
+${isSaree ? `
 SAREE REQUIREMENTS:
 - Drape saree in Nivi style (most common): pleats tucked at waist, pallu flowing naturally over LEFT shoulder
 - Create 8-10 realistic pleats at waist with proper folds/shadows
 - Show fitted blouse underneath pallu (match reference blouse color/style)
 - Saree length reaches ankles; pallu extends to mid-back
 - Replicate ALL fabric texture, borders, embroidery, patterns exactly from reference
-`
-    : `
+` : `
 GENERAL GARMENT REQUIREMENTS:
 - Adapt garment to fit person's exact pose/body naturally
 - Match fabric material, color, texture, patterns, sleeves, neckline, length precisely
 - Ensure realistic draping following body curves/gravity
-`
-}
+`}
 
 UNIVERSAL REALISM RULES:
 - Perfect edge blending (NO floating, jagged, or visible seams)
@@ -197,13 +216,12 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
     try {
       return await generateTryOn(m, g, type);
     } catch (err) {
-      const isRateLimit =
-        err.response?.status === 429 ||
+      const isRateLimit = err.response?.status === 429 ||
         err.response?.status === 503 ||
-        err.message?.includes("quota");
+        err.message?.includes('quota');
 
       if (isRateLimit && i < max) {
-        await new Promise((r) => setTimeout(r, Math.pow(2, i) * 1000));
+        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
         continue;
       }
       throw err;
@@ -213,6 +231,15 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 
 // ============ MAIN HANDLER ============
 export default async function handler(req, res) {
+  // CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST" && req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -221,8 +248,9 @@ export default async function handler(req, res) {
   console.log(`🎯 API called with mode: ${mode}`);
 
   try {
-    // ======== GET ENDPOINT: backgrounds (Get available backgrounds) ========
+    // ======== GET: backgrounds ========
     if (req.method === "GET" && mode === "backgrounds") {
+      console.log('📋 Fetching available backgrounds...');
       const bgList = Object.entries(backgrounds).map(([key, value]) => ({
         id: key,
         name: value.name,
@@ -234,13 +262,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // ======== ENDPOINT: change-background (Background change for try-on results) ========
+    // ======== POST: change-background ========
     if (mode === "change-background") {
-      await runMiddleware(
-        req,
-        res,
-        upload.single("tryOnImage")
-      );
+      console.log('🌍 === BACKGROUND CHANGE REQUEST ===');
+      
+      await runMiddleware(req, res, upload.single("tryOnImage"));
 
       if (!req.file) {
         console.log('❌ No try-on image uploaded');
@@ -263,18 +289,15 @@ export default async function handler(req, res) {
       console.log(`📸 Try-on image size: ${req.file.size} bytes`);
       console.log(`🌍 Selected background: ${backgrounds[background].name}`);
 
-      // Validate image size (max 10MB)
       if (req.file.size > 10 * 1024 * 1024) {
         return res.status(400).json({
           error: "Image too large. Please use an image smaller than 10MB"
         });
       }
 
-      // Convert try-on result to base64
       const tryOnBase64 = req.file.buffer.toString("base64");
       console.log(`✅ Try-on image converted to base64`);
       
-      // Download background image
       console.log("⬇️ Downloading background image...");
       const bgBase64 = await downloadAsBase64(backgrounds[background].url);
 
@@ -298,27 +321,37 @@ export default async function handler(req, res) {
       });
     }
 
-    // ======== ENDPOINT: from-urls (MyProfile URL-based) ========
+    // ======== POST: from-urls ========
     if (mode === "from-urls") {
+      console.log('🔗 === FROM-URLS TRY-ON REQUEST ===');
+      
       const { modelUrl, garmentUrl, outfitType } = req.body;
 
       if (!modelUrl || !garmentUrl) {
-        return res.status(400).json({ error: "modelUrl & garmentUrl required" });
+        return res.status(400).json({ 
+          error: "modelUrl & garmentUrl required" 
+        });
       }
 
-      console.log(`📥 Downloading images...`);
+      console.log(`📥 Model URL: ${modelUrl}`);
+      console.log(`📥 Garment URL: ${garmentUrl}`);
+      console.log(`👗 Outfit Type: ${outfitType || 'default'}`);
+
+      console.log(`⬇️ Downloading images...`);
       const modelBase64 = await downloadAsBase64(modelUrl);
       const garmentBase64 = await downloadAsBase64(garmentUrl);
 
+      console.log('🔁 Generating try-on...');
       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
 
+      console.log('✨ Try-on completed successfully!');
       return res.json({
         success: true,
         result: `data:image/png;base64,${output}`,
       });
     }
 
-    // ======== ENDPOINTS THAT USE FILE UPLOAD ========
+    // ======== FILE UPLOAD MODES (single, multi, test) ========
     await runMiddleware(
       req,
       res,
@@ -331,87 +364,118 @@ export default async function handler(req, res) {
     const modelFile = req.files?.model?.[0];
     const garmentFile = req.files?.garment?.[0];
 
-    // ======== ENDPOINT: single ========
+    // ======== POST: single ========
     if (mode === "single") {
+      console.log('👤 === SINGLE TRY-ON REQUEST ===');
+      
       const garmentUrl = req.body.garmentUrl;
       const outfitType = req.body.outfitType || "saree";
 
-      if (!modelFile) return res.status(400).json({ error: "model file missing" });
-      if (!garmentUrl) return res.status(400).json({ error: "garmentUrl missing" });
+      if (!modelFile) {
+        console.log('❌ No model file uploaded');
+        return res.status(400).json({ error: "model file missing" });
+      }
+      if (!garmentUrl) {
+        console.log('❌ No garment URL provided');
+        return res.status(400).json({ error: "garmentUrl missing" });
+      }
+
+      console.log(`📸 Model image size: ${modelFile.size} bytes`);
+      console.log(`👗 Garment URL: ${garmentUrl}`);
+      console.log(`🎨 Outfit Type: ${outfitType}`);
 
       const modelBase64 = modelFile.buffer.toString("base64");
 
       let garmentBase64;
       if (garmentUrl.startsWith("data:")) {
+        console.log('📊 Extracting base64 from data URL...');
         garmentBase64 = garmentUrl.split(",")[1];
       } else {
+        console.log('⬇️ Downloading garment from URL...');
         garmentBase64 = await downloadAsBase64(garmentUrl);
       }
 
+      console.log('🔁 Generating try-on...');
       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
 
+      console.log('✨ Try-on completed successfully!');
       return res.json({
         success: true,
         result: `data:image/png;base64,${output}`,
       });
     }
 
-    // ======== ENDPOINT: multi ========
+    // ======== POST: multi (MyProfile Multi Try-On) ========
     if (mode === "multi") {
-      if (!modelFile) return res.status(400).json({ error: "model file missing" });
+      console.log('\n🎯 === MY PROFILE MULTI TRY-ON REQUEST ===');
+      
+      if (!modelFile) {
+        console.log('❌ No model file uploaded');
+        return res.status(400).json({ 
+          success: false,
+          error: "model file missing" 
+        });
+      }
 
-      console.log(`🎨 Processing multi try-on...`);
+      console.log(`📊 Model image size: ${modelFile.size} bytes`);
+      console.log(`🚀 Generating try-ons for ${garments.length} garments...`);
+
       const modelBase64 = modelFile.buffer.toString("base64");
-
-      const garments = [
-        { 
-          name: "saree", 
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
-        },
-        { 
-          name: "kurti", 
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
-        },
-        { 
-          name: "lehenga", 
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
-        },
-        { 
-          name: "anarkali", 
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
-        },
-      ];
+      console.log(`✅ Model image converted to base64`);
 
       const results = {};
+      
       for (const g of garments) {
         try {
-          console.log(`📸 Processing ${g.name}...`);
+          console.log(`\n📸 Processing ${g.name}...`);
+          console.log(`⬇️ Downloading ${g.name} garment...`);
           const garmentBase64 = await downloadAsBase64(g.url);
+          
+          console.log(`🔁 Generating ${g.name} try-on...`);
           const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
+          
           results[g.name] = `data:image/png;base64,${output}`;
-          console.log(`✅ ${g.name} done`);
+          console.log(`✅ ${g.name} completed successfully!`);
         } catch (err) {
           console.error(`❌ ${g.name} failed:`, err.message);
           results[g.name] = null;
         }
       }
 
-      return res.json({ success: true, results });
+      const successCount = Object.values(results).filter(r => r !== null).length;
+      console.log(`\n✨ Completed: ${successCount}/${garments.length} successful`);
+      console.log('=== REQUEST COMPLETE ===\n');
+
+      return res.json({ 
+        success: true, 
+        results 
+      });
     }
 
-    // ======== ENDPOINT: test ========
+    // ======== POST: test ========
     if (mode === "test") {
-      if (!modelFile || !garmentFile)
+      console.log('🧪 === TEST TRY-ON REQUEST ===');
+      
+      if (!modelFile || !garmentFile) {
+        console.log('❌ Missing files');
         return res.status(400).json({
-          error: "model & garment required",
+          error: "model & garment files required",
         });
+      }
+
+      console.log(`📸 Model size: ${modelFile.size} bytes`);
+      console.log(`👗 Garment size: ${garmentFile.size} bytes`);
 
       const modelBase64 = modelFile.buffer.toString("base64");
       const garmentBase64 = garmentFile.buffer.toString("base64");
       const outfitType = req.body.outfitType || "saree";
 
+      console.log(`🎨 Outfit Type: ${outfitType}`);
+      console.log('🔁 Generating try-on...');
+
       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
 
+      console.log('✨ Test try-on completed successfully!');
       return res.json({
         success: true,
         result: `data:image/png;base64,${output}`,
@@ -419,9 +483,15 @@ export default async function handler(req, res) {
     }
 
     // ======== INVALID MODE ========
-    return res.status(400).json({ error: `Invalid mode: ${mode}` });
+    console.log(`❌ Invalid mode: ${mode}`);
+    return res.status(400).json({ 
+      error: `Invalid mode: ${mode}`,
+      validModes: ['backgrounds', 'change-background', 'from-urls', 'single', 'multi', 'test']
+    });
+
   } catch (err) {
     console.error("❌ API Error:", err.message);
+    console.error("Stack:", err.stack);
     return res.status(500).json({
       success: false,
       error: err.message,

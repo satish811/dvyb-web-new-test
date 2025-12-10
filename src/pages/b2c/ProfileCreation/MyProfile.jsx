@@ -165,7 +165,7 @@ const handleImageFit = (e) => {
       // ⭐ CHANGED: Use /api/tryon?mode=multi instead of /api/myprofile-multi-tryon
       console.log("📤 Sending request to /api/tryon?mode=multi...");
 
-      const res = await fetch("/api/tryon?mode=multi", {
+      const res = await fetch("/api/myprofile-multi-tryon", {
         method: "POST",
         body: formData,
       });
@@ -417,8 +417,8 @@ const outfitOptions = [
     id: 'kurti',
     label: 'Kurti',
     subtitle: 'Casual comfort',
-    staticImage: 'https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp',
-    garmentUrl: 'https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp'  // ← REAL URL
+    staticImage: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765374582/kurti_dwohtr.avif',
+    garmentUrl: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765374582/kurti_dwohtr.avif'  // ← REAL URL
   },
   {
     id: 'lehenga',
