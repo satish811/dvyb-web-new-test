@@ -10,7 +10,7 @@ import silk from "@/assets/b2c/images/MainBlog/silk.svg";
 import Hand from "@/assets/b2c/images/MainBlog/Hand.svg";
 import women from "@/assets/b2c/images/MainBlog/women.svg";
 import Lehenga from "@/assets/b2c/images/MainBlog/Lehenga.svg";
-import LehengaStyle1 from "../../../assets/b2c/landing/wedding/wed02.webp";
+import LehengaStyle1 from "../../../assets/b2c/landing/wedding/WED02.webp";
 import Anarkali from "@/assets/b2c/images/MainBlog/Anarkali.svg";
 import kurta from "@/assets/b2c/images/MainBlog/kurta.svg";
 
