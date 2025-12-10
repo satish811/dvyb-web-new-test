@@ -78,7 +78,7 @@ const ProductSizeSelector = ({
       <div
         className={`flex flex-col w-full max-w-[539px] ${showError ? "animate-shake" : ""}`}
         style={{
-          gap: "16px", // Figma GAP
+          gap: "15px", 
         }}
       >
         {/* ---------------------------------- */}
@@ -88,7 +88,7 @@ const ProductSizeSelector = ({
           className="flex items-center"
           style={{
             gap: "10px",
-            whiteSpace: "nowrap", // Prevent 2nd line
+            whiteSpace: "nowrap", 
           }}
         >
           {/* Title */}
@@ -127,7 +127,7 @@ const ProductSizeSelector = ({
             }}
             onMouseEnter={(e) => {
               e.target.style.textDecoration = "underline";
-              e.target.style.color = "#B71C1C";
+              e.target.style.color = "#b32f2fff";
             }}
             onMouseLeave={(e) => {
               e.target.style.textDecoration = "none";
@@ -142,7 +142,7 @@ const ProductSizeSelector = ({
         {/* SIZE BOX ROW */}
         {/* ------------------------------- */}
         <div
-          className={`flex flex-wrap `}
+          className={`flex flex-wrap xl:gap-[28px] 2xl:gap-[36px] `}
           style={{
             gap: "16px",
           }}

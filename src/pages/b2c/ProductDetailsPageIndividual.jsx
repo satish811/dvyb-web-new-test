@@ -20,17 +20,20 @@ const ProductDetailsPageIndividual = ({ onClose }) => {
   }, [id, products]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* ========== INDIVIDUAL PRODUCT DETAILS ========== */}
-      <IndividualProduct productId={id} />
+    <div className="lg:mt-12 mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 3xl:px-48 my-4 lg:my-8">
+      
+      {/* PRODUCT DETAILS */}
+      <div className="w-full mx-auto py-6 lg:py-10">
+        <IndividualProduct productId={id} />
+      </div>
 
-      {/* ========== SIMILAR PRODUCTS SECTION ========== */}
-      <div className="hidden md:block mt-12">
+      {/* SIMILAR PRODUCTS */}
+      <div className="hidden md:block mt-10 lg:mt-8 w-full mx-auto">
         <SimilarProductsSection />
       </div>
 
-      {/* ========== TRENDING PRODUCTS SECTION ========== */}
-      <div className="hidden md:block">
+      {/* TRENDING PRODUCTS */}
+      <div className="hidden md:block mt-10 lg:mt-8 w-full mx-auto">
         <TrendingProductsSection />
       </div>
     </div>

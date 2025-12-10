@@ -572,13 +572,8 @@ const IndividualProductDetailsPage = () => {
   };
 
   return (
-    <div
-      className="mx-auto flex flex-col w-full max-w-[1166px] px-1 md:px-0"
-      style={{
-        gap: "16px",
-        height: "auto",
-      }}
-    >
+    <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16">
+      
       {/* Mobile Header */}
       <MobileProductHeader productName={product?.dressType || "PRODUCT"} />
 
@@ -618,22 +613,13 @@ const IndividualProductDetailsPage = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-4 mt-16 md:mt-0">
-        <div className="lg:w-1/2 sticky top-16 md:top-0 self-start z-10">
+      <div className="flex flex-col lg:flex-row gap-20 xl:gap-24 2xl:gap-32">
+        
+        <div className="lg:w-[35rem] sticky top-20 z-10">
           <ProductImageGallery images={imageUrls} product={product} />
         </div>
 
-        <div
-          className="space-y-6 w-full lg:w-[663px] lg:overflow-y-scroll"
-          style={{
-            height: "auto",
-            maxHeight: "none",
-            gap: "24px",
-            paddingRight: "8px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
+        <div className="w-full lg:w-1/2 lg:space-y-12 xl:space-y-10">
           <ProductTitleSection
             user={auth.currentUser}
             userRole={userRole}
