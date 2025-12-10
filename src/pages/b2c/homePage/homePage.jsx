@@ -9,6 +9,7 @@ import LuxuryPicks from "../../../components/b2c/home/LuxuryPicks";
 import SpotlightCollections from "../../../components/b2c/home/SpotlightCollections";
 import BestProducts from "../../../components/b2c/home/BestProducts";
 import { useNavigate } from "react-router-dom";
+import WeddingSection from "../../../components/b2c/home/WeddingCard";
 
 export default function Home() {
   const { staticProducts, loading, error } = useStaticProducts();
@@ -26,20 +27,21 @@ export default function Home() {
   const closetIcons = productsArray.filter((p) => p.category === "Closet").slice(0, 8);
 
   return (
-    <div className="mt-4 sm:mt-0">
-      <section className="lg:mt-7 md:mt-7 w-full md:h-[90vh] overflow-hidden flex justify-center items-center ">
+    <div className="overflow-x-hidden">
+
+      <section className="h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden flex justify-center items-center bg-gray-50">
         <img
           onClick={() => navigate("/womenwear")}
           src={homeBanner}
           alt="New Year Sale"
-          className="w-full h-full object-fill object-center cursor-pointer"
+          className="max-w-[1200px]  h-full object-contain md:object-cover cursor-pointer px-2 md:px-0"
         />
       </section>
 
       {/* 2. WEDDING TALES */}
       <section className="container py-9">
         <SectionTitle viewAll>Wedding Tales</SectionTitle>
-        <ProductGrid products={wedding} columns={3} />
+        <WeddingSection products={wedding} columns={3} />
       </section>
 
       {/* 3. SHOP BY CATEGORY */}

@@ -57,7 +57,7 @@ export default function ProductGrid({
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {products.map((p) => (
-            <div key={p.id} className="w-full flex-shrink-0 px-2">
+            <div key={p.id} className="w-full flex-shrink-0 px-1">
               <DisplayCard product={p} showDiscount={showDiscount} showShopNow={showShopNow} />
             </div>
           ))}
@@ -81,7 +81,7 @@ export default function ProductGrid({
 
       {/* ---------------------- DESKTOP GRID ---------------------- */}
       <div
-        className={`hidden md:grid grid-cols-2 ${colMap[columns]} gap-2 md:gap-4 px-2 sm:px-3 md:px-3 lg:px-10 mt-4`}
+        className={`hidden md:grid grid-cols-2 ${colMap[columns]} gap-2 md:gap-4 px-2 sm:px-3 md:px-3 lg:px-10`}
       >
         {products.map((p) => (
           <DisplayCard
