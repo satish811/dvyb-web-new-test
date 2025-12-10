@@ -9,7 +9,7 @@ export const config = {
 // ============ MULTER SETUP ============
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
 });
 
 function runMiddleware(req, res, fn) {
@@ -22,15 +22,21 @@ function runMiddleware(req, res, fn) {
 }
 
 // ============ CONSTANTS ============
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 function getApiKeyByOutfit(outfitType) {
   switch (outfitType?.toLowerCase()) {
-    case "saree": return process.env.GEMINI_SAREE_KEY || process.env.GEMINI_API_KEY;
-    case "lehenga": return process.env.GEMINI_LEHENGA_KEY || process.env.GEMINI_API_KEY;
-    case "kurti": return process.env.GEMINI_KURTI_KEY || process.env.GEMINI_API_KEY;
-    case "anarkali": return process.env.GEMINI_ANARKALI_KEY || process.env.GEMINI_API_KEY;
-    default: return process.env.GEMINI_API_KEY;
+    case "saree":
+      return process.env.GEMINI_SAREE_KEY || process.env.GEMINI_API_KEY;
+    case "lehenga":
+      return process.env.GEMINI_LEHENGA_KEY || process.env.GEMINI_API_KEY;
+    case "kurti":
+      return process.env.GEMINI_KURTI_KEY || process.env.GEMINI_API_KEY;
+    case "anarkali":
+      return process.env.GEMINI_ANARKALI_KEY || process.env.GEMINI_API_KEY;
+    default:
+      return process.env.GEMINI_API_KEY;
   }
 }
 
@@ -41,14 +47,13 @@ async function downloadAsBase64(url) {
 }
 
 async function generateTryOn(modelBase64, garmentBase64, outfitType) {
-
- const lowerType = (outfitType || "").toLowerCase();
+  const lowerType = (outfitType || "").toLowerCase();
 
   const isSaree = lowerType === "saree";
   const isBackgroundSwap = lowerType === "background-swap";
 
-
-  const prompt = isBackgroundSwap ? `
+  const prompt = isBackgroundSwap
+    ? `
 You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
 
 CORE TASK:
@@ -84,7 +89,8 @@ CRITICAL REQUIREMENTS:
 OUTPUT:
 ONLY one high-resolution inline_data image showing the person naturally integrated into the new background scene.
 NO text, JSON, explanations, or additional content.
-` : `
+`
+    : `
 You are performing a STRICT photo-realistic virtual try-on. Dress the person in the EXACT garment from the reference image.
 
 CORE TASK:
@@ -92,19 +98,23 @@ CORE TASK:
 - Preserve person's exact face, skin tone, hair, body shape, pose, lighting, shadows, and background 100% unchanged
 
 GARMENT-SPECIFIC GUIDELINES:
-${isSaree ? `
+${
+  isSaree
+    ? `
 SAREE REQUIREMENTS:
 - Drape saree in Nivi style (most common): pleats tucked at waist, pallu flowing naturally over LEFT shoulder
 - Create 8-10 realistic pleats at waist with proper folds/shadows
 - Show fitted blouse underneath pallu (match reference blouse color/style)
 - Saree length reaches ankles; pallu extends to mid-back
 - Replicate ALL fabric texture, borders, embroidery, patterns exactly from reference
-` : `
+`
+    : `
 GENERAL GARMENT REQUIREMENTS:
 - Adapt garment to fit person's exact pose/body naturally
 - Match fabric material, color, texture, patterns, sleeves, neckline, length precisely
 - Ensure realistic draping following body curves/gravity
-`}
+`
+}
 
 UNIVERSAL REALISM RULES:
 - Perfect edge blending (NO floating, jagged, or visible seams)
@@ -122,8 +132,6 @@ OUTPUT:
 ONLY one high-resolution inline_data image of the person wearing the garment correctly.
 NO text, JSON, explanations, or additional content.
 `;
-
-
 
   const payload = {
     contents: [
@@ -172,12 +180,13 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
     try {
       return await generateTryOn(m, g, type);
     } catch (err) {
-      const isRateLimit = err.response?.status === 429 ||
+      const isRateLimit =
+        err.response?.status === 429 ||
         err.response?.status === 503 ||
-        err.message?.includes('quota');
+        err.message?.includes("quota");
 
       if (isRateLimit && i < max) {
-        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        await new Promise((r) => setTimeout(r, Math.pow(2, i) * 1000));
         continue;
       }
       throw err;
@@ -256,51 +265,51 @@ export default async function handler(req, res) {
     }
 
     // ======== ENDPOINT 3: /api/tryon?mode=multi ========
-// ======== ENDPOINT 3: /api/tryon?mode=multi ========
-if (mode === "multi") {
-  if (!modelFile) return res.status(400).json({ error: "model file missing" });
+    // ======== ENDPOINT 3: /api/tryon?mode=multi ========
+    if (mode === "multi") {
+      if (!modelFile) return res.status(400).json({ error: "model file missing" });
 
-  console.log(`🎨 Processing multi try-on...`);
-  const modelBase64 = modelFile.buffer.toString("base64");
+      console.log(`🎨 Processing multi try-on...`);
+      const modelBase64 = modelFile.buffer.toString("base64");
 
-  // ⭐ UPDATED: Real Cloudinary URLs from your frontend
-  const garments = [
-    { 
-      name: "saree", 
-      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
-    },
-    { 
-      name: "kurti", 
-      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
-    },
-    { 
-      name: "lehenga", 
-      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
-    },
-    { 
-      name: "anarkali", 
-      url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
-    },
-  ];
+      // ⭐ UPDATED: Real Cloudinary URLs from your frontend
+      const garments = [
+        {
+          name: "saree",
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg",
+        },
+        {
+          name: "kurti",
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp",
+        },
+        {
+          name: "lehenga",
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+        },
+        {
+          name: "anarkali",
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
+        },
+      ];
 
-  const results = {};
-  for (const g of garments) {
-    try {
-      console.log(`📸 Processing ${g.name}...`);
-      const garmentBase64 = await downloadAsBase64(g.url);
+      const results = {};
+      for (const g of garments) {
+        try {
+          console.log(`📸 Processing ${g.name}...`);
+          const garmentBase64 = await downloadAsBase64(g.url);
 
-      const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
+          const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
 
-      results[g.name] = `data:image/png;base64,${output}`;
-      console.log(`✅ ${g.name} done`);
-    } catch (err) {
-      console.error(`❌ ${g.name} failed:`, err.message);
-      results[g.name] = null;
+          results[g.name] = `data:image/png;base64,${output}`;
+          console.log(`✅ ${g.name} done`);
+        } catch (err) {
+          console.error(`❌ ${g.name} failed:`, err.message);
+          results[g.name] = null;
+        }
+      }
+
+      return res.json({ success: true, results });
     }
-  }
-
-  return res.json({ success: true, results });
-}
 
     // ======== ENDPOINT 4: test (Preview Modal test mode) ========
     if (mode === "test") {
@@ -323,7 +332,6 @@ if (mode === "multi") {
 
     // ======== INVALID MODE ========
     return res.status(400).json({ error: `Invalid mode: ${mode}` });
-
   } catch (err) {
     console.error("❌ API Error:", err.message);
     return res.status(500).json({

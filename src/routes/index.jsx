@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "../components/protectedRoute";
 import MainLayout from "../layout/mainLayout";
 import ProductLayout from "../layout/ProductLayout";
-import WomenwearRoute from "./WomenwearRoute";
 import { useProducts } from "../hooks/useProducts";
 
 // 🧱 Pages
@@ -92,9 +91,7 @@ export default function AppRoutes() {
         path="/womenwear"
         element={
           <MainLayout>
-            <ProductLayout products={products}>
-              <WomenwearRoute products={products} />
-            </ProductLayout>
+            <ProductLayout products={products} />
           </MainLayout>
         }
       />

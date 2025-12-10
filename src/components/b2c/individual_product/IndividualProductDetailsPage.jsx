@@ -573,7 +573,7 @@ const IndividualProductDetailsPage = () => {
 
   return (
     <div
-      className="mx-auto flex flex-col md:mt-15 w-full max-w-[1166px] px-1 md:px-0"
+      className="mx-auto flex flex-col w-full max-w-[1166px] px-1 md:px-0"
       style={{
         gap: "16px",
         height: "auto",

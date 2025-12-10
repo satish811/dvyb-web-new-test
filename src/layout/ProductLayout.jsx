@@ -1,15 +1,16 @@
-// components/layouts/ProductLayout.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
 import { ArrowLeft, Funnel, X } from "lucide-react";
 import { mainlogo } from "../assets";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
 import { searchService } from "../services/searchService";
 import useDebounce from "../hooks/useDebounce";
+import ProductGrid from "../components/b2c/products/ProductGrid";
 
 export default function ProductLayout({ children, products }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -24,13 +25,32 @@ export default function ProductLayout({ children, products }) {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Load recent & popular searches
+  /**
+   * Get category from URL query params
+   */
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const category = queryParams.get("category");
+
+  /**
+   * Filter products based on category
+   */
+  const filteredProducts = useMemo(() => {
+    return category
+      ? products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase())
+      : products;
+  }, [category, products]);
+
+  /**
+   * Load recent & popular searches from localStorage
+   */
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
   }, []);
 
-  // Search effect
+  /**
+   * Search effect
+   */
   useEffect(() => {
     if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -55,6 +75,9 @@ export default function ProductLayout({ children, products }) {
     performSearch();
   }, [debouncedSearchQuery]);
 
+  /**
+   * Save recent search term to localStorage
+   */
   const saveRecentSearch = useCallback((query) => {
     if (!query.trim()) return;
     setRecentSearches((prev) => {
@@ -247,9 +270,8 @@ export default function ProductLayout({ children, products }) {
       {/* Mobile Sidebar (ONLY for mobile) */}
       {/* -------------------------------------------------------------- */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Close Button for Mobile */}
         <div className="flex justify-end p-4 sticky top-0 bg-white z-10">
@@ -267,16 +289,19 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* Main Layout */}
       {/* -------------------------------------------------------------- */}
-      <div className="container mx-auto px-4 pt-[70px] lg:pt-0 min-h-screen">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <div className="lg:mt-10 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
+
           {/* -------------------------------------------------------------- */}
           {/* Desktop Sidebar (ONLY for desktop) - This is the only desktop sidebar */}
           {/* -------------------------------------------------------------- */}
-          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-20 lg:self-start lg:h-fit lg:mt-20">
-            <Sidebar products={products} />
+          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-20 lg:self-start lg:h-full">
+            <div className="h-full">
+              <Sidebar products={products} />
+            </div>
           </aside>
 
-          <section className="flex-1 w-full pb-20 lg:pb-0">
+          <section className="flex-1 w-full pb-20 lg:pb-0 lg:h-full">
             {/* -------------------------------------------------------------- */}
             {/* Desktop Sort Section (if needed) */}
             {/* -------------------------------------------------------------- */}
@@ -293,7 +318,10 @@ export default function ProductLayout({ children, products }) {
               </select>
             </div>
 
-            <div className="mt-4 lg:mt-0">{children}</div>
+            {/* Render ProductGrid directly here */}
+            <div className="mt-4 lg:mt-0 lg:px-6 lg:py-8 h-full">
+              <ProductGrid products={filteredProducts} category={category} />
+            </div>
           </section>
         </div>
       </div>

@@ -35,7 +35,7 @@ const ProductCard = ({ product, onClose }) => {
       <div
         className="bg-gray-50 overflow-hidden relative w-full"
         style={{
-          aspectRatio: "3/4", // Maintain 3:4 aspect ratio
+          aspectRatio: "2/3", 
           flexShrink: 0,
         }}
       >

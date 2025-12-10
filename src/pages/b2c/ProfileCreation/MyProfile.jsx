@@ -160,58 +160,56 @@ const MyProfile = () => {
   // TRIGGER AI TRY-ON (Step 7 → Step 8)
   // TRIGGER AI TRY-ON (Step 7 → Step 8)
 
-const generateVirtualTryOns = async () => {
-  if (!profileData.photoUrl) {
-    console.error("❌ No user photo available");
-    return;
-  }
-
-  setLoadingTryOn(true);
-  console.log("🚀 Starting multi try-on generation...");
-
-  try {
-    const formData = new FormData();
-    formData.append('model', dataURLtoFile(profileData.photoUrl, 'user.jpg'));
-
-    // ⭐ CHANGED: Use /api/tryon?mode=multi instead of /api/myprofile-multi-tryon
-    console.log("📤 Sending request to /api/tryon?mode=multi...");
-
-    const res = await fetch('/api/tryon?mode=multi', {
-      method: 'POST',
-      body: formData
-    });
-
-    console.log(`📡 Server responded with status: ${res.status}`);
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ Server error response:", errorText);
-      throw new Error(`Server error: ${res.status}`);
+  const generateVirtualTryOns = async () => {
+    if (!profileData.photoUrl) {
+      console.error("❌ No user photo available");
+      return;
     }
 
-    const data = await res.json();
-    console.log("📥 Received data:", data);
+    setLoadingTryOn(true);
+    console.log("🚀 Starting multi try-on generation...");
 
-    if (data.success && data.results) {
-      console.log("✅ Multi try-on successful!");
-      console.log("Results:", Object.keys(data.results));
-      
-      setGeneratedResults(data.results);
+    try {
+      const formData = new FormData();
+      formData.append("model", dataURLtoFile(profileData.photoUrl, "user.jpg"));
 
-      const firstResult = Object.values(data.results).find(r => r !== null);
-      setCenterImage(firstResult || capturedImage);
-      
-    } else {
-      throw new Error(data.error || "No results from server");
+      // ⭐ CHANGED: Use /api/tryon?mode=multi instead of /api/myprofile-multi-tryon
+      console.log("📤 Sending request to /api/tryon?mode=multi...");
+
+      const res = await fetch("/api/tryon?mode=multi", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log(`📡 Server responded with status: ${res.status}`);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("❌ Server error response:", errorText);
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("📥 Received data:", data);
+
+      if (data.success && data.results) {
+        console.log("✅ Multi try-on successful!");
+        console.log("Results:", Object.keys(data.results));
+
+        setGeneratedResults(data.results);
+
+        const firstResult = Object.values(data.results).find((r) => r !== null);
+        setCenterImage(firstResult || capturedImage);
+      } else {
+        throw new Error(data.error || "No results from server");
+      }
+    } catch (err) {
+      console.error("❌ Multi try-on failed:", err);
+      alert(`Try-on failed: ${err.message}`);
+    } finally {
+      setLoadingTryOn(false);
     }
-
-  } catch (err) {
-    console.error("❌ Multi try-on failed:", err);
-    alert(`Try-on failed: ${err.message}`);
-  } finally {
-    setLoadingTryOn(false);
-  }
-};
+  };
   //  last worked
   // const generateVirtualTryOns = async () => {
   //   if (!profileData.photoUrl) {

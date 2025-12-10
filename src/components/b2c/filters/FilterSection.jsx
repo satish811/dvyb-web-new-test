@@ -144,43 +144,48 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
   };
 
   return (
-    <div className="pb-4 hide-scrollbar scrollbar-none">
+    <div className="pb-3 sm:pb-4 hide-scrollbar scrollbar-none">
       {/* Header with toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left mb-2"
+        className="flex items-center justify-between w-full text-left mb-1.5 sm:mb-2"
       >
-        <div className="flex items-center gap-2">
-          <h3 className="font-medium text-gray-900 text-sm">{title}</h3>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <h3 className="font-medium text-gray-900 text-xs sm:text-sm">{title}</h3>
           {filterType === "categories" && getCurrentCategory() && (
-            <span className="text-xs text-gray-500">({getCurrentCategoryDisplayName()})</span>
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              ({getCurrentCategoryDisplayName()})
+            </span>
           )}
         </div>
-        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        {isOpen ? <ChevronUp size={14} className="sm:size-4" /> : <ChevronDown size={14} className="sm:size-4" />}
       </button>
 
       {/* Collapsible Content */}
       {isOpen && (
         <div>
+          {/* Search Section */}
           {searchable && (
-            <div className="relative mb-2">
-              <Search
-                size={14}
-                className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full pl-8 pr-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-gray-400"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="relative mb-1.5 sm:mb-2">
+              <div className="flex items-center border-b border-gray-300 pb-1 sm:pb-1.5">
+                <Search
+                  size={12}
+                  className="sm:size-3.5 text-gray-400 mr-1.5 sm:mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full text-[10px] sm:text-xs bg-transparent border-none outline-none placeholder-gray-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           )}
 
-          <div className="space-y-1 max-h-40 overflow-y-auto hide-scrollbar text-xs">
+          <div className="space-y-0.5 sm:space-y-1 max-h-32 sm:max-h-40 overflow-y-auto hide-scrollbar text-[10px] sm:text-xs">
             {filtered.length === 0 && (
-              <div className="text-gray-500 text-center py-3 text-xs">
+              <div className="text-gray-500 text-center py-2 sm:py-3 text-[10px] sm:text-xs">
                 No {filterType} available.
               </div>
             )}
@@ -189,18 +194,18 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
               filtered.map((item, i) => (
                 <label
                   key={i}
-                  className="flex items-center justify-between cursor-pointer p-1 rounded hover:bg-gray-50"
+                  className="flex items-center justify-between cursor-pointer p-0.5 sm:p-1 rounded hover:bg-gray-50"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <input
                       type="checkbox"
                       checked={isChecked(item.name)}
                       onChange={() => handleFilterClick(item.name)}
-                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-500 w-3 h-3"
+                      className="border-2  border-black text-black focus:ring-0 focus:ring-offset-0 focus:outline-none w-3.5 h-2.5 sm:w-3 sm:h-3 rounded-none"
                     />
-                    <span className="text-black">{item.name}</span>
+                    <span className="text-black text-[10px] sm:text-xs">{item.name}</span>
                   </div>
-                  {item.count > 0 && <span className="text-gray-500">({item.count})</span>}
+                  {item.count > 0 && <span className="text-gray-500 text-[10px] sm:text-xs">({item.count})</span>}
                 </label>
               ))}
           </div>

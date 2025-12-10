@@ -28,17 +28,24 @@ const ProductGrid = ({ products, category }) => {
   }
 
   return (
-    <div className="flex flex-col lg:mt-18">
+    <div className="flex flex-col">
       {/* Ads */}
-      <div className="mb-8">
+      <div className="">
         <AdsCarousel />
       </div>
 
       {/* Title + Sort - hidden on mobile */}
-      <div className="hidden sm:flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold capitalize">
-          {category || "All Products"} ({sortedAndFilteredProducts.length})
-        </h1>
+      <div className="hidden sm:flex justify-between items-center mb-3">
+
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-[1.3rem] font-semibold uppercase">
+            {category || "All Products"}
+          </h1>
+          <span className="text-[0.85rem] font-normal text-gray-600">
+            ({sortedAndFilteredProducts.length} products)
+          </span>
+        </div>
+
 
         <select
           value={sortBy}
@@ -50,6 +57,10 @@ const ProductGrid = ({ products, category }) => {
           <option value="high-to-low">Price: High to Low</option>
         </select>
       </div>
+
+      {/* Black straight line after Title + Sort section */}
+      <div className="hidden sm:block border-t border-black mb-6"></div>
+
 
       {/* Show ALL products — no slicing, no loading, no bugs */}
       {sortedAndFilteredProducts.length === 0 ? (
