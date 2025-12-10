@@ -27,7 +27,7 @@ const AdsCarousel = () => {
    * Toggle between 0 and 1
    */
   const handleToggleImage = () => {
-    setCurrentIndex((prev) => (prev === 0 ? 1 : 0));
+    setCurrentIndex((prev) => (prev + 1) % currentAds.length);
   };
 
   /**
