@@ -62,7 +62,6 @@ export default function CheckoutPage() {
 
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [defaultAddress, setDefaultAddress] = useState(null);
-  const [showAddressForm, setShowAddressForm] = useState(false);
 
   const [userDetails, setUserDetails] = useState({
     id: null,
@@ -177,7 +176,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (userDetails.isLoggedIn && userDetails.addresses.length > 0) {
-      setShowAddressForm(false);
       const defaultAddr = userDetails.addresses.find((a) => a.isDefault);
       if (defaultAddr && !defaultAddress) {
         setDefaultAddress(defaultAddr);
@@ -212,8 +210,6 @@ export default function CheckoutPage() {
         setStep3Unlocked(true);
         setOpenStep(3);
       }
-    } else if (userDetails.isLoggedIn && userDetails.addresses.length === 0) {
-      setShowAddressForm(true);
     }
   }, [userDetails.addresses, userDetails.isLoggedIn]);
 
@@ -517,7 +513,7 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 {openStep === 1 && (
-                  <div className="p-6 grid md:grid-cols-2 gap-8 ">
+                  <div className="p-6 grid md:grid-cols-2 gap-8">
                     <div>
                       <p className="text-sm mb-4 ">
                         {userDetails.isLoggedIn
@@ -585,14 +581,7 @@ export default function CheckoutPage() {
                 style={{ borderColor: openStep === 2 ? MAROON : "transparent" }}
                 onClick={() => openRequestedStep(2)}
               >
-                <div className="flex items-center gap-3">
-                  <h2 className="font-semibold uppercase">2. SHIPPING & BILLING INFO</h2>
-                  {!userDetails.isLoggedIn && (
-                    <span className="bg-maroon text-white text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">
-                      Guest Checkout
-                    </span>
-                  )}
-                </div>
+                <h2 className="font-semibold uppercase">2. Shipping Address</h2>
 
                 {defaultAddress && (
                   <div className="text-sm mt-1">
@@ -611,246 +600,142 @@ export default function CheckoutPage() {
 
               {openStep === 2 && (
                 <div className="p-6">
-                  {/* Show Saved Addresses if available and form is not requested */}
-                  {userDetails.isLoggedIn && userDetails.addresses.length > 0 && !showAddressForm && (
-                    <div className="space-y-5">
-                      <h3 className="font-semibold text-lg">Select Your Shipping Address</h3>
-
-                      {/* Address Cards */}
-                      <div className="grid gap-4">
-                        {userDetails.addresses.map((addr) => (
-                          <div
-                            key={addr.id}
-                            onClick={() => {
-                              setSelectedAddress(addr);
-                              setShippingForm({
-                                firstName: addr.firstName || "",
-                                lastName: addr.lastName || "",
-                                streetAddress: addr.address || "",
-                                city: addr.city || "",
-                                state: addr.stateProvince || "",
-                                postalCode: addr.zipPostalCode || "",
-                                country: addr.country || "India",
-                                phone: addr.phone || "",
-                              });
-
-                              const countryObj = Country.getAllCountries().find((c) => c.name === addr.country);
-                              if (countryObj) {
-                                setSelectedCountryCode(countryObj.isoCode);
-                                setTimeout(() => {
-                                  const stateObj = State.getStatesOfCountry(countryObj.isoCode).find(
-                                    (s) => s.name === addr.stateProvince
-                                  );
-                                  if (stateObj) {
-                                    setSelectedStateCode(stateObj.isoCode);
-                                  }
-                                }, 50);
-                              }
-                            }}
-                            className={`relative border-2 p-4 rounded-sm cursor-pointer transition-all ${selectedAddress?.id === addr.id
-                              ? "border-maroon bg-gray-50"
-                              : "border-gray-300 hover:border-gray-400"
-                              }`}
-                          >
-                            {selectedAddress?.id === addr.id && (
-                              <div className="absolute top-2 right-2 bg-maroon text-white rounded-full w-6 h-6 flex items-center justify-center">
-                                <span className="text-sm">✓</span>
-                              </div>
-                            )}
-                            <p className="font-semibold">Address {userDetails.addresses.indexOf(addr) + 1}</p>
-                            <p className="text-sm mt-1">{addr.firstName} {addr.lastName}</p>
-                            <p className="text-sm">{addr.address}</p>
-                            <p className="text-sm">{addr.city}, {addr.stateProvince} - {addr.zipPostalCode}</p>
-                            <p className="text-sm">{addr.phone}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Billing Address Checkbox */}
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="sameBilling"
-                          defaultChecked
-                          className="w-4 h-4 accent-maroon"
-                        />
-                        <label htmlFor="sameBilling" className="text-sm">
-                          Billing Address is same as Shipping Address
-                        </label>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <button
-                          onClick={handleProceedToPayment}
-                          className="bg-maroon text-white py-3 uppercase font-medium hover:bg-[#660000] rounded-sm"
-                        >
-                          Proceed to Payment
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShippingForm({
-                              firstName: "",
-                              lastName: "",
-                              streetAddress: "",
-                              city: "",
-                              state: "",
-                              postalCode: "",
-                              country: "India", // Default to India
-                              phone: "",
-                            });
-                            setSelectedCountryCode("IN"); // Default to India
-                            setSelectedStateCode("");
-                            setSelectedAddress(null);
-                            setShowAddressForm(true);
-                          }}
-                          className="border-2 border-gray-800 text-gray-800 py-3 uppercase font-medium hover:bg-gray-100 rounded-sm"
-                        >
-                          Add New Address
-                        </button>
+                  {userDetails.isLoggedIn && defaultAddress && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-sm">
+                      <p className="text-green-700 font-medium">Default address auto-selected</p>
+                      <div className="text-sm text-gray-700 mt-2">
+                        <p>
+                          {defaultAddress.firstName} {defaultAddress.lastName}
+                        </p>
+                        <p>{defaultAddress.address}</p>
+                        <p>
+                          {defaultAddress.city}, {defaultAddress.stateProvince}{" "}
+                          {defaultAddress.zipPostalCode}
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Show Address Form when adding new address or no addresses exist */}
-                  {(showAddressForm || !userDetails.isLoggedIn || userDetails.addresses.length === 0) && (
-                    <div className="space-y-5">
-                      {showAddressForm && userDetails.addresses.length > 0 && (
-                        <button
-                          onClick={() => setShowAddressForm(false)}
-                          className="text-maroon hover:underline text-sm mb-4"
-                        >
-                          ← Back to Saved Addresses
-                        </button>
-                      )}
-
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <input
-                          name="firstName"
-                          placeholder="First Name"
-                          value={shippingForm.firstName}
-                          onChange={handleShippingChange}
-                          className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon"
-                        />
-                        <input
-                          name="lastName"
-                          placeholder="Last Name"
-                          value={shippingForm.lastName}
-                          onChange={handleShippingChange}
-                          className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon"
-                        />
-                      </div>
+                  <div className="space-y-5">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <input
-                        name="streetAddress"
-                        placeholder="Street Address"
-                        value={shippingForm.streetAddress}
+                        name="firstName"
+                        placeholder="First Name"
+                        value={shippingForm.firstName}
                         onChange={handleShippingChange}
-                        className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon"
+                        className="border px-4 py-3 rounded-sm"
                       />
-
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="select-wrapper">
-                          <select
-                            value={selectedCountryCode}
-                            onChange={(e) => {
-                              const code = e.target.value;
-                              setSelectedCountryCode(code);
-                              const country = Country.getCountryByCode(code);
-                              setShippingForm((prev) => ({
-                                ...prev,
-                                country: country?.name || "",
-                                state: "",
-                                city: "",
-                              }));
-                              setSelectedStateCode("");
-                            }}
-                            className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon appearance-none"
-                            style={{ backgroundImage: 'none' }}
-                          >
-                            <option value="">Country</option>
-                            {Country.getAllCountries().map((c) => (
-                              <option key={c.isoCode} value={c.isoCode}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="select-wrapper">
-                          <select
-                            value={selectedStateCode}
-                            onChange={(e) => {
-                              const code = e.target.value;
-                              setSelectedStateCode(code);
-                              const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
-                              setShippingForm((prev) => ({
-                                ...prev,
-                                state: state?.name || "",
-                                city: "",
-                              }));
-                            }}
-                            disabled={!selectedCountryCode}
-                            className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon appearance-none disabled:bg-gray-100"
-                          >
-                            <option value="">State</option>
-                            {selectedCountryCode &&
-                              State.getStatesOfCountry(selectedCountryCode).map((s) => (
-                                <option key={s.isoCode} value={s.isoCode}>
-                                  {s.name}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-
-                        <div className="select-wrapper">
-                          <select
-                            value={shippingForm.city}
-                            onChange={(e) =>
-                              setShippingForm((prev) => ({ ...prev, city: e.target.value }))
-                            }
-                            disabled={!selectedStateCode}
-                            className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon appearance-none disabled:bg-gray-100"
-                          >
-                            <option value="">City</option>
-                            {selectedStateCode &&
-                              City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((c) => (
-                                <option key={c.name} value={c.name}>
-                                  {c.name}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <input
-                          name="postalCode"
-                          placeholder="Postal Code"
-                          maxLength={6}
-                          value={shippingForm.postalCode}
-                          onChange={handleShippingChange}
-                          className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon"
-                        />
-                        <input
-                          name="phone"
-                          placeholder="Phone Number"
-                          maxLength={10}
-                          value={shippingForm.phone}
-                          onChange={handleShippingChange}
-                          className="w-full border border-gray-300 px-4 py-3 rounded-sm bg-white focus:outline-none focus:border-maroon"
-                        />
-                      </div>
-
-                      <button
-                        onClick={handleProceedToPayment}
-                        className="w-full bg-maroon text-white py-4 uppercase font-medium hover:bg-[#660000] rounded-sm transition-colors"
-                      >
-                        {userDetails.role === "B2B" && defaultAddress
-                          ? "Confirm Address & Proceed"
-                          : "Proceed to Payment"}
-                      </button>
+                      <input
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={shippingForm.lastName}
+                        onChange={handleShippingChange}
+                        className="border px-4 py-3 rounded-sm"
+                      />
                     </div>
-                  )}
+                    <input
+                      name="streetAddress"
+                      placeholder="Street Address"
+                      value={shippingForm.streetAddress}
+                      onChange={handleShippingChange}
+                      className="w-full border px-4 py-3 rounded-sm"
+                    />
+
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <select
+                        value={selectedCountryCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          setSelectedCountryCode(code);
+                          const country = Country.getCountryByCode(code);
+                          setShippingForm((prev) => ({
+                            ...prev,
+                            country: country?.name || "",
+                            state: "",
+                            city: "",
+                          }));
+                          setSelectedStateCode("");
+                        }}
+                        className="border px-4 py-3 rounded-sm"
+                      >
+                        <option value="">Country</option>
+                        {Country.getAllCountries().map((c) => (
+                          <option key={c.isoCode} value={c.isoCode}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={selectedStateCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          setSelectedStateCode(code);
+                          const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
+                          setShippingForm((prev) => ({
+                            ...prev,
+                            state: state?.name || "",
+                            city: "",
+                          }));
+                        }}
+                        disabled={!selectedCountryCode}
+                        className="border px-4 py-3 rounded-sm"
+                      >
+                        <option value="">State</option>
+                        {selectedCountryCode &&
+                          State.getStatesOfCountry(selectedCountryCode).map((s) => (
+                            <option key={s.isoCode} value={s.isoCode}>
+                              {s.name}
+                            </option>
+                          ))}
+                      </select>
+
+                      <select
+                        value={shippingForm.city}
+                        onChange={(e) =>
+                          setShippingForm((prev) => ({ ...prev, city: e.target.value }))
+                        }
+                        disabled={!selectedStateCode}
+                        className="border px-4 py-3 rounded-sm"
+                      >
+                        <option value="">City</option>
+                        {selectedStateCode &&
+                          City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((c) => (
+                            <option key={c.name} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <input
+                        name="postalCode"
+                        placeholder="Postal Code"
+                        maxLength={6}
+                        value={shippingForm.postalCode}
+                        onChange={handleShippingChange}
+                        className="border px-4 py-3 rounded-sm"
+                      />
+                      <input
+                        name="phone"
+                        placeholder="Phone Number"
+                        maxLength={10}
+                        value={shippingForm.phone}
+                        onChange={handleShippingChange}
+                        className="border px-4 py-3 rounded-sm"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleProceedToPayment}
+                      className="bg-primary text-gray-800 w-full bg-maroon text-white py-4 uppercase font-medium hover:bg-[#660000]"
+                    >
+                      {userDetails.role === "B2B" && defaultAddress
+                        ? "Confirm Address & Proceed"
+                        : "Proceed to Payment"}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
