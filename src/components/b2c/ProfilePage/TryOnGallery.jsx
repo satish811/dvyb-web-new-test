@@ -338,11 +338,11 @@ export default function TryOnGallery() {
   }
 
   return (
-    <div className="w-full">
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="w-full ">
+      <div className="px-4 sm:px-6  lg:px-8 py-8 sm:py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">My Try-On Gallery</h1>
+          <h1 className="text-2xl font-family-outfit  font-bold text-gray-900 mb-2">My Tryon Gallery</h1>
           <p className="text-gray-600">
             All your virtual try-ons in one place ({tryons.length}{" "}
             {tryons.length === 1 ? "item" : "items"})

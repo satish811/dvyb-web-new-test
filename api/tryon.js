@@ -22,8 +22,27 @@ function runMiddleware(req, res, fn) {
 }
 
 // ============ CONSTANTS ============
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+
+// Background options with URLs
+const backgrounds = {
+  hallway: {
+    name: "Temple Hallway",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279561/bg1_xz7rvw.jpg"
+  },
+  pool: {
+    name: "Beach Pool",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg2_xjq6jk.jpg"
+  },
+  wedding: {
+    name: "Wedding Hall",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg3_thakvm.jpg"
+  },
+  trees: {
+    name: "Nature Trees",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279687/Screenshot_2025-12-09_165745_mj2via.png"
+  }
+};
 
 function getApiKeyByOutfit(outfitType) {
   switch (outfitType?.toLowerCase()) {
@@ -48,12 +67,10 @@ async function downloadAsBase64(url) {
 
 async function generateTryOn(modelBase64, garmentBase64, outfitType) {
   const lowerType = (outfitType || "").toLowerCase();
-
   const isSaree = lowerType === "saree";
   const isBackgroundSwap = lowerType === "background-swap";
 
-  const prompt = isBackgroundSwap
-    ? `
+  const prompt = isBackgroundSwap ? `
 You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
 
 CORE TASK:
@@ -138,14 +155,14 @@ NO text, JSON, explanations, or additional content.
       {
         parts: [
           { text: prompt },
-          { text: "Person to dress:" },
+          { text: isBackgroundSwap ? "Person to place in new background:" : "Person to dress:" },
           {
             inline_data: {
               mime_type: "image/jpeg",
               data: modelBase64,
             },
           },
-          { text: `Garment reference (${outfitType}):` },
+          { text: isBackgroundSwap ? "Target background scene:" : `Garment reference (${outfitType}):` },
           {
             inline_data: {
               mime_type: "image/jpeg",
@@ -196,13 +213,92 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 
 // ============ MAIN HANDLER ============
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
+  if (req.method !== "POST" && req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   const mode = req.query.mode;
   console.log(`🎯 API called with mode: ${mode}`);
 
   try {
-    // ======== ENDPOINT 1: from-urls (MyProfile URL-based) ========
+    // ======== GET ENDPOINT: backgrounds (Get available backgrounds) ========
+    if (req.method === "GET" && mode === "backgrounds") {
+      const bgList = Object.entries(backgrounds).map(([key, value]) => ({
+        id: key,
+        name: value.name,
+        preview: value.url
+      }));
+      return res.json({ 
+        success: true,
+        backgrounds: bgList 
+      });
+    }
+
+    // ======== ENDPOINT: change-background (Background change for try-on results) ========
+    if (mode === "change-background") {
+      await runMiddleware(
+        req,
+        res,
+        upload.single("tryOnImage")
+      );
+
+      if (!req.file) {
+        console.log('❌ No try-on image uploaded');
+        return res.status(400).json({ 
+          success: false,
+          error: "Try-on image is required" 
+        });
+      }
+
+      const background = req.body.background;
+      
+      if (!background || !backgrounds[background]) {
+        console.log('❌ Invalid background selection');
+        return res.status(400).json({
+          error: "Valid background selection required",
+          availableBackgrounds: Object.keys(backgrounds)
+        });
+      }
+
+      console.log(`📸 Try-on image size: ${req.file.size} bytes`);
+      console.log(`🌍 Selected background: ${backgrounds[background].name}`);
+
+      // Validate image size (max 10MB)
+      if (req.file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({
+          error: "Image too large. Please use an image smaller than 10MB"
+        });
+      }
+
+      // Convert try-on result to base64
+      const tryOnBase64 = req.file.buffer.toString("base64");
+      console.log(`✅ Try-on image converted to base64`);
+      
+      // Download background image
+      console.log("⬇️ Downloading background image...");
+      const bgBase64 = await downloadAsBase64(backgrounds[background].url);
+
+      console.log("🔁 Calling Gemini API for background swap...");
+      const result = await generateTryOnWithRetry(
+        tryOnBase64, 
+        bgBase64, 
+        "background-swap"
+      );
+
+      if (!result) {
+        throw new Error("No image returned from AI");
+      }
+
+      console.log("✨ SUCCESS — Background Changed! 🎉");
+      
+      return res.json({
+        success: true,
+        result: `data:image/png;base64,${result}`,
+        background: backgrounds[background].name
+      });
+    }
+
+    // ======== ENDPOINT: from-urls (MyProfile URL-based) ========
     if (mode === "from-urls") {
       const { modelUrl, garmentUrl, outfitType } = req.body;
 
@@ -235,8 +331,7 @@ export default async function handler(req, res) {
     const modelFile = req.files?.model?.[0];
     const garmentFile = req.files?.garment?.[0];
 
-    // ======== ENDPOINT 2: /api/tryon?mode=single ========
-    // ======== ENDPOINT 2: /api/tryon?mode=single ========
+    // ======== ENDPOINT: single ========
     if (mode === "single") {
       const garmentUrl = req.body.garmentUrl;
       const outfitType = req.body.outfitType || "saree";
@@ -246,13 +341,10 @@ export default async function handler(req, res) {
 
       const modelBase64 = modelFile.buffer.toString("base64");
 
-      // Handle both data URLs and regular URLs
       let garmentBase64;
       if (garmentUrl.startsWith("data:")) {
-        // It's already a base64 data URL
         garmentBase64 = garmentUrl.split(",")[1];
       } else {
-        // It's a regular URL, download it
         garmentBase64 = await downloadAsBase64(garmentUrl);
       }
 
@@ -264,31 +356,29 @@ export default async function handler(req, res) {
       });
     }
 
-    // ======== ENDPOINT 3: /api/tryon?mode=multi ========
-    // ======== ENDPOINT 3: /api/tryon?mode=multi ========
+    // ======== ENDPOINT: multi ========
     if (mode === "multi") {
       if (!modelFile) return res.status(400).json({ error: "model file missing" });
 
       console.log(`🎨 Processing multi try-on...`);
       const modelBase64 = modelFile.buffer.toString("base64");
 
-      // ⭐ UPDATED: Real Cloudinary URLs from your frontend
       const garments = [
-        {
-          name: "saree",
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg",
+        { 
+          name: "saree", 
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
         },
-        {
-          name: "kurti",
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp",
+        { 
+          name: "kurti", 
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
         },
-        {
-          name: "lehenga",
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+        { 
+          name: "lehenga", 
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
         },
-        {
-          name: "anarkali",
-          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
+        { 
+          name: "anarkali", 
+          url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
         },
       ];
 
@@ -297,9 +387,7 @@ export default async function handler(req, res) {
         try {
           console.log(`📸 Processing ${g.name}...`);
           const garmentBase64 = await downloadAsBase64(g.url);
-
           const output = await generateTryOnWithRetry(modelBase64, garmentBase64, g.name);
-
           results[g.name] = `data:image/png;base64,${output}`;
           console.log(`✅ ${g.name} done`);
         } catch (err) {
@@ -311,7 +399,7 @@ export default async function handler(req, res) {
       return res.json({ success: true, results });
     }
 
-    // ======== ENDPOINT 4: test (Preview Modal test mode) ========
+    // ======== ENDPOINT: test ========
     if (mode === "test") {
       if (!modelFile || !garmentFile)
         return res.status(400).json({
@@ -340,6 +428,7 @@ export default async function handler(req, res) {
     });
   }
 }
+
 
 // FASHION API
 // // api/tryon.js (at root level, NOT in src/)

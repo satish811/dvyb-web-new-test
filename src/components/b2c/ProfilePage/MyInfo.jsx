@@ -331,8 +331,8 @@ const MyInfo = () => {
   // User Details Edit Modal - Same design for both B2B and B2C
   if (editUserMode) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-md mx-auto bg-white shadow-sm">
+      <div className="min-h-screen  md:p-4">
+        <div className="max-w-md mx-auto ">
           <div className="border-b border-gray-200 p-4">
             <h2 className="text-lg font-semibold text-gray-900">
               {userRole === "B2B" ? "Business Details (B2B)" : "User Details"}
@@ -397,25 +397,25 @@ const MyInfo = () => {
             ) : (
               // B2C Edit Form - Original design
               <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <div className="pt-16">
+                  {/* <label className="block text-sm font-medium text-gray-700 mb-1">Name</label> */}
                   <input
                     name="name"
                     value={b2cData.name}
                     onChange={handleB2cChange}
-                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2.5 border border-dotted border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter your name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {/* <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone Number
-                  </label>
+                  </label> */}
                   <input
                     name="phoneNumber"
                     value={b2cData.phoneNumber}
                     disabled
-                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
+                    className="w-full px-3 py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-500"
                     placeholder="Phone Number"
                   />
                   <p className="text-xs text-gray-500 mt-1">Phone number cannot be changed</p>
@@ -426,7 +426,7 @@ const MyInfo = () => {
             <div className="flex gap-3 pt-4">
               <button
                 onClick={saveUserData}
-                className="flex-1 bg-red-700 text-white py-2.5 hover:bg-red-800 font-medium"
+                className="flex-1 bg-primary text-white py-2.5 hover:bg-red-800 font-medium"
               >
                 Save
               </button>
@@ -446,7 +446,7 @@ const MyInfo = () => {
   // Add/Edit Address Modal - Same design as the working version
   if (showAddAddress) {
     return (
-      <div className="min-h-screen p-4 bg-white">
+      <div className="min-h-screen md:p-4  md:pt-10 bg-white">
         <div className="max-w-2xl mx-auto">
           {/* HEADER */}
           <div className="p-4">
@@ -637,80 +637,107 @@ const MyInfo = () => {
   }
 
   // Main View - Same design for both B2B and B2C
-  return (
-    <div className="min-h-screen mt-24 bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* User Details Section */}
-        <div className="bg-white shadow-sm mb-4">
-          <div className="border-b border-gray-200 p-4">
-            <h2 className="text-base font-semibold text-gray-900">
-              {userRole === "B2B" ? "Business Information (B2B)" : "User Details"}
-            </h2>
-          </div>
+return (
+    <div className="min-h-screen bg-white">
+      {/* Role Toggle for Demo */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <button
+          onClick={() => setUserRole("B2C")}
+          className={`px-4 py-2 text-sm ${userRole === "B2C" ? "bg-primary text-white" : "bg-gray-200"}`}
+        >
+          B2C
+        </button>
+        <button
+          onClick={() => setUserRole("B2B")}
+          className={`px-4 py-2 text-sm ${userRole === "B2B" ? "bg-primary text-white" : "bg-gray-200"}`}
+        >
+          B2B
+        </button>
+      </div>
 
-          <div className="p-6">
-            <div className="space-y-3 mb-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+        <div className="max-w-7xl mx-auto">
+          {/* User Details Section */}
+          <div className="mb-6 lg:mb-8">
+            <div className="mb-3 lg:mb-4 flex justify-between ">
+              <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+                {userRole === "B2B" ? "Business Information (B2B)" : "User Details"}
+              </h2>
+
+              
+
+                 <button
+              onClick={() => setEditUserMode(true)}
+              className="md:hidden inline-flex   items-center gap-2 sm:gap-3 border border-primary px-3 sm:px-4 py-2 text-primary hover:text-gray-900 text-sm sm:text-base font-medium"
+            >
+              Edit
+              <div className="flex items-center font-bold text-primary">
+                <Edit2 size={16} className="sm:w-4 sm:h-4" />
+                <span className="ml-0.5">__</span>
+              </div>
+            </button>
+            </div>
+
+            <div className="space-y-3 sm:space-y-4 mb-4 lg:mb-6">
               {userRole === "B2B" ? (
-                // B2B Display - Same design as B2C
+                // B2B Display
                 <>
                   <div>
-                    <label className="text-xs text-gray-500">Username</label>
+                    <label className="block text-xs text-gray-500 mb-1">Username</label>
                     <input
                       value={b2bData.username || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">Mobile Number</label>
+                    <label className="block text-xs text-gray-500 mb-1">Mobile Number</label>
                     <input
                       value={b2bData.mobile || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">Email</label>
+                    <label className="block text-xs text-gray-500 mb-1">Email</label>
                     <input
                       value={b2bData.email || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">PAN Number</label>
+                    <label className="block text-xs text-gray-500 mb-1">PAN Number</label>
                     <input
                       value={b2bData.pan || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">Aadhaar Number</label>
+                    <label className="block text-xs text-gray-500 mb-1">Aadhaar Number</label>
                     <input
                       value={b2bData.aadhaar || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                 </>
               ) : (
-                // B2C Display - Original design
+                // B2C Display - Mobile first approach
                 <>
                   <div>
-                    <label className="text-xs text-gray-500">Name</label>
                     <input
                       value={b2cData.name || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 px-3 py-2 sm:py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">Phone Number</label>
                     <input
                       value={b2cData.phoneNumber || "Not provided"}
                       disabled
-                      className="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
+                      className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 px-3 py-2 sm:py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-700 text-sm"
                     />
                   </div>
                 </>
@@ -719,92 +746,98 @@ const MyInfo = () => {
 
             <button
               onClick={() => setEditUserMode(true)}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 text-sm font-medium"
+              className=" hidden md:block md:inline-flex   items-center gap-2 sm:gap-3 border border-primary px-3 sm:px-4 py-2 text-primary hover:text-gray-900 text-sm sm:text-base font-medium"
             >
-              <Edit2 size={16} />
               Edit
-            </button>
-          </div>
-        </div>
-
-        {/* Address Section - Same design for both */}
-        <div className="bg-white shadow-sm">
-          <div className="border-b border-gray-200 p-4 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Addresses</h2>
-            <button
-              onClick={() => setShowAddAddress(true)}
-              className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 text-sm font-medium"
-            >
-              <Plus size={18} />
-              Add New
+              <div className="flex items-center font-bold text-primary">
+                <Edit2 size={16} className="sm:w-4 sm:h-4" />
+                <span className="ml-0.5">__</span>
+              </div>
             </button>
           </div>
 
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
-                (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
-                  <div key={address.id} className="bg-[#F6F6F6] p-8 relative">
-                    {address.isDefault && (
-                      <span className="absolute top-2 right-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                        Default
-                      </span>
-                    )}
+          {/* Address Section */}
+          <div>
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">Addresses</h2>
+              <button
+                onClick={() => setShowAddAddress(true)}
+                className="inline-flex items-center gap-1 sm:gap-1.5 text-primary border border-primary px-3 sm:px-4 py-1.5 sm:py-2 hover:text-gray-900 text-xs sm:text-sm font-medium"
+              >
+                <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
+                Add New
+              </button>
+            </div>
 
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-medium text-gray-900 text-sm mb-1">
-                          {address.firstName} {address.lastName}
-                        </h3>
-                        {address.email && (
-                          <p className="text-sm pt-5 text-gray-600">{address.email}</p>
+            <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
+                {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
+                  (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
+                    <div key={address.id} className="bg-[#F6F6F6] p-5 sm:p-6 lg:p-8 relative">
+                      {address.isDefault && (
+                        <span className="absolute top-4 right-4 sm:top-5 sm:right-5 lg:top-6 lg:right-6 border border-primary text-primary text-xs px-2 py-1">
+                          Default
+                        </span>
+                      )}
+
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-medium text-gray-900 text-sm mb-1">
+                            {address.firstName} {address.lastName}
+                          </h3>
+                          {address.email && (
+                            <p className="text-sm pt-3 sm:pt-4 lg:pt-5 text-gray-600">{address.email}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-700 pt-3 sm:pt-4 leading-relaxed mb-2">
+                        {address.address}
+                      </p>
+
+                      {(address.city || address.stateProvince || address.zipPostalCode) && (
+                        <p className="text-sm text-gray-600 mb-3 sm:mb-4">
+                          {[address.city, address.stateProvince, address.zipPostalCode]
+                            .filter(Boolean)
+                            .join(", ")}
+                          {address.country && ` - ${address.country}`}
+                        </p>
+                      )}
+
+                      <div className="flex gap-2 pt-3 sm:pt-4 lg:pt-5 mb-3">
+                        {!address.isDefault && (
+                          <button
+                            onClick={() => setDefaultAddress(address)}
+                            className="px-3 sm:px-4 py-1.5 bg-white border border-[#807D7E] text-xs sm:text-sm text-[#807D7E] hover:bg-gray-100 font-medium"
+                          >
+                            Set as Default Address
+                          </button>
                         )}
                       </div>
-                    </div>
 
-                    <p className="text-sm text-gray-700 pt-4 leading-relaxed mb-2">
-                      {address.address}
-                    </p>
-
-                    {(address.city || address.stateProvince || address.zipPostalCode) && (
-                      <p className="text-sm text-gray-600 mb-4">
-                        {[address.city, address.stateProvince, address.zipPostalCode]
-                          .filter(Boolean)
-                          .join(", ")}
-                        {address.country && ` - ${address.country}`}
-                      </p>
-                    )}
-
-                    <div className="flex gap-2 pt-5 mb-3">
-                      {!address.isDefault && (
-                        <button
-                          onClick={() => setDefaultAddress(address)}
-                          className="px-4 py-1.5 bg-white border border-[#807D7E] text-sm text-[#807D7E] hover:bg-gray-100 font-medium"
+                      <div className="flex pt-3 sm:pt-4 lg:pt-5 gap-3 sm:gap-4">
+                        <button 
+                          onClick={() => removeAddress(address)} 
+                          className="text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900"
                         >
-                          Set as Default Address
+                          Remove
                         </button>
-                      )}
+                        <button
+                          onClick={() => startEditAddress(address)}
+                          className="text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
-
-                    <div className="flex pt-5 gap-3">
-                      <button onClick={() => removeAddress(address)} className="text-s font-medium">
-                        Remove
-                      </button>
-                      <button
-                        onClick={() => startEditAddress(address)}
-                        className="text-sm font-medium"
-                      >
-                        Edit
-                      </button>
-                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-1 lg:col-span-2 text-center py-8 sm:py-10 lg:py-12 text-gray-500">
+                    <p className="text-sm">No addresses added yet</p>
+                    <p className="text-xs mt-1">Click "Add New" to add your first address</p>
                   </div>
-                ))
-              ) : (
-                <div className="col-span-2 text-center py-12 text-gray-500">
-                  <p className="text-sm">No addresses added yet</p>
-                  <p className="text-xs mt-1">Click "Add New" to add your first address</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

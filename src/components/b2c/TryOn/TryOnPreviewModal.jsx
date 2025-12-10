@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import colorUtils from "../../utils/colorUtils";
 import {
@@ -15,16 +16,16 @@ import bg2 from "../../../assets/ProductsPage/bg2.svg";
 import bg3 from "../../../assets/ProductsPage/bg3.svg";
 import bg4 from "../../../assets/ProductsPage/bg4.svg";
 
-import beach from "../../../assets/TryOn/beach2.jpg";
-import temple from "../../../assets/TryOn/temple3.jpg";
-import wed from "../../../assets/TryOn/wed4.jpg";
+import beach from '../../../assets/TryOn/beach2.jpg'
+import temple from '../../../assets/TryOn/temple3.jpg'
+import wed from '../../../assets/TryOn/wed4.jpg'
 
-import img1 from "../../../assets/lazyloading/logoimg1.svg";
-import img2 from "../../../assets/lazyloading/logoimg2.svg";
-import img3 from "../../../assets/lazyloading/logoimg3.svg";
-import img4 from "../../../assets/lazyloading/logoimg4.svg";
-import img5 from "../../../assets/lazyloading/logoimg5.svg";
-import img6 from "../../../assets/lazyloading/logoimg6.svg";
+import img1 from '../../../assets/lazyloading/logoimg1.svg'
+import img2 from '../../../assets/lazyloading/logoimg2.svg'
+import img3 from '../../../assets/lazyloading/logoimg3.svg'
+import img4 from '../../../assets/lazyloading/logoimg4.svg'
+import img5 from '../../../assets/lazyloading/logoimg5.svg'
+import img6 from '../../../assets/lazyloading/logoimg6.svg'
 
 import { usePopup } from "../../../context/ToastPopupContext";
 import { wishlistService } from "../../../services/wishlistService";
@@ -36,12 +37,15 @@ import { saveTryOnResult } from "../../../services/tryOnService";
 import { useNavigate } from "react-router-dom";
 import "../../../styles/index.css";
 import share_ic from "../../../assets/TryOn/share_ic.svg";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { storage, auth } from "../../../config/firebaseConfig"; // Adjust path if needed
+
 
 const API_BASE_URL = "/api/kling";
 
 const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [tryOnResult, setTryOnResult] = useState(null);
-  const [tryOnResultNoBg, setTryOnResultNoBg] = useState(null);
+  // const [tryOnResultNoBg, setTryOnResultNoBg] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedTab, setSelectedTab] = useState("colours");
@@ -51,8 +55,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [selectedBackground, setSelectedBackground] = useState("");
   const [backgroundChangedImage, setBackgroundChangedImage] = useState(null);
   const [isChangingBackground, setIsChangingBackground] = useState(false);
-  const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [bgError, setBgError] = useState("");
+  // const [isRemovingBg, setIsRemovingBg] = useState(false);
+  // const [bgError, setBgError] = useState("");
   const [viewMode, setViewMode] = useState("2D");
   const [expandedPanel, setExpandedPanel] = useState(null);
 
@@ -67,23 +71,29 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const auth = useAuth();
   const user = auth?.user || null;
 
+
+
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const images = [img1, img2, img3, img4, img5, img6];
 
   useEffect(() => {
     const imgTimer = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex(prev => (prev + 1) % images.length);
     }, 200); // Change this to make rotation faster/slower
 
     return () => clearTimeout(imgTimer);
   }, [currentIndex]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {}, 30000); // Change from 35000 to 30000 (30 seconds)
+    const timer = setTimeout(() => {
+
+    }, 30000); // Change from 35000 to 30000 (30 seconds)
 
     return () => clearTimeout(timer);
   }, []);
+
 
   // const { user } = useAuth();
   // const { showPopup } = usePopup();
@@ -162,6 +172,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     checkStatus();
   }, [tryOnData?.productId, user]); // Add user to dependencies // Add user to dependencies
 
+
+
+  const handleconsole = async () => {
+    console.log("🔍 handleconsole called");
+
+  };
   const handleToggleWishlist = async () => {
     console.log("🔍 handleToggleWishlist called");
     console.log("🔍 user:", user);
@@ -218,6 +234,57 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     }
   };
 
+
+  const saveToGallery = async (resultUrl, videoUrl = null) => {
+    try {
+      console.log("💾 Uploading to Firebase storage...");
+
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error("Login required to save try-on!");
+        return null;
+      }
+
+      if (!resultUrl) {
+        toast.error("No try-on image to save!");
+        return null;
+      }
+
+      // ✅ Changed: Don't upload here, let saveTryOnResult handle it
+      const payload = {
+        userId: user.uid,
+        productId: tryOnData?.productId || "unknown",
+        productName: tryOnData?.productName || tryOnData?.garmentName || "Try-On Product",
+        garmentName: tryOnData?.garmentName || "",
+        tryOnImage: resultUrl, // Pass the URL, saveTryOnResult will handle uploading
+        modelImage: tryOnData?.modelImage || "",
+        garmentImage: tryOnData?.garmentImage || "",
+        selectedColors: tryOnData?.selectedColors || [],
+        selectedSizes: tryOnData?.selectedSizes || [],
+        fabric: tryOnData?.fabric || "",
+        price: tryOnData?.price || 0,
+        discount: tryOnData?.discount || 0,
+        viewMode: videoUrl ? "3D" : "2D",
+        videoUrl: videoUrl || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      const savedId = await saveTryOnResult(payload);
+
+      if (savedId) {
+        toast.success("Saved to gallery!");
+        console.log("🎯 Saved Try-On with ID:", savedId);
+      } else {
+        toast.error("Failed to save to gallery!");
+      }
+
+      return savedId;
+    } catch (error) {
+      console.error("❌ Save to gallery failed:", error);
+      toast.error("Failed to save try-on");
+      return null;
+    }
+  };
   const handleAddToCart = async () => {
     // if (!user) {
     //   toast.error("Please log in to add items to cart!");
@@ -375,18 +442,20 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     {
       id: "hallway",
       name: "Hallway",
-      image: temple,
+      image:
+        temple,
     },
 
     { id: "pool", name: "Pool", image: beach },
     { id: "wedding", name: "Wedding", image: wed },
     { id: "trees", name: "Trees", image: bg3 },
+
   ];
 
   const performTryOn = async () => {
     const { modelImage, garmentImage, garmentName } = tryOnData || {};
-    if (!modelImage || !garmentImage) return;
-
+    if (!modelImage || !garmentImage || !garmentName) return;
+    // coorect
     setIsProcessing(true);
     setErrorMsg("");
     setTryOnResult(null);
@@ -394,55 +463,60 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     try {
       const formData = new FormData();
 
-      // Convert modelImage to File — SAME AS working function
-      const modelBlob = await fetch(modelImage).then((r) => r.blob());
+      // ⭐ FIX: Handle dataURL or image URL
+      let modelBlob;
+      if (modelImage.startsWith("data:")) {
+        const base64 = modelImage.split(",")[1];
+        const byteCharacters = atob(base64);
+        const byteArray = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteArray[i] = byteCharacters.charCodeAt(i);
+        }
+        modelBlob = new Blob([byteArray], { type: "image/jpeg" });
+      } else {
+        modelBlob = await fetch(modelImage).then(r => r.blob());
+      }
+
       formData.append("model", modelBlob, "user.jpg");
 
-      // Send garment as URL
-      formData.append("garmentUrl", garmentImage);
+      // ⭐ FIX: Backend still requires garment as FILE
+      const garmentBlob = await fetch(garmentImage).then(r => r.blob());
+      formData.append("garment", garmentBlob, "garment.png");
 
-      // Outfit type (saree / lehenga / gown etc)
-      formData.append("outfitType", garmentName || "saree");
+      formData.append("outfitType", garmentName);
 
-      console.log("🚀 Performing try-on using LIVE endpoint...");
+      console.log("🚀 Sending to /api/test-tryon PREVIEW endpoint");
 
-      const response = await fetch("/api/tryon?mode=single", {
+      const response = await fetch("/api/test-tryon", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || `Server error: ${response.status}`);
+        const err = await response.text();
+        throw new Error(err);
       }
 
       const data = await response.json();
-      console.log("🎯 Try-on API response:", data);
+      console.log("🎯 Try-on result:", data);
 
-      if (data.success && data.result) {
-        const resultUrl = data.result;
-        setTryOnResult(resultUrl);
-
-        console.log("✨ Try-on completed:", resultUrl);
-
-        // Optional same features
-        if (is3DMode) {
-          setTimeout(() => generateVideo(resultUrl), 1000);
-        }
-
-        setTimeout(async () => {
-          await saveToGallery(resultUrl);
-        }, 1200);
-      } else {
-        throw new Error(data.error || "No try-on result received");
+      if (!data.success || !data.result) {
+        throw new Error(data.error || "No result");
       }
-    } catch (error) {
-      console.error("❌ Modal TryOn Error:", error);
-      setErrorMsg(error.message || "Try-on failed. Please try again.");
+
+      const resultUrl = data.result;
+      setTryOnResult(resultUrl);
+
+      console.log("✨ Preview TryOn done:", resultUrl);
+
+    } catch (err) {
+      console.error("❌ Error:", err);
+      setErrorMsg(err.message);
     } finally {
       setIsProcessing(false);
     }
   };
+
 
   //it worked last time
   // const performTryOn = async () => {
@@ -510,6 +584,16 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   //     setIsProcessing(false);
   //   }
   // };
+
+
+
+
+
+
+
+
+
+
 
   // const performTryOn = async () => {
   //   const { modelImage, garmentImage, garmentName } = tryOnData || {};
@@ -597,66 +681,68 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   //   }
   // };
 
-  const removeBackgroundFromResult = async (imageUrl) => {
-    setIsRemovingBg(true);
-    console.log("🖼️ Starting background removal for:", imageUrl);
 
-    try {
-      console.log("📥 Fetching image...");
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status}`);
-      }
-      const blob = await response.blob();
-      console.log("✅ Image fetched, size:", blob.size, "bytes");
 
-      const formData = new FormData();
-      formData.append("image_file", blob);
-      formData.append("size", "auto");
+  // const removeBackgroundFromResult = async (imageUrl) => {
+  //   setIsRemovingBg(true);
+  //   console.log("🖼️ Starting background removal for:", imageUrl);
 
-      console.log("🔑 Using API Key:", "kLvaXzn7KaA3CJBbNFAxiwqu".substring(0, 10) + "...");
-      console.log("📤 Sending to Remove.bg...");
+  //   try {
+  //     console.log("📥 Fetching image...");
+  //     const response = await fetch(imageUrl);
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch image: ${response.status}`);
+  //     }
+  //     const blob = await response.blob();
+  //     console.log("✅ Image fetched, size:", blob.size, "bytes");
 
-      const removeBgResponse = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: {
-          "X-Api-Key": "45iFVGTnxxaakQJLzrRszmGT",
-        },
-        body: formData,
-      });
+  //     const formData = new FormData();
+  //     formData.append("image_file", blob);
+  //     formData.append("size", "auto");
 
-      console.log("📥 Remove.bg response status:", removeBgResponse.status);
-      console.log("📥 Response headers:", Object.fromEntries(removeBgResponse.headers.entries()));
+  //     console.log("🔑 Using API Key:", "kLvaXzn7KaA3CJBbNFAxiwqu".substring(0, 10) + "...");
+  //     console.log("📤 Sending to Remove.bg...");
 
-      if (!removeBgResponse.ok) {
-        const errorText = await removeBgResponse.text();
-        console.error("❌ Remove.bg error response:", errorText);
+  //     const removeBgResponse = await fetch("https://api.remove.bg/v1.0/removebg", {
+  //       method: "POST",
+  //       headers: {
+  //         "X-Api-Key": "45iFVGTnxxaakQJLzrRszmGT",
+  //       },
+  //       body: formData,
+  //     });
 
-        try {
-          const errorJson = JSON.parse(errorText);
-          console.error("❌ Parsed error:", errorJson);
-          throw new Error(
-            `Remove.bg failed: ${errorJson.errors?.[0]?.title || removeBgResponse.status}`
-          );
-        } catch (e) {
-          throw new Error(`Remove.bg failed: ${removeBgResponse.status} - ${errorText}`);
-        }
-      }
+  //     console.log("📥 Remove.bg response status:", removeBgResponse.status);
+  //     console.log("📥 Response headers:", Object.fromEntries(removeBgResponse.headers.entries()));
 
-      const removedBgBlob = await removeBgResponse.blob();
-      console.log("✅ Background removed, new size:", removedBgBlob.size, "bytes");
+  //     if (!removeBgResponse.ok) {
+  //       const errorText = await removeBgResponse.text();
+  //       console.error("❌ Remove.bg error response:", errorText);
 
-      const noBgUrl = URL.createObjectURL(removedBgBlob);
-      setTryOnResultNoBg(noBgUrl);
-      console.log("✅ Background removal complete!");
-    } catch (error) {
-      console.error("❌ Background removal failed:", error);
-      console.error("❌ Error details:", error.message);
-      setBgError(`Background removal failed: ${error.message}`);
-    } finally {
-      setIsRemovingBg(false);
-    }
-  };
+  //       try {
+  //         const errorJson = JSON.parse(errorText);
+  //         console.error("❌ Parsed error:", errorJson);
+  //         throw new Error(
+  //           `Remove.bg failed: ${errorJson.errors?.[0]?.title || removeBgResponse.status}`
+  //         );
+  //       } catch (e) {
+  //         throw new Error(`Remove.bg failed: ${removeBgResponse.status} - ${errorText}`);
+  //       }
+  //     }
+
+  //     const removedBgBlob = await removeBgResponse.blob();
+  //     console.log("✅ Background removed, new size:", removedBgBlob.size, "bytes");
+
+  //     const noBgUrl = URL.createObjectURL(removedBgBlob);
+  //     setTryOnResultNoBg(noBgUrl);
+  //     console.log("✅ Background removal complete!");
+  //   } catch (error) {
+  //     console.error("❌ Background removal failed:", error);
+  //     console.error("❌ Error details:", error.message);
+  //     setBgError(`Background removal failed: ${error.message}`);
+  //   } finally {
+  //     setIsRemovingBg(false);
+  //   }
+  // };
 
   // 3D Video Generation Functions
   const generateVideo = async (tryOnImageUrl) => {
@@ -796,14 +882,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           setIsGeneratingVideo(false);
           toast.success("3D video generated successfully! 🎉");
 
+          // ✅ FIX: Save with video URL
           try {
-            await saveTryOnResult({
-              ...tryOnData,
-              tryOnResult: tryOnResult,
-              videoUrl: statusData.videoUrl,
-              is3D: true,
-            });
-            toast.success("3D try-on saved to your gallery!");
+            await saveToGallery(tryOnResult, statusData.videoUrl);
           } catch (error) {
             console.error("Failed to save 3D try-on:", error);
           }
@@ -845,73 +926,72 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
   if (!isOpen) return null;
 
-  const changeBackground = async (backgroundType) => {
-    if (!tryOnResultNoBg) {
-      setBgError("Background removal in progress...");
-      return;
+const changeBackground = async (backgroundType) => {
+  if (!tryOnResult) {
+    toast.error("Please complete try-on first!");
+    return;
+  }
+
+  setIsChangingBackground(true);
+  setSelectedBackground(backgroundType);
+
+  try {
+    console.log("🎨 Starting background change...");
+
+    // Convert try-on result (data URL) to blob
+    console.log("📥 Converting try-on result to blob...");
+    const response = await fetch(tryOnResult);
+    const tryOnBlob = await response.blob();
+    
+    console.log(`✅ Blob created: ${(tryOnBlob.size / 1024).toFixed(2)} KB`);
+
+    // Create form data
+    const formData = new FormData();
+    formData.append('tryOnImage', tryOnBlob, 'tryon-result.png');
+    formData.append('background', backgroundType);
+
+    console.log(`📤 Sending to backend with background: ${backgroundType}`);
+
+    // Call backend API
+    const apiResponse = await fetch(`/api/change-tryon-background`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    console.log("📡 Response status:", apiResponse.status);
+
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json();
+      throw new Error(errorData.details || errorData.error || `Server error: ${apiResponse.status}`);
     }
 
-    setIsChangingBackground(true);
-    setBgError("");
-    setSelectedBackground(backgroundType);
+    const data = await apiResponse.json();
 
-    try {
-      const selectedBg = backgroundOptions.find((bg) => bg.id === backgroundType);
-      const [bgImg, personImg] = await Promise.all([
-        loadImg(selectedBg.image),
-        loadImg(tryOnResultNoBg),
-      ]);
-
-      const OUT_W = 900;
-      const OUT_H = 1200;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      const canvas = document.createElement("canvas");
-      canvas.width = OUT_W * dpr;
-      canvas.height = OUT_H * dpr;
-      canvas.style.width = `${OUT_W}px`;
-      canvas.style.height = `${OUT_H}px`;
-
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      ctx.drawImage(bgImg, 0, 0, OUT_W, OUT_H);
-
-      const maxPersonW = OUT_W * 0.64;
-      const maxPersonH = OUT_H * 0.9;
-      let pw = personImg.naturalWidth || personImg.width;
-      let ph = personImg.naturalHeight || personImg.height;
-
-      const scale = Math.min(maxPersonW / pw, maxPersonH / ph, 1);
-      pw *= scale;
-      ph *= scale;
-
-      const px = (OUT_W - pw) / 2;
-      const py = OUT_H - ph;
-
-      ctx.drawImage(personImg, px, py, pw, ph);
-
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          setBgError("Failed to create image");
-          setIsChangingBackground(false);
-          return;
-        }
-        const finalUrl = URL.createObjectURL(blob);
-        setBackgroundChangedImage(finalUrl);
-      }, "image/png");
-    } catch (error) {
-      console.error("Background change failed:", error);
-      setBgError(error.message || "Failed to change background. Please try again.");
-    } finally {
-      setIsChangingBackground(false);
+    if (data.success && data.result) {
+      console.log("✅ Background change successful!");
+      setBackgroundChangedImage(data.result);
+      toast.success(`Background changed to ${data.background}! 🎉`);
+    } else {
+      throw new Error(data.error || "Background change failed");
     }
-  };
-
+    
+  } catch (error) {
+    console.error("❌ Background change failed:", error);
+    
+    let errorMsg = error.message;
+    if (errorMsg.includes('Failed to fetch')) {
+      errorMsg = '🔌 Cannot connect to server. Make sure backend is running on port 3004.';
+    } else if (errorMsg.includes('timeout')) {
+      errorMsg = '⏳ Request timed out. Please try again.';
+    }
+    
+    toast.error(errorMsg);
+  } finally {
+    setIsChangingBackground(false);
+  }
+};
   const getCurrentDisplayImage = () => {
-    return backgroundChangedImage || tryOnResultNoBg || tryOnResult;
+    return backgroundChangedImage || tryOnResult;
   };
 
   const handleReset = () => {
@@ -936,7 +1016,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   return (
     <div className="fixed inset-0  z-50 bg-gradient-to-br from-gray-50 to-gray-100">
       {/* STAGE: centered preview area - FIXED: Added padding bottom for mobile */}
-      <div className="absolute inset-0 w-full h-full flex items-center justify-center pb-[60vh] lg:pb-0">
+      <div className="absolute inset-0 w-full h-full flex items-center justify-center pb-[60vh] lg:pb-0 pointer-events-none">
+
         {isProcessing ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-gray-700">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1019,27 +1100,28 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             )}
           </div>
         ) : getCurrentDisplayImage() ? (
-          /* 2D IMAGE VIEW */
+          /* 2D IMAGE VIEW */   
           <div
             className="relative flex items-center  h-full justify-center shadow-2xl overflow-hidden"
-            style={{
-              background:
-                selectedBackground && viewMode === "2D"
-                  ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
-                  : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-              backgroundSize: "contain",
-              backgroundPosition: "center",
-            }}
+            // style={{
+            //   background:
+            //     selectedBackground && viewMode === "2D"
+            //       ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
+            //       : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+            //   backgroundSize: "contain",
+            //   backgroundPosition: "center",
+            // }}
           >
             <img
               src={getCurrentDisplayImage()}
               alt="Try-on result"
-              className={`${tryOnResultNoBg ? "mt-48" : "mt-4"} w-[500px] h-[656px] mt-4 object-contain`}
+              className={` 'mt-48' : 'mt-4' pointer-events-auto w-[440px] h-[656px] mt-4 object-contain`}
+
               // "w-[500px] h-[656px] mt-4 object-contain"
               draggable={false}
             />
 
-            {(isChangingBackground || isRemovingBg) && (
+            {/* {(isChangingBackground || isRemovingBg) && (
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center rounded-xl">
                 <div className="text-center text-white">
                   <div className="animate-spin rounded-full h-10 w-10 border-4 border-white border-t-transparent mb-2 mx-auto"></div>
@@ -1048,7 +1130,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -1087,21 +1169,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         <div className="flex gap-4 mb-5  border-b p-1 bg-[#F0E0E0] border-gray-200">
           <button
             onClick={() => setSelectedTab("colours")}
-            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${
-              selectedTab === "colours"
-                ? "text-primary  bg-white border-gray-900"
-                : "text-primary hover:text-hoverBg"
-            }`}
+            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${selectedTab === "colours"
+              ? "text-primary  bg-white border-gray-900"
+              : "text-primary hover:text-hoverBg"
+              }`}
           >
             Colours
           </button>
           <button
             onClick={() => setSelectedTab("fabrics")}
-            className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${
-              selectedTab === "fabrics"
-                ? "text-gray-900  bg-white border-gray-900"
-                : "text-gray-500 hover:text-hoverBg"
-            }`}
+            className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${selectedTab === "fabrics"
+              ? "text-gray-900  bg-white border-gray-900"
+              : "text-gray-500 hover:text-hoverBg"
+              }`}
           >
             Fabrics
           </button>
@@ -1119,11 +1199,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={color.name}
                   onClick={() => viewMode === "2D" && setSelectedColor(color.name)}
                   disabled={viewMode === "3D"}
-                  className={`aspect-square rounded-lg transition-all ${
-                    selectedColor === color.name
-                      ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                      : "hover:scale-105 border border-gray-200"
-                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`aspect-square rounded-lg transition-all ${selectedColor === color.name
+                    ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+                    : "hover:scale-105 border border-gray-200"
+                    } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
                   style={{ backgroundColor: color.color }}
                 />
               ))}
@@ -1139,11 +1218,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 key={fabric.id}
                 onClick={() => viewMode === "2D" && setSelectedFabric(fabric.id)}
                 disabled={viewMode === "3D"}
-                className={`w-full p-3 rounded-lg text-left transition-all ${
-                  selectedFabric === fabric.id
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
-                } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`w-full p-3 rounded-lg text-left transition-all ${selectedFabric === fabric.id
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
+                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="font-medium text-sm mb-1">{fabric.name}</div>
                 <div
@@ -1161,14 +1239,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                  }`}
               />
             </button>
           </div>
@@ -1186,33 +1262,39 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             </div>
             <p className="text-xs text-gray-500 mb-3">Backgrounds</p>
 
-            <div className="grid grid-cols-2 gap-2">
-              {backgroundOptions.map((bg) => (
-                <button
-                  key={bg.id}
-                  onClick={() => changeBackground(bg.id)}
-                  disabled={!tryOnResultNoBg || isChangingBackground}
-                  className={`relative rounded-lg overflow-hidden transition-all ${
-                    selectedBackground === bg.id
-                      ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                      : "hover:scale-105 border border-gray-200"
-                  } ${!tryOnResultNoBg ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <div className="aspect-square">
-                    <img
-                      src={bg.image}
-                      alt={bg.name}
-                      className="w-full h-full object-cover"
-                      draggable={false}
-                    />
-                  </div>
-                  {isChangingBackground && selectedBackground === bg.id && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                    </div>
-                  )}
-                </button>
-              ))}
+            <div className="grid  grid-cols-2 gap-2">
+       {backgroundOptions.map((bg) => (
+  <div key={bg.id}>
+    <button
+      onClick={() => changeBackground(bg.id)} // ✅ Make sure this is correct
+      disabled={!tryOnResult || isChangingBackground}
+      className={`relative cursor-pointer p-1  overflow-hidden transition-all ${
+        selectedBackground === bg.id
+          ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+          : "hover:scale-105 border border-gray-200"
+      } ${(!tryOnResult || isChangingBackground) ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      <div className="aspect-square">
+        <img
+          src={bg.image}
+          alt={bg.name}
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
+      </div>
+
+      {isChangingBackground && selectedBackground === bg.id && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+        </div>
+      )}
+    </button>
+    
+    {/* Label below image */}
+    <p className="text-xs  font-medium text-center pt-1  text-gray-600">{bg.name}</p>
+  </div>
+))}
+
             </div>
           </div>
         )}
@@ -1235,11 +1317,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${
-                isInWishlistState
-                  ? " text-primary pl-3 "
-                  : "bg-white border-2 justify-center border-primary text-primary"
-              }`}
+              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${isInWishlistState
+                ? " text-primary pl-3 "
+                : "bg-white border-2 justify-center border-primary text-primary"
+                }`}
             >
               <Heart
                 className={`w-5 h-5 ${isInWishlistState ? "fill-current text-red-600" : ""}`}
@@ -1271,14 +1352,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                  }`}
               />
             </button>
           </div>
@@ -1292,21 +1371,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           <div className="flex gap-4 mb-4 border-b border-gray-200">
             <button
               onClick={() => setSelectedTab("colours")}
-              className={`pb-2 text-sm font-medium ${
-                selectedTab === "colours"
-                  ? "text-gray-900 border-b-2 border-gray-900"
-                  : "text-gray-500"
-              }`}
+              className={`pb-2 text-sm font-medium ${selectedTab === "colours"
+                ? "text-gray-900 border-b-2 border-gray-900"
+                : "text-gray-500"
+                }`}
             >
               Colours
             </button>
             <button
               onClick={() => setSelectedTab("fabrics")}
-              className={`pb-2 text-sm font-medium ${
-                selectedTab === "fabrics"
-                  ? "text-gray-900 border-b-2 border-gray-900"
-                  : "text-gray-500"
-              }`}
+              className={`pb-2 text-sm font-medium ${selectedTab === "fabrics"
+                ? "text-gray-900 border-b-2 border-gray-900"
+                : "text-gray-500"
+                }`}
             >
               Fabrics
             </button>
@@ -1323,11 +1400,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
-                    className={`aspect-square rounded-lg ${
-                      selectedColor === color.name
-                        ? "ring-2 ring-gray-800 ring-offset-2"
-                        : "border border-gray-200"
-                    }`}
+                    className={`aspect-square rounded-lg ${selectedColor === color.name
+                      ? "ring-2 ring-gray-800 ring-offset-2"
+                      : "border border-gray-200"
+                      }`}
                     style={{ backgroundColor: color.color }}
                   />
                 ))}
@@ -1342,11 +1418,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 <button
                   key={fabric.id}
                   onClick={() => setSelectedFabric(fabric.id)}
-                  className={`w-full p-3 rounded-lg text-left ${
-                    selectedFabric === fabric.id
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-50 border border-gray-200"
-                  }`}
+                  className={`w-full p-3 rounded-lg text-left ${selectedFabric === fabric.id
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-50 border border-gray-200"
+                    }`}
                 >
                   <div className="text-sm font-medium">{fabric.name}</div>
                   <div
@@ -1369,12 +1444,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 <button
                   key={bg.id}
                   onClick={() => changeBackground(bg.id)}
-                  disabled={!tryOnResultNoBg || isChangingBackground}
-                  className={`relative rounded-lg overflow-hidden ${
-                    selectedBackground === bg.id
-                      ? "ring-2 ring-gray-800 ring-offset-2"
-                      : "border border-gray-200"
-                  } ${!tryOnResultNoBg ? "opacity-50" : ""}`}
+                  disabled={!tryOnResult || isChangingBackground}
+                  className={`relative rounded-lg overflow-hidden ${selectedBackground === bg.id
+                    ? "ring-2 ring-gray-800 ring-offset-2"
+                    : "border border-gray-200"
+                    } ${(!tryOnResult || isChangingBackground) ? "opacity-50" : ""}`}
                 >
                   <div className="aspect-square">
                     <img src={bg.image} alt={bg.name} className="w-full h-full object-cover" />
@@ -1403,11 +1477,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${
-                isInWishlistState
-                  ? "bg-red-50 border-2 border-red-500 text-red-500"
-                  : "border-2 border-gray-300 text-gray-700"
-              }`}
+              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${isInWishlistState
+                ? "bg-red-50 border-2 border-red-500 text-red-500"
+                : "border-2 border-gray-300 text-gray-700"
+                }`}
             >
               <Heart className={`w-4 h-4 ${isInWishlistState ? "fill-current" : ""}`} />
               Wishlist
@@ -1445,3 +1518,35 @@ function loadImg(src) {
 }
 
 export default TryOnPreviewModal;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
