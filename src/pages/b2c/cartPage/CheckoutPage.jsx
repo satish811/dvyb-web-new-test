@@ -352,6 +352,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === "cod") {
       try {
+        setIsLoading(true);
         await orderService.createOrder({
           products: transformedCartItems,
           paymentMethod: "cod",
@@ -364,9 +365,10 @@ export default function CheckoutPage() {
         });
 
         if (userDetails.isLoggedIn) {
-          for (const item of cartItems) {
-            await cartService.removeFromCart(item.productId || item.id);
-          }
+          // Fire and forget cart cleanup
+          Promise.all(
+            cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))
+          ).catch((e) => console.error("Background cart cleanup failed", e));
         } else {
           sessionStorage.removeItem("guest_cart");
         }
@@ -374,6 +376,7 @@ export default function CheckoutPage() {
         navigate("/order-success");
       } catch (err) {
         alert("COD order failed. Please try again.");
+        setIsLoading(false);
       } finally {
         setIsProcessingPayment(false);
       }
@@ -401,6 +404,7 @@ export default function CheckoutPage() {
         order_id: order.id,
         handler: async (response) => {
           try {
+            setIsLoading(true); // Hide checkout UI immediately
             const verify = httpsCallable(functions, "verifyRazorpayPayment");
             const result = await verify({
               razorpay_order_id: response.razorpay_order_id,
@@ -432,9 +436,10 @@ export default function CheckoutPage() {
               });
 
               if (userDetails.isLoggedIn) {
-                for (const item of cartItems) {
-                  await cartService.removeFromCart(item.productId || item.id);
-                }
+                // Fire and forget, don't await to speed up navigation
+                Promise.all(cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))).catch(
+                  (err) => console.error("Background cart cleanup error", err)
+                );
               } else {
                 sessionStorage.removeItem("guest_cart");
               }
@@ -442,9 +447,11 @@ export default function CheckoutPage() {
               navigate("/order-success");
             } else {
               alert("Payment failed. Please try again.");
+              setIsLoading(false);
             }
           } catch (err) {
             alert("Payment verification failed.");
+            setIsLoading(false);
           } finally {
             setIsProcessingPayment(false);
           }
