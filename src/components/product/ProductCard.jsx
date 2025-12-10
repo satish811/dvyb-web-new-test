@@ -3,8 +3,14 @@ import { cn } from "../../lib/utils";
 import { useNavigate } from "react-router-dom";
 
 export default function ProductCard({ product, onClose, className, disableNamePointer }) {
-  const title = product.title || "Unnamed Product";
+    const rawTitle = product.title || "Unnamed Product";
+  const rawDescription = product.description || "";
   const navigate = useNavigate();
+
+   
+  const title = rawTitle.trim().slice(0, 40) + (rawTitle.length > 40 ? "..." : ""); 
+  const description = rawDescription.trim().slice(0, 50) + (rawDescription.length > 80 ? "..." : "");
+
 
   return (
     <article
@@ -22,7 +28,7 @@ export default function ProductCard({ product, onClose, className, disableNamePo
         <img
           src={product.imageUrls?.[0] || product.images?.[0]}
           alt={title}
-          className="w-full h-100 group relative transition-transform duration-500 hover:scale-105"
+          className="w-full h-90 group relative transition-transform duration-500 hover:scale-105"
           loading="lazy"
         />
       </div>
@@ -32,7 +38,7 @@ export default function ProductCard({ product, onClose, className, disableNamePo
         <div>
           <h3
             className={cn(
-              "font-semibold text-gray-900 text-base line-clamp-2 uppercase leading-snug",
+              "text-gray-900 text-base line-clamp-2 uppercase leading-snug",
               disableNamePointer && "cursor-default"
             )}
           >
@@ -40,7 +46,7 @@ export default function ProductCard({ product, onClose, className, disableNamePo
           </h3>
 
           {product.description && (
-            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{description}</p>
           )}
         </div>
 

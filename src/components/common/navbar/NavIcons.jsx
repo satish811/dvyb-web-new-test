@@ -1,10 +1,11 @@
 // components/navbar/NavIcons.jsx
 import React from "react";
-import { MdOutlineShoppingBag } from "react-icons/md";
+import { HiMiniMagnifyingGlass } from "react-icons/hi2";
+import { BsCart4 } from "react-icons/bs";
 import { GoPerson } from "react-icons/go";
-import { LuHeart } from "react-icons/lu";
 import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
+import { IoMdHeartEmpty } from "react-icons/io";
 
 export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
   const { cartCount, loading } = useCart();
@@ -15,20 +16,7 @@ export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
         onClick={onSearch}
         className="hidden md:block text-gray-700 hover:text-black transition cursor-pointer"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        <HiMiniMagnifyingGlass size={24} />
       </button>
 
       <button
@@ -36,9 +24,9 @@ export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
         className="relative hidden md:block cursor-pointer"
         disabled={wishlistLoading}
       >
-        <LuHeart size={24} />
+        <IoMdHeartEmpty size={24} />
         {wishlistCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+          <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
             {wishlistLoading ? "..." : wishlistCount}
           </span>
         )}
@@ -46,12 +34,13 @@ export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
 
       <button onClick={onProfile} className="px-2 sm:px-0 cursor-pointer">
         <GoPerson size={24} />
+
       </button>
 
       <button onClick={onCart} className="relative cursor-pointer" disabled={loading}>
-        <MdOutlineShoppingBag size={24} />
+        <BsCart4 size={24} />
         {cartCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5  flex items-center justify-center font-bold">
+          <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5  flex items-center justify-center font-bold">
             {loading ? "..." : cartCount}
           </span>
         )}
