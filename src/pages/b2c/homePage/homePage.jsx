@@ -1,7 +1,7 @@
 import CategoryCarousel from "../../../components/utils/CategoryCarousel";
 import ProductGrid from "../../../components/product/productGrid";
 import SectionTitle from "../../../components/utils/SectionTitle";
-import homeBanner from "../../../assets/b2c/landing/banner01.svg";
+import homeBanner from "../../../assets/b2c/landing/banner01.jpg";
 import ClosetIconsSection from "../../../components/b2c/home/ClosetIconsSection";
 import { useProducts } from "../../../hooks/useProducts";
 import { useStaticProducts } from "../../../hooks/useStaticProducts";
@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <div className="mt-4 sm:mt-0">
-      <section className="lg:mt-7 md:mt-7 w-full md:h-[90vh] lg:mx-7 mx-auto overflow-hidden flex justify-center items-center ">
+      <section className="lg:mt-7 md:mt-7 w-full md:h-[90vh] overflow-hidden flex justify-center items-center ">
         <img
           onClick={() => navigate("/womenwear")}
           src={homeBanner}
@@ -37,33 +37,33 @@ export default function Home() {
       </section>
 
       {/* 2. WEDDING TALES */}
-      <section className="container mx-auto py-9">
+      <section className="container py-9">
         <SectionTitle viewAll>Wedding Tales</SectionTitle>
         <ProductGrid products={wedding} columns={3} />
       </section>
 
       {/* 3. SHOP BY CATEGORY */}
-      <section className="px-3">
-        <div className="container mx-auto">
+      <section className="">
+        <div className="container ">
           <SectionTitle viewAll>Shop by Category</SectionTitle>
           <CategoryCarousel />
         </div>
       </section>
 
       {/* 4. DISCOUNT COLLECTION */}
-      <section className="container mx-auto px-3 pt-12">
+      <section className="container pt-12">
         <SectionTitle viewAll>Discount Collection</SectionTitle>
         <ProductGrid products={discount} columns={4} showDiscount={false} />
       </section>
 
       {/* Luxurious Picks of the Day (from image) */}
-      <section className="container mx-auto pt-12">
+      <section className="container pt-12">
         <LuxuryPicks products={luxuryPicks} columns={4} />
       </section>
 
       {/* 5. SPOTLIGHT OF THE DAY */}
       {spotlight && (
-        <section className="container mx-auto pt-12">
+        <section className="container  pt-12">
           {/* <SectionTitle>Spotlight of the Day</SectionTitle> */}
 
           <SpotlightCollections />
@@ -71,7 +71,7 @@ export default function Home() {
       )}
 
       {/* 6. BEST SELLING */}
-      <section className="container mx-auto pt-12 px-3 space-y-3">
+      <section className="container  pt-12 space-y-3">
         <SectionTitle viewAll>Bestselling</SectionTitle>
 
         <BestProducts products={bestsellers} columns={2} />
@@ -80,7 +80,7 @@ export default function Home() {
       </section>
 
       {/* 7. CLOSET ICONS (New Section) */}
-      <section className="container mx-auto py-12">
+      <section className="container  py-12">
         {closetIcons.length > 0 && (
           <section>
             <SectionTitle viewAll>Closet icons</SectionTitle>
