@@ -352,6 +352,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === "cod") {
       try {
+        setIsLoading(true);
         await orderService.createOrder({
           products: transformedCartItems,
           paymentMethod: "cod",
@@ -364,9 +365,10 @@ export default function CheckoutPage() {
         });
 
         if (userDetails.isLoggedIn) {
-          for (const item of cartItems) {
-            await cartService.removeFromCart(item.productId || item.id);
-          }
+          // Fire and forget cart cleanup
+          Promise.all(
+            cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))
+          ).catch((e) => console.error("Background cart cleanup failed", e));
         } else {
           sessionStorage.removeItem("guest_cart");
         }
@@ -374,6 +376,7 @@ export default function CheckoutPage() {
         navigate("/order-success");
       } catch (err) {
         alert("COD order failed. Please try again.");
+        setIsLoading(false);
       } finally {
         setIsProcessingPayment(false);
       }
@@ -401,6 +404,7 @@ export default function CheckoutPage() {
         order_id: order.id,
         handler: async (response) => {
           try {
+            setIsLoading(true); // Hide checkout UI immediately
             const verify = httpsCallable(functions, "verifyRazorpayPayment");
             const result = await verify({
               razorpay_order_id: response.razorpay_order_id,
@@ -432,9 +436,10 @@ export default function CheckoutPage() {
               });
 
               if (userDetails.isLoggedIn) {
-                for (const item of cartItems) {
-                  await cartService.removeFromCart(item.productId || item.id);
-                }
+                // Fire and forget, don't await to speed up navigation
+                Promise.all(cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))).catch(
+                  (err) => console.error("Background cart cleanup error", err)
+                );
               } else {
                 sessionStorage.removeItem("guest_cart");
               }
@@ -442,9 +447,11 @@ export default function CheckoutPage() {
               navigate("/order-success");
             } else {
               alert("Payment failed. Please try again.");
+              setIsLoading(false);
             }
           } catch (err) {
             alert("Payment verification failed.");
+            setIsLoading(false);
           } finally {
             setIsProcessingPayment(false);
           }
@@ -476,8 +483,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-white font-[Outfit] py-10 lg:py-2">
-      <div className="max-w-7xl mx-auto px-4 md:px-10">
-        {userDetails.isLoggedIn && (
+      <div className="max-w-7xl mx-auto px-9 md:px-10">
+        {/* {userDetails.isLoggedIn && (
           <div className="bg-gray-50 border-b border-t p-4 mb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -493,12 +500,12 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-6">
-            {(!userDetails.isLoggedIn || !userDetails.email) && (
-              <div className="border rounded-sm overflow-hidden">
+            {(!userDetails.isLoggedIn || !userDetails.email || openStep === 1) && (
+              <div className="border border-gray-300 rounded-sm overflow-hidden">
                 <div
                   className="bg-gray-100 px-5 py-4 flex justify-between items-center cursor-pointer border-l-4"
                   style={{ borderColor: openStep === 1 ? MAROON : "transparent" }}
@@ -515,7 +522,7 @@ export default function CheckoutPage() {
                 {openStep === 1 && (
                   <div className="p-6 grid md:grid-cols-2 gap-8">
                     <div>
-                      <p className="text-sm mb-4">
+                      <p className="text-sm mb-4 ">
                         {userDetails.isLoggedIn
                           ? "Email is required for order confirmation and payment processing"
                           : "Enter your email to continue"}
@@ -563,11 +570,19 @@ export default function CheckoutPage() {
             {userDetails.isLoggedIn && userDetails.email && openStep !== 1 && (
               <div className="bg-gray-100 border-l-4 border-l-maroon px-5 py-4 flex justify-between items-center">
                 <h2 className="font-semibold uppercase">1. User Email</h2>
-                <span className="text-sm text-gray-600">{userDetails.email}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{userDetails.email}</span>
+                  <button
+                    onClick={() => openRequestedStep(1)}
+                    className="text-sm text-maroon hover:text-[#660000] font-medium underline"
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
             )}
 
-            <div className="border rounded-sm overflow-hidden">
+            <div className=" overflow-hidden">
               <div
                 className="bg-gray-100 px-5 py-4 cursor-pointer border-l-4"
                 style={{ borderColor: openStep === 2 ? MAROON : "transparent" }}
@@ -747,9 +762,8 @@ export default function CheckoutPage() {
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
-                        className={`border border-gray-300 py-4 rounded-sm uppercase ${
-                          paymentMethod === method ? "bg-[#800000] text-white" : ""
-                        }`}
+                        className={`border border-gray-300 py-4 rounded-sm uppercase ${paymentMethod === method ? "bg-[#800000] text-white" : ""
+                          }`}
                       >
                         {method === "cod"
                           ? "Cash on Delivery"
@@ -775,7 +789,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="border rounded-sm p-6">
+            <div className="border border-gray-300 mt-4 rounded-sm p-6">
               <h3 className="font-bold uppercase mb-4">Order Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -794,7 +808,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="border rounded-sm p-6">
+            <div className="border border-gray-300 rounded-sm p-6">
               <h3 className="font-bold uppercase mb-4">Items</h3>
               {transformedCartItems.length === 0 ? (
                 <p className="text-gray-600 text-center py-4">Your cart is empty.</p>
