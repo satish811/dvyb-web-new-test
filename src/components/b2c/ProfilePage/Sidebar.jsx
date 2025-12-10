@@ -28,16 +28,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   // Base menu items - common for all users
   const baseMenu = [
-    { id: "my-info", label: "My info", icon: <FaUser /> },
-    { id: "my-orders", label: "My orders", icon: <FaShoppingBag /> },
-    { id: "my-tryon-gallery", label: "My Try-On Gallery", icon: <FaImages /> },
-    { id: "wishlist", label: "Wishlist", icon: <FaHeart /> },
+    { id: "my-info", label: "MY INFO", icon: <FaUser /> },
+    { id: "my-orders", label: "MY ORDERS", icon: <FaShoppingBag /> },
+    { id: "my-tryon-gallery", label: "MY TRY-ON GALLERY", icon: <FaImages /> },
+    { id: "wishlist", label: "WISHLIST", icon: <FaHeart /> },
   ];
 
   // Profile creation item - only for B2C users
   const profileCreationItem = {
     id: "profile-creation",
-    label: "Profile Creation",
+    label: "PROFILE CREATION",
     icon: <FaUserPlus />,
   };
 
@@ -188,7 +188,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   return (
     <>
       {/* DESKTOP SIDEBAR - Fixed position below navbar */}
-      <div className="hidden md:block w-64 h-[calc(100vh-40px)] mt-12 bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
+      <div className="hidden md:block w-64 h-[calc(100vh-40px)]  bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
         {/* Welcome Message with Role Badge */}
         <div className="mb-6 pb-4 border-b border-gray-200">
           <h2 className="text-lg font-bold text-gray-800">
@@ -213,8 +213,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                 activeTab === item.id ? "text-primary font-semibold" : "text-gray-700"
               }`}
             >
-              {item.icon && <span className="text-lg">{item.icon}</span>}
-              <span>{item.label}</span>
+              {/* {item.icon && <span className="text-lg ">{item.icon}</span>} */}
+              <span className="font-semibold ">{item.label}</span>
             </li>
           ))}
 
@@ -237,13 +237,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
               MY ACCOUNT
             </h2>
-            {userRole && (
+            {/* {userRole && (
               <div
                 className={`px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
               >
                 {userRole}
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -256,7 +256,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               className="border-b border-gray-100 px-4 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                {item.icon && <span className="text-gray-500">{item.icon}</span>}
+                {/* {item.icon && <span className="text-gray-500">{item.icon}</span>} */}
                 <span className="text-sm font-medium text-gray-900 uppercase tracking-wide">
                   {item.label}
                 </span>

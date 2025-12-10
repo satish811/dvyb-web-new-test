@@ -192,19 +192,22 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
   );
 };
 
-// --- B2C Wishlist Item Component ---
+
 const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
-  const [showFullTitle] = useState(false); // Can be expanded if you want title toggling
+  const [showFullTitle] = useState(false);
+
+  // Demo link component (replace with your actual Link component)
+  const Link = ({ to, children }) => <a href={to}>{children}</a>;
 
   return (
     <div
       className={`group w-full overflow-hidden transition bg-white ${
-        showFullTitle ? "min-h-[550px]" : "min-h-[502px]"
+        showFullTitle ? "min-h-[450px] sm:min-h-[500px] lg:min-h-[550px]" : "min-h-[420px] sm:min-h-[470px] lg:min-h-[502px]"
       }`}
     >
-      {/* Fixed Image Area */}
+      {/* Fixed Image Area - Responsive heights */}
       <Link to={`/products/${item.productId || item.id}`}>
-        <div className="w-full h-[322px] bg-gray-100 overflow-hidden">
+        <div className="w-full h-[250px] sm:h-[280px] lg:h-[322px] bg-gray-100 overflow-hidden">
           <img
             src={item.image || item.imageUrls?.[0] || "/placeholder.jpg"}
             alt={item.name}
@@ -213,12 +216,12 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
         </div>
       </Link>
 
-      {/* Content Areas */}
-      <div className="p-4">
-        {/* Title Area */}
-        <div className="h-[48px] mb-1">
+      {/* Content Areas - Responsive padding */}
+      <div className="p-3 sm:p-4">
+        {/* Title Area - Adaptive height */}
+        <div className="h-[42px] sm:h-[46px] lg:h-[48px] mb-1 sm:mb-1.5">
           <h3
-            className="text-sm font-medium text-gray-900 line-clamp-2"
+            className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2"
             style={{ lineHeight: "1.2" }}
             title={item.name}
           >
@@ -226,10 +229,10 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
           </h3>
         </div>
 
-        {/* Price Area */}
-        <div className="h-[24px] mb-4 flex items-center">
+        {/* Price Area - Responsive sizing */}
+        <div className="h-[22px] sm:h-[24px] mb-2 flex items-center">
           {item.price ? (
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm sm:text-base font-semibold text-gray-900">
               ₹{item.price?.toLocaleString("en-IN")}
             </p>
           ) : (
@@ -237,31 +240,33 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
           )}
         </div>
 
-        {/* Buttons */}
-        <div className="h-[36px]">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              onClick={() => onAddToCart(item)}
-              className="flex-1 flex items-center justify-center gap-2 h-[36px] bg-[#800000] text-white text-sm font-medium hover:bg-[#600000] transition rounded"
-              title="Add to Cart"
-            >
-              <ShoppingCart size={16} />
-              <span className="hidden sm:inline">Add to Cart</span>
-            </button>
-            <button
-              onClick={() => onRemove(item.productId || item.id)}
-              className="flex items-center justify-center gap-2 h-[36px] px-3 bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition rounded text-sm font-medium"
-              title="Remove from Wishlist"
-            >
-              <Trash2 size={16} />
-              <span>Remove</span>
-            </button>
-          </div>
+        {/* Buttons - Fully responsive */}
+        <div className="space-y-2">
+          {/* Add to Cart Button */}
+          <button
+            onClick={() => onAddToCart(item)}
+            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] bg-[#800000] text-white text-xs sm:text-sm font-medium hover:bg-[#600000] transition px-3"
+            title="Add to Cart"
+          >
+            <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
+            <span>Add to Cart</span>
+          </button>
+
+          {/* Remove Button */}
+          <button
+            onClick={() => onRemove(item.productId || item.id)}
+            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] px-3 bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition text-xs sm:text-sm font-medium"
+            title="Remove from Wishlist"
+          >
+            <Trash2 size={14} className="sm:w-4 sm:h-4" />
+            <span className="truncate">Remove from wishlist</span>
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
 
 // --- Main Wishlist Page ---
 const WishlistPage = () => {

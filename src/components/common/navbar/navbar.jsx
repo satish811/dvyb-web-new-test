@@ -230,7 +230,7 @@ export default function Navbar({ setShowLoader }) {
       ) : (
         <>
           {/* Top gray bar */}
-          <div className="flex hidden md:flex items-center bg-[#e6e6e6] h-10 px-5 gap-10 font-poppins pl-12">
+          {/* <div className="flex hidden md:flex items-center bg-[#e6e6e6] h-10 px-5 gap-10 font-poppins pl-12">
             <span
               onClick={() => navigate("/womenwear")}
               className="text-[12px] font-medium tracking-wider cursor-pointer hover:underline"
@@ -243,7 +243,7 @@ export default function Navbar({ setShowLoader }) {
             >
               VIRTUAL TRY-ON
             </span>
-          </div>
+          </div> */}
 
           {/* Main bar */}
           <div className="flex items-center justify-between px-3 py-2 sm:px-4 md:px-3">
