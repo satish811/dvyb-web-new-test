@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 
 const ProductColorSelector = ({ colors = [] }) => {
-  console.log("The colors we get", colors);
-
   // Static fallback colors
   const staticColors = ["#424647", "#E9D252", "#EC8CB7", "#A32033"];
 
