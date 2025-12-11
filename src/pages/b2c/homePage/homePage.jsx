@@ -27,7 +27,7 @@ export default function Home() {
   const closetIcons = productsArray.filter((p) => p.category === "Closet").slice(0, 8);
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="">
 
       <section className="h-[60vh] md:h-[80vh] lg:h-[90vh] overflow-hidden flex justify-center items-center bg-gray-50">
         <img
@@ -39,41 +39,39 @@ export default function Home() {
       </section>
 
       {/* 2. WEDDING TALES */}
-      <section className="container py-9">
+      <section className="py-9">
         <SectionTitle viewAll>Wedding Tales</SectionTitle>
         <WeddingSection products={wedding} columns={3} />
       </section>
 
       {/* 3. SHOP BY CATEGORY */}
       <section className="">
-        <div className="container ">
+        <div className="">
           <SectionTitle viewAll>Shop by Category</SectionTitle>
           <CategoryCarousel />
         </div>
       </section>
 
       {/* 4. DISCOUNT COLLECTION */}
-      <section className="container pt-12">
+      <section className="pt-12">
         <SectionTitle viewAll>Discount Collection</SectionTitle>
         <ProductGrid products={discount} columns={4} showDiscount={false} />
       </section>
 
       {/* Luxurious Picks of the Day (from image) */}
-      <section className="container pt-12">
+      <section className="pt-12">
         <LuxuryPicks products={luxuryPicks} columns={4} />
       </section>
 
       {/* 5. SPOTLIGHT OF THE DAY */}
       {spotlight && (
-        <section className="container  pt-12">
-          {/* <SectionTitle>Spotlight of the Day</SectionTitle> */}
-
+        <section className=" pt-12">
           <SpotlightCollections />
         </section>
       )}
 
       {/* 6. BEST SELLING */}
-      <section className="container  pt-12 space-y-3">
+      <section className="  pt-12 space-y-3">
         <SectionTitle viewAll>Bestselling</SectionTitle>
 
         <BestProducts products={bestsellers} columns={2} />
@@ -82,7 +80,7 @@ export default function Home() {
       </section>
 
       {/* 7. CLOSET ICONS (New Section) */}
-      <section className="container  py-12">
+      <section className=" py-12">
         {closetIcons.length > 0 && (
           <section>
             <SectionTitle viewAll>Closet icons</SectionTitle>
