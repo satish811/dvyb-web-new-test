@@ -68,14 +68,14 @@ const SimilarProductsSection = () => {
             key={product.id}
             className="bg-white border border-slate-100 overflow-hidden shadow-sm 
             transition flex flex-col cursor-pointer group"
-            style={{ minHeight: 320 }}
+            style={{ minHeight: 420 }}
             onClick={() => {
               navigate(`/products/${product.id}`);
               window.scrollTo(0, 0);
             }}
           >
             {/* Responsive Image Wrapper */}
-            <div className="w-full h-40 sm:h-48 md:h-52 lg:h-56 overflow-hidden bg-gray-100">
+            <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 2xl:h-96 overflow-hidden bg-gray-100">
               <img
                 src={product.imageUrls?.[0] || ""}
                 alt={product.name}
