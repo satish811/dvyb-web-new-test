@@ -270,11 +270,26 @@ export default function ProductLayout({ children, products }) {
       {/* Mobile Sidebar (ONLY for mobile) */}
       {/* -------------------------------------------------------------- */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        {/* Close Button for Mobile */}
-        <div className="flex justify-end p-4 sticky top-0 bg-white z-10">
+        {/* Header with Logo in Center and Close on Right */}
+        <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-10 shadow-sm">
+
+          {/* Empty div to balance the layout - keeps logo centered */}
+          <div className="w-10"></div>
+
+          {/* Logo - Centered */}
+          <img
+            src={mainlogo}
+            alt="Logo"
+            className="h-10 cursor-pointer"
+            onClick={() => {
+              navigate("/");
+              setIsSidebarOpen(false);
+            }}
+          />
+
+          {/* Close Button - Right */}
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
@@ -289,13 +304,13 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* Main Layout */}
       {/* -------------------------------------------------------------- */}
-      <div className="lg:mt-18 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
+      <div className="lg:mt-10 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
 
           {/* -------------------------------------------------------------- */}
           {/* Desktop Sidebar (ONLY for desktop) - This is the only desktop sidebar */}
           {/* -------------------------------------------------------------- */}
-          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-20 lg:self-start lg:h-full">
+          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-15 lg:self-start lg:h-full">
             <div className="h-full">
               <Sidebar products={products} />
             </div>
