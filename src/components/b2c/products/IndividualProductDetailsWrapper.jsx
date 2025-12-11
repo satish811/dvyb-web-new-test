@@ -13,6 +13,7 @@ const IndividualProductDetailsWrapper = () => {
      */
     const fetchProduct = async () => {
       try {
+        
         /**
          * For now simulate API or get from localStorage / context
          * @returns

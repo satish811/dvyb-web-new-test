@@ -24,7 +24,7 @@ export default function LuxuryPicks() {
   };
 
   // Add empty onClose function
-  const handleClose = () => { };
+  const handleClose = () => {};
 
   return (
     <section className="bg-lighted-bg mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
@@ -63,7 +63,6 @@ export default function LuxuryPicks() {
             ))}
           </div>
         </div>
-
 
         {/* RIGHT ARROW - Desktop only */}
         <button

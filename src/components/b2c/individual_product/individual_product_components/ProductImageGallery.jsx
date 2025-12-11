@@ -12,130 +12,133 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setImageError(false);
   }, [product?.id, images.length]);
 
-  // ✅ Helper for mobile version
+  // Mobile Slider
   const MobileImageSlider = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const touchStartXRef = useRef(0);
-    const touchEndXRef = useRef(0);
 
-    const handleTouchStart = (e) => {
-      touchStartXRef.current = e.touches[0].clientX;
-    };
-
-    const handleTouchMove = (e) => {
-      touchEndXRef.current = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = () => {
-      const deltaX = touchEndXRef.current - touchStartXRef.current;
-
-      if (deltaX < -40) {
-        setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-      } else if (deltaX > 40) {
-        setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-      }
-    };
+    const handlePrev = () => setCurrentIndex((i) => (i > 0 ? i - 1 : images.length - 1));
+    const handleNext = () => setCurrentIndex((i) => (i < images.length - 1 ? i + 1 : 0));
 
     if (!images.length) return null;
 
     return (
-      <div className="w-full flex flex-col items-center">
-        {/* FULL-WIDTH mobile image */}
-        <div
-          className="relative w-full bg-gray-50 overflow-hidden flex items-center justify-center"
-          style={{
-            height: "auto",
-            minHeight: "350px", // adjusts based on mobile height
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
+      <div className="relative w-full">
+        <div className="relative overflow-hidden bg-gray-50">
           <img
             src={images[currentIndex]}
-            alt={`Product ${currentIndex}`}
-            className="w-full h-auto object-contain max-h-[90vh] transition-all duration-300"
+            alt={`Product ${currentIndex + 1}`}
+            className="w-full h-auto max-h-[88vh] object-contain"
           />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
         </div>
-
-        {/* Dots */}
-        <div className="flex justify-center gap-1.5 mt-3">
-          {images.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                i === currentIndex ? "bg-[#573131]" : "bg-[#573131]/30"
-              }`}
-            />
-          ))}
-        </div>
+        {images.length > 1 && (
+          <div className="flex justify-center gap-2 mt-4">
+            {images.map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? "bg-[#573131] w-8" : "bg-[#573131]/30"
+                  }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
 
-  // ✅ Main desktop layout (fixed)
+  /**
+   * Desktop Gallery - All thumbnails now same large size
+   */
   const DesktopGallery = () => (
-    <div className="hidden md:flex relative" style={{ width: "438px", height: "505px" }}>
-      {/* Thumbnail Column */}
-      <div className="flex flex-col absolute left-0" style={{ width: "128px" }}>
-        {images.slice(0, 3).map((img, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              console.log(`Clicked thumbnail ${index}:`, img);
-              setSelectedImage(img);
-            }}
-            className="overflow-hidden mb-[11px] last:mb-0"
-            style={{
-              width: "128px",
-              height: index === 2 ? "191px" : index === 1 ? "147px" : "148px",
-            }}
-          >
+    <div className="hidden md:block">
+      <div
+        className="
+        relative origin-top-left
+        md:scale-100
+        lg:scale-110
+        xl:scale-125
+        2xl:scale-140
+        3xl:scale-155
+      "
+        style={{ width: "438px", height: "505px" }}
+      >
+        {/* Thumbnail Column - Uniform size, perfectly aligned */}
+        <div className="flex flex-col absolute left-0" style={{ width: "78px" }}>
+          {images.slice(0, 3).map((img, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(img)}
+              className="overflow-hidden mb-[11px] last:mb-0"
+              style={{
+                width: "78px",
+                height: "121px",
+              }}
+            >
+              <img
+                src={img}
+                alt={`Thumbnail ${index + 1}`}
+                className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                onError={handleImageError}
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Main Image - Perfectly aligned with new thumbnail width */}
+        <div
+          className="absolute overflow-hidden bg-gray-50"
+          style={{
+            left: "89px",   // 78px thumb + 11px gap
+            top: "0px",
+            width: "349px", // 301 + 48 (to compensate reduced thumb width)
+            height: "505px",
+          }}
+        >
+          {imageError ? (
+            <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
+              Image not available
+            </div>
+          ) : selectedImage ? (
             <img
-              src={img}
-              alt={`Thumbnail ${index + 1}`}
-              className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+              key={selectedImage}
+              src={selectedImage}
+              alt="Selected product"
+              className="w-full h-full object-cover"
               onError={handleImageError}
             />
-          </button>
-        ))}
-      </div>
-
-      {/* Main Image */}
-      <div
-        className="absolute"
-        style={{
-          left: "138px",
-          top: "1px",
-          width: "301px",
-          height: "463px",
-        }}
-      >
-        {imageError ? (
-          <div className="text-gray-400 text-sm">Image not available</div>
-        ) : selectedImage ? (
-          <img
-            key={selectedImage} // Add key to force re-render when image changes
-            src={selectedImage}
-            alt="Product"
-            className="w-full h-full object-cover"
-            onError={handleImageError}
-          />
-        ) : (
-          <div className="text-gray-400 text-sm">Select an image</div>
-        )}
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400 text-lg">
+              Select an image
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile layout */}
-      <div className="block md:hidden w-full">
+      {/* Mobile */}
+      <div className="block md:hidden">
         <MobileImageSlider />
       </div>
 
-      {/* Desktop layout */}
+      {/* Desktop - scales beautifully up to 3xl+ */}
       <DesktopGallery />
     </>
   );

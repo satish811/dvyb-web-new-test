@@ -24,21 +24,59 @@ const ProductGrid = ({ products, category }) => {
   }, [filteredProducts, sortBy]);
 
   if (!products || products.length === 0) {
-    return <div className="text-center py-20 text-gray-500">Loading products...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <svg
+              className="w-20 h-20 mx-auto text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No Products Found</h3>
+          <p className="text-gray-600 mb-6">
+            We couldn't find any products in this category. Please check back later or browse other categories.
+          </p>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 bg-[#9C0000] text-white font-medium rounded-md hover:bg-[#8a0000] transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col lg:mt-18">
+    <div className="flex flex-col">
       {/* Ads */}
-      <div className="mb-8">
+      <div className="mb-5">
         <AdsCarousel />
       </div>
 
       {/* Title + Sort - hidden on mobile */}
-      <div className="hidden sm:flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold capitalize">
-          {category || "All Products"} ({sortedAndFilteredProducts.length})
-        </h1>
+      <div className="hidden sm:flex justify-between items-center mb-3">
+
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-[1.3rem] font-semibold uppercase">
+            {category || "All Products"}
+          </h1>
+          <span className="text-[0.85rem] font-normal text-gray-600">
+            ({sortedAndFilteredProducts.length} products)
+          </span>
+        </div>
+
 
         <select
           value={sortBy}
@@ -50,6 +88,10 @@ const ProductGrid = ({ products, category }) => {
           <option value="high-to-low">Price: High to Low</option>
         </select>
       </div>
+
+      {/* Black straight line after Title + Sort section */}
+      <div className="hidden sm:block border-t border-black mb-6"></div>
+
 
       {/* Show ALL products — no slicing, no loading, no bugs */}
       {sortedAndFilteredProducts.length === 0 ? (
@@ -67,12 +109,6 @@ const ProductGrid = ({ products, category }) => {
         </div>
       )}
 
-      {/* Optional: nice message at the end */}
-      {sortedAndFilteredProducts.length > 0 && (
-        <div className="text-center py-12 text-gray-500">
-          Showing all {sortedAndFilteredProducts.length} products
-        </div>
-      )}
     </div>
   );
 };
