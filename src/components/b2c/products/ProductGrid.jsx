@@ -9,22 +9,47 @@ const ProductGrid = ({ products, category }) => {
 
   const filteredProducts = useProductFilter(products || []);
 
-  console.log("The products we are getting", products);
+  
 
   const [sortBy, setSortBy] = useState("");
 
+  /**
+   * Determines if a product should be shown based on admin publication status and product publication status.
+   */
+  const shouldShowProduct = (product) => {
+    if (!product) return false;
+
+    const adminPublished = product.isAdminPublished ?? product.availability?.isAdminPublished;
+
+    if (adminPublished !== undefined) {
+
+      if (adminPublished === false) return false;
+      if (adminPublished === true && !product.isPublished) return false;
+
+    }
+    return product.isPublished === true;
+  };
+
+  
   const sortedAndFilteredProducts = useMemo(() => {
     let items = [...filteredProducts];
-
+    
     if (sortBy === "low-to-high") {
       items.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
     } else if (sortBy === "high-to-low") {
       items.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
     }
-
+    
     return items;
   }, [filteredProducts, sortBy]);
 
+  /**
+   * Filters the sorted and filtered products to only include those that should be shown.
+   */
+  const visibleProducts = useMemo(() => {
+    return sortedAndFilteredProducts.filter(shouldShowProduct);
+  }, [sortedAndFilteredProducts]);
+  
   if (!products || products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
@@ -70,13 +95,16 @@ const ProductGrid = ({ products, category }) => {
       {/* Title + Sort - hidden on mobile */}
       <div className="hidden sm:flex justify-between items-center mb-3">
 
-        <div className="flex items-baseline gap-2">
-          <h1 className="text-[1.3rem] font-semibold uppercase">
-            {category || "All Products"}
-          </h1>
-          <span className="text-[0.85rem] font-normal text-gray-600">
-            ({sortedAndFilteredProducts.length} products)
-          </span>
+        {/* Title + Correct Count */}
+        <div className="hidden sm:flex justify-between items-center mb-3">
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-[1.3rem] font-semibold uppercase">
+              {category || "All Products"}
+            </h1>
+            <span className="text-[0.85rem] font-normal text-gray-600">
+              ({visibleProducts.length} products)
+            </span>
+          </div>
         </div>
 
 
@@ -105,9 +133,11 @@ const ProductGrid = ({ products, category }) => {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {sortedAndFilteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {sortedAndFilteredProducts
+            .filter(shouldShowProduct)
+            .map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       )}
 
