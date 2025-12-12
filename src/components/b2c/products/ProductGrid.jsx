@@ -9,6 +9,8 @@ const ProductGrid = ({ products, category }) => {
 
   const filteredProducts = useProductFilter(products || []);
 
+  console.log("The products we are getting", products);
+
   const [sortBy, setSortBy] = useState("");
 
   const sortedAndFilteredProducts = useMemo(() => {

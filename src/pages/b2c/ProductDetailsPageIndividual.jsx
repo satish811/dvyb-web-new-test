@@ -9,19 +9,25 @@ import { addRecentlyViewed } from "../../components/utils/recentlyViewedUtils";
 const ProductDetailsPageIndividual = ({ onClose }) => {
   const { id } = useParams();
   const { products } = useProducts();
+  const currentProduct = products.find(p => p.id === id);
 
+  // useEffect(() => {
+  //   if (products.length > 0 && id) {
+  //     const product = products.find((p) => p.id === id);
+  //     if (product) {
+  //       addRecentlyViewed(product);
+  //     }
+  //   }
+  // }, [id, products]);
   useEffect(() => {
-    if (products.length > 0 && id) {
-      const product = products.find((p) => p.id === id);
-      if (product) {
-        addRecentlyViewed(product);
-      }
+    if (currentProduct) {
+      addRecentlyViewed(currentProduct);
     }
-  }, [id, products]);
+  }, [currentProduct]);
 
   return (
     <div className="lg:mt-12 mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 3xl:px-48 my-4 lg:my-8">
-      
+
       {/* PRODUCT DETAILS */}
       <div className="w-full mx-auto py-6 lg:py-10">
         <IndividualProduct productId={id} />
@@ -29,7 +35,7 @@ const ProductDetailsPageIndividual = ({ onClose }) => {
 
       {/* SIMILAR PRODUCTS */}
       <div className="hidden md:block mt-10 lg:mt-8 w-full mx-auto">
-        <SimilarProductsSection />
+        <SimilarProductsSection dressType={currentProduct?.dressType} />
       </div>
 
       {/* TRENDING PRODUCTS */}
