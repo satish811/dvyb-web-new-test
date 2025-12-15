@@ -125,26 +125,30 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Mobile Header (Back + Logo + Icons) */}
       {/* -------------------------------------------------------------- */}
-      <div className="items-center justify-between lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 flex ">
-        {/* Back Arrow - Left Side */}
-        <button
-          onClick={() => navigate("/")}
-          className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-        >
-          <ArrowLeft size={24} className="text-gray-800" />
-        </button>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 grid grid-cols-3 items-center">
 
-        {/* Logo - Center */}
-        <img
-          src={mainlogo}
-          alt="Logo"
-          onClick={() => navigate("/")}
-          className="h-12 mt-2 ml-16 cursor-pointer"
-        />
+        {/* Left column */}
+        <div className="flex justify-start">
+          <button
+            onClick={() => navigate("/")}
+            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
+          >
+            <ArrowLeft size={24} className="text-gray-800" />
+          </button>
+        </div>
 
-        {/* Icons Container - Right Side */}
-        <div className="flex items-center justify-end gap-0">
-          {/* Search Icon */}
+        {/* Center column (LOGO) */}
+        <div className="flex justify-center mr-5">
+          <img
+            src={mainlogo}
+            alt="Logo"
+            onClick={() => navigate("/")}
+            className="h-12 cursor-pointer"
+          />
+        </div>
+
+        {/* Right column */}
+        <div className="flex justify-end">
           <button
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
@@ -152,28 +156,6 @@ export default function ProductLayout({ children, products }) {
             <Search size={20} className="text-gray-700" />
           </button>
 
-          {/* Wishlist Icon with Badge */}
-          <button
-            onClick={() => navigate("/wishlist")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <Heart size={20} className="text-gray-700" />
-            
-          </button>
-
-          {/* Cart Icon with Badge */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <ShoppingBag size={20} className="text-gray-700" />
-            {/* Optional badge */}
-            {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-      2
-    </span> */}
-          </button>
-
-          {/* Profile Icon */}
           <button
             onClick={() => navigate("/profile")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
@@ -181,8 +163,8 @@ export default function ProductLayout({ children, products }) {
             <User size={20} className="text-gray-700" />
           </button>
         </div>
-
       </div>
+
 
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Funnel + Sort Bar (Reduced Height) */}

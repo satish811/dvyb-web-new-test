@@ -141,54 +141,32 @@ const MobileProductHeader = () => {
 
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white z-50">
-      
-      <div className="flex items-center justify-between px-4 h-[60px]">
-        
-        {/* Back Button */}
-        <button onClick={() => navigate(-1)} className="p-1">
-          <ArrowLeft size={24} className="text-gray-900" />
-        </button>
+
+      <div className="grid grid-cols-3 items-center px-4 h-[60px]">
+
+        {/* Left */}
+        <div className="flex justify-start">
+          <button onClick={() => navigate(-1)} className="p-1">
+            <ArrowLeft size={24} className="text-gray-900" />
+          </button>
+        </div>
 
         {/* Center LOGO */}
-        <img
-          src={mainlogo}
-          alt="Logo"
-          className="h-12 mt-2 ml-16 object-contain cursor-pointer"
-          onClick={() => navigate("/")}
-        />
+        <div className="flex mr-5 justify-center">
+          <img
+            src={mainlogo}
+            alt="Logo"
+            className="h-12 object-contain cursor-pointer"
+            onClick={() => navigate("/")}
+          />
+        </div>
 
-        {/* Right Icons - Now with 4 icons: Search → Wishlist → Cart → Profile */}
-        <div className="flex items-center gap-3">
-          {/* Search */}
+        {/* Right Icons */}
+        <div className="flex justify-end items-center gap-3">
           <button onClick={() => setSearchOpen(true)}>
             <Search size={20} className="text-gray-900" />
           </button>
 
-          {/* Wishlist */}
-          <button
-            onClick={() => navigate("/wishlist")}
-            className="relative"
-            disabled={wishlistLoading}
-          >
-            <Heart size={20} className="text-gray-900" />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
-                {wishlistCount}
-              </span>
-            )}
-          </button>
-
-          {/* Cart */}
-          <button onClick={() => navigate("/cart")} className="relative" disabled={cartLoading}>
-            <ShoppingBag size={20} className="text-gray-900" />
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
-                {cartCount}
-              </span>
-            )}
-          </button>
-
-          {/* Profile - NEWLY ADDED (Person Icon) */}
           <button onClick={() => navigate("/profile")}>
             <svg
               className="w-5 h-5 text-gray-900"
@@ -206,6 +184,8 @@ const MobileProductHeader = () => {
           </button>
         </div>
       </div>
+
+
     </div>
   );
 };
