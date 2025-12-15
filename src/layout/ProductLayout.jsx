@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
-import { ArrowLeft, Funnel, X } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User } from "lucide-react";
 import { mainlogo } from "../assets";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
@@ -139,72 +139,38 @@ export default function ProductLayout({ children, products }) {
           src={mainlogo}
           alt="Logo"
           onClick={() => navigate("/")}
-          className="h-12 mt-3 cursor-pointer"
+          className="h-12 mt-2 ml-16 cursor-pointer"
         />
 
         {/* Icons Container - Right Side */}
-        <div className="flex items-end justyify-end">
+        <div className="flex items-center justify-end gap-0">
           {/* Search Icon */}
           <button
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-              />
-            </svg>
+            <Search size={20} className="text-gray-700" />
           </button>
 
-          {/* Wishlist Icon - Heart */}
+          {/* Wishlist Icon with Badge */}
           <button
             onClick={() => navigate("/wishlist")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
+            <Heart size={20} className="text-gray-700" />
+            
           </button>
 
-          {/* Cart Icon - Shopping Bag */}
+          {/* Cart Icon with Badge */}
           <button
             onClick={() => navigate("/cart")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-              />
-            </svg>
+            <ShoppingBag size={20} className="text-gray-700" />
+            {/* Optional badge */}
+            {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+      2
+    </span> */}
           </button>
 
           {/* Profile Icon */}
@@ -212,22 +178,10 @@ export default function ProductLayout({ children, products }) {
             onClick={() => navigate("/profile")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5.121 17.804A12.073 12.073 0 0112 15c2.507 0 4.824.776 6.879 2.121M12 12a4 4 0 100-8 4 4 0 000 8z"
-              />
-            </svg>
+            <User size={20} className="text-gray-700" />
           </button>
         </div>
+
       </div>
 
       {/* -------------------------------------------------------------- */}

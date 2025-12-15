@@ -11,14 +11,7 @@ const ProductDetailsPageIndividual = ({ onClose }) => {
   const { products } = useProducts();
   const currentProduct = products.find(p => p.id === id);
 
-  // useEffect(() => {
-  //   if (products.length > 0 && id) {
-  //     const product = products.find((p) => p.id === id);
-  //     if (product) {
-  //       addRecentlyViewed(product);
-  //     }
-  //   }
-  // }, [id, products]);
+  
   useEffect(() => {
     if (currentProduct) {
       addRecentlyViewed(currentProduct);

@@ -141,7 +141,9 @@ const MobileProductHeader = () => {
 
   return (
     <div className="md:hidden fixed top-0 left-0 right-0 bg-white z-50">
+      
       <div className="flex items-center justify-between px-4 h-[60px]">
+        
         {/* Back Button */}
         <button onClick={() => navigate(-1)} className="p-1">
           <ArrowLeft size={24} className="text-gray-900" />
@@ -151,12 +153,12 @@ const MobileProductHeader = () => {
         <img
           src={mainlogo}
           alt="Logo"
-          className="h-9 object-contain cursor-pointer"
+          className="h-12 mt-2 ml-16 object-contain cursor-pointer"
           onClick={() => navigate("/")}
         />
 
         {/* Right Icons - Now with 4 icons: Search → Wishlist → Cart → Profile */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Search */}
           <button onClick={() => setSearchOpen(true)}>
             <Search size={20} className="text-gray-900" />
