@@ -11,6 +11,11 @@ const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 function getApiKeyByOutfit(outfitType) {
+
+
+
+  //  return GEMINI_API_KEY;
+   
   console.log(`🔍 Getting API key for: ${outfitType}`);
   switch (outfitType?.toLowerCase()) {
     case "saree":
