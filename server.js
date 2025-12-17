@@ -3,12 +3,26 @@ import multer from "multer";
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
+import FormData from 'form-data'; 
+
 
 dotenv.config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+
+
+
+  const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
+const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY; // Add to your .env file
+
+const getMinimaxHeaders = () => ({
+  'Authorization': `Bearer ${MINIMAX_API_KEY}`,
+  'Content-Type': 'application/json'
+});
+
+
 
 function getApiKeyByOutfit(outfitType) {
 
@@ -71,6 +85,162 @@ async function downloadAsBase64(url) {
   console.log(`✅ Image downloaded successfully (${res.data.length} bytes)`);
   return Buffer.from(res.data).toString("base64");
 }
+
+
+
+
+
+
+
+
+
+// 3d video 
+
+app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
+  console.log('\n🎬 === VIDEO GENERATION REQUEST ===');
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Try-on image required" 
+      });
+    }
+
+    console.log(`📊 Image size: ${req.file.size} bytes`);
+
+    // Upload image to MiniMax (they need a URL)
+    // For now, convert to base64 data URL
+    const imageBase64 = req.file.buffer.toString("base64");
+    const imageDataUrl = `data:image/jpeg;base64,${imageBase64}`;
+
+    const payload = {
+      model: 'MiniMax-Hailuo-2.3-Fast',
+      first_frame_image: imageDataUrl,
+      prompt: req.body.prompt || 'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
+      duration: 6,
+      resolution: '1080P',
+      prompt_optimizer: true,
+      fast_pretreatment: true
+    };
+
+    console.log('🚀 Calling MiniMax API...');
+    
+    const response = await axios.post(
+      `${MINIMAX_BASE_URL}/video_generation`,
+      payload,
+      { headers: getMinimaxHeaders() }
+    );
+
+    const { task_id } = response.data;
+    
+    console.log(`✅ Task created: ${task_id}`);
+
+    res.json({ 
+      success: true,
+      taskId: task_id,
+      message: 'Video generation started'
+    });
+
+  } catch (error) {
+    console.error('❌ Video creation error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to create video generation task',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// 2. Check video status
+app.get('/api/video/status/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+
+    const response = await axios.get(
+      `${MINIMAX_BASE_URL}/query/video_generation`,
+      { 
+        headers: getMinimaxHeaders(),
+        params: { task_id: taskId }
+      }
+    );
+
+    const data = response.data;
+    
+    // Calculate progress
+    let progress = 0;
+    if (data.status === 'Queueing') progress = 10;
+    else if (data.status === 'Preparing') progress = 25;
+    else if (data.status === 'Processing') progress = 60;
+    else if (data.status === 'Success') progress = 100;
+    
+    res.json({
+      success: true,
+      status: data.status,
+      progress: progress,
+      file_id: data.file_id,
+      taskId: data.task_id
+    });
+
+  } catch (error) {
+    console.error('❌ Status check error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to check video status',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// 3. Get video download URL
+app.get('/api/video/download/:fileId', async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    const response = await axios.get(
+      `${MINIMAX_BASE_URL}/files/retrieve`,
+      { 
+        headers: getMinimaxHeaders(),
+        params: { file_id: fileId }
+      }
+    );
+
+    const download_url = response.data.file?.download_url;
+
+    if (!download_url) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Download URL not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      videoUrl: download_url
+    });
+
+  } catch (error) {
+    console.error('❌ Video retrieval error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to retrieve video',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ============================================================
 // ENDPOINT: /api/change-tryon-background
@@ -238,79 +408,103 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   const isSaree = garmentName.toLowerCase() === 'saree';
   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
 
-  const prompt = isBackgroundSwap ? `
-You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
 
-CORE TASK:
-- Take the person from the first image (with transparent/removed background)
-- Place them realistically into the background scene from the second image
-- Make it look like the person is actually standing/present in that location
+const prompt = isBackgroundSwap ? `
+ROLE
+You are a professional photo editor performing a REALISTIC background replacement.
 
-CRITICAL REQUIREMENTS:
-1. PRESERVE THE PERSON 100%:
-   - Keep their EXACT pose, outfit, face, body, and all details unchanged
-   - Do NOT modify their clothing, appearance, or any aspect of them
-   - Only change the background/environment around them
+CORE TASK
+- Image 1 contains a real person with transparent or removed background
+- Image 2 is the new background scene
+- Place the SAME person naturally into the new background
 
-2. NATURAL INTEGRATION:
-   - Match lighting direction and intensity from the background scene
-   - Add appropriate shadows on the ground/floor where person stands
-   - Adjust color temperature to match the scene (warm/cool tones)
-   - Ensure perspective matches (person's size should fit the scene naturally)
-   - Add subtle ambient occlusion where person meets the ground
+PERSON PRESERVATION (STRICT)
+- Keep the person EXACTLY the same:
+  - Face, expression, skin tone, hair, body, clothing, pose
+- Do NOT modify, replace, or enhance the person in any way
 
-3. DEPTH & REALISM:
-   - If background has depth of field, apply slight blur to match
-   - Ensure person's edges blend naturally (no harsh cutouts)
-   - Add reflected light from the environment onto the person
-   - Match the scene's atmosphere (indoor/outdoor, time of day)
+REALISTIC INTEGRATION
+- Match lighting direction, intensity, and color temperature to Image 2
+- Add realistic ground shadows and contact shadows
+- Match perspective and scale so the person fits the environment
+- Blend edges cleanly (no cutout artifacts)
+- Apply subtle ambient light spill from environment onto the person
+- Respect depth of field if present in the background
 
-4. PROHIBITED:
-   - NO changes to the person's clothing, face, or body
-   - NO text, watermarks, or multiple images
-   - NO floating or unrealistic placement
-   - NEVER return the unchanged reference image
+PROHIBITED
+- NO clothing changes
+- NO face/body edits
+- NO floating placement
+- NO text, watermarks, frames, or multiple images
+- NEVER return the unchanged input image
 
-OUTPUT:
-ONLY one high-resolution inline_data image showing the person naturally integrated into the new background scene.
-NO text, JSON, explanations, or additional content.
-` : `
-You are performing a STRICT photo-realistic virtual try-on. Dress the person in the EXACT garment from the reference image.
+OUTPUT
+Return ONLY one high-resolution inline_data image of the person realistically placed in the new background.
+NO text, JSON, or explanations.
+`
+:
+`
+ROLE
+You are a professional fashion photo editor performing a STRICT, photorealistic virtual try-on.
 
-CORE TASK:
-- Replace ONLY the person's clothing with the garment from the reference image
-- Preserve person's exact face, skin tone, hair, body shape, pose, lighting, shadows, and background 100% unchanged
+INPUT IMAGES
+- Image 1: the real person
+- Image 2: the garment reference
 
-GARMENT-SPECIFIC GUIDELINES:
+MAIN OBJECTIVE
+Create ONE realistic photo where:
+- The SAME person from Image 1 is wearing the EXACT garment from Image 2
+- ONLY the clothing changes — nothing else
+
+IDENTITY & SCENE PRESERVATION (NON-NEGOTIABLE)
+- Do NOT change face, facial expression, skin tone, hair, body shape, height, or pose
+- Do NOT change background, camera angle, framing, or environment
+- Preserve original lighting and shadows from Image 1
+
+CLOTHING TRANSFER RULES
+- Completely REMOVE the original outfit from Image 1
+- Replace it ONLY with the garment from Image 2
+- ALWAYS follow Image 2 for:
+  - Neckline
+  - Sleeve style and sleeve length (including sleeveless)
+  - Cut, fit, silhouette, and garment length
+- If Image 1 conflicts with Image 2, Image 2 ALWAYS wins
+
+FABRIC & DESIGN ACCURACY
+- Copy ALL visible details from Image 2 exactly:
+  - Fabric type, texture, color
+  - Embroidery, prints, motifs, borders, sequins, shine, transparency
+- Do NOT invent new patterns
+- Do NOT simplify or remove embroidery
+- Preserve motif placement while adapting to body pose
+
 ${isSaree ? `
-SAREE REQUIREMENTS:
-- Drape saree in Nivi style (most common): pleats tucked at waist, pallu flowing naturally over LEFT shoulder
-- Create 8-10 realistic pleats at waist with proper folds/shadows
-- Show fitted blouse underneath pallu (match reference blouse color/style)
-- Saree length reaches ankles; pallu extends to mid-back
-- Replicate ALL fabric texture, borders, embroidery, patterns exactly from reference
-` : `
-GENERAL GARMENT REQUIREMENTS:
-- Adapt garment to fit person's exact pose/body naturally
-- Match fabric material, color, texture, patterns, sleeves, neckline, length precisely
-- Ensure realistic draping following body curves/gravity
-`}
+SAREE-SPECIFIC RULES
+- Drape the saree in a natural Nivi style:
+  - 8–10 neat pleats tucked at the waist
+  - Pallu flowing naturally over the LEFT shoulder
+- Saree length should reach the ankles
+- The blouse MUST come from Image 2:
+  - EXACT neckline, sleeve style and length, back design, and fit
+  - If Image 2 blouse is sleeveless, the result MUST be sleeveless
+- IGNORE any blouse or top worn in Image 1
+` : ``}
 
-UNIVERSAL REALISM RULES:
-- Perfect edge blending (NO floating, jagged, or visible seams)
-- Fabric follows body's exact perspective/curvature
-- Lighting/shadows match original image completely
-- Photo-realistic quality, high-resolution
+REALISM & INTEGRATION
+- Garment must follow natural gravity, folds, and body contours
+- No floating fabric, broken seams, or cut-and-paste artifacts
+- Shadows, highlights, and reflections must match Image 1 lighting
+- Output must look like a real camera photograph (not illustration)
 
-STRICTLY PROHIBITED:
-- NO changes to face, expression, hair, body, pose, or background
-- NO added jewelry, accessories, makeup, or props
-- NO text, watermarks, or multiple images
-- NEVER return unchanged reference image
+STRICTLY PROHIBITED
+- NO changes to face, hair, body, pose, or background
+- NO added or removed jewelry, accessories, makeup, props, or text
+- NO logos, watermarks, frames, or split images
+- NEVER return the unchanged input image
 
-OUTPUT:
-ONLY one high-resolution inline_data image of the person wearing the garment correctly.
-NO text, JSON, explanations, or additional content.
+OUTPUT
+Return ONLY one high-resolution photorealistic inline_data image.
+NO text, JSON, or explanations.
 `;
 
   const payload = {
@@ -706,7 +900,7 @@ app.post("/api/multi-tryon", upload.single("model"), async (req, res) => {
 });
 
 // Add BEFORE the PORT declaration
-app.post('/api/test-tryon', upload.fields([
+app.post('/api/garnment-swap', upload.fields([
   { name: 'model', maxCount: 1 },
   { name: 'garment', maxCount: 1 }
 ]), async (req, res) => {

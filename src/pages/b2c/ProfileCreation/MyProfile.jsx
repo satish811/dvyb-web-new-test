@@ -165,7 +165,7 @@ const generateVirtualTryOns = async () => {
     // ⭐ NEW: Use dedicated MyProfile endpoint
     console.log("📤 Sending request to /api/myprofile-multi-tryon...");
 
-    const res = await fetch('/api/myprofile-multi-tryon', {
+    const res = await fetch('/api/multi-tryon', {
       method: 'POST',
       body: formData
     });
@@ -331,7 +331,7 @@ const generateSingleTryOn = async (outfitType, garmentUrl) => {
 
     console.log(`📤 Sending request to server...`);
     
-    const res = await fetch("/api/tryon?mode=single", { // ← CHANGED: Use query param
+    const res = await fetch("/api/single-tryon", { // ← CHANGED: Use query param
       method: "POST",
       body: formData
     });
