@@ -117,7 +117,7 @@ app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
     const payload = {
       model: 'MiniMax-Hailuo-2.3-Fast',
       first_frame_image: imageDataUrl,
-      prompt: req.body.prompt || 'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
+      prompt:  'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
       duration: 6,
       resolution: '1080P',
       prompt_optimizer: true,
