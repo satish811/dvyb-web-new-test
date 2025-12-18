@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import categories from "../../static/landing/catCarousel";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { IoArrowBack, IoArrowForward } from "react-icons/io5";
 import { scrollLeft, scrollRight } from "../utils/scroll";
 
 export default function CategoryCarousel() {
@@ -44,11 +44,11 @@ export default function CategoryCarousel() {
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="w-full h-[500px] object-cover transition cursor-pointer"
+                  className="w-full h-[450px] object-cover transition cursor-pointer"
                   onClick={() => navigate(c.slug)}
                 />
                 {/* Text overlay - moved higher up with more padding */}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="absolute bottom-0 left-0 right-0">
                   <div className="bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-12 pb-6 px-4 rounded-t-lg">
                     <p className="text-lg font-semibold tracking-wide uppercase text-white cursor-default">
                       {c.name}
@@ -83,29 +83,29 @@ export default function CategoryCarousel() {
       </div>
 
       {/* DESKTOP CAROUSEL - Hidden on mobile */}
-      <div className="hidden md:flex items-center px-6 sm:px-4">
+      <div className="hidden md:flex items-center px-4 sm:px-2">
         <button
           onClick={() => scrollLeft("luxuryScroll")}
-          className="hidden md:flex cursor-pointer"
+          className="hidden md:flex cursor-pointer m-2"
         >
-          <IoIosArrowBack size={22} />
+          <IoArrowBack size={22} />
         </button>
 
         <div
           id="luxuryScroll"
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth "
+          className="flex gap-3 overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth "
         >
           {categories.map((c) => (
-            <div key={c.slug} className="flex-shrink-0 w-47 relative text-center group">
+            <div key={c.slug} className="flex-shrink-0 w-46 relative text-center group">
               {/* Also increased desktop height for consistency */}
               <img
                 src={c.image}
                 alt={c.name}
-                className="w-full h-64 object-cover transition cursor-pointer"
+                className="w-full h-46 object-cover transition cursor-pointer"
                 onClick={() => navigate(c.slug)}
               />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="absolute bottom-0 left-0 right-0">
                 <div className="bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-10 pb-4 px-4 rounded-t-lg">
                   <p className="text-base font-semibold tracking-wide uppercase text-white cursor-default">
                     {c.name}
@@ -124,9 +124,9 @@ export default function CategoryCarousel() {
 
         <button
           onClick={() => scrollRight("luxuryScroll")}
-          className="rounded-full hidden md:flex cursor-pointer"
+          className="rounded-full hidden md:flex cursor-pointer m-2"
         >
-          <IoIosArrowForward size={22} />
+          <IoArrowForward size={22} />
         </button>
       </div>
     </section>

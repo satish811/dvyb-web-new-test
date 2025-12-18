@@ -63,6 +63,7 @@ const ProfilePage = () => {
       {/* DESKTOP VIEW - Sidebar + Content */}
       <div className="hidden md:flex min-h-screen mt-0 bg-gray-50">
         {/* Fixed Sidebar */}
+        
         {activeTab !== "profile-creation" && (
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         )}

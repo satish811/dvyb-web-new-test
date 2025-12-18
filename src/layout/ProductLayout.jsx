@@ -1,15 +1,16 @@
-// components/layouts/ProductLayout.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
-import { ArrowLeft, Funnel, X } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User } from "lucide-react";
 import { mainlogo } from "../assets";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
 import { searchService } from "../services/searchService";
 import useDebounce from "../hooks/useDebounce";
+import ProductGrid from "../components/b2c/products/ProductGrid";
 
 export default function ProductLayout({ children, products }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -24,13 +25,32 @@ export default function ProductLayout({ children, products }) {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Load recent & popular searches
+  /**
+   * Get category from URL query params
+   */
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const category = queryParams.get("category");
+
+  /**
+   * Filter products based on category
+   */
+  const filteredProducts = useMemo(() => {
+    return category
+      ? products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase())
+      : products;
+  }, [category, products]);
+
+  /**
+   * Load recent & popular searches from localStorage
+   */
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
   }, []);
 
-  // Search effect
+  /**
+   * Search effect
+   */
   useEffect(() => {
     if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -55,6 +75,9 @@ export default function ProductLayout({ children, products }) {
     performSearch();
   }, [debouncedSearchQuery]);
 
+  /**
+   * Save recent search term to localStorage
+   */
   const saveRecentSearch = useCallback((query) => {
     if (!query.trim()) return;
     setRecentSearches((prev) => {
@@ -102,110 +125,46 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Mobile Header (Back + Logo + Icons) */}
       {/* -------------------------------------------------------------- */}
-      <div className="items-center justify-between lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 flex ">
-        {/* Back Arrow - Left Side */}
-        <button
-          onClick={() => navigate("/")}
-          className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-        >
-          <ArrowLeft size={24} className="text-gray-800" />
-        </button>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 grid grid-cols-3 items-center">
 
-        {/* Logo - Center */}
-        <img
-          src={mainlogo}
-          alt="Logo"
-          onClick={() => navigate("/")}
-          className="h-12 mt-3 cursor-pointer"
-        />
+        {/* Left column */}
+        <div className="flex justify-start">
+          <button
+            onClick={() => navigate("/")}
+            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
+          >
+            <ArrowLeft size={24} className="text-gray-800" />
+          </button>
+        </div>
 
-        {/* Icons Container - Right Side */}
-        <div className="flex items-end justyify-end">
-          {/* Search Icon */}
+        {/* Center column (LOGO) */}
+        <div className="flex justify-center mr-5">
+          <img
+            src={mainlogo}
+            alt="Logo"
+            onClick={() => navigate("/")}
+            className="h-12 cursor-pointer"
+          />
+        </div>
+
+        {/* Right column */}
+        <div className="flex justify-end">
           <button
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-              />
-            </svg>
+            <Search size={20} className="text-gray-700" />
           </button>
 
-          {/* Wishlist Icon - Heart */}
-          <button
-            onClick={() => navigate("/wishlist")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-
-          {/* Cart Icon - Shopping Bag */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-              />
-            </svg>
-          </button>
-
-          {/* Profile Icon */}
           <button
             onClick={() => navigate("/profile")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5.121 17.804A12.073 12.073 0 0112 15c2.507 0 4.824.776 6.879 2.121M12 12a4 4 0 100-8 4 4 0 000 8z"
-              />
-            </svg>
+            <User size={20} className="text-gray-700" />
           </button>
         </div>
       </div>
+
 
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Funnel + Sort Bar (Reduced Height) */}
@@ -247,12 +206,26 @@ export default function ProductLayout({ children, products }) {
       {/* Mobile Sidebar (ONLY for mobile) */}
       {/* -------------------------------------------------------------- */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        {/* Close Button for Mobile */}
-        <div className="flex justify-end p-4 sticky top-0 bg-white z-10">
+        {/* Header with Logo in Center and Close on Right */}
+        <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-10 shadow-sm">
+
+          {/* Empty div to balance the layout - keeps logo centered */}
+          <div className="w-10"></div>
+
+          {/* Logo - Centered */}
+          <img
+            src={mainlogo}
+            alt="Logo"
+            className="h-10 cursor-pointer"
+            onClick={() => {
+              navigate("/");
+              setIsSidebarOpen(false);
+            }}
+          />
+
+          {/* Close Button - Right */}
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
@@ -267,16 +240,19 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* Main Layout */}
       {/* -------------------------------------------------------------- */}
-      <div className="container mx-auto px-4 pt-[70px] lg:pt-0 min-h-screen">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <div className="lg:mt-10 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
+
           {/* -------------------------------------------------------------- */}
           {/* Desktop Sidebar (ONLY for desktop) - This is the only desktop sidebar */}
           {/* -------------------------------------------------------------- */}
-          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-20 lg:self-start lg:h-fit lg:mt-20">
-            <Sidebar products={products} />
+          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-15 lg:self-start lg:h-full">
+            <div className="h-full">
+              <Sidebar products={products} />
+            </div>
           </aside>
 
-          <section className="flex-1 w-full pb-20 lg:pb-0">
+          <section className="flex-1 w-full pb-20 lg:pb-0 lg:h-full">
             {/* -------------------------------------------------------------- */}
             {/* Desktop Sort Section (if needed) */}
             {/* -------------------------------------------------------------- */}
@@ -293,7 +269,10 @@ export default function ProductLayout({ children, products }) {
               </select>
             </div>
 
-            <div className="mt-4 lg:mt-0">{children}</div>
+            {/* Render ProductGrid directly here */}
+            <div className="mt-4 lg:mt-0 lg:px-6 lg:py-8 h-full">
+              <ProductGrid products={filteredProducts} category={category} />
+            </div>
           </section>
         </div>
       </div>

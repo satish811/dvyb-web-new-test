@@ -15,7 +15,9 @@ import banner_mob_2 from "@/assets/b2c/ads/Banner_mob_3.png";
 
 import makar_sankranti from "@/assets/b2c/ads/lohari_banner.jpg";
 
-
+import new_baneer from "@/assets/b2c/ads/pernia_banner_1.webp";
+import new_banner_2 from "@/assets/b2c/ads/pernia_banner.avif";
+import new_banner_3 from "@/assets/b2c/ads/pernia_banner_3.jpg";
 
 // --------------------------------------------
 // DESKTOP ADS
@@ -63,7 +65,7 @@ export const ads = [
     category: "other",
     link: "/womenwear",
   },
-  
+
   {
     id: 6,
     image: banner,
@@ -109,6 +111,33 @@ export const adsMobile = [
     id: 3,
     image: banner_mob_2,
     alt: "Banner 3 Mobile",
+    category: "other",
+    link: "/womenwear",
+  },
+];
+
+// --------------------------------------------
+// NEW BANNER ADS
+// --------------------------------------------
+export const newBanner = [
+  {
+    id: 1,
+    image: new_baneer,
+    alt: "New Banner 1",
+    category: "other",
+    link: "/womenwear",
+  },
+  {
+    id: 2,
+    image: new_banner_2,
+    alt: "New Banner 2",
+    category: "other",
+    link: "/womenwear",
+  },
+  {
+    id: 3,
+    image: new_banner_3,
+    alt: "New Banner 3",
     category: "other",
     link: "/womenwear",
   },

@@ -35,7 +35,7 @@ const ProductCard = ({ product, onClose }) => {
       <div
         className="bg-gray-50 overflow-hidden relative w-full"
         style={{
-          aspectRatio: "3/4", // Maintain 3:4 aspect ratio
+          aspectRatio: "2/3", 
           flexShrink: 0,
         }}
       >
@@ -73,11 +73,11 @@ const ProductCard = ({ product, onClose }) => {
 
         {/* Product Description - Hide on mobile, show on tablet+ */}
         <p
-          className="hidden xs:block line-clamp-2 w-full"
+          className="line-clamp-2 w-full"
           style={{
             fontFamily: "Outfit, sans-serif",
             fontWeight: 400,
-            fontSize: "11px", // Smaller on mobile
+            fontSize: "11px",
             lineHeight: "1.2",
             letterSpacing: "0.4px",
             color: "#545555",
@@ -97,7 +97,7 @@ const ProductCard = ({ product, onClose }) => {
             style={{
               fontFamily: "Outfit, sans-serif",
               fontWeight: 500,
-              fontSize: "13px", // Smaller on mobile
+              fontSize: "13px", 
               lineHeight: "1.2",
               letterSpacing: "0px",
               color: "#400000",

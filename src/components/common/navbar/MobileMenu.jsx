@@ -55,7 +55,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
           </button>
 
           <button
-            onClick={() => onProtectedClick("/mywishlist")}
+            onClick={() => onProtectedClick("/wishlist")}
             className="w-full text-left text-gray-800 py-1.5 sm:py-2 flex items-center gap-3"
           >
             <LuHeart size={18} />

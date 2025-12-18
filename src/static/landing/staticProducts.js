@@ -89,7 +89,7 @@ const staticProducts = [
     originalPrice: 4000,
     discountPercent: 15,
     category: "Discount",
-    images: [img05],
+    images: [img01],
     description: "Churidar set on sale.",
     path: "/womenwear?category=kurta-sets",
   },

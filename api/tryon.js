@@ -1,9 +1,18 @@
+// ============================================================
+// FILE: api/tryon.js (Vercel Serverless Function)
+// Complete virtual try-on API with multiple modes
+// ============================================================
+
 import axios from "axios";
 import multer from "multer";
 
 // ============ VERCEL CONFIG ============
 export const config = {
-  api: { bodyParser: false, sizeLimit: "20mb" },
+  api: { 
+    bodyParser: false, 
+    sizeLimit: "20mb" 
+  },
+  maxDuration: 300, // 5 minutes for complex operations
 };
 
 // ============ MULTER SETUP ============
@@ -31,6 +40,7 @@ const getMinimaxHeaders = () => ({
   'Content-Type': 'application/json'
 });
 
+// Background options with URLs
 const backgrounds = {
   hallway: {
     name: "Temple Hallway",
@@ -50,6 +60,27 @@ const backgrounds = {
   }
 };
 
+// Garments for multi try-on
+const garments = [
+  { 
+    name: "saree", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
+  },
+  { 
+    name: "kurti", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
+  },
+  { 
+    name: "lehenga", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
+  },
+  { 
+    name: "anarkali", 
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
+  },
+];
+
+// ============ HELPER FUNCTIONS ============
 function getApiKeyByOutfit(outfitType) {
   console.log(`🔍 Getting API key for: ${outfitType}`);
   switch (outfitType?.toLowerCase()) {
@@ -63,7 +94,6 @@ function getApiKeyByOutfit(outfitType) {
   }
 }
 
-// ============ HELPER FUNCTIONS ============
 async function downloadAsBase64(url) {
   console.log(`📥 Downloading image from: ${url.substring(0, 60)}...`);
   const res = await axios.get(url, { responseType: "arraybuffer" });
@@ -453,49 +483,53 @@ export default async function handler(req, res) {
       });
     }
 
-    // ======== POST: /api/garnment-swap ========
-    // 🔥 THIS IS THE MISSING ENDPOINT YOUR FRONTEND CALLS
-    if (req.method === "POST" && path === "/api/garnment-swap") {
-      console.log('\n🎯 === GARMENT SWAP REQUEST ===');
-      
-      await runMiddleware(
-        req,
-        res,
-        upload.fields([
-          { name: 'model', maxCount: 1 },
-          { name: 'garment', maxCount: 1 }
-        ])
-      );
 
-      if (!req.files?.model || !req.files?.garment) {
-        return res.status(400).json({ 
-          success: false,
-          error: "Both model and garment images required" 
-        });
-      }
 
-      const modelBase64 = req.files.model[0].buffer.toString("base64");
-      const garmentBase64 = req.files.garment[0].buffer.toString("base64");
 
-      const outfitType = req.body.outfitType || "saree";
+    // ======== POST: /api/test-tryon ========
+if (req.method === "POST" && path === "/api/garnment-swap") {
+  console.log('\n🎯 === TEST TRY-ON REQUEST ===');
+  
+  await runMiddleware(
+    req,
+    res,
+    upload.fields([
+      { name: 'model', maxCount: 1 },
+      { name: 'garment', maxCount: 1 }
+    ])
+  );
 
-      console.log(`🚀 Generating try-on for ${outfitType}...`);
-      const output = await generateTryOnWithRetry(
-        modelBase64,
-        garmentBase64,
-        outfitType
-      );
+  if (!req.files?.model || !req.files?.garment) {
+    return res.status(400).json({ 
+      success: false,
+      error: "Both model and garment images required" 
+    });
+  }
 
-      if (!output) {
-        throw new Error("No image generated");
-      }
+  const modelBase64 = req.files.model[0].buffer.toString("base64");
+  const garmentBase64 = req.files.garment[0].buffer.toString("base64");
 
-      console.log(`✨ SUCCESS`);
-      return res.json({
-        success: true,
-        result: `data:image/png;base64,${output}`
-      });
-    }
+  const outfitType = req.body.outfitType || "saree";
+
+  console.log(`🚀 Generating try-on for ${outfitType}...`);
+  const output = await generateTryOnWithRetry(
+    modelBase64,
+    garmentBase64,
+    outfitType
+  );
+
+  if (!output) {
+    throw new Error("No image generated");
+  }
+
+  console.log(`✨ SUCCESS`);
+  return res.json({
+    success: true,
+    result: `data:image/png;base64,${output}`
+  });
+}
+
+
 
     // ======== POST: /api/tryon-from-urls ========
     if (req.method === "POST" && path === "/api/tryon-from-urls") {
@@ -587,8 +621,10 @@ export default async function handler(req, res) {
 
       let garmentBase64;
       if (garmentUrl.startsWith("data:")) {
+        console.log('📊 Extracting base64 from data URL...');
         garmentBase64 = garmentUrl.split(",")[1];
       } else {
+        console.log('⬇️ Downloading garment from URL...');
         garmentBase64 = await downloadAsBase64(garmentUrl);
       }
 

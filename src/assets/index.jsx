@@ -1,8 +1,8 @@
 export { default as mainlogo } from "./logos/mainlogo.svg";
 
-export { default as img01 } from "./b2c/landing/wedding/wed01.svg";
-export { default as img02 } from "./b2c/landing/wedding/wed02.png";
-export { default as img03 } from "./b2c/landing/wedding/wed03.svg";
+export { default as img01 } from "./b2c/landing/wedding/wed01.webp";
+export { default as img02 } from "./b2c/landing/wedding/WED02.webp";
+export { default as img03 } from "./b2c/landing/wedding/wed03.webp";
 
 export { default as cat01 } from "./b2c/landing/category/cat01.png";
 export { default as cat02 } from "./b2c/landing/category/cat02.svg";
@@ -21,7 +21,6 @@ export { default as closet02 } from "./b2c/landing/closet/closet02.svg";
 export { default as closet03 } from "./b2c/landing/closet/closet03.svg";
 export { default as closet04 } from "./b2c/landing/closet/closet04.svg";
 export { default as closet05 } from "./b2c/landing/closet/closet05.svg";
-export { default as closet06 } from "./b2c/landing/closet/closet05.svg";
 
 export { default as lux01 } from "./b2c/landing/luxury/lux01.svg";
 export { default as lux02 } from "./b2c/landing/luxury/lux02.svg";

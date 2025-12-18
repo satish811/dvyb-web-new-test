@@ -254,7 +254,6 @@ export default function Navbar({ setShowLoader }) {
               WOMEN <MdOutlineArrowDropDown className="text-xl" />
             </button>
 
-            {/* Fix: Wrap only the logo in clickable container */}
             <div className="flex-1 flex justify-center">
               {logoLoading ? (
                 <div className="w-8 h-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
@@ -262,7 +261,7 @@ export default function Navbar({ setShowLoader }) {
                 <img
                   src={mainlogo}
                   alt="Logo"
-                  className="h-12 xs:h-14 sm:ml-1 md:h-18 lg:h-20 transition-all duration-200 cursor-pointer"
+                  className="h-12 xs:h-12 md:h-14 lg:h-16 ml-1 sm:ml-8 md:ml-16 lg:ml-28 transition-all duration-200 cursor-pointer"
                   onClick={() => {
                     if (setShowLoader) setShowLoader(true);
                     setTimeout(() => {
@@ -274,74 +273,15 @@ export default function Navbar({ setShowLoader }) {
               )}
             </div>
 
-            {/* <NavIcons
+            <NavIcons
               wishlistCount={wishlistCount}
               cartCount={cartCount}
               onSearch={() => setSearchOpen(true)}
               onWishlist={() => navigate("/wishlist")}
               onCart={() => navigate("/cart")}
               onProfile={() => guard("/profile")}
-            /> */}
+            />
 
-            <div className="flex items-center gap-5">
-              {/* Search */}
-              <button onClick={() => setSearchOpen(true)}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-
-              {/* Wishlist - Heart Icon (NEW) */}
-              <button onClick={() => navigate("/wishlist")} className="relative">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {wishlistCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Cart - Shopping Bag Icon (your original style) */}
-              <button onClick={() => navigate("/cart")} className="relative">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
-                </svg>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Profile */}
-              <button onClick={() => guard("/profile")}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -349,23 +289,23 @@ export default function Navbar({ setShowLoader }) {
             className="
                 flex 
                 text-[11px] 
-                gap-4 
+                gap-2
                 px-3 
                 overflow-x-auto 
                 hide-scrollbar 
                 whitespace-nowrap 
+                xs:gap-8
                 sm:text-sm 
-                sm:gap-8 
+                sm:gap-5
                 sm:px-8 
                 md:text-[13px] 
-                md:gap-8 
+                md:gap-6 
                 md:px-10 
-                lg:gap-8 
-                xl:gap-18 
-                2xl:gap-14 
+                lg:gap-6 
+                xl:gap-9
+                2xl:gap-10
                 justify-start 
                 sm:justify-center 
-                pb-1
             "
           >
             {navItems.map((item) => (

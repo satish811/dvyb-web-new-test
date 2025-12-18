@@ -20,6 +20,7 @@ const OfferAndShippingInfo = () => {
   ];
 
   const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
     setCurrentCode(code);
     setShowPopup(true);
   };

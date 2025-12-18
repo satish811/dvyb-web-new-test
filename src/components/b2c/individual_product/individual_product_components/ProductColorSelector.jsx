@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 
 const ProductColorSelector = ({ colors = [] }) => {
-  console.log("The colors we get", colors);
-
   // Static fallback colors
   const staticColors = ["#424647", "#E9D252", "#EC8CB7", "#A32033"];
 
-  // Extract hex values from backend like "pink_#DB7093"
+  
   const backendColors = colors
     .map((c) => {
       if (typeof c === "string") {
-        // Handle formats like "white_#ffffffff" or just "#FFFFFF"
         if (c.includes("_")) {
           return c.split("_")[1];
         }
@@ -31,7 +28,7 @@ const ProductColorSelector = ({ colors = [] }) => {
     // Clean the hex code
     const cleanHex = hex.replace("#", "").toLowerCase();
 
-    // Handle 8-digit hex (with alpha) - take first 6 digits
+    
     let rgbHex = cleanHex;
     if (cleanHex.length === 8) {
       rgbHex = cleanHex.slice(0, 6);
@@ -42,7 +39,7 @@ const ProductColorSelector = ({ colors = [] }) => {
     const g = parseInt(rgbHex.slice(2, 4), 16);
     const b = parseInt(rgbHex.slice(4, 6), 16);
 
-    // Check if it's white or very light (threshold can be adjusted)
+    
     return r > 240 && g > 240 && b > 240;
   };
 
@@ -50,7 +47,7 @@ const ProductColorSelector = ({ colors = [] }) => {
     <div
       className="flex flex-col w-full max-w-[159px]"
       style={{
-        gap: "25px",
+        gap: "8px",
       }}
     >
       {/* Title */}
@@ -58,16 +55,16 @@ const ProductColorSelector = ({ colors = [] }) => {
         style={{
           height: "22px",
           fontFamily: "Outfit, sans-serif",
-          fontWeight: 600,
+          fontWeight: 550,
           fontSize: "16px",
           lineHeight: "21.33px",
-          letterSpacing: "0px",
-          textTransform: "uppercase",
+          letterSpacing: "1px",
+          textTransform: "capitalize",
           color: "#000000",
           whiteSpace: "nowrap",
         }}
       >
-        AVAILABLE COLORS
+        Available Colors
       </p>
 
       {/* Color Row */}

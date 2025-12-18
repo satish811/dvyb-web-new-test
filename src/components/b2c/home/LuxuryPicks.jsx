@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { IoArrowBack, IoArrowForward } from "react-icons/io5";
 import ProductCard from "../../product/ProductCard";
 import { luxIcon } from "../../../assets";
 import { useNavigate } from "react-router-dom";
@@ -24,48 +24,27 @@ export default function LuxuryPicks() {
   };
 
   // Add empty onClose function
-  const handleClose = () => { };
+  const handleClose = () => {};
 
   return (
     <section className="bg-lighted-bg mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-      {/* HEADER SECTION */}
-      <div className="flex flex-row justify-between items-center mb-4 md:mb-8 gap-2 md:gap-4">
-        {/* Left - Heading with icon */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <img src={luxIcon} alt="Luxury Icon" className="w-10 h-10 md:w-14 md:h-14" />
-          <div>
-            <h2 className="text-base md:text-xl font-medium text-gray-800">
-              Luxurious Pick of the Day
-            </h2>
-            <p className="text-xs md:text-sm text-gray-600 mt-1">DVYB Essence</p>
-          </div>
-        </div>
-
-        {/* Right - Explore button */}
-        <button
-          onClick={() => navigate("/womenwear")}
-          className="bg-[#400000] text-white px-3 py-2 text-xs md:px-6 md:py-3 md:text-base
-               hover:bg-[#300000] transition-colors duration-300 whitespace-nowrap"
-        >
-          Explore All
-        </button>
-      </div>
+   
 
       {/* PRODUCTS SECTION WITH ARROWS */}
       <div className="relative">
         {/* LEFT ARROW - Desktop only */}
         <button
           onClick={slideLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12
+          className="absolute left-0 top-42 -translate-y-1/2 -translate-x-12
                      hidden md:flex items-center justify-center
-                     w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
-                     transition-all duration-300 hover:shadow-xl z-10"
+                     w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                     transition-all duration-300 hover:shadow-xl z-10 mx-2 ml-10"
         >
-          <IoIosArrowBack size={24} className="text-gray-700" />
+          <IoArrowBack size={24} className="text-gray-700" />
         </button>
 
         {/* PRODUCT SCROLL CONTAINER */}
-        <div className="relative">
+        <div className="relative px-4">
           {/* Desktop Scroll Container */}
           <div className="hidden md:flex overflow-x-auto scrollbar-none hide-scrollbar scroll-smooth py-2 px-1">
             {products.map((product, index) => (
@@ -85,16 +64,15 @@ export default function LuxuryPicks() {
           </div>
         </div>
 
-
         {/* RIGHT ARROW - Desktop only */}
         <button
           onClick={slideRight}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12
+          className="absolute right-0 top-42 -translate-y-1/2 translate-x-12
                      hidden md:flex items-center justify-center
-                     w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-50 
-                     transition-all duration-300 hover:shadow-xl z-10"
+                     w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-50 
+                     transition-all duration-300 hover:shadow-xl z-10 mx-2 mr-10"
         >
-          <IoIosArrowForward size={24} className="text-gray-700" />
+          <IoArrowForward size={24} className="text-gray-700" />
         </button>
       </div>
     </section>

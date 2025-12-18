@@ -188,9 +188,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   return (
     <>
       {/* DESKTOP SIDEBAR - Fixed position below navbar */}
-      <div className="hidden md:block w-64 h-[calc(100vh-40px)]  bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
+      <div className="hidden md:block w-64 h-[calc(100vh-40px)] mt-20   bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
         {/* Welcome Message with Role Badge */}
-        <div className="mb-6 pb-4 border-b border-gray-200">
+        {/* <div className="mb-6 pb-4 border-b border-gray-200">
           <h2 className="text-lg font-bold text-gray-800">
             Hello {data?.name || data?.username || "User"}
           </h2>
@@ -201,7 +201,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               {userRole === "B2B" ? "Business Account" : "Personal Account"}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Menu Items */}
         <ul className="space-y-1">
