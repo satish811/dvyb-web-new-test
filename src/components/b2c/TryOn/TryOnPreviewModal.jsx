@@ -1432,7 +1432,7 @@ const changeBackground = async (backgroundType) => {
         {/* Actions */}
         <div className="px-4 py-4 border-t border-gray-200 space-y-2 pb-6">
           <button
-            onClick={() => navigate(`/product/${tryOnData?.productId}`)}
+            onClick={() => navigate(`/products/${tryOnData?.productId}`)}
             className="w-full bg-primary text-white py-3 rounded-lg font-medium text-sm"
           >
             VIEW PRODUCT

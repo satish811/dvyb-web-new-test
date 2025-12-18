@@ -568,7 +568,7 @@ function CartPage() {
         cartUniqueId: item.uniqueId,
       })
     );
-    navigate(`/product/${item.productId}`);
+    navigate(`/products/${item.productId}`);
   };
 
   // Size change for B2C items
