@@ -8,9 +8,9 @@ import multer from "multer";
 
 // ============ VERCEL CONFIG ============
 export const config = {
-  api: { 
-    bodyParser: false, 
-    sizeLimit: "20mb" 
+  api: {
+    bodyParser: false,
+    sizeLimit: "20mb"
   },
   maxDuration: 300, // 5 minutes for complex operations
 };
@@ -41,37 +41,42 @@ const getMinimaxHeaders = () => ({
 });
 
 // Background options with URLs
-const backgrounds = [
-    {
-      id: "hallway",
-      name: "Temple Hall",
-      image:
-        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
-    },
-
-    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
-    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
-    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
-
-  ];
+const backgrounds = {
+  hallway: {
+    name: "Temple Hall",
+    url: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
+  },
+  pool: {
+    name: "Grand Hall",
+    url: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg',
+  },
+  wedding: {
+    name: "Archway",
+    url: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg',
+  },
+  trees: {
+    name: "Floral lights",
+    url: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg',
+  },
+};
 
 // Garments for multi try-on
 const garments = [
-  { 
-    name: "saree", 
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg" 
+  {
+    name: "saree",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764159002/saree2_lhrofy.jpg"
   },
-  { 
-    name: "kurti", 
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp" 
+  {
+    name: "kurti",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1764157933/8816O_1_1024x1024_wa4o3j.webp"
   },
-  { 
-    name: "lehenga", 
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png" 
+  {
+    name: "lehenga",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png"
   },
-  { 
-    name: "anarkali", 
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png" 
+  {
+    name: "anarkali",
+    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png"
   },
 ];
 
@@ -83,7 +88,7 @@ function getApiKeyByOutfit(outfitType) {
     case "lehenga": return process.env.GEMINI_LEHENGA_KEY || process.env.GEMINI_API_KEY;
     case "kurti": return process.env.GEMINI_KURTI_KEY || process.env.GEMINI_API_KEY;
     case "anarkali": return process.env.GEMINI_ANARKALI_KEY || process.env.GEMINI_API_KEY;
-    default: 
+    default:
       console.log(`⚠️ Unknown outfit type, using default key`);
       return process.env.GEMINI_API_KEY;
   }
@@ -98,7 +103,7 @@ async function downloadAsBase64(url) {
 
 async function generateTryOn(modelBase64, garmentBase64, outfitType) {
   console.log(`🎨 Generating AI try-on for: ${outfitType}`);
-  
+
   const lowerType = (outfitType || "").toLowerCase();
   const isSaree = lowerType === "saree";
   const isBackgroundSwap = lowerType === "background-swap";
@@ -225,7 +230,7 @@ NO text, JSON, or explanations.
 
   const apiKey = getApiKeyByOutfit(outfitType);
   console.log(`🚀 Sending request to Gemini API...`);
-  
+
   const response = await axios.post(GEMINI_URL, payload, {
     headers: {
       "Content-Type": "application/json",
@@ -261,11 +266,11 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 
       if (isRateLimit && i < max) {
         const waitTime = Math.pow(2, i) * 1000;
-        console.log(`⏳ Rate limited. Waiting ${waitTime/1000}s before retry...`);
+        console.log(`⏳ Rate limited. Waiting ${waitTime / 1000}s before retry...`);
         await new Promise(r => setTimeout(r, waitTime));
         continue;
       }
-      
+
       console.error(`❌ Attempt ${i} failed:`, err.message);
       throw err;
     }
@@ -275,14 +280,14 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 async function generateMultipleTryOns(modelBase64, garments) {
   console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
   const results = {};
-  
+
   for (const garment of garments) {
     console.log(`\n📸 Processing ${garment.name}...`);
-    
+
     try {
       const garmentBase64 = await downloadAsBase64(garment.url);
       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, garment.name);
-      
+
       if (output) {
         results[garment.name] = `data:image/png;base64,${output}`;
         console.log(`✅ ${garment.name} generated successfully`);
@@ -295,14 +300,14 @@ async function generateMultipleTryOns(modelBase64, garments) {
       results[garment.name] = null;
     }
   }
-  
+
   return results;
 }
 
 // ============ ROUTE HANDLER ============
 export default async function handler(req, res) {
-const url = new URL(req.url, `http://${req.headers.host}`);
-const path = url.pathname;
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
 
   console.log(`🎯 API called: ${req.method} ${path}`);
 
@@ -314,19 +319,19 @@ const path = url.pathname;
         name: value.name,
         preview: value.url
       }));
-      return res.json({ 
+      return res.json({
         success: true,
-        backgrounds: bgList 
+        backgrounds: bgList
       });
     }
 
     // ======== GET: /api/video/status/:taskId ========
     if (req.method === "GET" && path.startsWith("/api/video/status/")) {
       const taskId = path.split('/').pop();
-      
+
       const response = await axios.get(
         `${MINIMAX_BASE_URL}/query/video_generation`,
-        { 
+        {
           headers: getMinimaxHeaders(),
           params: { task_id: taskId }
         }
@@ -338,7 +343,7 @@ const path = url.pathname;
       else if (data.status === 'Preparing') progress = 25;
       else if (data.status === 'Processing') progress = 60;
       else if (data.status === 'Success') progress = 100;
-      
+
       return res.json({
         success: true,
         status: data.status,
@@ -351,10 +356,10 @@ const path = url.pathname;
     // ======== GET: /api/video/download/:fileId ========
     if (req.method === "GET" && path.startsWith("/api/video/download/")) {
       const fileId = path.split('/').pop();
-      
+
       const response = await axios.get(
         `${MINIMAX_BASE_URL}/files/retrieve`,
-        { 
+        {
           headers: getMinimaxHeaders(),
           params: { file_id: fileId }
         }
@@ -363,9 +368,9 @@ const path = url.pathname;
       const download_url = response.data.file?.download_url;
 
       if (!download_url) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Download URL not found' 
+          error: 'Download URL not found'
         });
       }
 
@@ -378,13 +383,13 @@ const path = url.pathname;
     // ======== POST: /api/video/create ========
     if (req.method === "POST" && path === "/api/video/create") {
       console.log('\n🎬 === VIDEO GENERATION REQUEST ===');
-      
+
       await runMiddleware(req, res, upload.single('tryOnImage'));
 
       if (!req.file) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Try-on image required" 
+          error: "Try-on image required"
         });
       }
 
@@ -404,7 +409,7 @@ const path = url.pathname;
       };
 
       console.log('🚀 Calling MiniMax API...');
-      
+
       const response = await axios.post(
         `${MINIMAX_BASE_URL}/video_generation`,
         payload,
@@ -414,7 +419,7 @@ const path = url.pathname;
       const { task_id } = response.data;
       console.log(`✅ Task created: ${task_id}`);
 
-      return res.json({ 
+      return res.json({
         success: true,
         taskId: task_id,
         message: 'Video generation started'
@@ -424,19 +429,19 @@ const path = url.pathname;
     // ======== POST: /api/change-tryon-background ========
     if (req.method === "POST" && path === "/api/change-tryon-background") {
       console.log('\n🎨 === BACKGROUND CHANGE REQUEST ===');
-      
+
       await runMiddleware(req, res, upload.single('tryOnImage'));
 
       if (!req.file) {
         console.log('❌ No try-on image uploaded');
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Try-on image is required" 
+          error: "Try-on image is required"
         });
       }
 
       const background = req.body.background;
-      
+
       if (!background || !backgrounds[background]) {
         console.log('❌ Invalid background selection');
         return res.status(400).json({
@@ -456,14 +461,14 @@ const path = url.pathname;
 
       const tryOnBase64 = req.file.buffer.toString("base64");
       console.log(`✅ Try-on image converted to base64`);
-      
+
       console.log("⬇️ Downloading background image...");
       const bgBase64 = await downloadAsBase64(backgrounds[background].url);
 
       console.log("🔁 Calling Gemini API for background swap...");
       const result = await generateTryOnWithRetry(
-        tryOnBase64, 
-        bgBase64, 
+        tryOnBase64,
+        bgBase64,
         "background-swap"
       );
 
@@ -472,7 +477,7 @@ const path = url.pathname;
       }
 
       console.log("✨ SUCCESS — Background Changed! 🎉");
-      
+
       return res.json({
         success: true,
         result: `data:image/png;base64,${result}`,
@@ -484,54 +489,54 @@ const path = url.pathname;
 
 
     // ======== POST: /api/test-tryon ========
-if (req.method === "POST" && path === "/api/garnment-swap") {
-  console.log('\n🎯 === TEST TRY-ON REQUEST ===');
-  
-  await runMiddleware(
-    req,
-    res,
-    upload.fields([
-      { name: 'model', maxCount: 1 },
-      { name: 'garment', maxCount: 1 }
-    ])
-  );
+    if (req.method === "POST" && path === "/api/garnment-swap") {
+      console.log('\n🎯 === TEST TRY-ON REQUEST ===');
 
-  if (!req.files?.model || !req.files?.garment) {
-    return res.status(400).json({ 
-      success: false,
-      error: "Both model and garment images required" 
-    });
-  }
+      await runMiddleware(
+        req,
+        res,
+        upload.fields([
+          { name: 'model', maxCount: 1 },
+          { name: 'garment', maxCount: 1 }
+        ])
+      );
 
-  const modelBase64 = req.files.model[0].buffer.toString("base64");
-  const garmentBase64 = req.files.garment[0].buffer.toString("base64");
+      if (!req.files?.model || !req.files?.garment) {
+        return res.status(400).json({
+          success: false,
+          error: "Both model and garment images required"
+        });
+      }
 
-  const outfitType = req.body.outfitType || "saree";
+      const modelBase64 = req.files.model[0].buffer.toString("base64");
+      const garmentBase64 = req.files.garment[0].buffer.toString("base64");
 
-  console.log(`🚀 Generating try-on for ${outfitType}...`);
-  const output = await generateTryOnWithRetry(
-    modelBase64,
-    garmentBase64,
-    outfitType
-  );
+      const outfitType = req.body.outfitType || "saree";
 
-  if (!output) {
-    throw new Error("No image generated");
-  }
+      console.log(`🚀 Generating try-on for ${outfitType}...`);
+      const output = await generateTryOnWithRetry(
+        modelBase64,
+        garmentBase64,
+        outfitType
+      );
 
-  console.log(`✨ SUCCESS`);
-  return res.json({
-    success: true,
-    result: `data:image/png;base64,${output}`
-  });
-}
+      if (!output) {
+        throw new Error("No image generated");
+      }
+
+      console.log(`✨ SUCCESS`);
+      return res.json({
+        success: true,
+        result: `data:image/png;base64,${output}`
+      });
+    }
 
 
 
     // ======== POST: /api/tryon-from-urls ========
     if (req.method === "POST" && path === "/api/tryon-from-urls") {
       console.log('\n🎯 === TRY-ON FROM URLs (MyProfile) ===');
-      
+
       const { modelUrl, garmentUrl, outfitType } = req.body;
 
       console.log(`👗 Outfit type: ${outfitType}`);
@@ -540,24 +545,24 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
 
       if (!modelUrl || !garmentUrl) {
         console.log('❌ Missing URLs');
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Both modelUrl and garmentUrl are required" 
+          error: "Both modelUrl and garmentUrl are required"
         });
       }
 
       const apiKey = getApiKeyByOutfit(outfitType);
       if (!apiKey) {
         console.log('❌ API key not configured');
-        return res.status(500).json({ 
+        return res.status(500).json({
           success: false,
-          error: "API key not configured" 
+          error: "API key not configured"
         });
       }
 
       console.log(`📥 Downloading model image...`);
       const modelBase64 = await downloadAsBase64(modelUrl);
-      
+
       console.log(`📥 Downloading garment image...`);
       const garmentBase64 = await downloadAsBase64(garmentUrl);
 
@@ -579,14 +584,14 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
     // ======== POST: /api/single-tryon ========
     if (req.method === "POST" && path === "/api/single-tryon") {
       console.log('\n🎯 === SINGLE TRY-ON REQUEST ===');
-      
+
       await runMiddleware(req, res, upload.single('model'));
 
       if (!req.file) {
         console.log('❌ No model image uploaded');
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "No model image uploaded" 
+          error: "No model image uploaded"
         });
       }
 
@@ -596,18 +601,18 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
 
       if (!garmentUrl) {
         console.log('❌ No garment URL provided');
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "No garment URL provided" 
+          error: "No garment URL provided"
         });
       }
 
       const apiKey = getApiKeyByOutfit(outfitType);
       if (!apiKey) {
         console.log('❌ API key not configured');
-        return res.status(500).json({ 
+        return res.status(500).json({
           success: false,
-          error: "API key not configured" 
+          error: "API key not configured"
         });
       }
 
@@ -643,14 +648,14 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
     // ======== POST: /api/multi-tryon ========
     if (req.method === "POST" && path === "/api/multi-tryon") {
       console.log('\n🎯 === MULTI TRY-ON REQUEST ===');
-      
+
       await runMiddleware(req, res, upload.single("model"));
 
       if (!req.file) {
         console.log('❌ No model image uploaded');
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "No model image uploaded" 
+          error: "No model image uploaded"
         });
       }
 
@@ -694,7 +699,7 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
     // ======== POST: /api/tryon ========
     if (req.method === "POST" && path === "/api/tryon") {
       console.log('\n🎯 === GENERAL TRYON REQUEST ===');
-      
+
       await runMiddleware(
         req,
         res,
@@ -705,9 +710,9 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
       );
 
       if (!req.files?.model) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Model image required" 
+          error: "Model image required"
         });
       }
 
@@ -719,9 +724,9 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
       } else if (req.body.garmentUrl) {
         garmentBase64 = await downloadAsBase64(req.body.garmentUrl);
       } else {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Garment image or URL required" 
+          error: "Garment image or URL required"
         });
       }
 
@@ -744,7 +749,7 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
     // ======== POST: /api/test-tryon ========
     if (req.method === "POST" && path === "/api/test-tryon") {
       console.log('\n🎯 === TEST TRY-ON REQUEST ===');
-      
+
       await runMiddleware(
         req,
         res,
@@ -755,9 +760,9 @@ if (req.method === "POST" && path === "/api/garnment-swap") {
       );
 
       if (!req.files?.model || !req.files?.garment) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Both model and garment images required" 
+          error: "Both model and garment images required"
         });
       }
 
