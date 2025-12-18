@@ -310,6 +310,66 @@ export default async function handler(req, res) {
   console.log(`🎯 API called: ${req.method} ${path}`);
 
   try {
+
+
+
+     if (req.method === "POST" && path === "/api/garnment-swap") {
+      console.log('\n🎯 === GARMENT SWAP REQUEST ===');
+      
+      await runMiddleware(
+        req,
+        res,
+        upload.fields([
+          { name: 'model', maxCount: 1 },
+          { name: 'garment', maxCount: 1 }
+        ])
+      );
+
+      if (!req.files?.model || !req.files?.garment) {
+        return res.status(400).json({ 
+          success: false,
+          error: "Both model and garment images required" 
+        });
+      }
+
+      const modelBase64 = req.files.model[0].buffer.toString("base64");
+      const garmentBase64 = req.files.garment[0].buffer.toString("base64");
+      
+      const outfitType = req.body.outfitType || "saree";
+      
+      console.log(`🚀 Generating try-on for ${outfitType}...`);
+      const output = await generateTryOnWithRetry(
+        modelBase64,
+        garmentBase64,
+        outfitType
+      );
+
+      if (!output) {
+        throw new Error("No image generated");
+      }
+
+      console.log(`✨ SUCCESS`);
+      return res.json({
+        success: true,
+        result: `data:image/png;base64,${output}`
+      });
+    }
+
+    // ======== INVALID ROUTE ========
+    return res.status(404).json({ error: `Route not found: ${path}` });
+
+  } catch (err) {
+    console.error("❌ API Error:", err.message);
+    console.error("❌ Stack:", err.stack);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+
+
+
+
+    
     // ======== GET: /api/tryon-backgrounds ========
     if (req.method === "GET" && path === "/api/tryon-backgrounds") {
       const bgList = Object.entries(backgrounds).map(([key, value]) => ({
