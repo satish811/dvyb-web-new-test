@@ -12,6 +12,11 @@
       "api/garnment-swap.js": {
       "maxDuration": 300
     },
-     "api/change-tryon-background.js": { "maxDuration": 300 }
+     "api/change-tryon-background.js": { "maxDuration": 300 } ,
+
+      "api/video/create.js": { "maxDuration": 300 },
+    "api/video/status/[taskId].js": { "maxDuration": 300 },
+    "api/video/download/[fileId].js": { "maxDuration": 300 }
+    
   }
 }
