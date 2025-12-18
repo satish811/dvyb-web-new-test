@@ -56,26 +56,19 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Background options with URLs
-const backgrounds = {
-  hallway: {
-    name: "Temple Hallway",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279561/bg1_xz7rvw.jpg" // Use your actual Firebase/Cloudinary URL
-  },
-  pool: {
-    name: "Beach Pool",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg2_xjq6jk.jpg"
-   
-  },
-  wedding: {
-    name: "Wedding Hall",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg3_thakvm.jpg"
-  },
-  trees: {
-    name: "Nature Trees",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279687/Screenshot_2025-12-09_165745_mj2via.png"
-  }
-};
+const backgrounds = [
+    {
+      id: "hallway",
+      name: "Temple Hall",
+      image:
+        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
+    },
 
+    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
+    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
+    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
+
+  ];
 
 // Download garment as base64
 async function downloadAsBase64(url) {

@@ -442,14 +442,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const backgroundOptions = [
     {
       id: "hallway",
-      name: "Hallway",
+      name: "Temple Hall",
       image:
-        temple,
+        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
     },
 
-    { id: "pool", name: "Pool", image: beach },
-    { id: "wedding", name: "Wedding", image: wed },
-    { id: "trees", name: "Trees", image: bg3 },
+    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
+    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
+    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
 
   ];
 
