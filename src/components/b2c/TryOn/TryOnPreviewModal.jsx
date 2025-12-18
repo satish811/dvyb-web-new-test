@@ -65,7 +65,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoTaskId, setVideoTaskId] = useState(null);
   const [videoProgress, setVideoProgress] = useState(0);
-  const [videoError, setVideoError] = useState("");
+  const [videoError, setVideoError] = useState('');
+  const [showBgWarning, setShowBgWarning] = useState(false);
+
   const [videoStatus, setVideoStatus] = useState("");
 
   const auth = useAuth();
@@ -487,7 +489,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
       console.log("🚀 Sending to /api/test-tryon PREVIEW endpoint");
 
-      const response = await fetch("/api/test-tryon", {
+      const response = await fetch("/api/garnment-swap", {
         method: "POST",
         body: formData,
       });
@@ -745,170 +747,96 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   // };
 
   // 3D Video Generation Functions
-  const generateVideo = async (tryOnImageUrl) => {
-    console.log("🎬 Starting video generation...");
+const generateVideo = async () => {
+    console.log('🎬 Starting video generation...');
     setIsGeneratingVideo(true);
-    setVideoError("");
-    setVideoStatus("uploading");
+    setVideoError('');
     setVideoProgress(0);
-    setViewMode("3D");
 
     try {
-      // Step 1: Fetch and convert image to blob
-      console.log("📥 Fetching image:", tryOnImageUrl.substring(0, 50) + "...");
-      setVideoStatus("preparing");
+      // Convert backgroundChangedImage to blob
+      const response = await fetch(backgroundChangedImage);
+      const blob = await response.blob();
 
-      let blob;
-      try {
-        const response = await fetch(tryOnImageUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`);
-        }
-        blob = await response.blob();
-        console.log("✅ Image fetched, size:", (blob.size / 1024).toFixed(2), "KB");
-      } catch (fetchError) {
-        console.error("❌ Image fetch failed:", fetchError);
-        throw new Error("Failed to load try-on image. Please try again.");
-      }
-
-      // Step 2: Prepare form data
       const formData = new FormData();
-      formData.append("modelImage", blob, "tryon-result.jpg");
-      formData.append(
-        "prompt",
-        "Professional fashion model walking forward on runway, elegant movement, cinematic lighting, high quality"
-      );
+      formData.append('tryOnImage', blob, 'tryon-bg-changed.jpg');
+      formData.append('prompt', 'Professional fashion model standing elegantly, gentle camera movement, cinematic lighting, high quality');
 
-      console.log("📤 Sending to server...");
-      setVideoStatus("uploading");
-      setVideoProgress(10);
+      console.log('📤 Sending to video API...');
 
-      // Step 3: Call API with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      // Create video task
+      const createResponse = await fetch('/api/video/create', {
+        method: 'POST',
+        body: formData,
+      });
 
-      let videoResponse;
-      try {
-        videoResponse = await fetch(`${API_BASE_URL}/generate-tryon`, {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        });
+      const createData = await createResponse.json();
 
-        // const statusResponse = await fetch(`/api/kling/status/${taskId}`);
-
-        clearTimeout(timeoutId);
-      } catch (requestError) {
-        clearTimeout(timeoutId);
-        if (requestError.name === "AbortError") {
-          throw new Error("Request timed out. Please try again.");
-        }
-        throw new Error("Network error. Please check your connection.");
+      if (!createData.success) {
+        throw new Error(createData.error || 'Failed to create video task');
       }
 
-      console.log("📡 Response status:", videoResponse.status);
-
-      // Step 4: Parse response
-      let result;
-      try {
-        const responseText = await videoResponse.text();
-        console.log("📄 Response text:", responseText.substring(0, 200));
-
-        if (!responseText || responseText.trim() === "") {
-          throw new Error("Server returned empty response");
-        }
-
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("❌ JSON parse error:", parseError);
-        throw new Error("Invalid server response. Please contact support.");
-      }
-
-      // Step 5: Check response status
-      if (!videoResponse.ok) {
-        console.error("❌ Server error:", result);
-        throw new Error(result.message || `Server error: ${videoResponse.status}`);
-      }
-
-      if (!result.success) {
-        console.error("❌ API error:", result);
-        throw new Error(result.message || "Video generation failed");
-      }
-
-      // Step 6: Extract task ID and start polling
-      const taskId = result.data?.taskId;
-
-      if (!taskId) {
-        console.error("❌ No task ID:", result);
-        throw new Error("No task ID received. Please try again.");
-      }
-
-      console.log("✅ Task created:", taskId);
+      const taskId = createData.taskId;
       setVideoTaskId(taskId);
-      setVideoStatus("processing");
-      setVideoProgress(20);
+      console.log('✅ Task created:', taskId);
 
-      // Start polling for status
+      // Start polling for completion
       pollVideoStatus(taskId);
+
     } catch (err) {
-      console.error("❌ Video generation error:", err);
-      setVideoError(err.message || "Failed to generate video. Please try again.");
+      console.error('❌ Video generation error:', err);
+      setVideoError(err.message || 'Failed to generate video');
       setIsGeneratingVideo(false);
-      setVideoStatus("");
-      setVideoProgress(0);
-      toast.error(err.message || "Video generation failed");
     }
   };
 
+  // ========================================
+  // 3. ADD THIS POLLING FUNCTION
+  // ========================================
   const pollVideoStatus = async (taskId) => {
-    const maxAttempts = 60;
+    const maxAttempts = 60; // 5 minutes max (60 * 5 seconds)
     let attempts = 0;
 
     const checkStatus = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/status/${taskId}`);
+        const response = await fetch(`/api/video/status/${taskId}`);
         const result = await response.json();
 
         if (!result.success) {
-          throw new Error(result.message);
+          throw new Error(result.error);
         }
 
-        const statusData = result.data;
-        setVideoStatus(statusData.status);
-        setVideoProgress(statusData.progress || 0);
+        setVideoProgress(result.progress || 0);
 
-        if (statusData.status === "completed") {
-          setVideoUrl(statusData.videoUrl);
-          setIsGeneratingVideo(false);
-          toast.success("3D video generated successfully! 🎉");
+        if (result.status === 'Success') {
+          // Get download URL
+          const downloadResponse = await fetch(`/api/video/download/${result.file_id}`);
+          const downloadData = await downloadResponse.json();
 
-          // ✅ FIX: Save with video URL
-          try {
-            await saveToGallery(tryOnResult, statusData.videoUrl);
-          } catch (error) {
-            console.error("Failed to save 3D try-on:", error);
+          if (downloadData.success) {
+            setVideoUrl(downloadData.videoUrl);
+            setIsGeneratingVideo(false);
+            console.log('✅ Video generated successfully!');
           }
-
-          return true;
-        } else if (statusData.status === "failed") {
-          setVideoError(statusData.error || "Video generation failed");
+          return;
+        } else if (result.status === 'Fail') {
+          setVideoError('Video generation failed');
           setIsGeneratingVideo(false);
-          return true;
+          return;
         } else if (attempts < maxAttempts) {
           attempts++;
-          setTimeout(checkStatus, 5000);
+          setTimeout(checkStatus, 5000); // Poll every 5 seconds
         } else {
-          setVideoError("Video generation timed out. Please try again.");
+          setVideoError('Video generation timed out');
           setIsGeneratingVideo(false);
-          return true;
         }
       } catch (err) {
-        console.error("Status check error:", err);
+        console.error('Status check error:', err);
         if (attempts < maxAttempts) {
           attempts++;
           setTimeout(checkStatus, 5000);
         } else {
-          setVideoError("Failed to check video status");
+          setVideoError('Failed to check video status');
           setIsGeneratingVideo(false);
         }
       }
@@ -916,6 +844,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
     checkStatus();
   };
+
 
   useEffect(() => {
     const { modelImage, garmentImage } = tryOnData || {};
@@ -1004,10 +933,16 @@ const changeBackground = async (backgroundType) => {
   };
 
   const handleViewModeSwitch = (mode) => {
-    if (mode === "3D") {
-      if (!videoUrl && !isGeneratingVideo && tryOnResult) {
-        // Generate video if not already generated
-        generateVideo(tryOnResult);
+    if (mode === '3D') {
+      // ✅ CHECK: Has background been changed?
+      if (!backgroundChangedImage) {
+        setShowBgWarning(true);
+        return;
+      }
+
+      // ✅ CHECK: Video already generated?
+      if (!videoUrl && !isGeneratingVideo) {
+        generateVideo();
       }
     }
     setViewMode(mode);
@@ -1016,6 +951,26 @@ const changeBackground = async (backgroundType) => {
   return (
     <div className="fixed inset-0  z-50 bg-gradient-to-br from-gray-50 to-gray-100">
       {/* STAGE: centered preview area - FIXED: Added padding bottom for mobile */}
+
+
+        {showBgWarning && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md">
+            <h3 className="text-lg font-semibold mb-2">Background Required</h3>
+            <p className="text-gray-600 mb-4">
+              Please select a background scene first before generating 3D video.
+            </p>
+            <button
+              onClick={() => setShowBgWarning(false)}
+              className="w-full bg-primary text-white py-2 rounded-lg"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+
       <div className="absolute inset-0 w-full h-full flex items-center justify-center pb-[60vh] lg:pb-0 pointer-events-none">
 
         {isProcessing ? (
@@ -1046,60 +1001,7 @@ const changeBackground = async (backgroundType) => {
               Try Again
             </button>
           </div>
-        ) : viewMode === "3D" ? (
-          /* 3D VIDEO VIEW */
-          <div className="relative w-full h-full flex items-center justify-center">
-            {isGeneratingVideo ? (
-              <div className="text-center max-w-md">
-                <div className="mb-6">
-                  <Loader2 className="w-16 h-16 animate-spin mx-auto text-gray-900" />
-                </div>
-                <p className="text-xl font-semibold mb-2 text-gray-900">Generating 3D Video...</p>
-                <p className="text-sm text-gray-600 mb-4">Creating your 5-second runway walk</p>
-                <div className="w-full bg-gray-300 rounded-full h-3 mb-2">
-                  <div
-                    className="bg-gray-900 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${videoProgress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-gray-600">{videoProgress}% Complete</p>
-                <p className="text-xl font-semibold text-primary  mt-2">
-                  This usually takes 2-5 minutes
-                </p>
-              </div>
-            ) : videoError ? (
-              <div className="text-center max-w-md">
-                <div className="text-red-500 text-5xl mb-4">⚠️</div>
-                <p className="font-semibold text-lg mb-2 text-gray-900">Video Generation Failed</p>
-                <p className="text-sm text-gray-600 mb-6">{videoError}</p>
-                <button
-                  onClick={() => generateVideo(tryOnResult)}
-                  className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all shadow-lg font-medium"
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : videoUrl ? (
-              <div className="relative max-w-[85vw] max-h-[70vh] mt-16 sm:max-w-[80vw] sm:max-h-[75vh] md:max-w-[56vw] md:max-h-[80vh] lg:max-w-[46vw] lg:max-h-[85vh] xl:max-w-[40vw] xl:max-h-[85vh]">
-                <video
-                  src={videoUrl}
-                  controls
-                  autoPlay
-                  loop
-                  className="w-full h-full object-contain rounded-xl shadow-2xl"
-                />
-              </div>
-            ) : (
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 text-gray-400">📹</div>
-                <p className="text-lg font-medium mb-2 text-gray-900">
-                  Switch to 2D view to see static image
-                </p>
-                <p className="text-sm text-gray-500">Or wait for video to generate</p>
-              </div>
-            )}
-          </div>
-        ) : getCurrentDisplayImage() ? (
+        ) : viewMode === "2D" && getCurrentDisplayImage() ? (
           /* 2D IMAGE VIEW */   
           <div
             className="relative flex items-center  h-full justify-center shadow-2xl overflow-hidden"
@@ -1132,7 +1034,65 @@ const changeBackground = async (backgroundType) => {
               </div>
             )} */}
           </div>
-        ) : (
+        ) : viewMode === "3D" ? (
+  <div className="relative w-1/4 h-full flex items-center justify-center">
+    
+    {/* Generating */}
+    {isGeneratingVideo && (
+      <div className="text-center max-w-md">
+        <Loader2 className="w-16 h-16 animate-spin mx-auto text-primary mb-4" />
+        <p className="text-xl font-semibold mb-2">Generating 3D Video...</p>
+        <p className="text-sm text-gray-600 mb-4">
+          Creating your 6-second video
+        </p>
+
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div
+            className="bg-primary h-3 rounded-full transition-all duration-500"
+            style={{ width: `${videoProgress}%` }}
+          />
+        </div>
+
+        <p className="text-sm text-gray-600">{videoProgress}% Complete</p>
+        <p className="text-lg font-semibold text-primary mt-2">
+          This usually takes 45–90 seconds
+        </p>
+      </div>
+    )}
+
+    {/* Video Success */}
+    {!isGeneratingVideo && videoUrl && (
+      <div className="relative max-w-[85vw] h-full ">
+        <video
+          src={videoUrl}
+          controls
+          autoPlay
+          loop
+          className="w-full h-full object-cover  shadow-2xl"
+        />
+      </div>
+    )}
+
+    {/* Video Error */}
+    {!isGeneratingVideo && videoError && (
+      <div className="text-center max-w-md">
+        <div className="text-red-500 text-5xl mb-4">⚠️</div>
+        <p className="font-semibold text-lg mb-2">
+          Video Generation Failed
+        </p>
+        <p className="text-sm text-gray-600 mb-6">{videoError}</p>
+
+        <button
+          onClick={generateVideo}
+          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-hoverBg transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    )}
+
+  </div>
+) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
               <div className="text-6xl mb-4">👗</div>
@@ -1141,6 +1101,12 @@ const changeBackground = async (backgroundType) => {
           </div>
         )}
       </div>
+
+
+
+ 
+
+
 
       {/* TOP HEAh-DER - Back to Products Button */}
       <div className="absolute md:top-16 md:left-52   z-20">

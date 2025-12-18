@@ -165,10 +165,10 @@ const handleImageFit = (e) => {
       // ⭐ CHANGED: Use /api/tryon?mode=multi instead of /api/myprofile-multi-tryon
       console.log("📤 Sending request to /api/tryon?mode=multi...");
 
-      const res = await fetch("/api/myprofile-multi-tryon", {
-        method: "POST",
-        body: formData,
-      });
+    const res = await fetch('/api/multi-tryon', {
+      method: 'POST',
+      body: formData
+    });
 
       console.log(`📡 Server responded with status: ${res.status}`);
 
@@ -326,7 +326,7 @@ const generateSingleTryOn = async (outfitType, garmentUrl) => {
 
     console.log(`📤 Sending request to server...`);
     
-    const res = await fetch("/api/tryon?mode=single", { // ← CHANGED: Use query param
+    const res = await fetch("/api/single-tryon", { // ← CHANGED: Use query param
       method: "POST",
       body: formData
     });
@@ -439,40 +439,40 @@ const outfitOptions = [
 
   const renderStep = () => {
     switch (currentStep) {
-    case 0:
+ case 0:
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] px-4 sm:px-6 py-8 sm:py-0">
+    <div className="flex flex-col items-center justify-center min-h-[450px] xs:min-h-[500px] sm:min-h-[550px] md:min-h-[450px] lg:min-h-[500px] px-4 sm:px-6 py-8 sm:py-10 md:py-6 lg:py-8">
       {/* Icon with stars */}
-      <div className="relative mb-6 sm:mb-8">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#BE4949] flex items-center justify-center shadow-lg">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
-            <img src={women_ic} alt="" className="w-8 h-8 sm:w-10 sm:h-10" />
+      <div className="relative mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
+        <div className="w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-[#BE4949] flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center">
+            <img src={women_ic} alt="" className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 md:w-8 md:h-8 lg:w-10 lg:h-10" />
           </div>
           
-          <div className="absolute -top-1 -right-3 sm:-right-4">
-            <img src={yellow_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
+          <div className="absolute -top-1 -right-3 sm:-right-4 md:-right-3 lg:-right-4">
+            <img src={yellow_star} className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6" alt="" />
           </div>
         </div>
         
-        <div className="absolute bottom-3 sm:bottom-4 -left-5 sm:-left-6">
-          <img src={pink_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
+        <div className="absolute bottom-3 xs:bottom-3 sm:bottom-4 md:bottom-3 lg:bottom-4 -left-5 sm:-left-6 md:-left-5 lg:-left-6">
+          <img src={pink_star} className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6" alt="" />
         </div>
       </div>
       
       {/* Title */}
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3 text-center px-2">
+      <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 xs:mb-2 sm:mb-3 md:mb-2 lg:mb-3 text-center px-2 leading-tight">
         Create Your Tryon Profile
       </h2>
       
       {/* Description */}
-      <p className="text-sm sm:text-base text-[#45556C] text-center max-w-md mb-8 sm:mb-12 px-4">
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] text-center max-w-md mb-8 xs:mb-10 sm:mb-12 md:mb-8 lg:mb-12 px-4 leading-relaxed">
         Answer a few quick questions to see outfits on a virtual version of you.
       </p>
       
       {/* Start Button */}
       <button
         onClick={handleNext}
-        className="w-full max-w-md h-12 sm:h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white text-sm sm:text-base font-semibold hover:shadow-lg transition-all duration-200 mb-3 sm:mb-4"
+        className="w-full max-w-md h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all duration-200 mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4"
       >
         START CREATING
       </button>
@@ -480,22 +480,22 @@ const outfitOptions = [
       {/* Maybe Later */}
       <button 
         onClick={() => navigate('/')} 
-        className="text-gray-500 text-sm sm:text-base cursor-pointer font-medium hover:text-gray-700 mb-8 sm:mb-0"
+        className="text-gray-500 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base cursor-pointer font-medium hover:text-gray-700 mb-8 xs:mb-10 sm:mb-12 md:mb-6 lg:mb-0"
       >
         MAYBE LATER
       </button>
       
       {/* Feature Pills */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-8 sm:mt-12">
+      <div className="flex flex-col xs:flex-col sm:flex-row md:flex-row lg:flex-row gap-4 xs:gap-4 sm:gap-8 md:gap-6 lg:gap-8 mt-8 xs:mt-10 sm:mt-12 md:mt-6 lg:mt-12">
         <div className="flex items-center justify-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-          <span className="text-xs sm:text-sm font-semibold text-black whitespace-nowrap">
+          <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-semibold text-black whitespace-nowrap">
             Private & Secure
           </span>
         </div>
         <div className="flex items-center justify-center gap-2">
           <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-          <span className="text-xs sm:text-sm font-semibold text-black whitespace-nowrap">
+          <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-semibold text-black whitespace-nowrap">
             Takes 2 minutes
           </span>
         </div>
@@ -503,20 +503,23 @@ const outfitOptions = [
     </div>
   );
 
-
-
   
-  
-  case 1:
+case 1:
   return (
-    <div className="max-w-2xl mx-auto -mt-18 px-6">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">How tall are you?</h2>
-      <p className="text-[#45556C] font-family-outfit mb-8">We'll use this to scale your virtual try-on accurately.</p>
+    <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
+      {/* Header Section */}
+      <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
+        How tall are you?
+      </h2>
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] font-family-outfit mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8 text-center sm:text-left">
+        We'll use this to scale your virtual try-on accurately.
+      </p>
       
-      <div className="flex gap-2 justify-center mt-12 mb-8">
+      {/* Unit Toggle Buttons */}
+      <div className="flex gap-2 justify-center mt-8 xs:mt-9 sm:mt-12 md:mt-6 lg:mt-12 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
         <button
           onClick={() => setProfileData({ ...profileData, unit: 'cm' })}
-          className={`px-6 py-2 text-md font-medium transition-all ${
+          className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${
             profileData.unit === 'cm' 
               ? 'bg-gray-900 text-white' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -526,7 +529,7 @@ const outfitOptions = [
         </button>
         <button
           onClick={() => setProfileData({ ...profileData, unit: 'ft' })}
-          className={`px-6 py-2 font-medium transition-all ${
+          className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${
             profileData.unit === 'ft' 
               ? 'bg-gray-900 text-white' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -536,130 +539,202 @@ const outfitOptions = [
         </button>
       </div>
 
-      <div className="text-center items-center justify-center flex gap-[16px] gap-mb-8">
-        <div className="text-6xl font-semibold text-gray-900 mb-2">
+      {/* Height Display */}
+      <div className="text-center items-center justify-center flex gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
+        <div className="text-4xl xs:text-5xl sm:text-6xl md:text-5xl lg:text-6xl font-semibold text-gray-900">
           {profileData.unit === 'cm' ? profileData.height : getHeightInFeet()}
         </div>
-        <div className="text-2xl font-normal text-gray-500">
+        <div className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-normal text-gray-500">
           {profileData.unit === 'cm' ? 'cm' : ''}
         </div>
       </div>
 
-      <input
-        type="range"
-        min={profileData.unit === 'cm' ? 140 : 55}
-        max={profileData.unit === 'cm' ? 220 : 86}
-        value={profileData.unit === 'cm' ? profileData.height : Math.round(profileData.height / 2.54)}
-        onChange={(e) => {
-          const val = parseInt(e.target.value);
-          setProfileData({ 
-            ...profileData, 
-            height: profileData.unit === 'cm' ? val : Math.round(val * 2.54)
-          });
-        }}
-        className="w-full h-[0.6px] bg-[#8B8680] rounded-lg appearance-none cursor-pointer accent-[#200000]"
-      />
-      <p className='text-center text-xs mt-9 font-medium text-gray-600'>DRAG THIS TO SET YOUR HEIGHT</p>
+      {/* Range Slider */}
+      <div className="px-2 xs:px-2 sm:px-0 md:px-2 lg:px-0">
+        <input
+          type="range"
+          min={profileData.unit === 'cm' ? 140 : 55}
+          max={profileData.unit === 'cm' ? 220 : 86}
+          value={profileData.unit === 'cm' ? profileData.height : Math.round(profileData.height / 2.54)}
+          onChange={(e) => {
+            const val = parseInt(e.target.value);
+            setProfileData({ 
+              ...profileData, 
+              height: profileData.unit === 'cm' ? val : Math.round(val * 2.54)
+            });
+          }}
+          className="w-full h-[0.6px] bg-[#8B8680] rounded-lg appearance-none cursor-pointer accent-[#200000]"
+          style={{
+            WebkitAppearance: 'none',
+            appearance: 'none'
+          }}
+        />
+      </div>
+      
+      {/* Instruction Text */}
+      <p className="text-center text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm mt-6 xs:mt-7 sm:mt-9 md:mt-5 lg:mt-9 font-medium text-gray-600 tracking-wide">
+        DRAG THIS TO SET YOUR HEIGHT
+      </p>
+
+          <div className={`max-w-4xl mx-auto mt-12  w-full items-center justify-center md:relative   flex px-6  `}>
+        <button
+          onClick={handleNext}
+          disabled={
+            (currentStep === 2 && !profileData.bodyShape) ||
+            (currentStep === 3 && !profileData.skinTone) ||
+            (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
+          }
+          className="w-4xl h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          CONTINUE
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+
     </div>
   );
-      
+  
+  
 case 2:
-return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  return (
+    <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
       {/* Header Section */}
-      <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 text-center sm:text-left">
+      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
         Which body shape describes you best?
       </h2>
-      <p className="text-sm sm:text-base text-[#45556C] mb-6 sm:mb-8 text-center sm:text-left">
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
         This helps us show you how clothes will fit your unique silhouette.
       </p>
       
       {/* Body Shape Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2.5 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8">
         {bodyShapes.map(shape => (
           <button
             key={shape.id}
             onClick={() => setProfileData({ ...profileData, bodyShape: shape.id })}
-            className={`p-6 sm:p-8 lg:p-12 border-2 transition-all text-center ${
+            className={`p-5 xs:p-6 sm:p-8 md:p-6 lg:p-12 border-2 transition-all text-center ${
               profileData.bodyShape === shape.id
                 ? 'border-primary bg-primary/5' 
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
           >
-            <div className="font-semibold text-sm sm:text-base text-gray-900">
+            <div className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-gray-900">
               {shape.label}
             </div>
           </button>
         ))}
       </div>
+
+      
+          <div className={`max-w-4xl  mt-6  items-center justify-center md:relative   flex   `}>
+        <button
+          onClick={handleNext}
+          disabled={
+            (currentStep === 2 && !profileData.bodyShape) ||
+            (currentStep === 3 && !profileData.skinTone) ||
+            (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
+          }
+          className="w-4xl h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          CONTINUE
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+
     </div>
   );
 
+
 case 3:
   return (
-    <div className="max-w-2xl mx-auto px-6 -mt-16">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">Which skin tone is closest to yours?</h2>
-      <p className="text-[#45556C] mb-8">This ensures your virtual avatar represents you authentically.</p>
+    <div className="max-w-2xl mx-auto mt-12 px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
+      {/* Header Section */}
+      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
+        Which skin tone is closest to yours?
+      </h2>
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
+        This ensures your virtual avatar represents you authentically.
+      </p>
       
-      <div className="grid grid-cols-4 gap-4">
+      {/* Skin Tone Grid */}
+      <div className="grid grid-cols-4 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4">
         {skinTones.map(tone => (
           <button
             key={tone.id}
             onClick={() => setProfileData({ ...profileData, skinTone: tone.id })}
-            className={`flex flex-col items-center gap-3 p-4 border-2 transition-all ${
+            className={`flex flex-col items-center gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3 p-2.5 xs:p-3 sm:p-4 md:p-3 lg:p-4 border-2 transition-all ${
               profileData.skinTone === tone.id
                 ? 'border-primary'
-                : 'border-none hover:border-gray-300'
+                : 'border-transparent hover:border-gray-300'
             }`}
           >
+            {/* Color Circle */}
             <div 
-              className={`w-16 h-16 ${
-                profileData.skinTone === tone.id ? '' : ''
-              }`}
+              className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-12 md:h-12 lg:w-16 lg:h-16"
               style={{ backgroundColor: tone.color }}
-            >
+            />
             
-            </div>
-            <span className="text-sm font-medium text-gray-700">{tone.label}</span>
+            {/* Label */}
+            <span className="text-[10px] xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium text-gray-700 text-center leading-tight">
+              {tone.label}
+            </span>
           </button>
         ))}
       </div>
+
+         <div className={`max-w-4xl  mt-12  items-center justify-center md:relative   flex   `}>
+        <button
+          onClick={handleNext}
+          disabled={
+            (currentStep === 2 && !profileData.bodyShape) ||
+            (currentStep === 3 && !profileData.skinTone) ||
+            (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
+          }
+          className="w-4xl h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          CONTINUE
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
- 
+
+
 case 4:
- return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+  return (
+    <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 mt-22 xs:py-5 sm:py-10 md:py-3 lg:py-10">
       {/* Header */}
-      <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 text-center sm:text-left">
+      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
         Tell us about your hair
       </h2>
-      <p className="text-sm sm:text-base text-[#45556C] mb-6 sm:mb-8 text-center sm:text-left">
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
         These details help personalize your virtual avatar.
       </p>
       
-      <div className="space-y-6 sm:space-y-8">
+      <div className="space-y-5 xs:space-y-5 sm:space-y-8 md:space-y-4 lg:space-y-8">
         {/* Hair Color Section */}
         <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">
+          <label className="block text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium text-gray-700 mb-2.5 xs:mb-3 sm:mb-4 md:mb-2.5 lg:mb-4">
             Hair Color
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
             {hairColors.map(color => (
               <button
                 key={color.id}
                 onClick={() => setProfileData({ ...profileData, hairColor: color.id })}
-                className={`flex items-center gap-2 sm:gap-3 lg:gap-6 p-2 sm:p-3 border-2 transition-all ${
+                className={`flex items-center gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-6 p-2 xs:p-2 sm:p-3 md:p-2 lg:p-3 border-2 transition-all ${
                   profileData.hairColor === color.id
                     ? 'border-[#2C2826] bg-gray-50'
                     : 'border-[#E5E1DB] bg-white hover:border-gray-300'
                 }`}
               >
                 <div 
-                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex-shrink-0"
+                  className="w-6 h-6 xs:w-6 xs:h-6 sm:w-8 sm:h-8 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full border border-gray-300 flex-shrink-0"
                   style={{ backgroundColor: color.color }}
                 ></div>
-                <span className="text-xs sm:text-sm font-medium truncate">{color.label}</span>
+                <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium truncate">
+                  {color.label}
+                </span>
               </button>
             ))}
           </div>
@@ -667,21 +742,23 @@ case 4:
 
         {/* Hair Type Section */}
         <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">
+          <label className="block text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium text-gray-700 mb-2.5 xs:mb-3 sm:mb-4 md:mb-2.5 lg:mb-4">
             Hair Type
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
             {hairTypes.map(type => (
               <button
                 key={type.id}
                 onClick={() => setProfileData({ ...profileData, hairType: type.id })}
-                className={`p-3 sm:p-4 border-2 transition-all ${
+                className={`p-2.5 xs:p-3 sm:p-4 md:p-3 lg:p-4 border-2 transition-all ${
                   profileData.hairType === type.id
                     ? 'border-[#2C2826] bg-gray-50'
                     : 'border-[#E5E1DB] bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="text-xs sm:text-sm font-medium">{type.label}</div>
+                <div className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium">
+                  {type.label}
+                </div>
               </button>
             ))}
           </div>
@@ -689,15 +766,15 @@ case 4:
 
         {/* Hair Length Section */}
         <div>
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">
+          <label className="block text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium text-gray-700 mb-2.5 xs:mb-3 sm:mb-4 md:mb-2.5 lg:mb-4">
             Hair Length
           </label>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
             {hairLengths.map(length => (
               <button
                 key={length.id}
                 onClick={() => setProfileData({ ...profileData, hairLength: length.id })}
-                className={`py-2.5 sm:py-3 px-4 sm:px-6 border-2 text-xs sm:text-sm font-medium transition-all ${
+                className={`py-2 xs:py-2.5 sm:py-3 md:py-2.5 lg:py-3 px-3 xs:px-4 sm:px-6 md:px-4 lg:px-6 border-2 text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium transition-all ${
                   profileData.hairLength === length.id
                     ? 'border-[#2C2826] bg-gray-50'
                     : 'border-[#E5E1DB] bg-white hover:border-gray-300'
@@ -706,21 +783,51 @@ case 4:
                 {length.label}
               </button>
             ))}
+
+
+            
           </div>
+
+          
         </div>
+        
+      </div>
+         <div className={`max-w-4xl  mt-8  items-center justify-center md:relative   flex   `}>
+        <button
+          onClick={handleNext}
+          disabled={
+            (currentStep === 2 && !profileData.bodyShape) ||
+            (currentStep === 3 && !profileData.skinTone) ||
+            (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
+          }
+          className="w-4xl h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          CONTINUE
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );
+
  
+  
  case 5:
   return (
-    <div className="max-w-2xl mx-auto px-6 m-3 py-10">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-">Take your photo</h2>
-      <p className="text-[#45556C] mb-2">This helps us create a more accurate virtual avatar of you.</p>
+    <div className="max-w-2xl mt-22  mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-10 md:py-3 lg:py-10">
+      {/* Header */}
+      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1 sm:mb-2 md:mb-1 lg:mb-2 text-center sm:text-left">
+        Take your photo
+      </h2>
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-3 xs:mb-3 sm:mb-4 md:mb-2 lg:mb-2 text-center sm:text-left">
+        This helps us create a more accurate virtual avatar of you.
+      </p>
       
-      <div className="mb-6 p-6 mt-4 bg-[#F6F4F1]">
-        <div className="font-medium text-[#400000] mb-4">For best results:</div>
-        <ul className="space-y-2 text-sm text-gray-600">
+      {/* Tips Card */}
+      <div className="mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 bg-[#F6F4F1]">
+        <div className="font-medium text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#400000] mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
+          For best results:
+        </div>
+        <ul className="space-y-1.5 xs:space-y-2 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600">
           <li>• Face the camera directly</li>
           <li>• Ensure good lighting</li>
           <li>• Keep a neutral expression</li>
@@ -729,33 +836,46 @@ case 4:
         </ul>
       </div>
 
-      <div className="space-y-4">
+      {/* Action Buttons */}
+      <div className="space-y-3 xs:space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
+        {/* Take Photo Button */}
         <button
           onClick={startCamera}
           disabled={cameraError}
-          className="w-full p-6 border-2 border-[#200000] hover:bg-gray-50 transition-all flex items-center gap-4"
+          className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#200000] hover:bg-gray-50 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4"
         >
-          <div className="w-12 h-12 bg-[#400000] flex items-center justify-center">
-            <Camera className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#400000] flex items-center justify-center flex-shrink-0">
+            <Camera className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
           </div>
           <div className="text-left">
-            <div className="font-semibold text-gray-900">Take a Photo</div>
-            <div className="text-sm text-gray-500">Use your camera to capture a selfie</div>
+            <div className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-gray-900">
+              Take a Photo
+            </div>
+            <div className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-500">
+              Use your camera to capture a selfie
+            </div>
           </div>
         </button>
 
+        {/* Upload Photo Button */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-6 border-2 border-[#4000003D] hover:border-gray-300 transition-all flex items-center gap-4"
+          className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#4000003D] hover:border-gray-300 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4"
         >
-          <div className="w-12 h-12 bg-[#F0EDE8] flex items-center justify-center">
-            <Upload className="w-6 h-6 text-gray-600" />
+          <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#F0EDE8] flex items-center justify-center flex-shrink-0">
+            <Upload className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-600" />
           </div>
           <div className="text-left">
-            <div className="font-semibold text-gray-900">Upload a Photo</div>
-            <div className="text-sm text-gray-500">Choose an existing photo from your device</div>
+            <div className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-gray-900">
+              Upload a Photo
+            </div>
+            <div className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-500">
+              Choose an existing photo from your device
+            </div>
           </div>
         </button>
+
+        {/* Hidden File Input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -764,18 +884,22 @@ case 4:
           className="hidden"
         />
 
+        {/* Camera Error Message */}
         {cameraError && (
-          <div className="mt-6 p-4 bg-gray-900 text-white text-center">
-            <p className="font-medium mb-2">Unable to access camera. Please check permissions.</p>
-            <button onClick={startCamera} className="text-sm underline">
+          <div className="mt-4 xs:mt-5 sm:mt-6 md:mt-4 lg:mt-6 p-3 xs:p-3 sm:p-4 md:p-3 lg:p-4 bg-gray-900 text-white text-center">
+            <p className="font-medium text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm mb-2">
+              Unable to access camera. Please check permissions.
+            </p>
+            <button onClick={startCamera} className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm underline">
               Try Again
             </button>
           </div>
         )}
 
+        {/* Skip Button */}
         <button
           onClick={() => setCurrentStep(9)}
-          className="w-full border border-[#E5E1DB] py-3 mt-3 text-gray-600 font-medium hover:text-gray-900"
+          className="w-full border border-[#E5E1DB] py-2.5 xs:py-2.5 sm:py-3 md:py-2 lg:py-3 mt-2 xs:mt-2 sm:mt-3 md:mt-2 lg:mt-3 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600 font-medium hover:text-gray-900"
         >
           SKIP FOR NOW
         </button>
@@ -783,16 +907,26 @@ case 4:
     </div>
   );
 
- case 6:
-  // Camera view
+
+
+
+case 6:
   return (
-    <div className="max-w-2xl mx-auto justify-center items-center px-6 mt-3 py-8">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">Take your photo</h2>
-      <p className="text-[#45556C] mb-8">This helps us create a more accurate virtual avatar of you.</p>
+    <div className="max-w-2xl mx-auto justify-center items-center px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
+      {/* Header */}
+      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1.5 sm:mb-2 md:mb-1 lg:mb-2 text-center sm:text-left">
+        Take your photo
+      </h2>
+      <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-4 xs:mb-5 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
+        This helps us create a more accurate virtual avatar of you.
+      </p>
       
-      <div className="mb-6 p-6 bg-[#F6F4F1]">
-        <div className="font-medium text-[#400000] mb-3">For best results:</div>
-        <ul className="space-y-2 text-sm text-gray-600">
+      {/* Tips Card */}
+      <div className="mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 bg-[#F6F4F1]">
+        <div className="font-medium text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#400000] mb-2.5 xs:mb-3 sm:mb-3 md:mb-2.5 lg:mb-3">
+          For best results:
+        </div>
+        <ul className="space-y-1.5 xs:space-y-1.5 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-600">
           <li>• Face the camera directly</li>
           <li>• Ensure good lighting</li>
           <li>• Keep a neutral expression</li>
@@ -801,7 +935,8 @@ case 4:
         </ul>
       </div>
 
-      <div className="space-y-4">
+      {/* Camera/Preview Container */}
+      <div className="space-y-3 xs:space-y-4 sm:space-y-4 md:space-y-3 lg:space-y-4">
         <div className="relative overflow-hidden bg-gray-900 aspect-[3/4]">
           {capturedImage ? (
             <>
@@ -811,8 +946,8 @@ case 4:
                 className="w-full h-full object-cover"
               />
               {/* Overlay with profile details */}
-              <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-4">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-3 xs:p-3 sm:p-4 md:p-3 lg:p-4">
+                <div className="grid grid-cols-2 gap-x-3 xs:gap-x-4 sm:gap-x-4 md:gap-x-3 lg:gap-x-4 gap-y-1.5 xs:gap-y-2 sm:gap-y-2 md:gap-y-1.5 lg:gap-y-2 text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm">
                   <div>
                     <span className="text-gray-600">Height</span>
                     <p className="font-medium">{profileData.height} cm</p>
@@ -842,70 +977,64 @@ case 4:
           )}
         </div>
 
+        {/* Capture/Continue Button */}
         <button
           onClick={capturedImage ? handleNext : capturePhoto}
-          className="w-full h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all"
+          className="w-full h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all"
         >
           {capturedImage ? 'CONTINUE' : 'CAPTURE PHOTO'}
         </button>
 
+        {/* Skip Button - Only show when no image captured */}
         {!capturedImage && (
           <button
             onClick={() => {
               stopCamera();
               setCurrentStep(9);
             }}
-            className="w-full py-3 text-gray-600 font-medium hover:text-gray-900"
+            className="w-full py-2.5 xs:py-2.5 sm:py-3 md:py-2 lg:py-3 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600 font-medium hover:text-gray-900"
           >
             SKIP FOR NOW
           </button>
         )}
       </div>
+      
+      {/* Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 
+
 case 7:
   return (
-    <div className="min-h-screen  bg-[#FAFAFA] flex flex-col">
-      {/* Top Progress + Back */}
-      {/* <div className="px-6 pt-6">
-        <div className="text-center text-sm text-gray-500 mb-2">5 of 7</div>
-        <div className="h-px bg-gray-300"></div>
-      </div> */}
-
-      {/* Back Button */}
-      {/* <div className=" ml-42 pt-4">
-   <button onClick={() => setCurrentStep(6)} className="flex items-center gap-1 text-gray-700">
-  <ChevronLeft className="w-5 text-gray-500 h-5" />
-  <span className="text-md text-gray-500 font-medium">Back</span>
-</button>
-      </div> */}
-
+    <div className="min-h-screen mt-28 bg-[#FAFAFA] flex flex-col">
       {/* Main Content – Image Left, Text Right */}
-      <div className="flex-1 flex flex-col justify-center items-center lg:flex-row px-6 gap-8">
-        {/* Left: Full-width photo */}
-        <div className="flex-1 lg:max-w-md">
+      <div className="flex-1 flex flex-col justify-center items-center lg:flex-row px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 gap-4 xs:gap-5 sm:gap-8 md:gap-4 lg:gap-8 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-6">
+        
+        {/* Left: Photo Preview */}
+        <div className="flex-1 w-full lg:max-w-md">
           <img
             src={capturedImage || "https://i.imgur.com/1Qw2X3j.jpg"}
             alt="Your photo"
-            className="w-full h-full min-h-96 object-cover shadow-md"
+            className="w-full h-full min-h-[280px] xs:min-h-[320px] sm:min-h-96 md:min-h-[280px] lg:min-h-96 object-cover shadow-md"
           />
         </div>
 
         {/* Right: Text + Tips */}
-        <div className="flex-1 flex flex-col -mt-24 justify-center max-w-md">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+        <div className=" flex flex-col justify-center -mt-38 w-full  max-w-md">
+          <h1 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1.5 sm:mb-2 md:mb-1 lg:mb-2 text-center lg:text-left">
             Take your photo
           </h1>
-          <p className="text-[#45556C] text-base mb-8">
+          <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-4 xs:mb-5 sm:mb-8 md:mb-4 lg:mb-8 text-center lg:text-left">
             This helps us create a more accurate virtual avatar of you.
           </p>
 
           {/* Tips Card */}
-          <div className="bg-[#F6F4F1] p-6 shadow-sm border border-gray-100">
-            <p className="font-semibold text-primary mb-4">For best results:</p>
-            <ul className="space-y-3 text-gray-700">
+          <div className="bg-[#F6F4F1] p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 shadow-sm border border-gray-100 mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6">
+            <p className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-primary mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
+              For best results:
+            </p>
+            <ul className="space-y-2 xs:space-y-2 sm:space-y-3 md:space-y-2 lg:space-y-3 text-[#403200]">
               {[
                 "Face the camera directly",
                 "Ensure good lighting",
@@ -913,31 +1042,33 @@ case 7:
                 "Show shoulders in frame",
                 "Keep your Hands straight"
               ].map((tip, i) => (
-                <li key={i} className="flex text-[#403200] items-start gap-3">
-                  <span className=" text-lg leading-none">•</span>
-                  <span className="text-sm">{tip}</span>
+                <li key={i} className="flex items-start gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
+                  <span className="text-base xs:text-base sm:text-lg md:text-base lg:text-lg leading-none">•</span>
+                  <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm">{tip}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Bottom Fixed Buttons */}
-          <div className=" pb-8 pt-6 space-y-4">
+          {/* Action Buttons */}
+          <div className="space-y-3 xs:space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
+            {/* Continue Button */}
             <button
               onClick={() => setCurrentStep(8)}
-              className="w-full h-14 bg-gradient-to-r from-red-500 to-orange-500 text-white text-lg font-bold  shadow-md flex items-center justify-center"
+              className="w-full h-11 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm xs:text-sm sm:text-lg md:text-sm lg:text-lg font-bold shadow-md flex items-center justify-center"
             >
               CONTINUE →
             </button>
 
+            {/* Retake Button */}
             <button
               onClick={() => {
                 setCapturedImage(null);
                 setCurrentStep(5);
               }}
-              className="w-full h-12 bg-white border border-gray-300 text-gray-800 font-medium  flex items-center justify-center gap-2"
+              className="w-full h-10 xs:h-11 sm:h-12 md:h-10 lg:h-12 bg-white border border-gray-300 text-gray-800 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm font-medium flex items-center justify-center gap-2"
             >
-              <Camera size={20} />
+              <Camera size={16} className="xs:w-[18px] xs:h-[18px] sm:w-5 sm:h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
               RETAKE PHOTO
             </button>
           </div>
@@ -946,44 +1077,47 @@ case 7:
     </div>
   );
 
+
+
 case 8: // AI TRY-ON - Mobile & Desktop versions
   return (
     <>
-      <div className={`absolute top-30 left-56 mt-6 flex z-40`}>
+      {/* Back Button - Desktop Only */}
+      <div className="hidden md:block absolute top-6  left-56 mt-6 z-40">
         <button onClick={handleBack} className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-black">
           <ChevronLeft size={20} /> Back
         </button>
       </div>
 
-      {/* MOBILE VERSION */}
-      <div className="md:hidden relative min-h-screen bg-white flex flex-col px-4 pt-6 pb-24">
+      {/* ========== MOBILE VERSION ========== */}
+      <div className="md:hidden relative min-h-screen  bg-white flex flex-col px-3 xs:px-4 pt-4 xs:pt-6 pb-20 xs:pb-24">
         
         {/* Mobile Back Button */}
         <button 
           onClick={handleBack}
-          className="flex items-center gap-2 text-gray-600 mb-4"
+          className="flex items-center gap-2 text-gray-600 mb-3 xs:mb-4"
         >
-          <ChevronLeft size={20} />
-          <span className="text-sm">Back</span>
+          <ChevronLeft size={18} className="xs:w-5 xs:h-5" />
+          <span className="text-xs xs:text-sm">Back</span>
         </button>
 
         {/* Title */}
-        <h2 className="text-[#FF6B4A] text-xl font-medium mb-1">
+        <h2 className="text-[#FF6B4A] text-base xs:text-xl font-medium mb-1">
           Your virtual look is ready — want to see how amazing you look?
         </h2>
 
         {/* Subtitle */}
-        <p className="text-gray-600 text-xs mb-3">
+        <p className="text-gray-600 text-[10px] xs:text-xs mb-2 xs:mb-3">
           Your outfit categories are already curated for you. Explore refined colors and unique styles
         </p>
 
         {/* CTA Text */}
-        <p className="text-gray-800 text-sm font-medium mb-6">
+        <p className="text-gray-800 text-xs xs:text-sm font-medium mb-4 xs:mb-6">
           CLICK below for TRYON
         </p>
 
         {/* Main Image Carousel Container */}
-        <div className="relative w-full flex items-center justify-center mb-6 overflow-hidden">
+        <div className="relative w-full flex items-center justify-center mb-4 xs:mb-6 overflow-hidden">
           
           {/* Left Arrow */}
           <button 
@@ -996,23 +1130,21 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                 setCenterImage(generatedResults[prevOutfit.id]);
               }
             }}
-            className="absolute left-0 z-10 bg-white/80 rounded-full p-2 shadow-md"
+            className="absolute left-0 z-10 bg-white/80 rounded-full p-1.5 xs:p-2 shadow-md"
           >
-            <ChevronLeft size={24} className="text-gray-700" />
+            <ChevronLeft size={20} className="xs:w-6 xs:h-6 text-gray-700" />
           </button>
 
           {/* Images */}
-          <div className="flex items-center justify-center gap-1 px-12">
+          <div className="flex items-center justify-center gap-1 px-10 xs:px-12">
             {outfitOptions.map((outfit, index) => {
               const isCenter = outfit.id === selectedOutfit;
               const currentIndex = outfitOptions.findIndex(o => o.id === selectedOutfit);
               
-              // Calculate position relative to center
               let position = index - currentIndex;
               if (position < -2) position += outfitOptions.length;
               if (position > 2) position -= outfitOptions.length;
               
-              // Only show items within range
               if (Math.abs(position) > 2) return null;
               
               return (
@@ -1024,7 +1156,6 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                       setCenterImage(capturedImage);
                       return;
                     }
-
                     if (generatedResults[outfit.id]) {
                       setCenterImage(generatedResults[outfit.id]);
                     } else {
@@ -1033,10 +1164,10 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   }}
                   className={`transition-all duration-500 ease-out cursor-pointer flex-shrink-0
                     ${isCenter 
-                      ? 'w-[200px] h-[280px] z-20 scale-100 opacity-100' 
+                      ? 'w-[160px] h-[230px] xs:w-[200px] xs:h-[280px] z-20 scale-100 opacity-100' 
                       : position === -1 || position === 1
-                        ? 'w-[120px] h-[180px] z-10 scale-90 opacity-60'
-                        : 'w-[80px] h-[120px] z-0 scale-75 opacity-30'
+                        ? 'w-[100px] h-[150px] xs:w-[120px] xs:h-[180px] z-10 scale-90 opacity-60'
+                        : 'w-[70px] h-[100px] xs:w-[80px] xs:h-[120px] z-0 scale-75 opacity-30'
                     }
                   `}
                   style={{
@@ -1068,14 +1199,14 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                 setCenterImage(generatedResults[nextOutfit.id]);
               }
             }}
-            className="absolute right-0 z-10 bg-white/80 rounded-full p-2 shadow-md"
+            className="absolute right-0 z-10 bg-white/80 rounded-full p-1.5 xs:p-2 shadow-md"
           >
-            <ChevronRight size={24} className="text-gray-700" />
+            <ChevronRight size={20} className="xs:w-6 xs:h-6 text-gray-700" />
           </button>
         </div>
 
         {/* Bottom Navigation Dots */}
-        <div className="flex justify-center items-center gap-6 mb-8">
+        <div className="flex justify-center items-center gap-4 xs:gap-6 mb-6 xs:mb-8">
           {outfitOptions.map((outfit) => (
             <button
               key={outfit.id}
@@ -1087,7 +1218,7 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   generateVirtualTryOns(outfit.id, outfit.garmentUrl);
                 }
               }}
-              className={`text-xs font-medium transition-all ${
+              className={`text-[10px] xs:text-xs font-medium transition-all ${
                 outfit.id === selectedOutfit 
                   ? 'text-[#FF6B4A] border-b-2 border-[#FF6B4A] pb-1' 
                   : 'text-gray-500'
@@ -1099,7 +1230,7 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-3 px-2">
+        <div className="flex flex-col gap-2.5 xs:gap-3 px-2">
           <button
             onClick={async () => {
               try {
@@ -1107,13 +1238,10 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   ...profileData,
                   photoUrl: capturedImage || profileData.photoUrl,
                 };
-
                 await profileService.saveProfile(dataToSave);
-
                 for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
                   await profileService.saveTryOnResult(outfitType, imageUrl);
                 }
-
                 setCurrentStep(9);
               } catch (error) {
                 console.error("❌ Save error:", error);
@@ -1121,44 +1249,44 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
               }
             }}
             disabled={Object.keys(generatedResults).length === 0}
-            className="w-full h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
-              text-white font-semibold rounded flex items-center justify-center gap-2
+            className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
+              text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
               disabled:opacity-50 transition-all"
           >
-            <Save size={18} />
+            <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
             SAVE & CONTINUE
           </button>
 
           <button
             onClick={() => setCurrentStep(5)}
-            className="w-full h-12 border-2 border-[#FF6B4A] text-[#FF6B4A] 
-              font-semibold rounded flex items-center justify-center gap-2"
+            className="w-full h-10 xs:h-12 border-2 border-[#FF6B4A] text-[#FF6B4A] 
+              text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2"
           >
-            <Edit2 size={18} />
+            <Edit2 size={16} className="xs:w-[18px] xs:h-[18px]" />
             EDIT PROFILE
           </button>
         </div>
       </div>
 
-      {/* DESKTOP VERSION */}
-      <div className="hidden md:flex relative min-h-screen bg-[#FCFAF7] flex-col items-center px-6 pt-10 pb-24">
+      {/* ========== DESKTOP VERSION ========== */}
+      <div className="hidden md:flex relative min-h-screen mt-24 bg-[#FCFAF7] flex-col items-center px-4 md:px-6 pt-6 md:pt-10 pb-16 md:pb-24">
 
         {/* Title */}
-        <h2 className="text-[28px] font-semibold text-gray-900 text-center max-w-2xl leading-snug">
+        <h2 className="text-xl md:text-[28px] font-semibold text-gray-900 text-center max-w-2xl leading-snug">
           Your virtual look is ready — want to see how amazing you look?
         </h2>
 
         {/* Subtitle */}
-        <p className="text-[14px] text-gray-500 mt-2 text-center">
+        <p className="text-xs md:text-[14px] text-gray-500 mt-1.5 md:mt-2 text-center">
           All four outfit categories have been pre-selected for you. You can explore
           different colors and styles while shopping.
         </p>
 
         {/* MAIN GRID */}
-        <div className="flex justify-center items-start gap-10 mt-12 w-full max-w-6xl">
+        <div className="flex justify-center items-start gap-6 md:gap-10 mt-8 md:mt-12 w-full max-w-6xl">
 
           {/* LEFT - 2 outfits */}
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 md:gap-6 items-center">
             {outfitOptions.slice(0, 2).map((outfit, index) => (
               <button
                 key={outfit.id}
@@ -1171,11 +1299,10 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   }
                 }}
                 disabled={generatingOutfit !== null}
-                className={`relative w-[160px] overflow-hidden shadow-md transition-all
-                  ${index === 0 ? "h-[170px] w-[130px]" : "h-[198px] w-[150px]"}
+                className={`relative overflow-hidden shadow-md transition-all
+                  ${index === 0 ? "h-[150px] w-[115px] md:h-[170px] md:w-[130px]" : "h-[175px] w-[135px] md:h-[198px] md:w-[150px]"}
                 `}
               >
-                {/* Image */}
                 <img
                   src={generatedResults[outfit.id] || outfit.staticImage}
                   alt={outfit.label}
@@ -1184,25 +1311,22 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   }`}
                 />
 
-                {/* Not generated yet → CTA Overlay */}
                 {!generatedResults[outfit.id] && (
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
-                    <p className="text-xs font-medium mb-2">
+                    <p className="text-[10px] md:text-xs font-medium mb-2">
                       GENERATING {outfit.label.toUpperCase()}...
                     </p>
-                    <Loader2 className="animate-spin" size={24} />
+                    <Loader2 className="animate-spin" size={20} />
                   </div>
                 )}
 
-                {/* Generated → Bottom Label + Check */}
                 {generatedResults[outfit.id] && (
                   <>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
-                      <p className="text-white font-medium text-xs">{outfit.label.toUpperCase()}</p>
+                    <div className="absolute bottom-2 md:bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 md:px-4 py-1 rounded">
+                      <p className="text-white font-medium text-[10px] md:text-xs">{outfit.label.toUpperCase()}</p>
                     </div>
-
-                    <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
+                    <div className="absolute top-2 md:top-3 right-2 md:right-3 w-4 h-4 md:w-5 md:h-5 bg-red-500 rounded flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />
                     </div>
                   </>
                 )}
@@ -1215,12 +1339,12 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
             <img
               src={capturedImage}
               alt="You"
-              className="w-[180px] h-[250px] max-w-full -mt-6 shadow-2xl object-cover"
+              className="w-[150px] h-[210px] md:w-[180px] md:h-[250px] max-w-full -mt-4 md:-mt-6 shadow-2xl object-cover"
             />
           </div>
 
           {/* RIGHT - 2 outfits */}
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 md:gap-6 items-center">
             {outfitOptions.slice(2, 4).map((outfit, index) => (
               <button
                 key={outfit.id}
@@ -1233,8 +1357,8 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   }
                 }}
                 disabled={generatingOutfit !== null}
-                className={`relative w-[160px] overflow-hidden shadow-md transition-all
-                  ${index === 0 ? "h-[198px] w-[150px]" : "h-[170px] w-[130px]"}
+                className={`relative overflow-hidden shadow-md transition-all
+                  ${index === 0 ? "h-[175px] w-[135px] md:h-[198px] md:w-[150px]" : "h-[150px] w-[115px] md:h-[170px] md:w-[130px]"}
                 `}
               >
                 <img
@@ -1247,21 +1371,20 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
 
                 {!generatedResults[outfit.id] && (
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
-                    <p className="text-xs font-medium mb-2">
+                    <p className="text-[10px] md:text-xs font-medium mb-2">
                       GENERATING {outfit.label.toUpperCase()}...
                     </p>
-                    <Loader2 className="animate-spin" size={24} />
+                    <Loader2 className="animate-spin" size={20} />
                   </div>
                 )}
 
                 {generatedResults[outfit.id] && (
                   <>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-1 rounded">
-                      <p className="text-white font-medium text-xs">{outfit.label.toUpperCase()}</p>
+                    <div className="absolute bottom-2 md:bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 md:px-4 py-1 rounded">
+                      <p className="text-white font-medium text-[10px] md:text-xs">{outfit.label.toUpperCase()}</p>
                     </div>
-
-                    <div className="absolute top-3 right-3 w-5 h-5 bg-red-500 rounded flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
+                    <div className="absolute top-2 md:top-3 right-2 md:right-3 w-4 h-4 md:w-5 md:h-5 bg-red-500 rounded flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />
                     </div>
                   </>
                 )}
@@ -1271,7 +1394,7 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
         </div>
 
         {/* SAVE & EDIT BUTTONS */}
-        <div className="flex justify-center items-center gap-8 mt-14">
+        <div className="flex justify-center items-center gap-6 md:gap-8 mt-10 md:mt-14">
           <button
             onClick={async () => {
               try {
@@ -1279,13 +1402,10 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
                   ...profileData,
                   photoUrl: capturedImage || profileData.photoUrl,
                 };
-
                 await profileService.saveProfile(dataToSave);
-
                 for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
                   await profileService.saveTryOnResult(outfitType, imageUrl);
                 }
-
                 setCurrentStep(9);
               } catch (error) {
                 console.error("❌ Save error:", error);
@@ -1293,79 +1413,67 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
               }
             }}
             disabled={Object.keys(generatedResults).length === 0}
-            className="w-[210px] h-14 bg-gradient-to-r from-red-500 to-orange-400 
-              text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+            className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
+              text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
           >
             SAVE & CONTINUE
           </button>
 
           <button
             onClick={() => setCurrentStep(5)}
-            className="text-gray-600 font-medium hover:text-gray-900 flex items-center gap-2"
+            className="text-gray-600 text-sm md:text-base font-medium hover:text-gray-900 flex items-center gap-2"
           >
-            <Edit2 size={18} />
+            <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
             EDIT PROFILE
           </button>
         </div>
       </div>
     </>
   );
-  
+
+
+
+
 case 9: // Success
   return (
-    <div className="-mt-36 flex flex-col justify-between">
+    <div className="flex flex-col justify-center items-center min-h-[400px] xs:min-h-[450px] sm:min-h-[500px] md:min-h-[400px] lg:min-h-[500px] px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-6 xs:py-8 sm:py-10 md:py-6 lg:py-10">
+      
       {/* Main content - centered */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center w-full">
         <div className="text-center max-w-md w-full">
-          {/* Check icon circle */}
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8">
-            {/* <Check className="w-12 h-12 text-white" /> */}
-            <img src={success_mark} className="h-4/5 w-4/5" alt="" />
+          
+          {/* Success Icon */}
+          <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-20 sm:h-20 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center mx-auto mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
+            <img 
+              src={success_mark} 
+              className="h-full w-full object-contain" 
+              alt="Success" 
+            />
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl md:text-3xl font-semibold text-black mb-6">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-2xl lg:text-3xl font-semibold text-black mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 leading-tight px-2">
             Your Tryon Profile is Ready
           </h2>
 
           {/* Subtitle */}
-          <p className="text-[#45556C] text-lg mb-10 leading-relaxed">
+          <p className="text-[#45556C] text-sm xs:text-base sm:text-lg md:text-base lg:text-lg mb-8 xs:mb-9 sm:mb-10 md:mb-7 lg:mb-10 leading-relaxed px-2">
             You can now see how clothes will look on your virtual avatar while shopping.
           </p>
 
-          {/* Gradient button - exact colors from your photo */}
+          {/* Start Button */}
           <button
             onClick={handleComplete}
-            className="h-14 px-12 bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 text-white font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="h-12 xs:h-13 sm:h-14 md:h-12 lg:h-14 px-10 xs:px-11 sm:px-12 md:px-10 lg:px-12 bg-gradient-to-r from-pink-500 via-red-500 to-orange-400 text-white font-bold text-sm xs:text-base sm:text-lg md:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             START TRYING ON
           </button>
         </div>
       </div>
-
-      {/* Bottom profile summary */}
-      {/* <div className="px-6 pb-12">
-        <p className="text-gray-500 text-sm text-center mb-6">
-          Your profile summary:
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
-            5.7 ft
-          </span>
-          <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
-            Straight
-          </span>
-          <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
-            Dark Brown Hair
-          </span>
-          <span className="px-5 py-3 bg-gray-800 text-gray-300 rounded-full text-sm font-medium">
-            Light Tone
-          </span>
-        </div>
-      </div> */}
     </div>
   );
+
+
 
 default:
   return null;
@@ -1373,7 +1481,7 @@ default:
   };
 
 return (
-  <div className="overflow-hidden bg-gray-50 flex flex-col min-h-screen h-auto">
+  <div className="overflow-hidden  bg-[#FAF8F5] flex flex-col min-h-screen h-auto">
     {/* Progress Bar */}
     
 
@@ -1391,7 +1499,7 @@ return (
 
     {/* Back Button */}
     {currentStep < 8 && (
-      <div className={`absolute top-36   flex z-40 ${currentStep === 7 ? 'left-74 mt-2' : 'left-112 mt-6'}`}>
+      <div className={`absolute top-44   flex z-40 ${currentStep === 7 ? 'left-74 mt-2' : 'left-112 '}`}>
         <button onClick={handleBack} className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-black">
           <ChevronLeft size={20} /> Back
         </button>
@@ -1400,7 +1508,7 @@ return (
 
 
     {/* Main Content */}
-    <div className="flex-1 flex items-center bg-[#FAF8F5] justify-center py-8">
+    <div className="flex-1 flex items-center justify-center  -translate-y-9 ">
       <div className="w-full -mt-10">{renderStep()}</div>
     </div>
 
@@ -1409,8 +1517,8 @@ return (
     <canvas ref={canvasRef} className="hidden" />
     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
  
-    {currentStep > 0 && currentStep < 5 && (
-      <div className={`max-w-4xl mx-auto w-full items-center ${currentStep==4 ? 'md:bottom-16' : 'md:bottom-32'} justify-center md:relative  flex px-6 pb-8 `}>
+    {/* {currentStep > 0 && currentStep < 5 && (
+      <div className={`max-w-4xl mx-auto  w-full items-center ${currentStep==4 ? 'md:bottom-12' : 'md:bottom-20'} justify-center md:relative   flex px-6 pb-8 `}>
         <button
           onClick={handleNext}
           disabled={
@@ -1424,7 +1532,7 @@ return (
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
-    )}
+    )} */}
   </div>
 );
 };

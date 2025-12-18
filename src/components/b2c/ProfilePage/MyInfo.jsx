@@ -640,7 +640,7 @@ const MyInfo = () => {
 return (
     <div className="min-h-screen bg-white">
       {/* Role Toggle for Demo */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
+      {/* <div className="fixed top-4 right-4 z-50 flex gap-2">
         <button
           onClick={() => setUserRole("B2C")}
           className={`px-4 py-2 text-sm ${userRole === "B2C" ? "bg-primary text-white" : "bg-gray-200"}`}
@@ -653,7 +653,7 @@ return (
         >
           B2B
         </button>
-      </div>
+      </div> */}
 
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
         <div className="max-w-7xl mx-auto">
