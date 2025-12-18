@@ -8,6 +8,9 @@
   "functions": {
     "api/tryon.js": {
       "maxDuration": 300
+    },
+      "api/garnment-swap.js": {
+      "maxDuration": 300
     }
   }
 }
