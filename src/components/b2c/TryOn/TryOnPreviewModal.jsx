@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo , useRef} from "react";
 import colorUtils from "../../utils/colorUtils";
 import {
   ArrowLeft,
@@ -44,13 +44,15 @@ const API_BASE_URL = "/api/kling";
 
 const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [tryOnResult, setTryOnResult] = useState(null);
+  const hasStartedRef = useRef(false);
   // const [tryOnResultNoBg, setTryOnResultNoBg] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false); 
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedTab, setSelectedTab] = useState("colours");
   const [selectedColor, setSelectedColor] = useState("blue");
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
-  const [selectedBlouse, setSelectedBlouse] = useState("traditional");
+  const [selectedBlouse, setSelectedBlouse] = useState("regular");
   const [selectedBackground, setSelectedBackground] = useState("");
   const [backgroundChangedImage, setBackgroundChangedImage] = useState(null);
   const [isChangingBackground, setIsChangingBackground] = useState(false);
@@ -58,6 +60,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   // const [bgError, setBgError] = useState("");
   const [viewMode, setViewMode] = useState("2D");
   const [expandedPanel, setExpandedPanel] = useState(null);
+  // Add this with your other useState declarations at the top
+// const [selectedBlouse, setSelectedBlouse] = useState("regular");
+const [isChangingBlouse, setIsChangingBlouse] = useState(false);
 
   // 3D Video States
   const [videoUrl, setVideoUrl] = useState(null);
@@ -453,70 +458,96 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
   ];
 
-  const performTryOn = async () => {
-    const { modelImage, garmentImage, garmentName } = tryOnData || {};
-    if (!modelImage || !garmentImage || !garmentName) return;
-    // coorect
-    setIsProcessing(true);
-    setErrorMsg("");
-    setTryOnResult(null);
+ const performTryOn = async () => {
 
-    try {
-      const formData = new FormData();
+    console.log("🎯 performTryOn called");
+  console.log("🎯 Call stack:", new Error().stack);
+  
 
-      // ⭐ FIX: Handle dataURL or image URL
-      let modelBlob;
-      if (modelImage.startsWith("data:")) {
-        const base64 = modelImage.split(",")[1];
-        const byteCharacters = atob(base64);
-        const byteArray = new Uint8Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteArray[i] = byteCharacters.charCodeAt(i);
-        }
-        modelBlob = new Blob([byteArray], { type: "image/jpeg" });
-      } else {
-        modelBlob = await fetch(modelImage).then(r => r.blob());
+  const { modelImage, garmentImage, garmentName } = tryOnData || {};
+  if (!modelImage || !garmentImage || !garmentName){
+
+    console.log("⏸️ Missing required data");
+  return;
+  }
+  
+ if (isProcessing) {
+    console.log("⏸️ Already processing - BLOCKING");
+    return;
+  }
+
+  if (tryOnResult) {
+    console.log("⏸️ Already have result - BLOCKING");
+    return;
+  }
+
+  if (hasStartedRef.current) {
+    console.log("⏸️ Already started once - BLOCKING");
+    return;
+  }
+
+  console.log("🚀 performTryOn EXECUTING");
+
+  hasStartedRef.current = true;
+  setIsProcessing(true);
+  setErrorMsg("");
+  setTryOnResult(null);
+
+  try {
+    const formData = new FormData();
+
+    // Handle model image
+    let modelBlob;
+    if (modelImage.startsWith("data:")) {
+      const base64 = modelImage.split(",")[1];
+      const byteCharacters = atob(base64);
+      const byteArray = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteArray[i] = byteCharacters.charCodeAt(i);
       }
-
-      formData.append("model", modelBlob, "user.jpg");
-
-      // ⭐ FIX: Backend still requires garment as FILE
-      const garmentBlob = await fetch(garmentImage).then(r => r.blob());
-      formData.append("garment", garmentBlob, "garment.png");
-
-      formData.append("outfitType", garmentName);
-
-      console.log("🚀 Sending to /api/test-tryon PREVIEW endpoint");
-
-      const response = await fetch("/api/garnment-swap", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const err = await response.text();
-        throw new Error(err);
-      }
-
-      const data = await response.json();
-      console.log("🎯 Try-on result:", data);
-
-      if (!data.success || !data.result) {
-        throw new Error(data.error || "No result");
-      }
-
-      const resultUrl = data.result;
-      setTryOnResult(resultUrl);
-
-      console.log("✨ Preview TryOn done:", resultUrl);
-
-    } catch (err) {
-      console.error("❌ Error:", err);
-      setErrorMsg(err.message);
-    } finally {
-      setIsProcessing(false);
+      modelBlob = new Blob([byteArray], { type: "image/jpeg" });
+    } else {
+      modelBlob = await fetch(modelImage).then(r => r.blob());
     }
-  };
+
+    formData.append("model", modelBlob, "user.jpg");
+
+    // Handle garment image
+    const garmentBlob = await fetch(garmentImage).then(r => r.blob());
+    formData.append("garment", garmentBlob, "garment.png");
+
+    formData.append("outfitType", tryOnData?.dressType?.toLowerCase() || tryOnData?.outfitType || "lehenga");
+
+    console.log("🚀 Sending to /api/garnment-swap");
+
+    const response = await fetch("/api/garnment-swap", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err);
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.result) {
+      throw new Error(data.error || "No result");
+    }
+
+    const resultUrl = data.result;
+    setTryOnResult(resultUrl);
+
+    console.log("✅ Try-on complete");
+
+  } catch (err) {
+    console.error("❌ Error:", err);
+    setErrorMsg(err.message);
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
 
   //it worked last time
@@ -844,13 +875,31 @@ const generateVideo = async () => {
     checkStatus();
   };
 
-
-  useEffect(() => {
-    const { modelImage, garmentImage } = tryOnData || {};
-    if (isOpen && modelImage && garmentImage) {
-      performTryOn();
-    }
-  }, [isOpen, tryOnData]);
+useEffect(() => {
+  const { modelImage, garmentImage } = tryOnData || {};
+  
+  // ✅ STRICT SINGLE EXECUTION CHECK
+  if (
+    isOpen && 
+    modelImage && 
+    garmentImage && 
+    !hasStarted && 
+    !tryOnResult && 
+    !isProcessing
+  ) {
+    console.log("🎬 Starting try-on (FIRST TIME ONLY)");
+    console.log("📸 Model:", modelImage.substring(0, 50));
+    console.log("👗 Garment:", garmentImage.substring(0, 50));
+    
+    setHasStarted(true);
+    performTryOn();
+  }
+  
+  // ✅ Reset when modal closes
+  if (!isOpen) {
+    setHasStarted(false);
+  }
+}, [isOpen]); // ✅ ONLY depend on isOpen
 
   if (!isOpen) return null;
 
@@ -918,6 +967,63 @@ const changeBackground = async (backgroundType) => {
     setIsChangingBackground(false);
   }
 };
+
+
+
+const changeBlouse = async (blouseType) => {
+  if (!tryOnResult) {
+    toast.error("Please complete try-on first!");
+    return;
+  }
+
+  setIsChangingBlouse(true);
+  setSelectedBlouse(blouseType);
+
+  try {
+    console.log("👚 Starting blouse change...");
+
+    // Convert try-on result to blob
+    const response = await fetch(tryOnResult);
+    const tryOnBlob = await response.blob();
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('tryOnImage', tryOnBlob, 'tryon-result.png');
+    formData.append('blouseType', blouseType); // e.g., "half-sleeve", "full-sleeve"
+
+    console.log(`📤 Sending to backend with blouse: ${blouseType}`);
+
+    // Call backend API
+    const apiResponse = await fetch(`/api/change-blouse`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json();
+      throw new Error(errorData.error || `Server error: ${apiResponse.status}`);
+    }
+
+    const data = await apiResponse.json();
+
+    if (data.success && data.result) {
+      console.log("✅ Blouse change successful!");
+      setTryOnResult(data.result); // Update the main try-on result
+      toast.success(`Blouse changed to ${blouseType}! 👚`);
+    }
+    
+  } catch (error) {
+    console.error("❌ Blouse change failed:", error);
+    toast.error(error.message);
+  } finally {
+    setIsChangingBlouse(false);
+  }
+};
+
+
+
+
+
   const getCurrentDisplayImage = () => {
     return backgroundChangedImage || tryOnResult;
   };
@@ -1110,7 +1216,12 @@ const changeBackground = async (backgroundType) => {
       {/* TOP HEAh-DER - Back to Products Button */}
       <div className="absolute md:top-16 md:left-52   z-20">
         <button
-          onClick={onClose}
+          onClick={()=>{
+
+            onClose();
+    window.location.reload();
+          } 
+}
           className="flex items-center gap-2 px-4 py-2  shadow-sm hover:shadow-md transition-all text-sm font-medium text-primary border border-primary"
         >
           <ArrowLeft size={18} />
@@ -1214,7 +1325,108 @@ const changeBackground = async (backgroundType) => {
             </button>
           </div>
         </div>
+
+     
+
+
       </div>
+
+
+
+<div className="bg-white  ml-52 shadow-sm border border-gray-200 p-4 w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)] translate-y-[470px]">
+  {/* Half Sleeve */}
+  <div className="flex flex-col items-center">
+    <img
+      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg"
+      alt="Half sleeve blouse"
+      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
+    />
+    <button
+      onClick={() => changeBlouse("half-sleeve")}
+      disabled={!tryOnResult || isChangingBlouse}
+      className={`
+        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
+        border border-gray-300
+        ${selectedBlouse === "half-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        flex items-center justify-center gap-2
+      `}
+    >
+      {isChangingBlouse && selectedBlouse === "half-sleeve" ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        "Half Sleeve"
+      )}
+    </button>
+  </div>
+
+  {/* Full Sleeve */}
+  <div className="flex flex-col items-center">
+    <img
+      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg"
+      alt="Full sleeve blouse"
+      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
+    />
+    <button
+      onClick={() => changeBlouse("full-sleeve")}
+      disabled={!tryOnResult || isChangingBlouse}
+      className={`
+        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
+        border border-gray-300
+        ${selectedBlouse === "full-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        flex items-center justify-center
+      `}
+    >
+      Full Sleeve
+    </button>
+  </div>
+
+  {/* Sleeveless */}
+  <div className="flex flex-col items-center">
+    <img
+      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg"
+      alt="Sleeveless blouse"
+      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
+    />
+    <button
+      onClick={() => changeBlouse("sleeveless")}
+      disabled={!tryOnResult || isChangingBlouse}
+      className={`
+        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
+        border border-gray-300
+        ${selectedBlouse === "sleeveless" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        flex items-center justify-center
+      `}
+    >
+      Sleeveless
+    </button>
+  </div>
+
+  {/* Regular */}
+  <div className="flex flex-col items-center">
+    <img
+      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/regular_iyn9zb.jpg"
+      alt="Regular blouse"
+      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
+    />
+    <button
+      onClick={() => changeBlouse("regular")}
+      disabled={!tryOnResult || isChangingBlouse}
+      className={`
+        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
+        border border-gray-300
+        ${selectedBlouse === "regular" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        flex items-center justify-center
+      `}
+    >
+      Regular
+    </button>
+  </div>
+</div>
+
 
       {/* RIGHT SIDEBAR - Scenes & Actions (Desktop) */}
       <div className="absolute top-32 right-52 z-20 hidden  lg:block w-[290px] scrollbar-none bg-white  shadow-lg p-5 max-h-[calc(100vh-120px)] overflow-y-auto">
@@ -1432,7 +1644,7 @@ const changeBackground = async (backgroundType) => {
         {/* Actions */}
         <div className="px-4 py-4 border-t border-gray-200 space-y-2 pb-6">
           <button
-            onClick={() => navigate(`/products/${tryOnData?.productId}`)}
+            onClick={() => navigate(`/product/${tryOnData?.productId}`)}
             className="w-full bg-primary text-white py-3 rounded-lg font-medium text-sm"
           >
             VIEW PRODUCT

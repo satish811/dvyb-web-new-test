@@ -226,56 +226,66 @@ const IndividualProductDetailsPage = () => {
     }
   };
 
-  const handleTryOnClick = () => {
-    if (userRole === "B2B") {
-      alert("Virtual Try-On is not available for your account");
-      return;
-    }
+const handleTryOnClick = () => {
+  if (userRole === "B2B") {
+    alert("Virtual Try-On is not available for your account");
+    return;
+  }
 
-    if (requiresSizeSelection && !validateSizeSelection()) {
-      return;
-    }
+  if (requiresSizeSelection && !validateSizeSelection()) {
+    return;
+  }
 
-    const garmentImage = product.imageUrls?.[0];
-    if (!garmentImage) {
-      alert("No image available for try-on");
-      return;
-    }
+  const garmentImage = product.imageUrls?.[0];
+  if (!garmentImage) {
+    alert("No image available for try-on");
+    return;
+  }
 
-    // ✅ CREATE tryOnPayload (was missing!)
-    const tryOnPayload = {
-      garmentImage,
-      garmentName: product.title || product.name,
-      productId: product.id,
-      selectedColors: product.selectedColors || [],
-      selectedSizes: product.selectedSizes || [],
-      fabric: product.fabric || "",
-      price: parseFloat(product.price) || 0,
-      discount: product.discount || 0,
-      imageUrls: product.imageUrls || [garmentImage],
-      selectedSize: requiresSizeSelection ? selectedSize : "One Size",
-      dressType: product.dressType || "lehenga",
-      outfitType: product.dressType?.toLowerCase() || "lehenga",
-    };
-
-    // ✅ NOW check if mobile or desktop
-    if (isMobile()) {
-      // Mobile: Navigate to page with state
-      navigate(`/tryon/start/${product.id}`, {
-        state: tryOnPayload,
-      });
-    } else {
-      // Desktop: Show modal
-      setTryOnData(tryOnPayload);
-      setShowUploadSelfieModal(true);
-    }
+  const tryOnPayload = {
+    garmentImage,
+    garmentName: product.title || product.name,
+    productId: product.id,
+    selectedColors: product.selectedColors || [],
+    selectedSizes: product.selectedSizes || [],
+    fabric: product.fabric || "",
+    price: parseFloat(product.price) || 0,
+    discount: product.discount || 0,
+    imageUrls: product.imageUrls || [garmentImage],
+    selectedSize: requiresSizeSelection ? selectedSize : "One Size",
+    dressType: product.dressType?.toLowerCase() || "lehenga",
+    outfitType: product.dressType?.toLowerCase() || "lehenga",
   };
 
-  const handleUploadSelfieNext = (data) => {
-    setShowUploadSelfieModal(false);
-    setTryOnData((prev) => ({ ...prev, ...data }));
+  if (isMobile()) {
+    navigate(`/tryon/start/${product.id}`, {
+      state: tryOnPayload,
+    });
+  } else {
+    setTryOnData(tryOnPayload);
+    setShowUploadSelfieModal(true);
+    // ✅ DO NOT call performTryOn here
+  }
+};
+
+
+const handleUploadSelfieNext = (data) => {
+  console.log("📥 Received data from UploadSelfieModal:", data);
+  
+  setShowUploadSelfieModal(false);
+  
+  // ✅ Merge data properly
+  setTryOnData((prev) => {
+    const merged = { ...prev, ...data };
+    console.log("🔄 Merged tryOnData:", merged);
+    return merged;
+  });
+  
+  // ✅ Small delay to ensure state updates
+  setTimeout(() => {
     setShowTryOnPreviewModal(true);
-  };
+  }, 100);
+};
 
   const handleModalClose = () => {
     setShowUploadSelfieModal(false);

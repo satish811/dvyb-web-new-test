@@ -277,6 +277,86 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
   }
 }
 
+
+async function generateBlouseChange(tryOnBase64, blouseType) {
+  const prompt = `
+ROLE
+You are a professional fashion photo editor specializing in saree blouse modifications.
+
+TASK
+Modify ONLY the blouse in this saree image to a ${blouseType} design.
+
+STRICT RULES
+- Keep the SAME person, face, pose, and body
+- Keep the SAME saree (fabric, color, design, draping)
+- ONLY change the blouse sleeve style to: ${blouseType}
+- Maintain realistic fit and proportions
+- NO other changes to the image
+
+OUTPUT
+Return ONLY one high-resolution photorealistic inline_data image.
+NO text or explanations.
+`;
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": process.env.GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+ 
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
+
+
+async function generateMultipleTryOns(modelBase64, garments) {
+  console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
+  const results = {};
+  
+  for (const garment of garments) {
+    console.log(`\n📸 Processing ${garment.name}...`);
+    
+    try {
+      const garmentBase64 = await downloadAsBase64(garment.url);
+      const output = await generateTryOnWithRetry(modelBase64, garmentBase64, garment.name);
+      
+      if (output) {
+        results[garment.name] = `data:image/png;base64,${output}`;
+        console.log(`✅ ${garment.name} generated successfully`);
+      } else {
+        console.log(`❌ ${garment.name} generation failed - no output`);
+        results[garment.name] = null;
+      }
+    } catch (error) {
+      console.error(`❌ Error generating ${garment.name}:`, error.message);
+      results[garment.name] = null;
+    }
+  }
+  
+  return results;
+}
+
+
 async function generateMultipleTryOns(modelBase64, garments) {
   console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
   const results = {};
@@ -485,6 +565,52 @@ export default async function handler(req, res) {
       });
     }
 
+
+
+    // ======== POST: /api/change-blouse ========
+if (req.method === "POST" && path === "/api/change-blouse") {
+  console.log('\n👚 === BLOUSE CHANGE REQUEST ===');
+
+  // Run multer in serverless
+  await runMiddleware(req, res, upload.single('tryOnImage'));
+
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      error: "Try-on image is required"
+    });
+  }
+
+  const { blouseType } = req.body;
+
+  if (!blouseType) {
+    return res.status(400).json({
+      success: false,
+      error: "blouseType is required"
+    });
+  }
+
+  console.log(`👚 Blouse type: ${blouseType}`);
+  console.log(`📊 Image size: ${req.file.size} bytes`);
+
+  // Convert image to base64
+  const tryOnBase64 = req.file.buffer.toString("base64");
+
+  console.log("🎨 Calling Gemini for blouse modification...");
+  const result = await generateBlouseChange(tryOnBase64, blouseType);
+
+  if (!result) {
+    throw new Error("No image returned from AI");
+  }
+
+  console.log("✨ SUCCESS — Blouse Changed!");
+
+  return res.json({
+    success: true,
+    blouseType,
+    result: `data:image/png;base64,${result}`
+  });
+}
 
 
 

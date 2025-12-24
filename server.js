@@ -398,11 +398,20 @@ app.post('/api/tryon-from-urls', async (req, res) => {
 async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   console.log(`🎨 Generating AI try-on for: ${garmentName}`);
   
-  const isSaree = garmentName.toLowerCase() === 'saree';
+  // const isSaree = garmentName.toLowerCase() === 'saree';
+  // const islehenga = garmentName.toLowerCase()=== 'lehenga'
   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+const lowerName = garmentName?.toLowerCase() || "";
 
+// const isBackgroundSwap = lowerName.includes("background");
+const isSaree = lowerName === "saree";
+const isLehenga = lowerName === "lehenga";
+const isAnarkali = lowerName === "anarkali";
+const isSharara = lowerName === "sharara";
+const isKurtaSet = lowerName === "kurta set" || lowerName === "kurta sets";
 
-const prompt = isBackgroundSwap ? `
+const prompt = isBackgroundSwap
+? `
 ROLE
 You are a professional photo editor performing a REALISTIC background replacement.
 
@@ -418,87 +427,122 @@ PERSON PRESERVATION (STRICT)
 
 REALISTIC INTEGRATION
 - Match lighting direction, intensity, and color temperature to Image 2
-- Add realistic ground shadows and contact shadows
-- Match perspective and scale so the person fits the environment
-- Blend edges cleanly (no cutout artifacts)
-- Apply subtle ambient light spill from environment onto the person
-- Respect depth of field if present in the background
+- Add realistic ground and contact shadows
+- Match perspective and scale
+- Clean edge blending only
+- Apply subtle ambient light spill if present
 
 PROHIBITED
 - NO clothing changes
 - NO face/body edits
 - NO floating placement
-- NO text, watermarks, frames, or multiple images
-- NEVER return the unchanged input image
+- NO text, watermarks, frames
+- NEVER return unchanged input
 
 OUTPUT
-Return ONLY one high-resolution inline_data image of the person realistically placed in the new background.
-NO text, JSON, or explanations.
+Return ONE high-resolution inline_data image only.
 `
 :
 `
 ROLE
-You are a professional fashion photo editor performing a STRICT, photorealistic virtual try-on.
+You are a professional fashion photo editor performing a STRICT photorealistic virtual try-on.
 
 INPUT IMAGES
 - Image 1: the real person
-- Image 2: the garment reference
+- Image 2: the garment reference (ABSOLUTE SOURCE OF TRUTH)
 
 MAIN OBJECTIVE
 Create ONE realistic photo where:
-- The SAME person from Image 1 is wearing the EXACT garment from Image 2
-- ONLY the clothing changes — nothing else
+- The SAME person from Image 1 wears the EXACT garment from Image 2
+- ONLY the clothing may change
 
-IDENTITY & SCENE PRESERVATION (NON-NEGOTIABLE)
-- Do NOT change face, facial expression, skin tone, hair, body shape, height, or pose
-- Do NOT change background, camera angle, framing, or environment
-- Preserve original lighting and shadows from Image 1
+GLOBAL IDENTITY & SCENE LOCK (NON-NEGOTIABLE)
+- Face, hair, skin tone, body shape, height, pose → UNCHANGED
+- Background, camera angle, framing → UNCHANGED
+- No beautification, stylisation, cleanup, or enhancement
 
 CLOTHING TRANSFER RULES
-- Completely REMOVE the original outfit from Image 1
-- Replace it ONLY with the garment from Image 2
-- ALWAYS follow Image 2 for:
-  - Neckline
-  - Sleeve style and sleeve length (including sleeveless)
-  - Cut, fit, silhouette, and garment length
-- If Image 1 conflicts with Image 2, Image 2 ALWAYS wins
+- Remove original outfit ONLY if different
+- Replace it ONLY with garment from Image 2
+- Image 2 ALWAYS overrides Image 1 in case of conflict
 
 FABRIC & DESIGN ACCURACY
-- Copy ALL visible details from Image 2 exactly:
-  - Fabric type, texture, color
-  - Embroidery, prints, motifs, borders, sequins, shine, transparency
-- Do NOT invent new patterns
-- Do NOT simplify or remove embroidery
-- Preserve motif placement while adapting to body pose
+- Copy ALL visible details EXACTLY:
+  - Fabric, texture, color
+  - Embroidery, motifs, borders, shine, transparency
+- NO invention
+- NO simplification
+- NO rebalance
 
 ${isSaree ? `
-SAREE-SPECIFIC RULES
-- Drape the saree in a natural Nivi style:
-  - 8–10 neat pleats tucked at the waist
-  - Pallu flowing naturally over the LEFT shoulder
-- Saree length should reach the ankles
-- The blouse MUST come from Image 2:
-  - EXACT neckline, sleeve style and length, back design, and fit
-  - If Image 2 blouse is sleeveless, the result MUST be sleeveless
-- IGNORE any blouse or top worn in Image 1
+━━━━━━━━━━ SAREE STRUCTURE RULES ━━━━━━━━━━
+- Saree is ONE continuous fabric (NOT skirt + dupatta)
+- Natural Nivi drape ONLY
+- 6–8 waist pleats
+- Pallu over LEFT shoulder
+- Blouse must match Image 2 EXACTLY
+- No pleat rebuilding or pallu repositioning
 ` : ``}
 
+${isLehenga ? `
+━━━━━━━━━━ LEHENGA STRUCTURE RULES ━━━━━━━━━━
+- Three distinct components:
+  1. Choli (upper blouse)
+  2. Panelled lehenga skirt
+  3. Dupatta
+- Components must NEVER merge or bleed
+- Preserve panel count, width, flare, hem embroidery
+- Do NOT flatten flare or thin borders
+` : ``}
+
+${isAnarkali ? `
+━━━━━━━━━━ ANARKALI STRUCTURE RULES ━━━━━━━━━━
+- Upper bodice + lower panelled flare + dupatta
+- Preserve panel count, seam positions, flare volume
+- No skirt/gown conversion
+- Embroidery must follow vertical panel flow
+` : ``}
+
+${isSharara ? `
+━━━━━━━━━━ SHARARA STRUCTURE RULES ━━━━━━━━━━
+- Four distinct zones:
+  1. Kurta
+  2. Upper flare transition
+  3. Lower wide sharara panels
+  4. Dupatta
+- Do NOT convert into palazzo, churidar, or lehenga
+- Preserve seam position, flare rate, and panel width
+` : ``}
+
+${isKurtaSet ? `
+━━━━━━━━━━ KURTA SET STRUCTURE RULES ━━━━━━━━━━
+- Kurta + bottom + dupatta are DISTINCT
+- Bottom type must match Image 2 exactly:
+  churidar / pant / palazzo / salwar
+- No silhouette conversion
+` : ``}
+
+COLOR & LIGHTING LOCK (ABSOLUTE)
+- Preserve EXACT color values from Image 2
+- NO hue, saturation, brightness, gamma, warmth shifts
+- Lighting may affect shadows ONLY
+
 REALISM & INTEGRATION
-- Garment must follow natural gravity, folds, and body contours
-- No floating fabric, broken seams, or cut-and-paste artifacts
-- Shadows, highlights, and reflections must match Image 1 lighting
-- Output must look like a real camera photograph (not illustration)
+- Natural gravity and folds
+- No floating fabric
+- No broken seams
+- Must look like a real camera photograph
 
 STRICTLY PROHIBITED
-- NO changes to face, hair, body, pose, or background
-- NO added or removed jewelry, accessories, makeup, props, or text
-- NO logos, watermarks, frames, or split images
-- NEVER return the unchanged input image
+- Face/body/background edits
+- Accessories, makeup, props
+- Logos, watermarks, text
+- Returning unchanged image
 
 OUTPUT
-Return ONLY one high-resolution photorealistic inline_data image.
-NO text, JSON, or explanations.
+Return ONE high-resolution photorealistic inline_data image only.
 `;
+
 
   const payload = {
     contents: [
@@ -584,6 +628,66 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
     }
   }
 }
+
+
+//blouse change function
+
+
+async function generateBlouseChange(tryOnBase64, blouseType) {
+  const prompt = `
+ROLE
+You are a professional fashion photo editor specializing in saree blouse modifications.
+
+
+TASK
+Modify ONLY the blouse in this saree image to a ${blouseType} design.
+
+
+STRICT RULES
+- Keep the SAME person, face, pose, and body
+- Keep the SAME saree (fabric, color, design, draping)
+- ONLY change the blouse sleeve style to: ${blouseType}
+- Maintain realistic fit and proportions
+- NO other changes to the image
+
+
+OUTPUT
+Return ONLY one high-resolution photorealistic inline_data image.
+NO text or explanations.
+`;
+
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+ 
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
 
 
 
@@ -745,6 +849,56 @@ app.post("/api/myprofile-multi-tryon", upload.single("model"), async (req, res) 
   }
 });
 
+
+
+
+
+
+
+app.post('/api/change-blouse', upload.single('tryOnImage'), async (req, res) => {
+  console.log('\n👚 === BLOUSE CHANGE REQUEST ===');
+ 
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "Try-on image is required"
+      });
+    }
+
+
+    const { blouseType } = req.body;
+   
+    console.log(`👚 Blouse type: ${blouseType}`);
+
+
+    const tryOnBase64 = req.file.buffer.toString("base64");
+   
+    // Call Gemini with blouse-specific prompt
+    const result = await generateBlouseChange(tryOnBase64, blouseType);
+
+
+    if (!result) {
+      throw new Error("No image returned from AI");
+    }
+
+
+    console.log("✨ SUCCESS — Blouse Changed! 👚");
+   
+    return res.json({
+      success: true,
+      result: `data:image/png;base64,${result}`,
+      blouseType: blouseType
+    });
+   
+  } catch (err) {
+    console.error("❌ BLOUSE CHANGE ERROR:", err.message);
+    return res.status(500).json({
+      error: "Blouse change failed",
+      details: err.message,
+    });
+  }
+});
 
 
 

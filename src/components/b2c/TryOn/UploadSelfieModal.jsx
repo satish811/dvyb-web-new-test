@@ -115,27 +115,56 @@ const UploadSelfieModal = ({
     // Normalize dress type to lowercase and remove extra spaces
     const normalizedType = dressType?.toLowerCase().trim();
 
+
+
+
+    
     // Define all model arrays
+    const lehengamodels = [
+        {
+        modelName: "Model 1",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
+      },
+      {
+               modelName: "Model 2",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model12_nvdjir.jpg",
+      },
+      
+          {
+               modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
+      },
+          {
+               modelName: "Model 4",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+      },
+
+
+    ]
     const sareeModels = [
       {
         modelName: "Model 1",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/modeltryon_wsilt2.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
       },
       {
         modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_5maj435maj435maj_zsikdk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765348065/model1_psruws.jpg",
       },
       {
         modelName: "Model 3",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_784di8784di8784d_ra30uh.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
       },
       {
         modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213101/Gemini_Generated_Image_1vnwft1vnwft1vnw_gvxeta.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
       },
     ];
 
@@ -300,7 +329,8 @@ const UploadSelfieModal = ({
       case "kurtaset":
         return kurthaModels;
 
-      case "lehenga":
+      case "lehenga": 
+      return lehengamodels
       case "wedding": // Wedding uses lehenga models
         return universalModels;
 
@@ -387,12 +417,18 @@ const UploadSelfieModal = ({
     }
   };
 
-  const handleContinue = () => {
-    if (selectedImage && garmentImage) {
-      onNext({ modelImage: selectedImage, garmentImage, is3D });
-    }
-  };
-
+const handleContinue = () => {
+  console.log("🔘 Upload Continue clicked");
+  
+  if (selectedImage && garmentImage) {
+    console.log("✅ Passing uploaded image to parent");
+    onNext({ 
+      modelImage: selectedImage, 
+      garmentImage, 
+      is3D 
+    });
+  }
+};
   const handleReupload = () => {
     setStep(2);
     setSelectedImage(null);
@@ -680,22 +716,21 @@ const UploadSelfieModal = ({
         </div>
       )}
 
-      {/* Step 4: Success */}
-      {step === 4 && (
-        <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
-          <img
-            src={selectedImage}
-            alt="Success"
-            className="w-full max-w-sm h-64 object-contain  shadow-md mb-4"
-          />
-          <div className="flex items-center gap-2  px-4 py-3 rounded-lg mb-5">
-            {/* <CheckCircle className="text-green-600" size={22} /> */}
-            <p className="text-green-700 font-normal -ml-48  text-start text-sm">
-              Image uploaded successfully
-            </p>
-          </div>
-          <button
-            onClick={handleContinue}
+{/* Step 4: Success */}
+{step === 4 && (
+  <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
+    <img
+      src={selectedImage}
+      alt="Success"
+      className="w-full max-w-sm h-64 object-contain shadow-md mb-4"
+    />
+    <div className="flex items-center gap-2 px-4 py-3 rounded-lg mb-5">
+      <p className="text-green-700 font-normal -ml-48 text-start text-sm">
+        Image uploaded successfully
+      </p>
+    </div>
+    <button
+      onClick={handleContinue}
             className="w-full max-w-sm bg-primary text-white py-3  font-medium hover:bg-red-800"
           >
             CONTINUE
@@ -880,7 +915,7 @@ const UploadSelfieModal = ({
                       <img
                         src={model.modelimg}
                         alt={model.modelName}
-                        className="w-full h-[240px] object-cover rounded"
+                        className="w-full h-[240px] object-contain rounded"
                       />
                       <p className="text-left mt-2 text-sm font-medium text-gray-700">
                         {model.modelName}
@@ -1049,18 +1084,24 @@ const UploadSelfieModal = ({
           {/* ---------- Continue button (bottom-right) ---------- */}
           <div className="flex justify-end mt-8">
             <button
-              onClick={() => {
-                // Final validation before proceeding to try-on
-                if (!selectedModel) {
-                  toast.error("Please select a model to continue");
-                  return;
-                }
-                onNext({
-                  modelImage: selectedModel.image,
-                  garmentImage,
-                  is3D,
-                });
-              }}
+            onClick={() => {
+  console.log("🔘 Model Preview Continue clicked");
+  
+  if (!selectedModel) {
+    alert("Please select a model to continue");
+    return;
+  }
+  
+  console.log("✅ Passing model to parent:", selectedModel.name);
+  
+  // ✅ Call onNext ONCE
+  onNext({
+    modelImage: selectedModel.image,
+    garmentImage,
+    is3D,
+    modelName: selectedModel.name,
+  });
+}}
               className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:bg-[#8B0000] hover:text-white hover:border-[#8B0000] transition-all"
             >
               Continue
