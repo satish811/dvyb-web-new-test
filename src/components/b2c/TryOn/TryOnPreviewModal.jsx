@@ -876,6 +876,10 @@ const generateVideo = async () => {
   };
 
 useEffect(() => {
+
+   if (hasStartedRef.current) return;
+
+
   const { modelImage, garmentImage } = tryOnData || {};
   
   // ✅ STRICT SINGLE EXECUTION CHECK
@@ -899,7 +903,7 @@ useEffect(() => {
   if (!isOpen) {
     setHasStarted(false);
   }
-}, [isOpen]); // ✅ ONLY depend on isOpen
+}, [isOpen,tryOnData, hasStarted, tryOnResult, isProcessing]); // ✅ ONLY depend on isOpen
 
   if (!isOpen) return null;
 
