@@ -357,32 +357,33 @@ async function generateMultipleTryOns(modelBase64, garments) {
 }
 
 
-async function generateMultipleTryOns(modelBase64, garments) {
-  console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
-  const results = {};
+// async function generateMultipleTryOns(modelBase64, garments) {
 
-  for (const garment of garments) {
-    console.log(`\n📸 Processing ${garment.name}...`);
+//   console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
+//   const results = {};
 
-    try {
-      const garmentBase64 = await downloadAsBase64(garment.url);
-      const output = await generateTryOnWithRetry(modelBase64, garmentBase64, garment.name);
+//   for (const garment of garments) {
+//     console.log(`\n📸 Processing ${garment.name}...`);
 
-      if (output) {
-        results[garment.name] = `data:image/png;base64,${output}`;
-        console.log(`✅ ${garment.name} generated successfully`);
-      } else {
-        console.log(`❌ ${garment.name} generation failed - no output`);
-        results[garment.name] = null;
-      }
-    } catch (error) {
-      console.error(`❌ Error generating ${garment.name}:`, error.message);
-      results[garment.name] = null;
-    }
-  }
+//     try {
+//       const garmentBase64 = await downloadAsBase64(garment.url);
+//       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, garment.name);
 
-  return results;
-}
+//       if (output) {
+//         results[garment.name] = `data:image/png;base64,${output}`;
+//         console.log(`✅ ${garment.name} generated successfully`);
+//       } else {
+//         console.log(`❌ ${garment.name} generation failed - no output`);
+//         results[garment.name] = null;
+//       }
+//     } catch (error) {
+//       console.error(`❌ Error generating ${garment.name}:`, error.message);
+//       results[garment.name] = null;
+//     }
+//   }
+
+//   return results;
+// }
 
 // ============ ROUTE HANDLER ============
 export default async function handler(req, res) {
