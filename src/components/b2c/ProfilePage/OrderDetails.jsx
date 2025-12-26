@@ -134,6 +134,47 @@ const OrderDetails = ({ order = {}, onBack = () => {}, onDownloadInvoice = () =>
           </div>
         </div>
 
+        {/* SHIPMENT DETAILS */}
+        {order.awbCode && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-5 mb-8">
+             <div className="flex justify-between items-start mb-3">
+               <h3 className="font-semibold text-blue-800 flex items-center gap-2">
+                 🚚 Shipment Details 
+                 {order.isTestOrder && <span className="bg-yellow-200 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full">TEST MODE</span>}
+               </h3>
+             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500 text-xs uppercase">Courier Partner</p>
+                  <p className="font-medium text-gray-900">{order.courierName || "Standard Shipping"}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase">AWB Number</p>
+                  <p className="font-medium text-gray-900 tracking-wide">{order.awbCode}</p>
+                </div>
+                <div>
+                   <p className="text-gray-500 text-xs uppercase">Current Status</p>
+                   <p className="font-medium text-gray-900">{order.shipmentStatus || "Booked"}</p>
+                </div>
+                <div className="flex items-center">
+                   {order.trackingUrl ? (
+                     <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" 
+                        className="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 text-xs font-semibold uppercase tracking-wider transition-colors">
+                        Track Shipment
+                     </a>
+                   ) : (
+                     <span className="text-gray-400 text-xs italic">Tracking pending</span>
+                   )}
+                </div>
+             </div>
+             {order.estimatedDelivery && (
+                <div className="mt-3 pt-3 border-t border-blue-100 text-xs text-blue-700">
+                  Estimated Delivery: <span className="font-medium">{order.estimatedDelivery}</span>
+                </div>
+             )}
+          </div>
+        )}
+
         {/* PROGRESS TRACKER */}
         {order.status !== "Cancelled" && (
           <div className="px-6 py-8 bg-white mb-6">
