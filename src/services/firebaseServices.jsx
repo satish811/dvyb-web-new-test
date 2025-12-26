@@ -25,7 +25,7 @@ class ProductOperationalService {
   /** Create a new product */
   async createProduct(userId, productData) {
     try {
-      const productRef = await addDoc(collection(db, "users", userId, "bulkOrders"), {
+      const productRef = await addDoc(collection(db, "users", userId, "products"), {
         ...productData,
         userId,
         timestamp: serverTimestamp(),
@@ -45,7 +45,7 @@ class ProductOperationalService {
     try {
       console.log(" Starting product fetch...");
 
-      const q = collectionGroup(db, "bulkOrders");
+      const q = collectionGroup(db, "products");
       const querySnapshot = await getDocs(q);
 
       const fetchedProducts = querySnapshot.docs.map((docSnap) => {
