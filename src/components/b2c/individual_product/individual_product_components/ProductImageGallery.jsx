@@ -5,6 +5,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
   const [selectedImage, setSelectedImage] = useState(images[0] || "");
   const [imageError, setImageError] = useState(false);
   const scrollContainerRef = useRef(null);
+  const lastScrollTop = useRef(0); // Store last scroll position
 
   const handleImageError = () => setImageError(true);
 
@@ -13,11 +14,38 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setImageError(false);
   }, [product?.id, images.length]);
 
+  // Save scroll position before interaction
+  const saveScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      lastScrollTop.current = scrollContainerRef.current.scrollTop;
+    }
+  };
+
+  // Handle thumbnail click with scroll preservation
+  const handleThumbnailClick = (img, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Save current scroll position
+    saveScrollPosition();
+
+    // Update selected image
+    setSelectedImage(img);
+
+    // Restore scroll position after a tiny delay
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = lastScrollTop.current;
+      }
+    }, 10);
+  };
+
   // Scroll thumbnail functions
   const scrollThumbnailsUp = () => {
     if (scrollContainerRef.current) {
+      lastScrollTop.current = scrollContainerRef.current.scrollTop - 106;
       scrollContainerRef.current.scrollBy({
-        top: -132, // 121px thumbnail height + 11px margin
+        top: -106,
         behavior: 'smooth'
       });
     }
@@ -25,16 +53,12 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
 
   const scrollThumbnailsDown = () => {
     if (scrollContainerRef.current) {
+      lastScrollTop.current = scrollContainerRef.current.scrollTop + 106;
       scrollContainerRef.current.scrollBy({
-        top: 132, // 121px thumbnail height + 11px margin
+        top: 106,
         behavior: 'smooth'
       });
     }
-  };
-
-  // Handle thumbnail click
-  const handleThumbnailClick = (img) => {
-    setSelectedImage(img);
   };
 
   // Mobile Slider
@@ -104,21 +128,28 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
       >
         {/* Thumbnail Column Container */}
         <div className="absolute left-0">
-          
           {/* Top Scroll Arrow - Only show if there are more than 4 thumbnails */}
           {images.length > 4 && (
             <button
               onClick={scrollThumbnailsUp}
-              className="absolute left-1/2 -translate-x-1/2 top-0 -mt-6 z-10 
-                bg-white hover:bg-gray-50 p-1 rounded-full 
-                shadow-sm border border-gray-300 
-                transition-all hover:scale-110 active:scale-95"
-              style={{ width: "24px", height: "24px" }}
+              onMouseDown={(e) => e.preventDefault()} // Prevent focus
+              className="
+                absolute top-0 -mt-1 z-10
+                flex items-center justify-center
+                bg-white hover:bg-gray-50
+                shadow-sm border border-gray-300
+                transition-all hover:scale-105 active:scale-95
+                focus:outline-none
+              "
+              style={{
+                width: "78px",
+                height: "8px",
+                left: 0
+              }}
             >
-              <ChevronUp className="w-3 h-3 text-gray-600 mx-auto" />
+              <ChevronUp className="w-4 h-4 text-gray-700" />
             </button>
           )}
-
           {/* Thumbnail Column - Scrollable with all images */}
           <div
             ref={scrollContainerRef}
@@ -135,22 +166,28 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
               height: "505px",
               maxHeight: "505px",
             }}
+            onMouseDown={saveScrollPosition} // Save position on any interaction
+            onTouchStart={saveScrollPosition}
           >
             {images.map((img, index) => (
               <button
                 key={index}
-                onClick={() => handleThumbnailClick(img)}
+                onClick={(e) => handleThumbnailClick(img, e)}
+                onMouseDown={(e) => {
+                  e.preventDefault(); // Prevent focus loss
+                  saveScrollPosition();
+                }}
                 className={`
-                  overflow-hidden mb-[11px] last:mb-0 transition-all 
+                  overflow-hidden mb-[6px] last:mb-0 transition-all
                   ${selectedImage === img
                     ? 'ring-2 ring-[#573131] shadow-md'
                     : 'ring-1 ring-transparent hover:ring-gray-300 hover:shadow-sm'
                   }
-                  focus:outline-none
+                  focus:outline-none focus:ring-2 focus:ring-[#573131]
                 `}
                 style={{
                   width: "78px",
-                  height: "121px",
+                  height: "115px",
                   flexShrink: 0,
                 }}
               >
@@ -163,22 +200,29 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
               </button>
             ))}
           </div>
-
           {/* Bottom Scroll Arrow - Only show if there are more than 4 thumbnails */}
           {images.length > 4 && (
             <button
               onClick={scrollThumbnailsDown}
-              className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-6 z-10 
-                bg-white hover:bg-gray-50 p-1 rounded-full 
-                shadow-sm border border-gray-300 
-                transition-all hover:scale-110 active:scale-95"
-              style={{ width: "24px", height: "24px" }}
+              onMouseDown={(e) => e.preventDefault()} // Prevent focus
+              className="
+                absolute bottom-0 -mb-1 z-10
+                flex items-center justify-center
+                bg-white hover:bg-gray-50
+                shadow-sm border border-gray-300
+                transition-all hover:scale-105 active:scale-95
+                focus:outline-none
+              "
+              style={{
+                width: "78px",
+                height: "8px",
+                left: 0
+              }}
             >
-              <ChevronDown className="w-3 h-3 text-gray-600 mx-auto" />
+              <ChevronDown className="w-4 h-4 text-gray-700" />
             </button>
           )}
         </div>
-
         {/* Main Image */}
         <div
           className="absolute overflow-hidden bg-gray-50"
@@ -217,7 +261,6 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
       <div className="block md:hidden">
         <MobileImageSlider />
       </div>
-
       {/* Desktop - scales beautifully up to 3xl+ */}
       <DesktopGallery />
     </>
