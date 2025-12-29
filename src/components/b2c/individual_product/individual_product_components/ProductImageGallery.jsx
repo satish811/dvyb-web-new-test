@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const ProductImageGallery = ({ images = [], product = {} }) => {
   const [selectedImage, setSelectedImage] = useState(images[0] || "");
   const [imageError, setImageError] = useState(false);
+  const scrollContainerRef = useRef(null);
+  const lastScrollPosition = useRef(0); // Track last scroll position
 
   const handleImageError = () => setImageError(true);
 
@@ -11,6 +13,42 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setSelectedImage(images[0] || "");
     setImageError(false);
   }, [product?.id, images.length]);
+
+  // Save scroll position before any interaction
+  const saveScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      lastScrollPosition.current = scrollContainerRef.current.scrollTop;
+    }
+  };
+
+  // Restore scroll position after interaction
+  const restoreScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      // Use setTimeout to ensure DOM has updated
+      setTimeout(() => {
+        scrollContainerRef.current.scrollTop = lastScrollPosition.current;
+      }, 0);
+    }
+  };
+
+  // Handle thumbnail click with scroll preservation
+  const handleThumbnailClick = (e, img) => {
+    e.preventDefault(); // Prevent default button behavior
+
+    // Save current scroll position
+    saveScrollPosition();
+
+    // Update selected image
+    setSelectedImage(img);
+
+    // Restore scroll position
+    restoreScrollPosition();
+  };
+
+  // Handle mouse down to save scroll position before any interaction
+  const handleMouseDown = () => {
+    saveScrollPosition();
+  };
 
   // Mobile Slider
   const MobileImageSlider = () => {
@@ -62,7 +100,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
   };
 
   /**
-   * Desktop Gallery - All thumbnails now same large size
+   * Desktop Gallery - Scrollable thumbnails showing all images
    */
   const DesktopGallery = () => (
     <div className="hidden md:block">
@@ -77,35 +115,65 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
       "
         style={{ width: "438px", height: "505px" }}
       >
-        {/* Thumbnail Column - Uniform size, perfectly aligned */}
-        <div className="flex flex-col absolute left-0" style={{ width: "78px" }}>
-          {images.slice(0, 3).map((img, index) => (
+        {/* Thumbnail Column - Scrollable with all images (hidden scrollbar) */}
+        <div
+          ref={scrollContainerRef}
+          className="
+          flex flex-col absolute left-0 overflow-y-auto
+          [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0
+          [&::-webkit-scrollbar-track]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:rounded-none
+          [-ms-overflow-style:none] [scrollbar-width:none]
+          hover:overflow-y-auto hover:[&::-webkit-scrollbar]:w-1
+          hover:[&::-webkit-scrollbar-thumb]:bg-gray-300
+          hover:[&::-webkit-scrollbar-thumb]:hover:bg-gray-400
+        "
+          style={{
+            width: "78px",
+            height: "505px",
+            maxHeight: "505px",
+          }}
+          // Save scroll position on any interaction
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleMouseDown}
+        >
+          {images.map((img, index) => (
             <button
               key={index}
-              onClick={() => setSelectedImage(img)}
-              className="overflow-hidden mb-[11px] last:mb-0"
+              onClick={(e) => handleThumbnailClick(e, img)}
+              onMouseDown={(e) => e.preventDefault()} // Prevent focus
+              className={`
+              overflow-hidden mb-[11px] last:mb-0 transition-all 
+              ${selectedImage === img
+                  ? 'ring-2 ring-[#573131] shadow-md'
+                  : 'ring-1 ring-transparent hover:ring-gray-300 hover:shadow-sm'
+                }
+              focus:outline-none focus:ring-2 focus:ring-[#573131]
+            `}
               style={{
                 width: "78px",
                 height: "121px",
+                flexShrink: 0,
               }}
             >
               <img
                 src={img}
                 alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                className="w-full h-full object-cover"
                 onError={handleImageError}
               />
             </button>
           ))}
         </div>
 
-        {/* Main Image - Perfectly aligned with new thumbnail width */}
+        {/* Main Image */}
         <div
           className="absolute overflow-hidden bg-gray-50"
           style={{
-            left: "89px",   // 78px thumb + 11px gap
+            left: "89px",
             top: "0px",
-            width: "349px", // 301 + 48 (to compensate reduced thumb width)
+            width: "349px",
             height: "505px",
           }}
         >
