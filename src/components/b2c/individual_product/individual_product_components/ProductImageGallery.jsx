@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 
 const ProductImageGallery = ({ images = [], product = {} }) => {
   const [selectedImage, setSelectedImage] = useState(images[0] || "");
   const [imageError, setImageError] = useState(false);
   const scrollContainerRef = useRef(null);
-  const lastScrollPosition = useRef(0); // Track last scroll position
 
   const handleImageError = () => setImageError(true);
 
@@ -14,40 +13,28 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setImageError(false);
   }, [product?.id, images.length]);
 
-  // Save scroll position before any interaction
-  const saveScrollPosition = () => {
+  // Scroll thumbnail functions
+  const scrollThumbnailsUp = () => {
     if (scrollContainerRef.current) {
-      lastScrollPosition.current = scrollContainerRef.current.scrollTop;
+      scrollContainerRef.current.scrollBy({
+        top: -132, // 121px thumbnail height + 11px margin
+        behavior: 'smooth'
+      });
     }
   };
 
-  // Restore scroll position after interaction
-  const restoreScrollPosition = () => {
+  const scrollThumbnailsDown = () => {
     if (scrollContainerRef.current) {
-      // Use setTimeout to ensure DOM has updated
-      setTimeout(() => {
-        scrollContainerRef.current.scrollTop = lastScrollPosition.current;
-      }, 0);
+      scrollContainerRef.current.scrollBy({
+        top: 132, // 121px thumbnail height + 11px margin
+        behavior: 'smooth'
+      });
     }
   };
 
-  // Handle thumbnail click with scroll preservation
-  const handleThumbnailClick = (e, img) => {
-    e.preventDefault(); // Prevent default button behavior
-
-    // Save current scroll position
-    saveScrollPosition();
-
-    // Update selected image
+  // Handle thumbnail click
+  const handleThumbnailClick = (img) => {
     setSelectedImage(img);
-
-    // Restore scroll position
-    restoreScrollPosition();
-  };
-
-  // Handle mouse down to save scroll position before any interaction
-  const handleMouseDown = () => {
-    saveScrollPosition();
   };
 
   // Mobile Slider
@@ -100,7 +87,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
   };
 
   /**
-   * Desktop Gallery - Scrollable thumbnails showing all images
+   * Desktop Gallery - Scrollable thumbnails with navigation arrows
    */
   const DesktopGallery = () => (
     <div className="hidden md:block">
@@ -115,56 +102,81 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
       "
         style={{ width: "438px", height: "505px" }}
       >
-        {/* Thumbnail Column - Scrollable with all images (hidden scrollbar) */}
-        <div
-          ref={scrollContainerRef}
-          className="
-          flex flex-col absolute left-0 overflow-y-auto
-          [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0
-          [&::-webkit-scrollbar-track]:bg-transparent
-          [&::-webkit-scrollbar-thumb]:bg-transparent
-          [&::-webkit-scrollbar-thumb]:rounded-none
-          [-ms-overflow-style:none] [scrollbar-width:none]
-          hover:overflow-y-auto hover:[&::-webkit-scrollbar]:w-1
-          hover:[&::-webkit-scrollbar-thumb]:bg-gray-300
-          hover:[&::-webkit-scrollbar-thumb]:hover:bg-gray-400
-        "
-          style={{
-            width: "78px",
-            height: "505px",
-            maxHeight: "505px",
-          }}
-          // Save scroll position on any interaction
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
-        >
-          {images.map((img, index) => (
+        {/* Thumbnail Column Container */}
+        <div className="absolute left-0">
+          
+          {/* Top Scroll Arrow - Only show if there are more than 4 thumbnails */}
+          {images.length > 4 && (
             <button
-              key={index}
-              onClick={(e) => handleThumbnailClick(e, img)}
-              onMouseDown={(e) => e.preventDefault()} // Prevent focus
-              className={`
-              overflow-hidden mb-[11px] last:mb-0 transition-all 
-              ${selectedImage === img
-                  ? 'ring-2 ring-[#573131] shadow-md'
-                  : 'ring-1 ring-transparent hover:ring-gray-300 hover:shadow-sm'
-                }
-              focus:outline-none focus:ring-2 focus:ring-[#573131]
-            `}
-              style={{
-                width: "78px",
-                height: "121px",
-                flexShrink: 0,
-              }}
+              onClick={scrollThumbnailsUp}
+              className="absolute left-1/2 -translate-x-1/2 top-0 -mt-6 z-10 
+                bg-white hover:bg-gray-50 p-1 rounded-full 
+                shadow-sm border border-gray-300 
+                transition-all hover:scale-110 active:scale-95"
+              style={{ width: "24px", height: "24px" }}
             >
-              <img
-                src={img}
-                alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-                onError={handleImageError}
-              />
+              <ChevronUp className="w-3 h-3 text-gray-600 mx-auto" />
             </button>
-          ))}
+          )}
+
+          {/* Thumbnail Column - Scrollable with all images */}
+          <div
+            ref={scrollContainerRef}
+            className="
+              flex flex-col overflow-y-auto
+              [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0
+              [&::-webkit-scrollbar-track]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:rounded-none
+              [-ms-overflow-style:none] [scrollbar-width:none]
+            "
+            style={{
+              width: "78px",
+              height: "505px",
+              maxHeight: "505px",
+            }}
+          >
+            {images.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => handleThumbnailClick(img)}
+                className={`
+                  overflow-hidden mb-[11px] last:mb-0 transition-all 
+                  ${selectedImage === img
+                    ? 'ring-2 ring-[#573131] shadow-md'
+                    : 'ring-1 ring-transparent hover:ring-gray-300 hover:shadow-sm'
+                  }
+                  focus:outline-none
+                `}
+                style={{
+                  width: "78px",
+                  height: "121px",
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Bottom Scroll Arrow - Only show if there are more than 4 thumbnails */}
+          {images.length > 4 && (
+            <button
+              onClick={scrollThumbnailsDown}
+              className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-6 z-10 
+                bg-white hover:bg-gray-50 p-1 rounded-full 
+                shadow-sm border border-gray-300 
+                transition-all hover:scale-110 active:scale-95"
+              style={{ width: "24px", height: "24px" }}
+            >
+              <ChevronDown className="w-3 h-3 text-gray-600 mx-auto" />
+            </button>
+          )}
         </div>
 
         {/* Main Image */}
