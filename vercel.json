@@ -16,6 +16,9 @@
      "api/change-blouse.js": {
       "maxDuration": 300
     },
+      "api/change-neck.js": {
+      "maxDuration": 300
+    },
  "api/multi-tryon.js": { "maxDuration": 300 },
       "api/video/create.js": { "maxDuration": 300 },
     "api/video/status/[taskId].js": { "maxDuration": 300 },
