@@ -402,12 +402,63 @@ NO text or explanations.
 //neck change function
 
 async function generateNeckChange(tryOnBase64, neckType) {
+  // Normalize neck type input
+  const normalizedType = neckType.toLowerCase().includes('neck') 
+    ? neckType.toLowerCase() 
+    : `${neckType.toLowerCase()} neck`;
+  
+  // Define neck type specifications
+  const neckTypeSpecs = {
+    'boat neck': `BOAT NECK DEFINITION (CRITICAL)
+- Wide horizontal neckline
+- Runs close to the collarbone
+- Straight or gently curved line
+- NO depth, NO plunge, NO collar stand
+- Elegant, classic Indian saree blouse style`,
+    
+    'regular neck': `REGULAR NECK DEFINITION (CRITICAL)
+- Round neckline
+- Medium depth (2-3 inches below collarbone)
+- Natural, comfortable fit
+- Traditional saree blouse style
+- Not too high, not too low`,
+    
+    'v neck': `V NECK DEFINITION (CRITICAL)
+- V-shaped neckline
+- Moderate depth pointing downward
+- Flattering and elegant
+- Traditional saree blouse proportions`,
+    
+    'square neck': `SQUARE NECK DEFINITION (CRITICAL)
+- Straight horizontal top edge
+- Straight vertical side edges forming 90° angles
+- Clean, modern look
+- Traditional saree blouse fit`,
+    
+    'sweetheart neck': `SWEETHEART NECK DEFINITION (CRITICAL)
+- Curved neckline resembling top of a heart
+- Romantic and feminine
+- Moderate depth
+- Traditional saree blouse style`,
+    
+    'collar neck': `COLLAR NECK DEFINITION (CRITICAL)
+- Stand collar or shirt-style collar
+- Professional and structured look
+- Covers collarbone area
+- Traditional yet modern saree blouse style`
+  };
+
+  const neckSpec = neckTypeSpecs[normalizedType] || `NECKLINE MODIFICATION
+- Apply ${neckType} neckline style
+- Maintain appropriate coverage and fit
+- Keep traditional blouse proportions`;
+
   const prompt = `
 ROLE
 You are a professional Indian fashion photo editor.
 
 TASK
-Modify ONLY the blouse NECKLINE to a BOAT NECK design.
+Modify ONLY the blouse NECKLINE to a ${normalizedType.toUpperCase()} design.
 
 ABSOLUTE LOCKS (NON-NEGOTIABLE)
 - SAME person (face, hair, skin tone, expression)
@@ -416,12 +467,7 @@ ABSOLUTE LOCKS (NON-NEGOTIABLE)
 - SAME blouse (fabric, color, sleeves, length, fit)
 - SAME background, camera angle, lighting
 
-BOAT NECK DEFINITION (CRITICAL)
-- Wide horizontal neckline
-- Runs close to the collarbone
-- Straight or gently curved line
-- NO depth, NO plunge, NO collar stand
-- Elegant, classic Indian saree blouse style
+${neckSpec}
 
 FORBIDDEN CHANGES
 - No sleeve modification
@@ -437,7 +483,6 @@ OUTPUT
 Return ONE high-resolution photorealistic image.
 NO text. NO explanation.
 `;
-
 
   const payload = {
     contents: [{
@@ -456,7 +501,7 @@ NO text. NO explanation.
   const response = await axios.post(GEMINI_URL, payload, {
     headers: {
       "Content-Type": "application/json",
-      "x-goog-api-key": GEMINI_API_KEY
+      "x-goog-api-key": process.env.GEMINI_API_KEY
     },
     timeout: 180000
   });
@@ -466,7 +511,6 @@ NO text. NO explanation.
 
   return img?.inline_data?.data || img?.inlineData?.data;
 }
-
 
 
 

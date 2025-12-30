@@ -1544,7 +1544,7 @@ const changeNeck = async (neckType) => {
       <div className="flex flex-col items-center">
         <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
           <img
-            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766750005/Screenshot_2025-12-26_172216_wwr0qb.png"
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1767091137/Gemini_Generated_Image_gtmddsgtmddsgtmd_kygrym.png"
             className={`w-full h-full object-cover transition-opacity ${
               isChangingNeck && selectedNeck === "collar" ? "opacity-30" : "opacity-100"
             }`}
@@ -1578,7 +1578,7 @@ const changeNeck = async (neckType) => {
       <div className="flex flex-col items-center">
         <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
           <img
-            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766750004/Screenshot_2025-12-26_172014_tbzxnt.png"
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1767091137/Gemini_Generated_Image_y8utf4y8utf4y8ut_fgxhl5.png"
             className={`w-full h-full object-cover transition-opacity ${
               isChangingNeck && selectedNeck === "regular" ? "opacity-30" : "opacity-100"
             }`}
