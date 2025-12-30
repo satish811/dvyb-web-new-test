@@ -124,27 +124,27 @@ ROLE
 You are a professional photo editor performing a REALISTIC background replacement.
 
 CORE TASK
-- Image 1 contains a real person with transparent or removed background
+- Image 1 contains a person with transparent or removed background (human OR AI-generated)
 - Image 2 is the new background scene
-- Place the SAME person naturally into the new background
+- Place the SAME person naturally into Image 2
 
-PERSON PRESERVATION (STRICT)
-- Keep the person EXACTLY the same:
-  - Face, expression, skin tone, hair, body, clothing, pose
-- Do NOT modify, replace, or enhance the person in any way
+IDENTITY LOCK (ABSOLUTE)
+- Face, expression, skin tone, hair, body shape, pose → UNCHANGED
+- Clothing remains exactly the same
+- No beautification, enhancement, or reshaping
 
 REALISTIC INTEGRATION
-- Match lighting direction, intensity, and color temperature to Image 2
-- Add realistic ground and contact shadows
+- Match lighting direction, intensity, and color temperature
+- Add natural ground and contact shadows
 - Match perspective and scale
 - Clean edge blending only
-- Apply subtle ambient light spill if present
+- Subtle ambient light spill if present
 
 PROHIBITED
-- NO clothing changes
-- NO face/body edits
-- NO floating placement
-- NO text, watermarks, frames
+- No clothing changes
+- No face/body edits
+- No floating placement
+- No text, watermarks, or frames
 - NEVER return unchanged input
 
 OUTPUT
@@ -153,101 +153,124 @@ Return ONE high-resolution inline_data image only.
 :
 `
 ROLE
-You are a professional fashion photo editor performing a STRICT photorealistic virtual try-on.
+Expert fashion AI specializing in STRICT photorealistic Indian ethnic wear virtual try-on.
 
 INPUT IMAGES
-- Image 1: the real person
-- Image 2: the garment reference (ABSOLUTE SOURCE OF TRUTH)
+- Image 1: Person image (HUMAN OR AI-generated)
+- Image 2: Garment reference (HUMAN photo OR AI-generated design)
 
-MAIN OBJECTIVE
-Create ONE realistic photo where:
+CORE OBJECTIVE
+Create ONE realistic photograph where:
 - The SAME person from Image 1 wears the EXACT garment from Image 2
 - ONLY the clothing may change
 
-GLOBAL IDENTITY & SCENE LOCK (NON-NEGOTIABLE)
+━━━━━━━━━━ INTELLIGENT IMAGE ANALYSIS ━━━━━━━━━━
+Analyze BOTH images before generation:
+
+PERSON IMAGE (Image 1)
+- If human → preserve natural anatomy and lighting
+- If AI-generated → preserve proportions, pose, and facial identity
+In ALL cases: Image 1 defines identity, pose, body shape, and background
+
+GARMENT IMAGE (Image 2)
+- If AI-generated (flat lighting, symmetry, clean background):
+  → Extract garment design as TEMPLATE
+  → Ignore model/background
+  → Reconstruct realistic fabric physics and drape
+- If real photograph:
+  → Copy garment appearance EXACTLY
+  → Preserve natural folds, texture, and imperfections
+
+Image 2 is the ABSOLUTE SOURCE OF TRUTH for garment design.
+
+━━━━━━━━━━ GLOBAL IDENTITY & SCENE LOCK ━━━━━━━━━━
 - Face, hair, skin tone, body shape, height, pose → UNCHANGED
 - Background, camera angle, framing → UNCHANGED
 - No beautification, stylisation, cleanup, or enhancement
 
-CLOTHING TRANSFER RULES
-- Remove original outfit ONLY if different
-- Replace it ONLY with garment from Image 2
-- Image 2 ALWAYS overrides Image 1 in case of conflict
+━━━━━━━━━━ UNIVERSAL GARMENT TRANSFER RULES ━━━━━━━━━━
 
-FABRIC & DESIGN ACCURACY
-- Copy ALL visible details EXACTLY:
-  - Fabric, texture, color
-  - Embroidery, motifs, borders, shine, transparency
-- NO invention
-- NO simplification
-- NO rebalance
+1. COLOR ACCURACY
+- Extract exact fabric colors from Image 2 only
+- Ignore background color bleeding
+- No hue, saturation, brightness, gamma shifts
+- Adapt shadows ONLY to Image 1 lighting
 
+2. PATTERN & EMBELLISHMENT
+- Transfer ALL embroidery, prints, zari, motifs, borders
+- Maintain exact scale, density, and placement
+- No simplification or regeneration
+
+3. FABRIC PROPERTIES
+- Preserve texture: silk shine, cotton matte, georgette flow
+- Maintain transparency and fabric weight
+- Retain weave and material realism
+
+4. DRAPING & PHYSICS
+- Apply natural gravity-based folds
+- If Image 2 is flat/ideal → add realistic draping
+- If Image 2 shows natural drape → preserve style
+- No floating or broken fabric
+
+━━━━━━━━━━ GARMENT STRUCTURE RULES ━━━━━━━━━━
 ${isSaree ? `
-━━━━━━━━━━ SAREE STRUCTURE RULES ━━━━━━━━━━
-- Saree is ONE continuous fabric (NOT skirt + dupatta)
+SAREE (CRITICAL)
+- ONE continuous fabric (not skirt + dupatta)
 - Natural Nivi drape ONLY
 - 6–8 waist pleats
 - Pallu over LEFT shoulder
 - Blouse must match Image 2 EXACTLY
-- No pleat rebuilding or pallu repositioning
 ` : ``}
 
 ${isLehenga ? `
-━━━━━━━━━━ LEHENGA STRUCTURE RULES ━━━━━━━━━━
-- Three distinct components:
-  1. Choli (upper blouse)
-  2. Panelled lehenga skirt
-  3. Dupatta
-- Components must NEVER merge or bleed
-- Preserve panel count, width, flare, hem embroidery
-- Do NOT flatten flare or thin borders
-` : ``}
-
-${isAnarkali ? `
-━━━━━━━━━━ ANARKALI STRUCTURE RULES ━━━━━━━━━━
-- Upper bodice + lower panelled flare + dupatta
-- Preserve panel count, seam positions, flare volume
-- No skirt/gown conversion
-- Embroidery must follow vertical panel flow
-` : ``}
-
-${isSharara ? `
-━━━━━━━━━━ SHARARA STRUCTURE RULES ━━━━━━━━━━
-- Four distinct zones:
-  1. Kurta
-  2. Upper flare transition
-  3. Lower wide sharara panels
-  4. Dupatta
-- Do NOT convert into palazzo, churidar, or lehenga
-- Preserve seam position, flare rate, and panel width
-` : ``}
-
-${isKurtaSet ? `
-━━━━━━━━━━ KURTA SET STRUCTURE RULES ━━━━━━━━━━
-- Kurta + bottom + dupatta are DISTINCT
-- Bottom type must match Image 2 exactly:
-  churidar / pant / palazzo / salwar
+LEHENGA
+- Choli + Lehenga skirt + Dupatta are DISTINCT
+- Preserve panel count, flare, hem embroidery
 - No silhouette conversion
 ` : ``}
 
-COLOR & LIGHTING LOCK (ABSOLUTE)
-- Preserve EXACT color values from Image 2
-- NO hue, saturation, brightness, gamma, warmth shifts
-- Lighting may affect shadows ONLY
+${isAnarkali ? `
+ANARKALI
+- Bodice + panelled flare + dupatta
+- Preserve seam positions and flare volume
+- No gown or skirt conversion
+` : ``}
 
-REALISM & INTEGRATION
-- Natural gravity and folds
-- No floating fabric
-- No broken seams
-- Must look like a real camera photograph
+${isSharara ? `
+SHARARA
+- Kurta + upper flare + lower wide panels + dupatta
+- No palazzo/churidar/lehenga conversion
+- Preserve flare rate and panel width
+` : ``}
 
-STRICTLY PROHIBITED
-- Face/body/background edits
-- Accessories, makeup, props
-- Logos, watermarks, text
-- Returning unchanged image
+${isKurtaSet ? `
+KURTA SET
+- Kurta + bottom + dupatta are DISTINCT
+- Bottom type must match Image 2 exactly
+- No silhouette changes
+` : ``}
 
-OUTPUT
+━━━━━━━━━━ LIGHTING & REALISM ━━━━━━━━━━
+- Match Image 1 lighting direction and intensity
+- Add contact shadows at body–fabric intersections
+- Final output must look like a real camera photograph
+- No AI-rendered appearance
+
+━━━━━━━━━━ STRICT PROHIBITIONS ━━━━━━━━━━
+- No face/body/background edits
+- No accessories or props
+- No logos, text, borders, watermarks
+- Do NOT return Image 1 or Image 2 unchanged
+- Do NOT create collage or split views
+
+QUALITY CHECK BEFORE OUTPUT
+✓ Face matches Image 1 exactly  
+✓ Garment matches Image 2 exactly  
+✓ Natural draping and physics  
+✓ Accurate colors  
+✓ No artifacts or floating fabric  
+
+OUTPUT REQUIREMENT
 Return ONE high-resolution photorealistic inline_data image only.
 `;
 
