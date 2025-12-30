@@ -26,6 +26,9 @@ import img4 from '../../../assets/lazyloading/logoimg4.svg'
 import img5 from '../../../assets/lazyloading/logoimg5.svg'
 import img6 from '../../../assets/lazyloading/logoimg6.svg'
 
+import LazyImageLoader from "../LazyImageLoader/LazyImageLoader";
+
+
 import { usePopup } from "../../../context/ToastPopupContext";
 import { wishlistService } from "../../../services/wishlistService";
 import { cartService } from "../../../services/cartService";
@@ -50,12 +53,16 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [hasStarted, setHasStarted] = useState(false); 
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedTab, setSelectedTab] = useState("colours");
+  const [activeCustomizer, setActiveCustomizer] = useState("blouse"); 
   const [selectedColor, setSelectedColor] = useState("blue");
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [selectedBlouse, setSelectedBlouse] = useState("regular");
   const [selectedBackground, setSelectedBackground] = useState("");
   const [backgroundChangedImage, setBackgroundChangedImage] = useState(null);
   const [isChangingBackground, setIsChangingBackground] = useState(false);
+  const [selectedNeck, setSelectedNeck] = useState(null);
+const [isChangingNeck, setIsChangingNeck] = useState(false);
+
   // const [isRemovingBg, setIsRemovingBg] = useState(false);
   // const [bgError, setBgError] = useState("");
   const [viewMode, setViewMode] = useState("2D");
@@ -457,6 +464,24 @@ const [isChangingBlouse, setIsChangingBlouse] = useState(false);
     { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
 
   ];
+
+
+    const neckOptions = [
+    {
+      id: "collar",
+      label: "Collar",
+      image:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766750005/Screenshot_2025-12-26_172216_wwr0qb.png",
+    },
+    {
+      id: "regular",
+      label: "Regular",
+      image:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766750004/Screenshot_2025-12-26_172014_tbzxnt.png",
+    },
+  ];
+
+
 
  const performTryOn = async () => {
 
@@ -1026,6 +1051,45 @@ const changeBlouse = async (blouseType) => {
 
 
 
+const changeNeck = async (neckType) => {
+  if (!tryOnResult) {
+    toast.error("Please complete try-on first!");
+    return;
+  }
+
+  setIsChangingNeck(true);
+  setSelectedNeck(neckType);
+
+  try {
+    const response = await fetch(tryOnResult);
+    const blob = await response.blob();
+
+    const formData = new FormData();
+    formData.append("tryOnImage", blob, "tryon.png");
+    formData.append("neckType", neckType);
+
+    const apiResponse = await fetch("/api/change-neck", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await apiResponse.json();
+
+    if (!apiResponse.ok) {
+      throw new Error(data.error || "Neck change failed");
+    }
+
+    setTryOnResult(data.result);
+    toast.success(`Neck changed to ${neckType}! 👗`);
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setIsChangingNeck(false);
+  }
+};
+
+
+
 
 
   const getCurrentDisplayImage = () => {
@@ -1246,7 +1310,7 @@ const changeBlouse = async (blouseType) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-5  border-b p-1 bg-[#F0E0E0] border-gray-200">
+        <div className="flex gap-4 mb-5 w-1/2  border-b p-1 bg-[#F0E0E0] border-gray-200">
           <button
             onClick={() => setSelectedTab("colours")}
             className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${selectedTab === "colours"
@@ -1256,6 +1320,8 @@ const changeBlouse = async (blouseType) => {
           >
             Colours
           </button>
+
+{/*
           <button
             onClick={() => setSelectedTab("fabrics")}
             className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${selectedTab === "fabrics"
@@ -1265,6 +1331,8 @@ const changeBlouse = async (blouseType) => {
           >
             Fabrics
           </button>
+          */}
+
         </div>
 
         {/* Colors Tab */}
@@ -1337,98 +1405,210 @@ const changeBlouse = async (blouseType) => {
 
 
 
-<div className="bg-white  ml-52 shadow-sm border border-gray-200 p-4 w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)] translate-y-[470px]">
-  {/* Half Sleeve */}
-  <div className="flex flex-col items-center">
-    <img
-      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg"
-      alt="Half sleeve blouse"
-      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
-    />
+<div className="flex flex-col md:translate-y-[470px] translate-y-8">
+  <div className="flex mb-4 w-full max-w-[300px] mx-auto md:ml-52 border border-gray-200 overflow-hidden">
     <button
-      onClick={() => changeBlouse("half-sleeve")}
-      disabled={!tryOnResult || isChangingBlouse}
-      className={`
-        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
-        border border-gray-300
-        ${selectedBlouse === "half-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
-        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        flex items-center justify-center gap-2
-      `}
+      onClick={() => setActiveCustomizer("blouse")}
+      className={`flex-1 py-2 text-sm font-medium ${
+        activeCustomizer === "blouse"
+          ? "bg-primary text-white"
+          : "bg-white text-gray-700 hover:bg-gray-50"
+      }`}
     >
-      {isChangingBlouse && selectedBlouse === "half-sleeve" ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        "Half Sleeve"
-      )}
+      Blouse
+    </button>
+
+    <button
+      onClick={() => setActiveCustomizer("neck")}
+      className={`flex-1 py-2 text-sm font-medium ${
+        activeCustomizer === "neck"
+          ? "bg-primary text-white"
+          : "bg-white text-gray-700 hover:bg-gray-50"
+      }`}
+    >
+      Neck
     </button>
   </div>
 
-  {/* Full Sleeve */}
-  <div className="flex flex-col items-center">
-    <img
-      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg"
-      alt="Full sleeve blouse"
-      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
-    />
-    <button
-      onClick={() => changeBlouse("full-sleeve")}
-      disabled={!tryOnResult || isChangingBlouse}
-      className={`
-        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
-        border border-gray-300
-        ${selectedBlouse === "full-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
-        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        flex items-center justify-center
-      `}
-    >
-      Full Sleeve
-    </button>
-  </div>
+  {activeCustomizer === "blouse" && (
+    <div className="bg-white mx-auto md:ml-52 shadow-sm border border-gray-200 p-4 w-full max-w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)]">
+      
+      {/* Half Sleeve */}
+      <div className="flex flex-col items-center">
+        <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+          <img
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg"
+            alt="Half sleeve blouse"
+            className={`w-full h-full object-cover transition-opacity ${
+              isChangingBlouse && selectedBlouse === "half-sleeve" ? "opacity-30" : "opacity-100"
+            }`}
+          />
+          {isChangingBlouse && selectedBlouse === "half-sleeve" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <LazyImageLoader isProcessing={true} size="overlay" />
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => changeBlouse("half-sleeve")}
+          disabled={!tryOnResult || isChangingBlouse}
+          className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "half-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+        >
+          {isChangingBlouse && selectedBlouse === "half-sleeve" && (
+            <LazyImageLoader isProcessing={true} size="button" />
+          )}
+          <span>Half Sleeve</span>
+        </button>
+      </div>
 
-  {/* Sleeveless */}
-  <div className="flex flex-col items-center">
-    <img
-      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg"
-      alt="Sleeveless blouse"
-      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
-    />
-    <button
-      onClick={() => changeBlouse("sleeveless")}
-      disabled={!tryOnResult || isChangingBlouse}
-      className={`
-        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
-        border border-gray-300
-        ${selectedBlouse === "sleeveless" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
-        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        flex items-center justify-center
-      `}
-    >
-      Sleeveless
-    </button>
-  </div>
+      {/* Full Sleeve */}
+      <div className="flex flex-col items-center">
+        <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+          <img
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg"
+            alt="Full sleeve blouse"
+            className={`w-full h-full object-cover transition-opacity ${
+              isChangingBlouse && selectedBlouse === "full-sleeve" ? "opacity-30" : "opacity-100"
+            }`}
+          />
+          {isChangingBlouse && selectedBlouse === "full-sleeve" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <LazyImageLoader isProcessing={true} size="overlay" />
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => changeBlouse("full-sleeve")}
+          disabled={!tryOnResult || isChangingBlouse}
+          className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "full-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+        >
+          {isChangingBlouse && selectedBlouse === "full-sleeve" && (
+            <LazyImageLoader isProcessing={true} size="button" />
+          )}
+          <span>Full Sleeve</span>
+        </button>
+      </div>
 
-  {/* Regular */}
-  <div className="flex flex-col items-center">
-    <img
-      src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/regular_iyn9zb.jpg"
-      alt="Regular blouse"
-      className="w-28 h-28 object-cover rounded-lg mb-2 shadow-sm"
-    />
-    <button
-      onClick={() => changeBlouse("regular")}
-      disabled={!tryOnResult || isChangingBlouse}
-      className={`
-        w-full py-2 px-3 text-sm font-medium rounded-lg transition-all
-        border border-gray-300
-        ${selectedBlouse === "regular" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
-        ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        flex items-center justify-center
-      `}
-    >
-      Regular
-    </button>
-  </div>
+      {/* Sleeveless */}
+      <div className="flex flex-col items-center">
+        <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+          <img
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg"
+            alt="Sleeveless blouse"
+            className={`w-full h-full object-cover transition-opacity ${
+              isChangingBlouse && selectedBlouse === "sleeveless" ? "opacity-30" : "opacity-100"
+            }`}
+          />
+          {isChangingBlouse && selectedBlouse === "sleeveless" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <LazyImageLoader isProcessing={true} size="overlay" />
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => changeBlouse("sleeveless")}
+          disabled={!tryOnResult || isChangingBlouse}
+          className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "sleeveless" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${(!tryOnResult || isChangingBlouse) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+        >
+          {isChangingBlouse && selectedBlouse === "sleeveless" && (
+            <LazyImageLoader isProcessing={true} size="button" />
+          )}
+          <span>Sleeveless</span>
+        </button>
+      </div>
+    </div>
+  )}
+
+  {activeCustomizer === "neck" && (
+    <div className="bg-white mx-auto md:ml-52 shadow-sm border border-gray-200 p-4 w-full max-w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)]">
+      
+      {/* Collar Neck */}
+      <div className="flex flex-col items-center">
+        <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+          <img
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766750005/Screenshot_2025-12-26_172216_wwr0qb.png"
+            className={`w-full h-full object-cover transition-opacity ${
+              isChangingNeck && selectedNeck === "collar" ? "opacity-30" : "opacity-100"
+            }`}
+            alt="Collar Neck"
+          />
+          {isChangingNeck && selectedNeck === "collar" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <LazyImageLoader isProcessing={true} size="overlay" />
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => changeNeck("collar")}
+          disabled={!tryOnResult || isChangingNeck}
+          className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedNeck === "collar" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${(!tryOnResult || isChangingNeck) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+        >
+          {isChangingNeck && selectedNeck === "collar" && (
+            <LazyImageLoader isProcessing={true} size="button" />
+          )}
+          <span>Collar</span>
+        </button>
+      </div>
+
+      {/* Regular Neck */}
+      <div className="flex flex-col items-center">
+        <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+          <img
+            src="https://res.cloudinary.com/doiezptnn/image/upload/v1766750004/Screenshot_2025-12-26_172014_tbzxnt.png"
+            className={`w-full h-full object-cover transition-opacity ${
+              isChangingNeck && selectedNeck === "regular" ? "opacity-30" : "opacity-100"
+            }`}
+            alt="Regular Neck"
+          />
+          {isChangingNeck && selectedNeck === "regular" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <LazyImageLoader isProcessing={true} size="overlay" />
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => changeNeck("regular")}
+          disabled={!tryOnResult || isChangingNeck}
+          className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedNeck === "regular" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${(!tryOnResult || isChangingNeck) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+        >
+          {isChangingNeck && selectedNeck === "regular" && (
+            <LazyImageLoader isProcessing={true} size="button" />
+          )}
+          <span>Regular</span>
+        </button>
+      </div>
+    </div>
+  )}
 </div>
 
 

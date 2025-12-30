@@ -399,6 +399,77 @@ NO text or explanations.
 
 
 
+//neck change function
+
+async function generateNeckChange(tryOnBase64, neckType) {
+  const prompt = `
+ROLE
+You are a professional Indian fashion photo editor.
+
+TASK
+Modify ONLY the blouse NECKLINE to a BOAT NECK design.
+
+ABSOLUTE LOCKS (NON-NEGOTIABLE)
+- SAME person (face, hair, skin tone, expression)
+- SAME body shape, pose, proportions
+- SAME saree (fabric, color, design, draping)
+- SAME blouse (fabric, color, sleeves, length, fit)
+- SAME background, camera angle, lighting
+
+BOAT NECK DEFINITION (CRITICAL)
+- Wide horizontal neckline
+- Runs close to the collarbone
+- Straight or gently curved line
+- NO depth, NO plunge, NO collar stand
+- Elegant, classic Indian saree blouse style
+
+FORBIDDEN CHANGES
+- No sleeve modification
+- No blouse reshaping
+- No jewelry, makeup, or beautification
+- No color correction or enhancement
+- No background alteration
+
+FAILURE CONDITIONS
+- If anything other than the neckline changes → REJECT internally and regenerate correctly
+
+OUTPUT
+Return ONE high-resolution photorealistic image.
+NO text. NO explanation.
+`;
+
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
+
+
 
 async function generateMultipleTryOns(modelBase64, garments) {
   console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
@@ -680,6 +751,53 @@ if (req.method === "POST" && path === "/api/change-blouse") {
   return res.json({
     success: true,
     blouseType,
+    result: `data:image/png;base64,${result}`
+  });
+}
+
+
+
+// ======== POST: /api/change-neck ========
+if (req.method === "POST" && path === "/api/change-neck") {
+  console.log('\n👗 === NECK CHANGE REQUEST ===');
+
+  // Run multer in serverless
+  await runMiddleware(req, res, upload.single('tryOnImage'));
+
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      error: "Try-on image is required"
+    });
+  }
+
+  const { neckType } = req.body;
+
+  if (!neckType) {
+    return res.status(400).json({
+      success: false,
+      error: "neckType is required"
+    });
+  }
+
+  console.log(`👗 Neck type: ${neckType}`);
+  console.log(`📊 Image size: ${req.file.size} bytes`);
+
+  // Convert image to base64
+  const tryOnBase64 = req.file.buffer.toString("base64");
+
+  console.log("🎨 Calling Gemini for neckline modification...");
+  const result = await generateNeckChange(tryOnBase64, neckType);
+
+  if (!result) {
+    throw new Error("No image returned from AI");
+  }
+
+  console.log("✨ SUCCESS — Neckline Changed!");
+
+  return res.json({
+    success: true,
+    neckType,
     result: `data:image/png;base64,${result}`
   });
 }

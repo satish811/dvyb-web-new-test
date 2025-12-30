@@ -712,6 +712,76 @@ NO text or explanations.
 
 
 
+//neck change function
+
+async function generateNeckChange(tryOnBase64, neckType) {
+  const prompt = `
+ROLE
+You are a professional Indian fashion photo editor.
+
+TASK
+Modify ONLY the blouse NECKLINE to a BOAT NECK design.
+
+ABSOLUTE LOCKS (NON-NEGOTIABLE)
+- SAME person (face, hair, skin tone, expression)
+- SAME body shape, pose, proportions
+- SAME saree (fabric, color, design, draping)
+- SAME blouse (fabric, color, sleeves, length, fit)
+- SAME background, camera angle, lighting
+
+BOAT NECK DEFINITION (CRITICAL)
+- Wide horizontal neckline
+- Runs close to the collarbone
+- Straight or gently curved line
+- NO depth, NO plunge, NO collar stand
+- Elegant, classic Indian saree blouse style
+
+FORBIDDEN CHANGES
+- No sleeve modification
+- No blouse reshaping
+- No jewelry, makeup, or beautification
+- No color correction or enhancement
+- No background alteration
+
+FAILURE CONDITIONS
+- If anything other than the neckline changes → REJECT internally and regenerate correctly
+
+OUTPUT
+Return ONE high-resolution photorealistic image.
+NO text. NO explanation.
+`;
+
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
+
 
 
 // ============================================================
@@ -924,6 +994,31 @@ app.post('/api/change-blouse', upload.single('tryOnImage'), async (req, res) => 
 });
 
 
+app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Try-on image required" });
+    }
+
+    const { neckType } = req.body;
+    const resolvedNeckType = neckType === "collar" ? "boat neck" : "regular round neck";
+    const base64 = req.file.buffer.toString("base64");
+const result = await generateNeckChange(base64, resolvedNeckType);
+
+    if (!result) throw new Error("No image returned");
+
+    res.json({
+      success: true,
+      result: `data:image/png;base64,${result}`,
+      neckType,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Neck change failed",
+      details: err.message,
+    });
+  }
+});
 
 
 // ============================================================
