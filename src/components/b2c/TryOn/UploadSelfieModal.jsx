@@ -118,188 +118,188 @@ const UploadSelfieModal = ({
 
 
 
-    
+
     // Define all model arrays
     const lehengamodels = [
-        {
-        modelName: "Model 1",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
-      },
+      // {
+      // modelName: "Model 1",
+      // modelimg:
+      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
+      // },
       {
-               modelName: "Model 2",
+        modelName: "Model",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model12_nvdjir.jpg",
       },
-      
-          {
-               modelName: "Model 3",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
-      },
-          {
-               modelName: "Model 4",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
-      },
+
+      // {
+      //      modelName: "Model 3",
+      // modelimg:
+      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
+      // },
+      // {
+      //      modelName: "Model 4",
+      // modelimg:
+      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+      // },
 
 
     ]
     const sareeModels = [
-      {
-        modelName: "Model 1",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
-      },
+      // {
+      //   modelName: "Model 1",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
+      // },
       {
         modelName: "Model 2",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1765348065/model1_psruws.jpg",
       },
-      {
-        modelName: "Model 3",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
-      },
-      {
-        modelName: "Model 4",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
-      },
+      // {
+      //   modelName: "Model 3",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
+      // },
+      // {
+      //   modelName: "Model 4",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
+      // },
     ];
 
     const universalModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
+      // },
     ];
 
     const shararaModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978924/sharara3_opiohp_12c9c7.jpg",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978924/sharara3_opiohp_12c9c7.jpg",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763978942/bvfo12yqx2bwfjjbynop_e2f08a.jpg",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978969/dg36354daunzulny0vsk_593bdd.jpg",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978906/sharara4_pnw3fi_50fc1f.jpg",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978969/dg36354daunzulny0vsk_593bdd.jpg",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978906/sharara4_pnw3fi_50fc1f.jpg",
+      // },
     ];
 
     const anarkaliModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
+      // },
     ];
 
     const pretModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret1_m8ralt.png",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret1_m8ralt.png",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret2_jbuvlf.png",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971711/pret3_baksin.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971712/pret4_gl6dky.png",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971711/pret3_baksin.png",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971712/pret4_gl6dky.png",
+      // },
     ];
 
     const fusionModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion2_edimql.png",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion2_edimql.png",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion1_rexxbx.png",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion4_msdxrp.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971756/fusion3_nawkdm.png",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion4_msdxrp.png",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971756/fusion3_nawkdm.png",
+      // },
     ];
 
     const kurthaModels = [
-      {
-        modelName: "Fair & Slim",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
-      },
+      // {
+      //   modelName: "Fair & Slim",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
+      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763978550/kurthaSet3_mbst5j_f7e8e5.jpg",
       },
-      {
-        modelName: "Wheatist & Athletic",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
-      },
+      // {
+      //   modelName: "Wheatist & Athletic",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
+      // },
+      // {
+      //   modelName: "Medium",
+      //   modelimg:
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
+      // },
     ];
 
     // Map dress types to their corresponding models
@@ -329,8 +329,8 @@ const UploadSelfieModal = ({
       case "kurtaset":
         return kurthaModels;
 
-      case "lehenga": 
-      return lehengamodels
+      case "lehenga":
+        return lehengamodels
       case "wedding": // Wedding uses lehenga models
         return universalModels;
 
@@ -417,18 +417,18 @@ const UploadSelfieModal = ({
     }
   };
 
-const handleContinue = () => {
-  console.log("🔘 Upload Continue clicked");
-  
-  if (selectedImage && garmentImage) {
-    console.log("✅ Passing uploaded image to parent");
-    onNext({ 
-      modelImage: selectedImage, 
-      garmentImage, 
-      is3D 
-    });
-  }
-};
+  const handleContinue = () => {
+    console.log("🔘 Upload Continue clicked");
+
+    if (selectedImage && garmentImage) {
+      console.log("✅ Passing uploaded image to parent");
+      onNext({
+        modelImage: selectedImage,
+        garmentImage,
+        is3D
+      });
+    }
+  };
   const handleReupload = () => {
     setStep(2);
     setSelectedImage(null);
@@ -716,21 +716,21 @@ const handleContinue = () => {
         </div>
       )}
 
-{/* Step 4: Success */}
-{step === 4 && (
-  <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
-    <img
-      src={selectedImage}
-      alt="Success"
-      className="w-full max-w-sm h-64 object-contain shadow-md mb-4"
-    />
-    <div className="flex items-center gap-2 px-4 py-3 rounded-lg mb-5">
-      <p className="text-green-700 font-normal -ml-48 text-start text-sm">
-        Image uploaded successfully
-      </p>
-    </div>
-    <button
-      onClick={handleContinue}
+      {/* Step 4: Success */}
+      {step === 4 && (
+        <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
+          <img
+            src={selectedImage}
+            alt="Success"
+            className="w-full max-w-sm h-64 object-contain shadow-md mb-4"
+          />
+          <div className="flex items-center gap-2 px-4 py-3 rounded-lg mb-5">
+            <p className="text-green-700 font-normal -ml-48 text-start text-sm">
+              Image uploaded successfully
+            </p>
+          </div>
+          <button
+            onClick={handleContinue}
             className="w-full max-w-sm bg-primary text-white py-3  font-medium hover:bg-red-800"
           >
             CONTINUE
@@ -982,11 +982,10 @@ const handleContinue = () => {
                   setShowModelSelector(false);
                 }}
                 disabled={!selectedModel}
-                className={`px-8 py-2 rounded font-medium transition-colors ${
-                  selectedModel
-                    ? "bg-[#8B0000] text-white hover:bg-[#A30000]"
-                    : "bg-[#E5E5E5] text-gray-400 cursor-not-allowed"
-                }`}
+                className={`px-8 py-2 rounded font-medium transition-colors ${selectedModel
+                  ? "bg-[#8B0000] text-white hover:bg-[#A30000]"
+                  : "bg-[#E5E5E5] text-gray-400 cursor-not-allowed"
+                  }`}
               >
                 NEXT →
               </button>
@@ -1084,24 +1083,24 @@ const handleContinue = () => {
           {/* ---------- Continue button (bottom-right) ---------- */}
           <div className="flex justify-end mt-8">
             <button
-            onClick={() => {
-  console.log("🔘 Model Preview Continue clicked");
-  
-  if (!selectedModel) {
-    alert("Please select a model to continue");
-    return;
-  }
-  
-  console.log("✅ Passing model to parent:", selectedModel.name);
-  
-  // ✅ Call onNext ONCE
-  onNext({
-    modelImage: selectedModel.image,
-    garmentImage,
-    is3D,
-    modelName: selectedModel.name,
-  });
-}}
+              onClick={() => {
+                console.log("🔘 Model Preview Continue clicked");
+
+                if (!selectedModel) {
+                  alert("Please select a model to continue");
+                  return;
+                }
+
+                console.log("✅ Passing model to parent:", selectedModel.name);
+
+                // ✅ Call onNext ONCE
+                onNext({
+                  modelImage: selectedModel.image,
+                  garmentImage,
+                  is3D,
+                  modelName: selectedModel.name,
+                });
+              }}
               className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:bg-[#8B0000] hover:text-white hover:border-[#8B0000] transition-all"
             >
               Continue

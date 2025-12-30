@@ -158,7 +158,7 @@ export const sendOtp = async (phoneNumber) => {
   }
 };
 
-export const verifyOtp = async (confirmationResult, otp) => {
+export const verifyOtp = async (confirmationResult, otp, phoneNumber) => {
   if (!confirmationResult) {
     throw new Error("No confirmation result provided");
   }
