@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 
 const ProductImageGallery = ({ images = [], product = {} }) => {
   const [selectedImage, setSelectedImage] = useState(images[0] || "");
   const [imageError, setImageError] = useState(false);
+  const scrollContainerRef = useRef(null);
 
   const handleImageError = () => setImageError(true);
 
@@ -11,6 +12,30 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setSelectedImage(images[0] || "");
     setImageError(false);
   }, [product?.id, images.length]);
+
+  // Scroll thumbnail functions
+  const scrollThumbnailsUp = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        top: -132, // 121px thumbnail height + 11px margin
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollThumbnailsDown = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        top: 132, // 121px thumbnail height + 11px margin
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Handle thumbnail click
+  const handleThumbnailClick = (img) => {
+    setSelectedImage(img);
+  };
 
   // Mobile Slider
   const MobileImageSlider = () => {
@@ -62,7 +87,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
   };
 
   /**
-   * Desktop Gallery - All thumbnails now same large size
+   * Desktop Gallery - Scrollable thumbnails with navigation arrows
    */
   const DesktopGallery = () => (
     <div className="hidden md:block">
@@ -77,35 +102,90 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
       "
         style={{ width: "438px", height: "505px" }}
       >
-        {/* Thumbnail Column - Uniform size, perfectly aligned */}
-        <div className="flex flex-col absolute left-0" style={{ width: "78px" }}>
-          {images.slice(0, 3).map((img, index) => (
+        {/* Thumbnail Column Container */}
+        <div className="absolute left-0">
+          
+          {/* Top Scroll Arrow - Only show if there are more than 4 thumbnails */}
+          {images.length > 4 && (
             <button
-              key={index}
-              onClick={() => setSelectedImage(img)}
-              className="overflow-hidden mb-[11px] last:mb-0"
-              style={{
-                width: "78px",
-                height: "121px",
-              }}
+              onClick={scrollThumbnailsUp}
+              className="absolute left-1/2 -translate-x-1/2 top-0 -mt-6 z-10 
+                bg-white hover:bg-gray-50 p-1 rounded-full 
+                shadow-sm border border-gray-300 
+                transition-all hover:scale-110 active:scale-95"
+              style={{ width: "24px", height: "24px" }}
             >
-              <img
-                src={img}
-                alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                onError={handleImageError}
-              />
+              <ChevronUp className="w-3 h-3 text-gray-600 mx-auto" />
             </button>
-          ))}
+          )}
+
+          {/* Thumbnail Column - Scrollable with all images */}
+          <div
+            ref={scrollContainerRef}
+            className="
+              flex flex-col overflow-y-auto
+              [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0
+              [&::-webkit-scrollbar-track]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:rounded-none
+              [-ms-overflow-style:none] [scrollbar-width:none]
+            "
+            style={{
+              width: "78px",
+              height: "505px",
+              maxHeight: "505px",
+            }}
+          >
+            {images.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => handleThumbnailClick(img)}
+                className={`
+                  overflow-hidden mb-[11px] last:mb-0 transition-all 
+                  ${selectedImage === img
+                    ? 'ring-2 ring-[#573131] shadow-md'
+                    : 'ring-1 ring-transparent hover:ring-gray-300 hover:shadow-sm'
+                  }
+                  focus:outline-none
+                `}
+                style={{
+                  width: "78px",
+                  height: "121px",
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Bottom Scroll Arrow - Only show if there are more than 4 thumbnails */}
+          {images.length > 4 && (
+            <button
+              onClick={scrollThumbnailsDown}
+              className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-6 z-10 
+                bg-white hover:bg-gray-50 p-1 rounded-full 
+                shadow-sm border border-gray-300 
+                transition-all hover:scale-110 active:scale-95"
+              style={{ width: "24px", height: "24px" }}
+            >
+              <ChevronDown className="w-3 h-3 text-gray-600 mx-auto" />
+            </button>
+          )}
         </div>
 
-        {/* Main Image - Perfectly aligned with new thumbnail width */}
+        {/* Main Image */}
         <div
           className="absolute overflow-hidden bg-gray-50"
           style={{
-            left: "89px",   // 78px thumb + 11px gap
+            left: "89px",
             top: "0px",
-            width: "349px", // 301 + 48 (to compensate reduced thumb width)
+            width: "349px",
             height: "505px",
           }}
         >
