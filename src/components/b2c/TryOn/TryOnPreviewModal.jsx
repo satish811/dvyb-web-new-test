@@ -163,7 +163,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       if (tryOnData?.productId && user) {
         // Only check wishlist if user exists
         try {
-          const inWishlist = await isInWishlist(tryOnData.productId);
+          const inWishlist = await wishlistService.isInWishlist(tryOnData.productId);
           setIsInWishlistState(inWishlist);
         } catch (error) {
           console.error("Error checking wishlist:", error);
@@ -197,7 +197,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     try {
       if (wasInWishlist) {
         console.log("🗑️ Removing from wishlist:", tryOnData.productId);
-        await removeFromWishlist(tryOnData.productId);
+        await wishlistService.removeFromWishlist(tryOnData.productId);
         showPopup("wishlistRemove", {
           title: tryOnData.garmentName || "Product",
           image: tryOnData.garmentImage,
@@ -212,12 +212,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           craft: tryOnData.craft || "",
           selectedColors: tryOnData.selectedColors || [],
           discount: tryOnData.discount || 0,
+          size: tryOnData.selectedSize,
+          selectedSize: tryOnData.selectedSize,
         };
 
         console.log("➕ Adding to wishlist:", tryOnData.productId);
         console.log("📦 Product data:", productData);
 
-        await addToWishlist(tryOnData.productId, productData);
+        await wishlistService.addToWishlist(tryOnData.productId, productData);
         showPopup("wishlist", {
           title: productData.name,
           image: productData.image,
@@ -448,7 +450,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     },
 
     { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
-    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
+    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg' },
     { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
 
   ];
@@ -746,7 +748,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   // };
 
   // 3D Video Generation Functions
-const generateVideo = async () => {
+  const generateVideo = async () => {
     console.log('🎬 Starting video generation...');
     setIsGeneratingVideo(true);
     setVideoError('');
@@ -854,70 +856,70 @@ const generateVideo = async () => {
 
   if (!isOpen) return null;
 
-const changeBackground = async (backgroundType) => {
-  if (!tryOnResult) {
-    toast.error("Please complete try-on first!");
-    return;
-  }
-
-  setIsChangingBackground(true);
-  setSelectedBackground(backgroundType);
-
-  try {
-    console.log("🎨 Starting background change...");
-
-    // Convert try-on result (data URL) to blob
-    console.log("📥 Converting try-on result to blob...");
-    const response = await fetch(tryOnResult);
-    const tryOnBlob = await response.blob();
-    
-    console.log(`✅ Blob created: ${(tryOnBlob.size / 1024).toFixed(2)} KB`);
-
-    // Create form data
-    const formData = new FormData();
-    formData.append('tryOnImage', tryOnBlob, 'tryon-result.png');
-    formData.append('background', backgroundType);
-
-    console.log(`📤 Sending to backend with background: ${backgroundType}`);
-
-    // Call backend API
-    const apiResponse = await fetch(`/api/change-tryon-background`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    console.log("📡 Response status:", apiResponse.status);
-
-    if (!apiResponse.ok) {
-      const errorData = await apiResponse.json();
-      throw new Error(errorData.details || errorData.error || `Server error: ${apiResponse.status}`);
+  const changeBackground = async (backgroundType) => {
+    if (!tryOnResult) {
+      toast.error("Please complete try-on first!");
+      return;
     }
 
-    const data = await apiResponse.json();
+    setIsChangingBackground(true);
+    setSelectedBackground(backgroundType);
 
-    if (data.success && data.result) {
-      console.log("✅ Background change successful!");
-      setBackgroundChangedImage(data.result);
-      toast.success(`Background changed to ${data.background}! 🎉`);
-    } else {
-      throw new Error(data.error || "Background change failed");
+    try {
+      console.log("🎨 Starting background change...");
+
+      // Convert try-on result (data URL) to blob
+      console.log("📥 Converting try-on result to blob...");
+      const response = await fetch(tryOnResult);
+      const tryOnBlob = await response.blob();
+
+      console.log(`✅ Blob created: ${(tryOnBlob.size / 1024).toFixed(2)} KB`);
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('tryOnImage', tryOnBlob, 'tryon-result.png');
+      formData.append('background', backgroundType);
+
+      console.log(`📤 Sending to backend with background: ${backgroundType}`);
+
+      // Call backend API
+      const apiResponse = await fetch(`/api/change-tryon-background`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log("📡 Response status:", apiResponse.status);
+
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json();
+        throw new Error(errorData.details || errorData.error || `Server error: ${apiResponse.status}`);
+      }
+
+      const data = await apiResponse.json();
+
+      if (data.success && data.result) {
+        console.log("✅ Background change successful!");
+        setBackgroundChangedImage(data.result);
+        toast.success(`Background changed to ${data.background}! 🎉`);
+      } else {
+        throw new Error(data.error || "Background change failed");
+      }
+
+    } catch (error) {
+      console.error("❌ Background change failed:", error);
+
+      let errorMsg = error.message;
+      if (errorMsg.includes('Failed to fetch')) {
+        errorMsg = '🔌 Cannot connect to server. Make sure backend is running on port 3004.';
+      } else if (errorMsg.includes('timeout')) {
+        errorMsg = '⏳ Request timed out. Please try again.';
+      }
+
+      toast.error(errorMsg);
+    } finally {
+      setIsChangingBackground(false);
     }
-    
-  } catch (error) {
-    console.error("❌ Background change failed:", error);
-    
-    let errorMsg = error.message;
-    if (errorMsg.includes('Failed to fetch')) {
-      errorMsg = '🔌 Cannot connect to server. Make sure backend is running on port 3004.';
-    } else if (errorMsg.includes('timeout')) {
-      errorMsg = '⏳ Request timed out. Please try again.';
-    }
-    
-    toast.error(errorMsg);
-  } finally {
-    setIsChangingBackground(false);
-  }
-};
+  };
   const getCurrentDisplayImage = () => {
     return backgroundChangedImage || tryOnResult;
   };
@@ -952,7 +954,7 @@ const changeBackground = async (backgroundType) => {
       {/* STAGE: centered preview area - FIXED: Added padding bottom for mobile */}
 
 
-        {showBgWarning && (
+      {showBgWarning && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-md">
             <h3 className="text-lg font-semibold mb-2">Background Required</h3>
@@ -1001,17 +1003,17 @@ const changeBackground = async (backgroundType) => {
             </button>
           </div>
         ) : viewMode === "2D" && getCurrentDisplayImage() ? (
-          /* 2D IMAGE VIEW */   
+          /* 2D IMAGE VIEW */
           <div
             className="relative flex items-center  h-full justify-center shadow-2xl overflow-hidden"
-            // style={{
-            //   background:
-            //     selectedBackground && viewMode === "2D"
-            //       ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
-            //       : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-            //   backgroundSize: "contain",
-            //   backgroundPosition: "center",
-            // }}
+          // style={{
+          //   background:
+          //     selectedBackground && viewMode === "2D"
+          //       ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
+          //       : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          //   backgroundSize: "contain",
+          //   backgroundPosition: "center",
+          // }}
           >
             <img
               src={getCurrentDisplayImage()}
@@ -1034,64 +1036,64 @@ const changeBackground = async (backgroundType) => {
             )} */}
           </div>
         ) : viewMode === "3D" ? (
-  <div className="relative w-1/4 h-full flex items-center justify-center">
-    
-    {/* Generating */}
-    {isGeneratingVideo && (
-      <div className="text-center max-w-md">
-        <Loader2 className="w-16 h-16 animate-spin mx-auto text-primary mb-4" />
-        <p className="text-xl font-semibold mb-2">Generating 3D Video...</p>
-        <p className="text-sm text-gray-600 mb-4">
-          Creating your 6-second video
-        </p>
+          <div className="relative w-1/4 h-full flex items-center justify-center">
 
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
-          <div
-            className="bg-primary h-3 rounded-full transition-all duration-500"
-            style={{ width: `${videoProgress}%` }}
-          />
-        </div>
+            {/* Generating */}
+            {isGeneratingVideo && (
+              <div className="text-center max-w-md">
+                <Loader2 className="w-16 h-16 animate-spin mx-auto text-primary mb-4" />
+                <p className="text-xl font-semibold mb-2">Generating 3D Video...</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Creating your 6-second video
+                </p>
 
-        <p className="text-sm text-gray-600">{videoProgress}% Complete</p>
-        <p className="text-lg font-semibold text-primary mt-2">
-          This usually takes 45–90 seconds
-        </p>
-      </div>
-    )}
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                  <div
+                    className="bg-primary h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${videoProgress}%` }}
+                  />
+                </div>
 
-    {/* Video Success */}
-    {!isGeneratingVideo && videoUrl && (
-      <div className="relative max-w-[85vw] h-full ">
-        <video
-          src={videoUrl}
-          controls
-          autoPlay
-          loop
-          className="w-full h-full object-cover  shadow-2xl"
-        />
-      </div>
-    )}
+                <p className="text-sm text-gray-600">{videoProgress}% Complete</p>
+                <p className="text-lg font-semibold text-primary mt-2">
+                  This usually takes 45–90 seconds
+                </p>
+              </div>
+            )}
 
-    {/* Video Error */}
-    {!isGeneratingVideo && videoError && (
-      <div className="text-center max-w-md">
-        <div className="text-red-500 text-5xl mb-4">⚠️</div>
-        <p className="font-semibold text-lg mb-2">
-          Video Generation Failed
-        </p>
-        <p className="text-sm text-gray-600 mb-6">{videoError}</p>
+            {/* Video Success */}
+            {!isGeneratingVideo && videoUrl && (
+              <div className="relative max-w-[85vw] h-full ">
+                <video
+                  src={videoUrl}
+                  controls
+                  autoPlay
+                  loop
+                  className="w-full h-full object-cover  shadow-2xl"
+                />
+              </div>
+            )}
 
-        <button
-          onClick={generateVideo}
-          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-hoverBg transition-all"
-        >
-          Try Again
-        </button>
-      </div>
-    )}
+            {/* Video Error */}
+            {!isGeneratingVideo && videoError && (
+              <div className="text-center max-w-md">
+                <div className="text-red-500 text-5xl mb-4">⚠️</div>
+                <p className="font-semibold text-lg mb-2">
+                  Video Generation Failed
+                </p>
+                <p className="text-sm text-gray-600 mb-6">{videoError}</p>
 
-  </div>
-) : (
+                <button
+                  onClick={generateVideo}
+                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-hoverBg transition-all"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+          </div>
+        ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
             <div className="text-center">
               <div className="text-6xl mb-4">👗</div>
@@ -1103,7 +1105,7 @@ const changeBackground = async (backgroundType) => {
 
 
 
- 
+
 
 
 
@@ -1228,37 +1230,36 @@ const changeBackground = async (backgroundType) => {
             <p className="text-xs text-gray-500 mb-3">Backgrounds</p>
 
             <div className="grid  grid-cols-2 gap-2">
-       {backgroundOptions.map((bg) => (
-  <div key={bg.id}>
-    <button
-      onClick={() => changeBackground(bg.id)} // ✅ Make sure this is correct
-      disabled={!tryOnResult || isChangingBackground}
-      className={`relative cursor-pointer p-1  overflow-hidden transition-all ${
-        selectedBackground === bg.id
-          ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-          : "hover:scale-105 border border-gray-200"
-      } ${(!tryOnResult || isChangingBackground) ? "opacity-50 cursor-not-allowed" : ""}`}
-    >
-      <div className="aspect-square">
-        <img
-          src={bg.image}
-          alt={bg.name}
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-      </div>
+              {backgroundOptions.map((bg) => (
+                <div key={bg.id}>
+                  <button
+                    onClick={() => changeBackground(bg.id)} // ✅ Make sure this is correct
+                    disabled={!tryOnResult || isChangingBackground}
+                    className={`relative cursor-pointer p-1  overflow-hidden transition-all ${selectedBackground === bg.id
+                      ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+                      : "hover:scale-105 border border-gray-200"
+                      } ${(!tryOnResult || isChangingBackground) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="aspect-square">
+                      <img
+                        src={bg.image}
+                        alt={bg.name}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </div>
 
-      {isChangingBackground && selectedBackground === bg.id && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-        </div>
-      )}
-    </button>
-    
-    {/* Label below image */}
-    <p className="text-xs  font-medium text-center pt-1  text-gray-600">{bg.name}</p>
-  </div>
-))}
+                    {isChangingBackground && selectedBackground === bg.id && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Label below image */}
+                  <p className="text-xs  font-medium text-center pt-1  text-gray-600">{bg.name}</p>
+                </div>
+              ))}
 
             </div>
           </div>

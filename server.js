@@ -3,7 +3,7 @@ import multer from "multer";
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
-import FormData from 'form-data'; 
+import FormData from 'form-data';
 
 
 dotenv.config();
@@ -14,7 +14,7 @@ const GEMINI_URL =
 
 
 
-  const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
+const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY; // Add to your .env file
 
 const getMinimaxHeaders = () => ({
@@ -29,7 +29,7 @@ function getApiKeyByOutfit(outfitType) {
 
 
   //  return GEMINI_API_KEY;
-   
+
   console.log(`🔍 Getting API key for: ${outfitType}`);
   switch (outfitType?.toLowerCase()) {
     case "saree":
@@ -57,22 +57,22 @@ app.use(express.urlencoded({ extended: true }));
 
 // Background options with URLs
 const backgrounds = [
-    {
-      id: "hallway",
-      name: "Temple Hall",
-      image:
-        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
-    },
+  {
+    id: "hallway",
+    name: "Temple Hall",
+    image:
+      'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
+  },
 
-    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
-    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
-    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
+  { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
+  { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg' },
+  { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
 
-  ];
+];
 
 // Download garment as base64
 async function downloadAsBase64(url) {
-  
+
   console.log(`📥 Downloading image from: ${url.substring(0, 60)}...`);
   const res = await axios.get(url, { responseType: "arraybuffer" });
   console.log(`✅ Image downloaded successfully (${res.data.length} bytes)`);
@@ -91,12 +91,12 @@ async function downloadAsBase64(url) {
 
 app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
   console.log('\n🎬 === VIDEO GENERATION REQUEST ===');
-  
+
   try {
     if (!req.file) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Try-on image required" 
+        error: "Try-on image required"
       });
     }
 
@@ -110,7 +110,7 @@ app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
     const payload = {
       model: 'MiniMax-Hailuo-2.3-Fast',
       first_frame_image: imageDataUrl,
-      prompt:  'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
+      prompt: 'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
       duration: 6,
       resolution: '1080P',
       prompt_optimizer: true,
@@ -118,7 +118,7 @@ app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
     };
 
     console.log('🚀 Calling MiniMax API...');
-    
+
     const response = await axios.post(
       `${MINIMAX_BASE_URL}/video_generation`,
       payload,
@@ -126,10 +126,10 @@ app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
     );
 
     const { task_id } = response.data;
-    
+
     console.log(`✅ Task created: ${task_id}`);
 
-    res.json({ 
+    res.json({
       success: true,
       taskId: task_id,
       message: 'Video generation started'
@@ -137,7 +137,7 @@ app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
 
   } catch (error) {
     console.error('❌ Video creation error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Failed to create video generation task',
       details: error.response?.data || error.message
@@ -152,21 +152,21 @@ app.get('/api/video/status/:taskId', async (req, res) => {
 
     const response = await axios.get(
       `${MINIMAX_BASE_URL}/query/video_generation`,
-      { 
+      {
         headers: getMinimaxHeaders(),
         params: { task_id: taskId }
       }
     );
 
     const data = response.data;
-    
+
     // Calculate progress
     let progress = 0;
     if (data.status === 'Queueing') progress = 10;
     else if (data.status === 'Preparing') progress = 25;
     else if (data.status === 'Processing') progress = 60;
     else if (data.status === 'Success') progress = 100;
-    
+
     res.json({
       success: true,
       status: data.status,
@@ -177,7 +177,7 @@ app.get('/api/video/status/:taskId', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Status check error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Failed to check video status',
       details: error.response?.data || error.message
@@ -192,7 +192,7 @@ app.get('/api/video/download/:fileId', async (req, res) => {
 
     const response = await axios.get(
       `${MINIMAX_BASE_URL}/files/retrieve`,
-      { 
+      {
         headers: getMinimaxHeaders(),
         params: { file_id: fileId }
       }
@@ -201,9 +201,9 @@ app.get('/api/video/download/:fileId', async (req, res) => {
     const download_url = response.data.file?.download_url;
 
     if (!download_url) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Download URL not found' 
+        error: 'Download URL not found'
       });
     }
 
@@ -214,7 +214,7 @@ app.get('/api/video/download/:fileId', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Video retrieval error:', error.response?.data || error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Failed to retrieve video',
       details: error.response?.data || error.message
@@ -240,18 +240,18 @@ app.get('/api/video/download/:fileId', async (req, res) => {
 // ============================================================
 app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req, res) => {
   console.log('\n🎨 === BACKGROUND CHANGE REQUEST ===');
-  
+
   try {
     if (!req.file) {
       console.log('❌ No try-on image uploaded');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Try-on image is required" 
+        error: "Try-on image is required"
       });
     }
 
     const { background } = req.body;
-    
+
     if (!background || !backgrounds[background]) {
       console.log('❌ Invalid background selection');
       return res.status(400).json({
@@ -273,15 +273,15 @@ app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req
     // Convert try-on result to base64
     const tryOnBase64 = req.file.buffer.toString("base64");
     console.log(`✅ Try-on image converted to base64`);
-    
+
     // Download background image
     console.log("⬇️ Downloading background image...");
     const bgBase64 = await downloadAsBase64(backgrounds[background].url);
 
     console.log("🔁 Calling Gemini API for background swap...");
     const result = await generateTryOnWithRetry(
-      tryOnBase64, 
-      bgBase64, 
+      tryOnBase64,
+      bgBase64,
       "background-swap"
     );
 
@@ -291,17 +291,17 @@ app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req
 
     console.log("✨ SUCCESS — Background Changed! 🎉");
     console.log('=== BACKGROUND CHANGE COMPLETE ===\n');
-    
+
     return res.json({
       success: true,
       result: `data:image/png;base64,${result}`,
       background: backgrounds[background].name
     });
-    
+
   } catch (err) {
     console.error("❌ BACKGROUND CHANGE ERROR:", err.message);
     console.error("❌ Stack:", err.stack);
-    
+
     if (!res.headersSent) {
       return res.status(500).json({
         error: "Background change failed",
@@ -318,9 +318,9 @@ app.get("/api/tryon-backgrounds", (req, res) => {
     name: value.name,
     preview: value.url
   }));
-  res.json({ 
+  res.json({
     success: true,
-    backgrounds: bgList 
+    backgrounds: bgList
   });
 });
 
@@ -333,38 +333,38 @@ app.get("/api/tryon-backgrounds", (req, res) => {
 // ============================================================
 app.post('/api/tryon-from-urls', async (req, res) => {
   console.log('\n🎯 === TRY-ON FROM URLs (MyProfile) ===');
-  
+
   try {
     const { modelUrl, garmentUrl, outfitType } = req.body;
-    
+
     console.log(`👗 Outfit type: ${outfitType}`);
     console.log(`👤 Model URL: ${modelUrl?.substring(0, 60)}...`);
     console.log(`🔗 Garment URL: ${garmentUrl?.substring(0, 60)}...`);
-    
+
     if (!modelUrl || !garmentUrl) {
       console.log('❌ Missing URLs');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Both modelUrl and garmentUrl are required" 
+        error: "Both modelUrl and garmentUrl are required"
       });
     }
 
     const apiKey = getApiKeyByOutfit(outfitType);
     if (!apiKey) {
       console.log('❌ API key not configured');
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        error: "API key not configured" 
+        error: "API key not configured"
       });
     }
 
     // Download both images from URLs
     console.log(`📥 Downloading model image...`);
     const modelBase64 = await downloadAsBase64(modelUrl);
-    
+
     console.log(`📥 Downloading garment image...`);
     const garmentBase64 = await downloadAsBase64(garmentUrl);
-    
+
     // Generate try-on with retry
     console.log(`🚀 Starting try-on with retry logic...`);
     const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
@@ -397,12 +397,12 @@ app.post('/api/tryon-from-urls', async (req, res) => {
 // Generate try-on for ONE garment
 async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   console.log(`🎨 Generating AI try-on for: ${garmentName}`);
-  
+
   const isSaree = garmentName.toLowerCase() === 'saree';
   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
 
 
-const prompt = isBackgroundSwap ? `
+  const prompt = isBackgroundSwap ? `
 ROLE
 You are a professional photo editor performing a REALISTIC background replacement.
 
@@ -435,8 +435,8 @@ OUTPUT
 Return ONLY one high-resolution inline_data image of the person realistically placed in the new background.
 NO text, JSON, or explanations.
 `
-:
-`
+    :
+    `
 ROLE
 You are a professional fashion photo editor performing a STRICT, photorealistic virtual try-on.
 
@@ -567,18 +567,18 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
       console.log(`🔄 Attempt ${attempt}/${maxRetries} for ${garmentName}`);
       return await generateTryOn(modelBase64, garmentBase64, garmentName);
     } catch (error) {
-      const isRateLimit = error.response?.status === 429 || 
-                         error.response?.status === 503 ||
-                         error.message?.includes('quota') ||
-                         error.message?.includes('rate limit');
-      
+      const isRateLimit = error.response?.status === 429 ||
+        error.response?.status === 503 ||
+        error.message?.includes('quota') ||
+        error.message?.includes('rate limit');
+
       if (isRateLimit && attempt < maxRetries) {
         const waitTime = Math.pow(2, attempt) * 1000;
-        console.log(`⏳ Rate limited. Waiting ${waitTime/1000}s before retry...`);
+        console.log(`⏳ Rate limited. Waiting ${waitTime / 1000}s before retry...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         continue;
       }
-      
+
       console.error(`❌ Attempt ${attempt} failed:`, error.message);
       throw error;
     }
@@ -593,17 +593,17 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
 async function generateMultipleTryOns(modelBase64, garments) {
   console.log(`🎨 Starting multi try-on for ${garments.length} garments`);
   const results = {};
-  
+
   for (const garment of garments) {
     console.log(`\n📸 Processing ${garment.name}...`);
-    
+
     try {
       // Download garment image
       const garmentBase64 = await downloadAsBase64(garment.url);
-      
+
       // Generate try-on with retry logic
       const output = await generateTryOnWithRetry(modelBase64, garmentBase64, garment.name);
-      
+
       if (output) {
         results[garment.name] = `data:image/png;base64,${output}`;
         console.log(`✅ ${garment.name} generated successfully`);
@@ -616,7 +616,7 @@ async function generateMultipleTryOns(modelBase64, garments) {
       results[garment.name] = null;
     }
   }
-  
+
   return results;
 }
 
@@ -627,17 +627,17 @@ app.post('/api/tryon', upload.fields([
   { name: 'garment', maxCount: 1 }
 ]), async (req, res) => {
   console.log('\n🎯 === TRYON REQUEST ===');
-  
+
   try {
     if (!req.files?.model) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Model image required" 
+        error: "Model image required"
       });
     }
 
     const modelBase64 = req.files.model[0].buffer.toString("base64");
-    
+
     // Handle garment - either from file or URL
     let garmentBase64;
     if (req.files?.garment) {
@@ -645,14 +645,14 @@ app.post('/api/tryon', upload.fields([
     } else if (req.body.garmentUrl) {
       garmentBase64 = await downloadAsBase64(req.body.garmentUrl);
     } else {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Garment image or URL required" 
+        error: "Garment image or URL required"
       });
     }
-    
+
     const outfitType = req.body.outfitType || "saree";
-    
+
     console.log(`🚀 Generating try-on for ${outfitType}...`);
     const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
 
@@ -682,14 +682,14 @@ app.post('/api/tryon', upload.fields([
 // ============================================================
 app.post("/api/myprofile-multi-tryon", upload.single("model"), async (req, res) => {
   console.log('\n🎯 === MY PROFILE MULTI TRY-ON REQUEST ===');
-  
+
   try {
     // Validate model image
     if (!req.file) {
       console.log('❌ No model image uploaded');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "No model image uploaded" 
+        error: "No model image uploaded"
       });
     }
 
@@ -698,7 +698,7 @@ app.post("/api/myprofile-multi-tryon", upload.single("model"), async (req, res) 
     // Convert model to base64
     const modelBase64 = req.file.buffer.toString("base64");
     console.log(`✅ Model image converted to base64`);
-    
+
     // Define garments for MyProfile
     const garments = [
       {
@@ -754,34 +754,34 @@ app.post("/api/myprofile-multi-tryon", upload.single("model"), async (req, res) 
 // ============================================================
 app.post('/api/single-tryon', upload.single('model'), async (req, res) => {
   console.log('\n🎯 === SINGLE TRY-ON REQUEST (MyProfile) ===');
-  
+
   try {
     if (!req.file) {
       console.log('❌ No model image uploaded');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "No model image uploaded" 
+        error: "No model image uploaded"
       });
     }
 
     const { garmentUrl, outfitType } = req.body;
     console.log(`👗 Outfit type: ${outfitType}`);
     console.log(`🔗 Garment URL: ${garmentUrl}`);
-    
+
     if (!garmentUrl) {
       console.log('❌ No garment URL provided');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "No garment URL provided" 
+        error: "No garment URL provided"
       });
     }
 
     const apiKey = getApiKeyByOutfit(outfitType);
     if (!apiKey) {
       console.log('❌ API key not configured');
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        error: "API key not configured" 
+        error: "API key not configured"
       });
     }
 
@@ -789,9 +789,9 @@ app.post('/api/single-tryon', upload.single('model'), async (req, res) => {
 
     const modelBase64 = req.file.buffer.toString("base64");
     console.log(`✅ Model image converted to base64`);
-    
+
     const garmentBase64 = await downloadAsBase64(garmentUrl);
-    
+
     // ⭐ USE RETRY FUNCTION
     console.log(`🚀 Starting try-on with retry logic...`);
     const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
@@ -829,14 +829,14 @@ app.post('/api/single-tryon', upload.single('model'), async (req, res) => {
 // ============================================================
 app.post("/api/multi-tryon", upload.single("model"), async (req, res) => {
   console.log('\n🎯 === MULTI TRY-ON REQUEST (MyProfile) ===');
-  
+
   try {
     // Validate model image
     if (!req.file) {
       console.log('❌ No model image uploaded');
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "No model image uploaded" 
+        error: "No model image uploaded"
       });
     }
 
@@ -845,7 +845,7 @@ app.post("/api/multi-tryon", upload.single("model"), async (req, res) => {
     // Convert model to base64
     const modelBase64 = req.file.buffer.toString("base64");
     console.log(`✅ Model image converted to base64`);
-    
+
     // Define garments for MyProfile
     const garments = [
       {
@@ -898,20 +898,20 @@ app.post('/api/garnment-swap', upload.fields([
   { name: 'garment', maxCount: 1 }
 ]), async (req, res) => {
   console.log('\n🎯 === TEST TRY-ON REQUEST ===');
-  
+
   try {
     if (!req.files?.model || !req.files?.garment) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Both model and garment images required" 
+        error: "Both model and garment images required"
       });
     }
 
     const modelBase64 = req.files.model[0].buffer.toString("base64");
     const garmentBase64 = req.files.garment[0].buffer.toString("base64");
-    
+
     const outfitType = req.body.outfitType || "saree";
-    
+
     console.log(`🚀 Generating try-on for ${outfitType}...`);
     const output = await generateTryOnWithRetry(modelBase64, garmentBase64, outfitType);
 

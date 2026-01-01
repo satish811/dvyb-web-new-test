@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Share2, ShoppingCart, Download, X, Loader2, ArrowLeft, Trash2 } from "lucide-react";
+import {
+  Share2,
+  ShoppingCart,
+  Download,
+  X,
+  Loader2,
+  Trash2,
+  MessageCircle,
+  Linkedin,
+  Mail
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserTryons } from "../../../hooks/useUserTryons";
 import { cartService } from "../../../services/cartService";
@@ -8,19 +18,19 @@ import { usePopup } from "../../../context/ToastPopupContext";
 import { useAuth } from "../../../context/AuthContext";
 import toast from "react-hot-toast";
 
+// --- Helper Components ---
+
 const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  console.log("Try-on image URL:", item.tryOnImage);
-
   const formattedDate = item.createdAt
     ? new Date(item.createdAt.seconds * 1000).toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
     : "Unknown date";
 
   const handleDelete = async () => {
@@ -31,16 +41,18 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
   };
 
   return (
-    <div className="bg-white overflow-hidden    shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
+    <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
+      {/* Delete Button (Visible on Hover) */}
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="absolute top-2 right-2 z-10 hidden"
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1.5 rounded-full hover:bg-red-50 text-red-500"
         title="Delete try-on"
       >
-        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
       </button>
 
+      {/* Image Container */}
       <div className="relative bg-[#D4B89C] aspect-[3/4] overflow-hidden">
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -52,7 +64,6 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         {imageError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
             <p className="text-xs text-red-500">Failed to load image</p>
-            <p className="text-xs text-gray-400 mt-1">Check console</p>
           </div>
         )}
 
@@ -63,22 +74,17 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
             "https://via.placeholder.com/400x600?text=No+Image"
           }
           alt={item.productName}
-          className={`md:w-full md:h-full object-cover transition-opacity duration-300 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
+          className={`md:w-full md:h-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
           onLoad={() => {
-            console.log("✅ Image loaded successfully:", item.tryOnImage);
             setImageLoaded(true);
             setImageError(false);
           }}
           onError={(e) => {
-            console.error("❌ Image load error for:", item.tryOnImage);
-            console.error("Full item data:", item);
             setImageError(true);
             setImageLoaded(true);
-
+            // Fallback logic
             if (item.garmentImage && e.target.src !== item.garmentImage) {
-              console.log("Trying fallback to garmentImage:", item.garmentImage);
               e.target.src = item.garmentImage;
             } else {
               e.target.src = "https://via.placeholder.com/400x600?text=Image+Not+Available";
@@ -94,6 +100,7 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         )}
       </div>
 
+      {/* Card Content */}
       <div className="p-4">
         {item.garmentName && (
           <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
@@ -110,7 +117,7 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         <div className="space-y-2">
           <button
             onClick={() => onAddToCart(item)}
-            className="w-full bg-white border text-primary hover:bg-hoverBg cursor-pointer border-gray-300 hover:text-white font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-white border text-primary hover:bg-gray-50 cursor-pointer border-gray-300 hover:text-black font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2"
           >
             ADD TO CART
           </button>
@@ -127,47 +134,102 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
 };
 
 const ShareModal = ({ isOpen, onClose, item }) => {
+  const [isSharing, setIsSharing] = useState(false);
+
   if (!isOpen || !item) return null;
 
-  const shareOptions = [
-    { name: "Save", icon: Download, color: "bg-gray-600" },
-    { name: "Messages", icon: Share2, color: "bg-blue-500" },
-    { name: "WhatsApp", icon: Share2, color: "bg-green-500" },
-    { name: "LinkedIn", icon: Share2, color: "bg-blue-700" },
-  ];
+  // Helper: Fetch image from URL and convert to File object
+  const urlToFile = async (url, filename, mimeType) => {
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      const buf = await response.arrayBuffer();
+      return new File([buf], filename, { type: mimeType });
+    } catch (error) {
+      console.error("Error converting URL to file:", error);
+      throw error;
+    }
+  };
 
   const handleShare = async (platform) => {
-    if (platform === "Save") {
-      try {
+    setIsSharing(true);
+
+    // Construct the product link
+    const productLink = `${window.location.origin}/products/${item.productId}`;
+    const shareText = `Check out my virtual try-on for ${item.productName}!`;
+
+    try {
+      // 1. Handle "Save" (Download) separately
+      if (platform === "Save") {
         const link = document.createElement("a");
         link.href = item.tryOnImage;
-        link.download = `tryon-${item.productName || "image"}.jpg`;
+        link.download = `tryon-${item.productName || "look"}.jpg`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         toast.success("Image downloaded!");
-      } catch (error) {
-        console.error("Download error:", error);
-        toast.error("Failed to download image");
+        setIsSharing(false);
+        return;
       }
-    } else {
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: `Check out my try-on: ${item.productName}`,
-            text: `I tried on ${item.productName} virtually!`,
-            url: window.location.href,
-          });
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            console.log("Share error:", err);
-          }
-        }
+
+      // 2. Prepare File for Native Sharing
+      let file = null;
+      try {
+        // Attempt to convert the hosted image URL to a File object
+        file = await urlToFile(item.tryOnImage, "my-tryon.jpg", "image/jpeg");
+      } catch (e) {
+        console.warn("Could not load image file for sharing, falling back to link.");
+      }
+
+      // 3. Try Native Share (Mobile)
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "My Try-On Look",
+          text: `${shareText}\n\nShop here: `,
+          url: productLink,
+        });
       } else {
-        toast.error("Sharing not supported on this device");
+        // 4. Fallback for Desktop / Unsupported Browsers
+        handleFallbackShare(platform, shareText, productLink);
       }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Share failed:", error);
+        // If native share crashes, try fallback
+        handleFallbackShare(platform, shareText, productLink);
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
+
+  const handleFallbackShare = (platform, text, url) => {
+    const encodedText = encodeURIComponent(text);
+    const encodedUrl = encodeURIComponent(url);
+
+    switch (platform) {
+      case "WhatsApp":
+        window.open(`https://wa.me/?text=${encodedText}%20${encodedUrl}`, "_blank");
+        break;
+      case "LinkedIn":
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`, "_blank");
+        break;
+      case "Messages":
+        window.location.href = `mailto:?subject=My Try On&body=${encodedText} ${encodedUrl}`;
+        break;
+      default:
+        // Generic fallback copy
+        navigator.clipboard.writeText(`${text} ${url}`);
+        toast.success("Link copied! (Image sharing not supported on this device)");
+    }
+  };
+
+  const shareOptions = [
+    { name: "Save", icon: Download, color: "bg-gray-600" },
+    { name: "Messages", icon: MessageCircle, color: "bg-blue-500" },
+    { name: "WhatsApp", icon: Share2, color: "bg-green-500" },
+    { name: "LinkedIn", icon: Linkedin, color: "bg-blue-700" },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -181,12 +243,17 @@ const ShareModal = ({ isOpen, onClose, item }) => {
 
         <h3 className="text-xl font-bold mb-6">Share Look</h3>
 
-        <div className="mb-6">
+        <div className="mb-6 relative">
           <img
             src={item.tryOnImage}
             alt={item.productName}
             className="w-32 h-44 mx-auto object-cover rounded-lg shadow-md"
           />
+          {isSharing && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-lg">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-4 gap-4">
@@ -194,10 +261,11 @@ const ShareModal = ({ isOpen, onClose, item }) => {
             <button
               key={idx}
               onClick={() => handleShare(option.name)}
-              className="flex flex-col items-center gap-2 group"
+              disabled={isSharing}
+              className="flex flex-col items-center gap-2 group disabled:opacity-50"
             >
               <div
-                className={`${option.color} text-white p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-lg`}
+                className={`${option.color} text-white p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-lg flex items-center justify-center`}
               >
                 <option.icon className="w-6 h-6" />
               </div>
@@ -205,16 +273,22 @@ const ShareModal = ({ isOpen, onClose, item }) => {
             </button>
           ))}
         </div>
+        <p className="text-center text-xs text-gray-400 mt-6">
+          On mobile, this will share the image & link directly to apps.
+        </p>
       </div>
     </div>
   );
 };
+
+// --- Main Page Component ---
 
 export default function TryOnGallery() {
   const navigate = useNavigate();
   const { tryons, loading, error } = useUserTryons();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const { user } = useAuth();
 
   // Safe access to usePopup - fallback if not available
   let showPopup = null;
@@ -222,13 +296,8 @@ export default function TryOnGallery() {
     const popupContext = usePopup();
     showPopup = popupContext?.showPopup;
   } catch (err) {
-    console.warn("usePopup context not available:", err);
+    // console.warn("usePopup context not available");
   }
-
-  const { user } = useAuth();
-
-  console.log("Total tryons:", tryons?.length || 0);
-  console.log("First tryon data:", tryons?.[0]);
 
   const handleShare = (item) => {
     setSelectedItem(item);
@@ -267,12 +336,14 @@ export default function TryOnGallery() {
 
       await cartService.addToCart(item.productId, productData, 1);
 
-      showPopup("cart", {
-        title: item.productName,
-        image: item.garmentImage,
-      });
-
-      toast.success(`${item.productName} added to cart!`);
+      if (showPopup) {
+        showPopup("cart", {
+          title: item.productName,
+          image: item.garmentImage,
+        });
+      } else {
+        toast.success(`${item.productName} added to cart!`);
+      }
     } catch (error) {
       console.error("Add to cart error:", error);
       toast.error("Failed to add item to cart.");
@@ -283,6 +354,7 @@ export default function TryOnGallery() {
     try {
       await deleteTryOn(tryOnId);
       toast.success("Try-on deleted successfully!");
+      // Ideally update local state here instead of full reload, but reload works for now
       window.location.reload();
     } catch (error) {
       console.error("Delete error:", error);
@@ -338,11 +410,11 @@ export default function TryOnGallery() {
   }
 
   return (
-    <div className="w-full ">
-      <div className="px-4 sm:px-6  lg:px-8 py-8 sm:py-12">
+    <div className="w-full">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-family-outfit  font-bold text-gray-900 mb-2">My Tryon Gallery</h1>
+          <h1 className="text-2xl font-family-outfit font-bold text-gray-900 mb-2">My Tryon Gallery</h1>
           <p className="text-gray-600">
             All your virtual try-ons in one place ({tryons.length}{" "}
             {tryons.length === 1 ? "item" : "items"})

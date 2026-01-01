@@ -11,6 +11,7 @@ const ProductTitleSection = ({
   onAddToB2BWishlist,
   addingToWishlist,
   product,
+  isWishlisted,
 }) => {
   const { title, name, description } = product || {};
   const [isExpanded, setIsExpanded] = useState(false);
@@ -145,7 +146,12 @@ const ProductTitleSection = ({
             >
               <Heart
                 size={20}
-                className={`${addingToWishlist ? "text-gray-400" : "text-gray-700 hover:text-red-500"}`}
+                className={`${addingToWishlist
+                    ? "text-gray-400"
+                    : isWishlisted
+                      ? "text-red-500 fill-current"
+                      : "text-gray-700 hover:text-red-500"
+                  }`}
               />
               {addingToWishlist && (
                 <span className="absolute inset-0 flex items-center justify-center">

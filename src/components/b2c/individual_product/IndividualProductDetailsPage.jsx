@@ -36,7 +36,7 @@ const TryOnPreviewModal = React.lazy(() => import("../TryOn/TryOnPreviewModal"))
 const IndividualProductDetailsPage = () => {
   const { id } = useParams();
   const { products, loading, error } = useProducts();
-  const { toggleWishlist, loading: wishlistLoading } = useWishlist();
+  const { toggleWishlist, loading: wishlistLoading, isInWishlist } = useWishlist();
   const navigate = useNavigate();
 
   const [addingToCart, setAddingToCart] = useState(false);
@@ -167,6 +167,8 @@ const IndividualProductDetailsPage = () => {
   console.log("🛍️ [Product Details] Full product data:", product);
 
   if (!product) return <div className="text-center py-10 text-gray-500">Product not found.</div>;
+
+  const isWishlisted = isInWishlist(product.id);
 
   const imageUrls = product.imageUrls?.length ? product.imageUrls : ["/placeholder.jpg"];
 
@@ -573,7 +575,7 @@ const IndividualProductDetailsPage = () => {
 
   return (
     <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16">
-      
+
       {/* Mobile Header */}
       <MobileProductHeader productName={product?.dressType || "PRODUCT"} />
 
@@ -614,7 +616,7 @@ const IndividualProductDetailsPage = () => {
       )}
 
       <div className="flex flex-col lg:flex-row gap-20 xl:gap-24 2xl:gap-32">
-        
+
         <div className="lg:w-[35rem] sticky top-20 z-10">
           <ProductImageGallery images={imageUrls} product={product} />
         </div>
@@ -627,6 +629,7 @@ const IndividualProductDetailsPage = () => {
             onAddToWishlist={handleAddToWishlist}
             onAddToB2BWishlist={handleB2BWishlist}
             addingToWishlist={wishlistLoading}
+            isWishlisted={isWishlisted}
           />
 
           <ProductStarRatingSection averageRating={averageRating} />
