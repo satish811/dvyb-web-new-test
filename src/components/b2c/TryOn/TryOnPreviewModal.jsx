@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import colorUtils from "../../utils/colorUtils";
 import {
   ArrowLeft,
@@ -15,16 +15,18 @@ import bg2 from "../../../assets/ProductsPage/bg2.svg";
 import bg3 from "../../../assets/ProductsPage/bg3.svg";
 import bg4 from "../../../assets/ProductsPage/bg4.svg";
 
-import beach from '../../../assets/TryOn/beach2.jpg'
-import temple from '../../../assets/TryOn/temple3.jpg'
-import wed from '../../../assets/TryOn/wed4.jpg'
+import beach from "../../../assets/TryOn/beach2.jpg";
+import temple from "../../../assets/TryOn/temple3.jpg";
+import wed from "../../../assets/TryOn/wed4.jpg";
 
-import img1 from '../../../assets/lazyloading/logoimg1.svg'
-import img2 from '../../../assets/lazyloading/logoimg2.svg'
-import img3 from '../../../assets/lazyloading/logoimg3.svg'
-import img4 from '../../../assets/lazyloading/logoimg4.svg'
-import img5 from '../../../assets/lazyloading/logoimg5.svg'
-import img6 from '../../../assets/lazyloading/logoimg6.svg'
+import img1 from "../../../assets/lazyloading/logoimg1.svg";
+import img2 from "../../../assets/lazyloading/logoimg2.svg";
+import img3 from "../../../assets/lazyloading/logoimg3.svg";
+import img4 from "../../../assets/lazyloading/logoimg4.svg";
+import img5 from "../../../assets/lazyloading/logoimg5.svg";
+import img6 from "../../../assets/lazyloading/logoimg6.svg";
+
+import LazyImageLoader from "../LazyImageLoader/LazyImageLoader";
 
 import { usePopup } from "../../../context/ToastPopupContext";
 import { wishlistService } from "../../../services/wishlistService";
@@ -39,32 +41,40 @@ import share_ic from "../../../assets/TryOn/share_ic.svg";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { storage, auth } from "../../../config/firebaseConfig"; // Adjust path if needed
 
-
 const API_BASE_URL = "/api/kling";
 
 const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [tryOnResult, setTryOnResult] = useState(null);
+  const hasStartedRef = useRef(false);
   // const [tryOnResultNoBg, setTryOnResultNoBg] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedTab, setSelectedTab] = useState("colours");
+  const [activeCustomizer, setActiveCustomizer] = useState("blouse");
   const [selectedColor, setSelectedColor] = useState("blue");
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
-  const [selectedBlouse, setSelectedBlouse] = useState("traditional");
+  const [selectedBlouse, setSelectedBlouse] = useState("regular");
   const [selectedBackground, setSelectedBackground] = useState("");
   const [backgroundChangedImage, setBackgroundChangedImage] = useState(null);
   const [isChangingBackground, setIsChangingBackground] = useState(false);
+  const [selectedNeck, setSelectedNeck] = useState(null);
+  const [isChangingNeck, setIsChangingNeck] = useState(false);
+
   // const [isRemovingBg, setIsRemovingBg] = useState(false);
   // const [bgError, setBgError] = useState("");
   const [viewMode, setViewMode] = useState("2D");
   const [expandedPanel, setExpandedPanel] = useState(null);
+  // Add this with your other useState declarations at the top
+  // const [selectedBlouse, setSelectedBlouse] = useState("regular");
+  const [isChangingBlouse, setIsChangingBlouse] = useState(false);
 
   // 3D Video States
   const [videoUrl, setVideoUrl] = useState(null);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoTaskId, setVideoTaskId] = useState(null);
   const [videoProgress, setVideoProgress] = useState(0);
-  const [videoError, setVideoError] = useState('');
+  const [videoError, setVideoError] = useState("");
   const [showBgWarning, setShowBgWarning] = useState(false);
 
   const [videoStatus, setVideoStatus] = useState("");
@@ -72,29 +82,23 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const auth = useAuth();
   const user = auth?.user || null;
 
-
-
-
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const images = [img1, img2, img3, img4, img5, img6];
 
   useEffect(() => {
     const imgTimer = setTimeout(() => {
-      setCurrentIndex(prev => (prev + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 200); // Change this to make rotation faster/slower
 
     return () => clearTimeout(imgTimer);
   }, [currentIndex]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-
-    }, 30000); // Change from 35000 to 30000 (30 seconds)
+    const timer = setTimeout(() => {}, 30000); // Change from 35000 to 30000 (30 seconds)
 
     return () => clearTimeout(timer);
   }, []);
-
 
   // const { user } = useAuth();
   // const { showPopup } = usePopup();
@@ -173,11 +177,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     checkStatus();
   }, [tryOnData?.productId, user]); // Add user to dependencies // Add user to dependencies
 
-
-
   const handleconsole = async () => {
     console.log("🔍 handleconsole called");
-
   };
   const handleToggleWishlist = async () => {
     console.log("🔍 handleToggleWishlist called");
@@ -236,7 +237,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       setIsLoading(false);
     }
   };
-
 
   const saveToGallery = async (resultUrl, videoUrl = null) => {
     try {
@@ -445,20 +445,70 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     {
       id: "hallway",
       name: "Temple Hall",
-      image:
-        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
+      image: "https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg",
     },
 
-    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
-    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg' },
-    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
+    {
+      id: "pool",
+      name: "Grand Hall",
+      image: "https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg",
+    },
+    {
+      id: "wedding",
+      name: "Archway",
+      image: "https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg",
+    },
+    {
+      id: "trees",
+      name: "Floral lights",
+      image:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg",
+    },
+  ];
 
+  const neckOptions = [
+    {
+      id: "collar",
+      label: "Collar",
+      image:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766750005/Screenshot_2025-12-26_172216_wwr0qb.png",
+    },
+    {
+      id: "regular",
+      label: "Regular",
+      image:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766750004/Screenshot_2025-12-26_172014_tbzxnt.png",
+    },
   ];
 
   const performTryOn = async () => {
+    console.log("🎯 performTryOn called");
+    console.log("🎯 Call stack:", new Error().stack);
+
     const { modelImage, garmentImage, garmentName } = tryOnData || {};
-    if (!modelImage || !garmentImage || !garmentName) return;
-    // coorect
+    if (!modelImage || !garmentImage || !garmentName) {
+      console.log("⏸️ Missing required data");
+      return;
+    }
+
+    if (isProcessing) {
+      console.log("⏸️ Already processing - BLOCKING");
+      return;
+    }
+
+    if (tryOnResult) {
+      console.log("⏸️ Already have result - BLOCKING");
+      return;
+    }
+
+    if (hasStartedRef.current) {
+      console.log("⏸️ Already started once - BLOCKING");
+      return;
+    }
+
+    console.log("🚀 performTryOn EXECUTING");
+
+    hasStartedRef.current = true;
     setIsProcessing(true);
     setErrorMsg("");
     setTryOnResult(null);
@@ -466,7 +516,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     try {
       const formData = new FormData();
 
-      // ⭐ FIX: Handle dataURL or image URL
+      // Handle model image
       let modelBlob;
       if (modelImage.startsWith("data:")) {
         const base64 = modelImage.split(",")[1];
@@ -477,18 +527,21 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         }
         modelBlob = new Blob([byteArray], { type: "image/jpeg" });
       } else {
-        modelBlob = await fetch(modelImage).then(r => r.blob());
+        modelBlob = await fetch(modelImage).then((r) => r.blob());
       }
 
       formData.append("model", modelBlob, "user.jpg");
 
-      // ⭐ FIX: Backend still requires garment as FILE
-      const garmentBlob = await fetch(garmentImage).then(r => r.blob());
+      // Handle garment image
+      const garmentBlob = await fetch(garmentImage).then((r) => r.blob());
       formData.append("garment", garmentBlob, "garment.png");
 
-      formData.append("outfitType", garmentName);
+      formData.append(
+        "outfitType",
+        tryOnData?.dressType?.toLowerCase() || tryOnData?.outfitType || "lehenga"
+      );
 
-      console.log("🚀 Sending to /api/test-tryon PREVIEW endpoint");
+      console.log("🚀 Sending to /api/garnment-swap");
 
       const response = await fetch("/api/garnment-swap", {
         method: "POST",
@@ -501,7 +554,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       }
 
       const data = await response.json();
-      console.log("🎯 Try-on result:", data);
 
       if (!data.success || !data.result) {
         throw new Error(data.error || "No result");
@@ -510,8 +562,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       const resultUrl = data.result;
       setTryOnResult(resultUrl);
 
-      console.log("✨ Preview TryOn done:", resultUrl);
-
+      console.log("✅ Try-on complete");
     } catch (err) {
       console.error("❌ Error:", err);
       setErrorMsg(err.message);
@@ -519,7 +570,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       setIsProcessing(false);
     }
   };
-
 
   //it worked last time
   // const performTryOn = async () => {
@@ -587,16 +637,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   //     setIsProcessing(false);
   //   }
   // };
-
-
-
-
-
-
-
-
-
-
 
   // const performTryOn = async () => {
   //   const { modelImage, garmentImage, garmentName } = tryOnData || {};
@@ -684,8 +724,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   //   }
   // };
 
-
-
   // const removeBackgroundFromResult = async (imageUrl) => {
   //   setIsRemovingBg(true);
   //   console.log("🖼️ Starting background removal for:", imageUrl);
@@ -749,9 +787,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
   // 3D Video Generation Functions
   const generateVideo = async () => {
-    console.log('🎬 Starting video generation...');
+    console.log("🎬 Starting video generation...");
     setIsGeneratingVideo(true);
-    setVideoError('');
+    setVideoError("");
     setVideoProgress(0);
 
     try {
@@ -760,33 +798,35 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       const blob = await response.blob();
 
       const formData = new FormData();
-      formData.append('tryOnImage', blob, 'tryon-bg-changed.jpg');
-      formData.append('prompt', 'Professional fashion model standing elegantly, gentle camera movement, cinematic lighting, high quality');
+      formData.append("tryOnImage", blob, "tryon-bg-changed.jpg");
+      formData.append(
+        "prompt",
+        "Professional fashion model standing elegantly, gentle camera movement, cinematic lighting, high quality"
+      );
 
-      console.log('📤 Sending to video API...');
+      console.log("📤 Sending to video API...");
 
       // Create video task
-      const createResponse = await fetch('/api/video/create', {
-        method: 'POST',
+      const createResponse = await fetch("/api/video/create", {
+        method: "POST",
         body: formData,
       });
 
       const createData = await createResponse.json();
 
       if (!createData.success) {
-        throw new Error(createData.error || 'Failed to create video task');
+        throw new Error(createData.error || "Failed to create video task");
       }
 
       const taskId = createData.taskId;
       setVideoTaskId(taskId);
-      console.log('✅ Task created:', taskId);
+      console.log("✅ Task created:", taskId);
 
       // Start polling for completion
       pollVideoStatus(taskId);
-
     } catch (err) {
-      console.error('❌ Video generation error:', err);
-      setVideoError(err.message || 'Failed to generate video');
+      console.error("❌ Video generation error:", err);
+      setVideoError(err.message || "Failed to generate video");
       setIsGeneratingVideo(false);
     }
   };
@@ -809,7 +849,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
         setVideoProgress(result.progress || 0);
 
-        if (result.status === 'Success') {
+        if (result.status === "Success") {
           // Get download URL
           const downloadResponse = await fetch(`/api/video/download/${result.file_id}`);
           const downloadData = await downloadResponse.json();
@@ -817,27 +857,27 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           if (downloadData.success) {
             setVideoUrl(downloadData.videoUrl);
             setIsGeneratingVideo(false);
-            console.log('✅ Video generated successfully!');
+            console.log("✅ Video generated successfully!");
           }
           return;
-        } else if (result.status === 'Fail') {
-          setVideoError('Video generation failed');
+        } else if (result.status === "Fail") {
+          setVideoError("Video generation failed");
           setIsGeneratingVideo(false);
           return;
         } else if (attempts < maxAttempts) {
           attempts++;
           setTimeout(checkStatus, 5000); // Poll every 5 seconds
         } else {
-          setVideoError('Video generation timed out');
+          setVideoError("Video generation timed out");
           setIsGeneratingVideo(false);
         }
       } catch (err) {
-        console.error('Status check error:', err);
+        console.error("Status check error:", err);
         if (attempts < maxAttempts) {
           attempts++;
           setTimeout(checkStatus, 5000);
         } else {
-          setVideoError('Failed to check video status');
+          setVideoError("Failed to check video status");
           setIsGeneratingVideo(false);
         }
       }
@@ -846,13 +886,26 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     checkStatus();
   };
 
-
   useEffect(() => {
+    if (hasStartedRef.current) return;
+
     const { modelImage, garmentImage } = tryOnData || {};
-    if (isOpen && modelImage && garmentImage) {
+
+    // ✅ STRICT SINGLE EXECUTION CHECK
+    if (isOpen && modelImage && garmentImage && !hasStarted && !tryOnResult && !isProcessing) {
+      console.log("🎬 Starting try-on (FIRST TIME ONLY)");
+      console.log("📸 Model:", modelImage.substring(0, 50));
+      console.log("👗 Garment:", garmentImage.substring(0, 50));
+
+      setHasStarted(true);
       performTryOn();
     }
-  }, [isOpen, tryOnData]);
+
+    // ✅ Reset when modal closes
+    if (!isOpen) {
+      setHasStarted(false);
+    }
+  }, [isOpen, tryOnData, hasStarted, tryOnResult, isProcessing]); // ✅ ONLY depend on isOpen
 
   if (!isOpen) return null;
 
@@ -877,14 +930,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
       // Create form data
       const formData = new FormData();
-      formData.append('tryOnImage', tryOnBlob, 'tryon-result.png');
-      formData.append('background', backgroundType);
+      formData.append("tryOnImage", tryOnBlob, "tryon-result.png");
+      formData.append("background", backgroundType);
 
       console.log(`📤 Sending to backend with background: ${backgroundType}`);
 
       // Call backend API
       const apiResponse = await fetch(`/api/change-tryon-background`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
@@ -892,7 +945,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
 
       if (!apiResponse.ok) {
         const errorData = await apiResponse.json();
-        throw new Error(errorData.details || errorData.error || `Server error: ${apiResponse.status}`);
+        throw new Error(
+          errorData.details || errorData.error || `Server error: ${apiResponse.status}`
+        );
       }
 
       const data = await apiResponse.json();
@@ -904,15 +959,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       } else {
         throw new Error(data.error || "Background change failed");
       }
-
     } catch (error) {
       console.error("❌ Background change failed:", error);
 
       let errorMsg = error.message;
-      if (errorMsg.includes('Failed to fetch')) {
-        errorMsg = '🔌 Cannot connect to server. Make sure backend is running on port 3004.';
-      } else if (errorMsg.includes('timeout')) {
-        errorMsg = '⏳ Request timed out. Please try again.';
+      if (errorMsg.includes("Failed to fetch")) {
+        errorMsg = "🔌 Cannot connect to server. Make sure backend is running on port 3004.";
+      } else if (errorMsg.includes("timeout")) {
+        errorMsg = "⏳ Request timed out. Please try again.";
       }
 
       toast.error(errorMsg);
@@ -920,6 +974,93 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
       setIsChangingBackground(false);
     }
   };
+
+  const changeBlouse = async (blouseType) => {
+    if (!tryOnResult) {
+      toast.error("Please complete try-on first!");
+      return;
+    }
+
+    setIsChangingBlouse(true);
+    setSelectedBlouse(blouseType);
+
+    try {
+      console.log("👚 Starting blouse change...");
+
+      // Convert try-on result to blob
+      const response = await fetch(tryOnResult);
+      const tryOnBlob = await response.blob();
+
+      // Create form data
+      const formData = new FormData();
+      formData.append("tryOnImage", tryOnBlob, "tryon-result.png");
+      formData.append("blouseType", blouseType); // e.g., "half-sleeve", "full-sleeve"
+
+      console.log(`📤 Sending to backend with blouse: ${blouseType}`);
+
+      // Call backend API
+      const apiResponse = await fetch(`/api/change-blouse`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json();
+        throw new Error(errorData.error || `Server error: ${apiResponse.status}`);
+      }
+
+      const data = await apiResponse.json();
+
+      if (data.success && data.result) {
+        console.log("✅ Blouse change successful!");
+        setTryOnResult(data.result); // Update the main try-on result
+        toast.success(`Blouse changed to ${blouseType}! 👚`);
+      }
+    } catch (error) {
+      console.error("❌ Blouse change failed:", error);
+      toast.error(error.message);
+    } finally {
+      setIsChangingBlouse(false);
+    }
+  };
+
+  const changeNeck = async (neckType) => {
+    if (!tryOnResult) {
+      toast.error("Please complete try-on first!");
+      return;
+    }
+
+    setIsChangingNeck(true);
+    setSelectedNeck(neckType);
+
+    try {
+      const response = await fetch(tryOnResult);
+      const blob = await response.blob();
+
+      const formData = new FormData();
+      formData.append("tryOnImage", blob, "tryon.png");
+      formData.append("neckType", neckType);
+
+      const apiResponse = await fetch("/api/change-neck", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await apiResponse.json();
+
+      if (!apiResponse.ok) {
+        throw new Error(data.error || "Neck change failed");
+      }
+
+      setTryOnResult(data.result);
+      toast.success(`Neck changed to ${neckType}! 👗`);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsChangingNeck(false);
+    }
+  };
+
   const getCurrentDisplayImage = () => {
     return backgroundChangedImage || tryOnResult;
   };
@@ -934,7 +1075,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   };
 
   const handleViewModeSwitch = (mode) => {
-    if (mode === '3D') {
+    if (mode === "3D") {
       // ✅ CHECK: Has background been changed?
       if (!backgroundChangedImage) {
         setShowBgWarning(true);
@@ -953,7 +1094,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
     <div className="fixed inset-0  z-50 bg-gradient-to-br from-gray-50 to-gray-100">
       {/* STAGE: centered preview area - FIXED: Added padding bottom for mobile */}
 
-
       {showBgWarning && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-md">
@@ -971,9 +1111,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         </div>
       )}
 
-
       <div className="absolute inset-0 w-full h-full flex items-center justify-center pb-[60vh] lg:pb-0 pointer-events-none">
-
         {isProcessing ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-gray-700">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1006,20 +1144,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           /* 2D IMAGE VIEW */
           <div
             className="relative flex items-center  h-full justify-center shadow-2xl overflow-hidden"
-          // style={{
-          //   background:
-          //     selectedBackground && viewMode === "2D"
-          //       ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
-          //       : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          //   backgroundSize: "contain",
-          //   backgroundPosition: "center",
-          // }}
+            // style={{
+            //   background:
+            //     selectedBackground && viewMode === "2D"
+            //       ? `url(${backgroundOptions.find((bg) => bg.id === selectedBackground)?.image})`
+            //       : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+            //   backgroundSize: "contain",
+            //   backgroundPosition: "center",
+            // }}
           >
             <img
               src={getCurrentDisplayImage()}
               alt="Try-on result"
               className={` 'mt-48' : 'mt-4' pointer-events-auto w-[440px] h-[656px] mt-4 object-contain`}
-
               // "w-[500px] h-[656px] mt-4 object-contain"
               draggable={false}
             />
@@ -1037,15 +1174,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           </div>
         ) : viewMode === "3D" ? (
           <div className="relative w-1/4 h-full flex items-center justify-center">
-
             {/* Generating */}
             {isGeneratingVideo && (
               <div className="text-center max-w-md">
                 <Loader2 className="w-16 h-16 animate-spin mx-auto text-primary mb-4" />
                 <p className="text-xl font-semibold mb-2">Generating 3D Video...</p>
-                <p className="text-sm text-gray-600 mb-4">
-                  Creating your 6-second video
-                </p>
+                <p className="text-sm text-gray-600 mb-4">Creating your 6-second video</p>
 
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                   <div
@@ -1078,9 +1212,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             {!isGeneratingVideo && videoError && (
               <div className="text-center max-w-md">
                 <div className="text-red-500 text-5xl mb-4">⚠️</div>
-                <p className="font-semibold text-lg mb-2">
-                  Video Generation Failed
-                </p>
+                <p className="font-semibold text-lg mb-2">Video Generation Failed</p>
                 <p className="text-sm text-gray-600 mb-6">{videoError}</p>
 
                 <button
@@ -1091,7 +1223,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 </button>
               </div>
             )}
-
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -1103,16 +1234,13 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         )}
       </div>
 
-
-
-
-
-
-
       {/* TOP HEAh-DER - Back to Products Button */}
       <div className="absolute md:top-16 md:left-52   z-20">
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            window.location.reload();
+          }}
           className="flex items-center gap-2 px-4 py-2  shadow-sm hover:shadow-md transition-all text-sm font-medium text-primary border border-primary"
         >
           <ArrowLeft size={18} />
@@ -1133,16 +1261,19 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-5  border-b p-1 bg-[#F0E0E0] border-gray-200">
+        <div className="flex gap-4 mb-5 w-1/2  border-b p-1 bg-[#F0E0E0] border-gray-200">
           <button
             onClick={() => setSelectedTab("colours")}
-            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${selectedTab === "colours"
-              ? "text-primary  bg-white border-gray-900"
-              : "text-primary hover:text-hoverBg"
-              }`}
+            className={`pb-2 text-sm w-[128px]  p-1 text-center  font-medium transition-all relative ${
+              selectedTab === "colours"
+                ? "text-primary  bg-white border-gray-900"
+                : "text-primary hover:text-hoverBg"
+            }`}
           >
             Colours
           </button>
+
+          {/*
           <button
             onClick={() => setSelectedTab("fabrics")}
             className={`pb-2 text-sm w-[128px] p-1 text-primary font-medium transition-all relative ${selectedTab === "fabrics"
@@ -1152,6 +1283,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           >
             Fabrics
           </button>
+          */}
         </div>
 
         {/* Colors Tab */}
@@ -1166,10 +1298,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={color.name}
                   onClick={() => viewMode === "2D" && setSelectedColor(color.name)}
                   disabled={viewMode === "3D"}
-                  className={`aspect-square rounded-lg transition-all ${selectedColor === color.name
-                    ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                    : "hover:scale-105 border border-gray-200"
-                    } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`aspect-square rounded-lg transition-all ${
+                    selectedColor === color.name
+                      ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+                      : "hover:scale-105 border border-gray-200"
+                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
                   style={{ backgroundColor: color.color }}
                 />
               ))}
@@ -1185,10 +1318,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 key={fabric.id}
                 onClick={() => viewMode === "2D" && setSelectedFabric(fabric.id)}
                 disabled={viewMode === "3D"}
-                className={`w-full p-3 rounded-lg text-left transition-all ${selectedFabric === fabric.id
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
-                  } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`w-full p-3 rounded-lg text-left transition-all ${
+                  selectedFabric === fabric.id
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-200"
+                } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="font-medium text-sm mb-1">{fabric.name}</div>
                 <div
@@ -1206,16 +1340,228 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-                }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+              }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                  }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                }`}
               />
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-col md:translate-y-[470px] translate-y-8">
+        <div className="flex mb-4 w-full max-w-[300px] mx-auto md:ml-52 border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setActiveCustomizer("blouse")}
+            className={`flex-1 py-2 text-sm font-medium ${
+              activeCustomizer === "blouse"
+                ? "bg-primary text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            Blouse
+          </button>
+
+          <button
+            onClick={() => setActiveCustomizer("neck")}
+            className={`flex-1 py-2 text-sm font-medium ${
+              activeCustomizer === "neck"
+                ? "bg-primary text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            Neck
+          </button>
+        </div>
+
+        {activeCustomizer === "blouse" && (
+          <div className="bg-white mx-auto md:ml-52 shadow-sm border border-gray-200 p-4 w-full max-w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)]">
+            {/* Half Sleeve */}
+            <div className="flex flex-col items-center">
+              <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg"
+                  alt="Half sleeve blouse"
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isChangingBlouse && selectedBlouse === "half-sleeve"
+                      ? "opacity-30"
+                      : "opacity-100"
+                  }`}
+                />
+                {isChangingBlouse && selectedBlouse === "half-sleeve" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <LazyImageLoader isProcessing={true} size="overlay" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => changeBlouse("half-sleeve")}
+                disabled={!tryOnResult || isChangingBlouse}
+                className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "half-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${!tryOnResult || isChangingBlouse ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+              >
+                {isChangingBlouse && selectedBlouse === "half-sleeve" && (
+                  <LazyImageLoader isProcessing={true} size="button" />
+                )}
+                <span>Half Sleeve</span>
+              </button>
+            </div>
+
+            {/* Full Sleeve */}
+            <div className="flex flex-col items-center">
+              <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg"
+                  alt="Full sleeve blouse"
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isChangingBlouse && selectedBlouse === "full-sleeve"
+                      ? "opacity-30"
+                      : "opacity-100"
+                  }`}
+                />
+                {isChangingBlouse && selectedBlouse === "full-sleeve" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <LazyImageLoader isProcessing={true} size="overlay" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => changeBlouse("full-sleeve")}
+                disabled={!tryOnResult || isChangingBlouse}
+                className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "full-sleeve" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${!tryOnResult || isChangingBlouse ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+              >
+                {isChangingBlouse && selectedBlouse === "full-sleeve" && (
+                  <LazyImageLoader isProcessing={true} size="button" />
+                )}
+                <span>Full Sleeve</span>
+              </button>
+            </div>
+
+            {/* Sleeveless */}
+            <div className="flex flex-col items-center">
+              <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg"
+                  alt="Sleeveless blouse"
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isChangingBlouse && selectedBlouse === "sleeveless"
+                      ? "opacity-30"
+                      : "opacity-100"
+                  }`}
+                />
+                {isChangingBlouse && selectedBlouse === "sleeveless" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <LazyImageLoader isProcessing={true} size="overlay" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => changeBlouse("sleeveless")}
+                disabled={!tryOnResult || isChangingBlouse}
+                className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedBlouse === "sleeveless" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${!tryOnResult || isChangingBlouse ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+              >
+                {isChangingBlouse && selectedBlouse === "sleeveless" && (
+                  <LazyImageLoader isProcessing={true} size="button" />
+                )}
+                <span>Sleeveless</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeCustomizer === "neck" && (
+          <div className="bg-white mx-auto md:ml-52 shadow-sm border border-gray-200 p-4 w-full max-w-[300px] grid grid-cols-2 gap-4 max-h-[calc(100vh-120px)]">
+            {/* Collar Neck */}
+            <div className="flex flex-col items-center">
+              <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1767091137/Gemini_Generated_Image_gtmddsgtmddsgtmd_kygrym.png"
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isChangingNeck && selectedNeck === "collar" ? "opacity-30" : "opacity-100"
+                  }`}
+                  alt="Collar Neck"
+                />
+                {isChangingNeck && selectedNeck === "collar" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <LazyImageLoader isProcessing={true} size="overlay" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => changeNeck("collar")}
+                disabled={!tryOnResult || isChangingNeck}
+                className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedNeck === "collar" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${!tryOnResult || isChangingNeck ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+              >
+                {isChangingNeck && selectedNeck === "collar" && (
+                  <LazyImageLoader isProcessing={true} size="button" />
+                )}
+                <span>Collar</span>
+              </button>
+            </div>
+
+            {/* Regular Neck */}
+            <div className="flex flex-col items-center">
+              <div className="w-28 h-28  mb-2 shadow-sm overflow-hidden relative">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1767091137/Gemini_Generated_Image_y8utf4y8utf4y8ut_fgxhl5.png"
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isChangingNeck && selectedNeck === "regular" ? "opacity-30" : "opacity-100"
+                  }`}
+                  alt="Regular Neck"
+                />
+                {isChangingNeck && selectedNeck === "regular" && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <LazyImageLoader isProcessing={true} size="overlay" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => changeNeck("regular")}
+                disabled={!tryOnResult || isChangingNeck}
+                className={`
+            w-full py-2 px-3 text-sm font-medium  transition-all
+            border border-gray-300
+            ${selectedNeck === "regular" ? "bg-primary text-white border-primary" : "bg-white text-gray-800 hover:bg-gray-50"}
+            ${!tryOnResult || isChangingNeck ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            flex items-center justify-center gap-2
+          `}
+              >
+                {isChangingNeck && selectedNeck === "regular" && (
+                  <LazyImageLoader isProcessing={true} size="button" />
+                )}
+                <span>Regular</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* RIGHT SIDEBAR - Scenes & Actions (Desktop) */}
@@ -1235,10 +1581,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   <button
                     onClick={() => changeBackground(bg.id)} // ✅ Make sure this is correct
                     disabled={!tryOnResult || isChangingBackground}
-                    className={`relative cursor-pointer p-1  overflow-hidden transition-all ${selectedBackground === bg.id
-                      ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                      : "hover:scale-105 border border-gray-200"
-                      } ${(!tryOnResult || isChangingBackground) ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`relative cursor-pointer p-1  overflow-hidden transition-all ${
+                      selectedBackground === bg.id
+                        ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+                        : "hover:scale-105 border border-gray-200"
+                    } ${!tryOnResult || isChangingBackground ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <div className="aspect-square">
                       <img
@@ -1260,7 +1607,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   <p className="text-xs  font-medium text-center pt-1  text-gray-600">{bg.name}</p>
                 </div>
               ))}
-
             </div>
           </div>
         )}
@@ -1283,10 +1629,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${isInWishlistState
-                ? " text-primary pl-3 "
-                : "bg-white border-2 justify-center border-primary text-primary"
-                }`}
+              className={`w-full py-2.5 cursor-pointer   transition-all font-medium flex  gap-4 text-sm ${
+                isInWishlistState
+                  ? " text-primary pl-3 "
+                  : "bg-white border-2 justify-center border-primary text-primary"
+              }`}
             >
               <Heart
                 className={`w-5 h-5 ${isInWishlistState ? "fill-current text-red-600" : ""}`}
@@ -1318,12 +1665,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <span className="text-sm font-medium text-gray-700">View in 360</span>
             <button
               onClick={() => handleViewModeSwitch(viewMode === "2D" ? "3D" : "2D")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${viewMode === "3D" ? "bg-primary" : "bg-gray-300"
-                }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                viewMode === "3D" ? "bg-primary" : "bg-gray-300"
+              }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewMode === "3D" ? "translate-x-6" : "translate-x-1"
-                  }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  viewMode === "3D" ? "translate-x-6" : "translate-x-1"
+                }`}
               />
             </button>
           </div>
@@ -1337,19 +1686,21 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
           <div className="flex gap-4 mb-4 border-b border-gray-200">
             <button
               onClick={() => setSelectedTab("colours")}
-              className={`pb-2 text-sm font-medium ${selectedTab === "colours"
-                ? "text-gray-900 border-b-2 border-gray-900"
-                : "text-gray-500"
-                }`}
+              className={`pb-2 text-sm font-medium ${
+                selectedTab === "colours"
+                  ? "text-gray-900 border-b-2 border-gray-900"
+                  : "text-gray-500"
+              }`}
             >
               Colours
             </button>
             <button
               onClick={() => setSelectedTab("fabrics")}
-              className={`pb-2 text-sm font-medium ${selectedTab === "fabrics"
-                ? "text-gray-900 border-b-2 border-gray-900"
-                : "text-gray-500"
-                }`}
+              className={`pb-2 text-sm font-medium ${
+                selectedTab === "fabrics"
+                  ? "text-gray-900 border-b-2 border-gray-900"
+                  : "text-gray-500"
+              }`}
             >
               Fabrics
             </button>
@@ -1366,10 +1717,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
-                    className={`aspect-square rounded-lg ${selectedColor === color.name
-                      ? "ring-2 ring-gray-800 ring-offset-2"
-                      : "border border-gray-200"
-                      }`}
+                    className={`aspect-square rounded-lg ${
+                      selectedColor === color.name
+                        ? "ring-2 ring-gray-800 ring-offset-2"
+                        : "border border-gray-200"
+                    }`}
                     style={{ backgroundColor: color.color }}
                   />
                 ))}
@@ -1384,10 +1736,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                 <button
                   key={fabric.id}
                   onClick={() => setSelectedFabric(fabric.id)}
-                  className={`w-full p-3 rounded-lg text-left ${selectedFabric === fabric.id
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-50 border border-gray-200"
-                    }`}
+                  className={`w-full p-3 rounded-lg text-left ${
+                    selectedFabric === fabric.id
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   <div className="text-sm font-medium">{fabric.name}</div>
                   <div
@@ -1411,10 +1764,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
                   key={bg.id}
                   onClick={() => changeBackground(bg.id)}
                   disabled={!tryOnResult || isChangingBackground}
-                  className={`relative rounded-lg overflow-hidden ${selectedBackground === bg.id
-                    ? "ring-2 ring-gray-800 ring-offset-2"
-                    : "border border-gray-200"
-                    } ${(!tryOnResult || isChangingBackground) ? "opacity-50" : ""}`}
+                  className={`relative rounded-lg overflow-hidden ${
+                    selectedBackground === bg.id
+                      ? "ring-2 ring-gray-800 ring-offset-2"
+                      : "border border-gray-200"
+                  } ${!tryOnResult || isChangingBackground ? "opacity-50" : ""}`}
                 >
                   <div className="aspect-square">
                     <img src={bg.image} alt={bg.name} className="w-full h-full object-cover" />
@@ -1433,7 +1787,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
         {/* Actions */}
         <div className="px-4 py-4 border-t border-gray-200 space-y-2 pb-6">
           <button
-            onClick={() => navigate(`/products/${tryOnData?.productId}`)}
+            onClick={() => navigate(`/product/${tryOnData?.productId}`)}
             className="w-full bg-primary text-white py-3 rounded-lg font-medium text-sm"
           >
             VIEW PRODUCT
@@ -1443,10 +1797,11 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
             <button
               onClick={handleToggleWishlist}
               disabled={isLoading}
-              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${isInWishlistState
-                ? "bg-red-50 border-2 border-red-500 text-red-500"
-                : "border-2 border-gray-300 text-gray-700"
-                }`}
+              className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${
+                isInWishlistState
+                  ? "bg-red-50 border-2 border-red-500 text-red-500"
+                  : "border-2 border-gray-300 text-gray-700"
+              }`}
             >
               <Heart className={`w-4 h-4 ${isInWishlistState ? "fill-current" : ""}`} />
               Wishlist
@@ -1484,5 +1839,3 @@ function loadImg(src) {
 }
 
 export default TryOnPreviewModal;
-
-
