@@ -7,6 +7,7 @@ import { cartService } from "../../../services/cartService";
 import orderService from "../../../services/orderService";
 import B2BAuthService from "../../../services/b2bAuthService";
 import B2BAddressService from "../../../services/b2bAddressService";
+import shiprocketService from "../../../services/shiprocketService";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -97,6 +98,49 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [email, setEmail] = useState("");
+  
+  // Shiprocket State
+  const [shippingRates, setShippingRates] = useState([]);
+  const [selectedCourier, setSelectedCourier] = useState(null);
+  const [loadingRates, setLoadingRates] = useState(false);
+
+  // Fetch shipping rates
+  const fetchShippingRates = async (postalCode) => {
+    if (!postalCode || postalCode.length !== 6) return;
+    
+    setLoadingRates(true);
+    setShippingRates([]);
+    setSelectedCourier(null);
+    
+    try {
+      console.log("📦 Fetching shipping rates for:", postalCode);
+      const result = await shiprocketService.getShippingRates(
+        postalCode,
+        transformedCartItems,
+        paymentMethod === 'cod'
+      );
+      
+      if (result.success && result.data?.available_courier_companies) {
+        // Filter out couriers with 0 charge if necessary, or just keep all
+        const couriers = result.data.available_courier_companies.filter(c => c.freight_charge > 0);
+        setShippingRates(couriers);
+        
+        // Auto-select cheapest courier
+        if (couriers.length > 0) {
+          const cheapest = couriers.reduce((prev, curr) => 
+            prev.freight_charge < curr.freight_charge ? prev : curr
+          );
+          setSelectedCourier(cheapest);
+        }
+      } else {
+        console.warn("⚠️ No shipping rates found:", result);
+      }
+    } catch (error) {
+      console.error("❌ Failed to fetch shipping rates:", error);
+    } finally {
+      setLoadingRates(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -288,8 +332,11 @@ export default function CheckoutPage() {
     setShippingForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (userDetails.role === "B2B" && defaultAddress) {
+      if (defaultAddress.zipPostalCode) {
+         await fetchShippingRates(defaultAddress.zipPostalCode);
+      }
       setStep3Unlocked(true);
       setOpenStep(3);
       return;
@@ -322,6 +369,7 @@ export default function CheckoutPage() {
       alert("Phone must be exactly 10 digits.");
       return;
     }
+    await fetchShippingRates(postalCode);
     setStep3Unlocked(true);
     setOpenStep(3);
   };
@@ -331,7 +379,7 @@ export default function CheckoutPage() {
     0
   );
   const discount = couponApplied?.amount || subtotal * 0.12;
-  const shippingFee = transformedCartItems.length > 0 ? 0 : 0;
+  const shippingFee = selectedCourier?.freight_charge || 0;
   const totalPayable = Math.max(0, subtotal - discount + shippingFee);
 
   const handlePayNow = async () => {
@@ -353,7 +401,7 @@ export default function CheckoutPage() {
     if (paymentMethod === "cod") {
       try {
         setIsLoading(true);
-        await orderService.createOrder({
+        const orderResult = await orderService.createOrder({
           products: transformedCartItems,
           paymentMethod: "cod",
           shipping: shippingForm,
@@ -364,6 +412,29 @@ export default function CheckoutPage() {
           userRole: userDetails.role || "B2C",
         });
 
+        // 🚀 Shiprocket Order Creation (COD)
+        try {
+          const shiprocketResult = await shiprocketService.createOrder({
+            orderId: orderResult.orderId,
+            email: finalEmail,
+            shipping: shippingForm,
+            products: transformedCartItems,
+            paymentMethod: "cod",
+            shippingFee: shippingFee,
+            discount: discount,
+            amount: totalPayable,
+            weight: 0.5, 
+            courierId: selectedCourier?.courier_company_id
+          });
+          
+          if (shiprocketResult.success && shiprocketResult.data) {
+            await orderService.updateShipmentData(orderResult.orderId, shiprocketResult.data);
+            console.log('✅ Shiprocket order created successfully');
+          }
+        } catch (shipError) {
+          console.error("❌ Shiprocket order creation failed:", shipError);
+        }
+
         if (userDetails.isLoggedIn) {
           // Fire and forget cart cleanup
           Promise.all(
@@ -373,7 +444,7 @@ export default function CheckoutPage() {
           sessionStorage.removeItem("guest_cart");
         }
 
-        navigate("/order-success");
+        navigate("/order-success", { state: { orderId: orderResult.orderId, paymentMethod: "COD" } });
       } catch (err) {
         alert("COD order failed. Please try again.");
         setIsLoading(false);
@@ -422,7 +493,7 @@ export default function CheckoutPage() {
             });
 
             if (result.data.success) {
-              await orderService.createOrder({
+              const orderResult = await orderService.createOrder({
                 products: transformedCartItems,
                 paymentMethod,
                 shipping: shippingForm,
@@ -435,6 +506,31 @@ export default function CheckoutPage() {
                 userRole: userDetails.role || "B2C",
               });
 
+              // 🚀 Shiprocket Order Creation (Prepaid)
+              try {
+                const shiprocketResult = await shiprocketService.createOrder({
+                  orderId: orderResult.orderId,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  email: finalEmail,
+                  shipping: shippingForm,
+                  products: transformedCartItems,
+                  paymentMethod: paymentMethod, 
+                  shippingFee: shippingFee,
+                  discount: discount,
+                  amount: totalPayable,
+                  weight: 0.5,
+                  courierId: selectedCourier?.courier_company_id
+                });
+                
+                if (shiprocketResult.success && shiprocketResult.data) {
+                  await orderService.updateShipmentData(orderResult.orderId, shiprocketResult.data);
+                  console.log('✅ Shiprocket prepaid order created successfully');
+                }
+              } catch (shipError) {
+                console.error("❌ Shiprocket prepaid order failed:", shipError);
+              }
+
               if (userDetails.isLoggedIn) {
                 // Fire and forget, don't await to speed up navigation
                 Promise.all(cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))).catch(
@@ -444,7 +540,7 @@ export default function CheckoutPage() {
                 sessionStorage.removeItem("guest_cart");
               }
 
-              navigate("/order-success");
+              navigate("/order-success", { state: { orderId: orderResult.orderId, paymentMethod: "ONLINE" } });
             } else {
               alert("Payment failed. Please try again.");
               setIsLoading(false);
@@ -757,6 +853,54 @@ export default function CheckoutPage() {
               </div>
               {openStep === 3 && (
                 <div className="p-6 space-y-4">
+                  {/* Shipping Courier Selection UI */}
+                  {step3Unlocked && loadingRates && (
+                    <div className="text-center py-4 bg-gray-50 rounded mb-4">
+                      <p className="text-gray-600 animate-pulse">Computing best shipping rates...</p>
+                    </div>
+                  )}
+
+                  {step3Unlocked && shippingRates.length > 0 && (
+                    <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-sm">
+                      <h3 className="font-semibold mb-3 text-gray-800">Select Shipping Partner</h3>
+                      <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
+                        {shippingRates.map((courier) => (
+                          <div
+                            key={courier.courier_company_id}
+                            onClick={() => setSelectedCourier(courier)}
+                            className={`flex justify-between items-center p-3 border rounded-sm cursor-pointer transition-all ${
+                              selectedCourier?.courier_company_id === courier.courier_company_id
+                                ? 'border-[#800000] bg-white shadow-sm ring-1 ring-[#800000]'
+                                : 'border-gray-300 hover:border-gray-400 bg-white'
+                            }`}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-800">{courier.courier_name}</span>
+                                {selectedCourier?.courier_company_id === courier.courier_company_id && (
+                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Selected</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Est. Delivery: {courier.etd || '3-5 days'}
+                              </p>
+                              {courier.rating && (
+                                <p className="text-[10px] text-yellow-600 mt-0.5">
+                                  ★ {courier.rating}/5 Rating
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-[#800000]">₹{courier.freight_charge}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2 italic">
+                        * Shipping rates are calculated based on weight and location.
+                      </p>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                     {["cod", "card", "netbank", "upi"].map((method) => (
                       <button

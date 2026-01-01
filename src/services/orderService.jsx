@@ -49,7 +49,12 @@ class OrderOperationalService {
 
     try {
       const { collection } = await this.getUserRoleAndCollection();
-      const orderId = `ORD${Date.now()}`;
+      const userPrefix = user.uid.substring(0, 4).toUpperCase();
+      const productPrefix = orderData.products?.[0]?.productId 
+        ? orderData.products[0].productId.substring(0, 4).toUpperCase() 
+        : "CART";
+      const timestamp = Date.now().toString().slice(-6);
+      const orderId = `ORD-${userPrefix}-${productPrefix}-${timestamp}`;
       const orderRef = doc(db, collection, user.uid, this.ordersSubcollection, orderId);
 
       const order = {
@@ -141,6 +146,35 @@ class OrderOperationalService {
       return true;
     } catch (error) {
       console.error("Error updating order:", error);
+      throw error;
+    }
+  }
+
+  async updateShipmentData(orderId, shipmentData) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User must be authenticated");
+
+    try {
+      const { collection } = await this.getUserRoleAndCollection();
+      const orderRef = doc(db, collection, user.uid, this.ordersSubcollection, orderId);
+      
+      await setDoc(orderRef, {
+        shiprocketOrderId: shipmentData.order_id,
+        shiprocketShipmentId: shipmentData.shipment_id,
+        awbCode: shipmentData.awb_code,
+        courierName: shipmentData.courier_name,
+        courierCompanyId: shipmentData.courier_company_id,
+        trackingUrl: shipmentData.tracking_url,
+        shipmentStatus: shipmentData.status || 'PENDING',
+        estimatedDelivery: shipmentData.etd || null,
+        shippingCharges: shipmentData.freight_charge || 0,
+        isTestOrder: shipmentData.isTestOrder || false
+      }, { merge: true });
+      
+      console.log('✅ Shipment data saved to Firestore:', orderId);
+      return true;
+    } catch (error) {
+      console.error("❌ Error updating shipment data:", error);
       throw error;
     }
   }
