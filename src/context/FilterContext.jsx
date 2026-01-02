@@ -44,8 +44,6 @@ export const FilterProvider = ({ children }) => {
     discounts: [],
     blouses: [],
     boutiques: [],
-    boutiqueSearch: "",
-    categorySearch: "",
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -106,14 +104,6 @@ export const FilterProvider = ({ children }) => {
             }
             break;
 
-          case "boutiqueSearch":
-            newFilters.boutiqueSearch = value;
-            break;
-
-          case "categorySearch":
-            newFilters.categorySearch = value;
-            break;
-
           case "sizes":
             const sizes = newFilters.sizes || [];
             if (sizes.includes(value)) {
@@ -172,8 +162,6 @@ export const FilterProvider = ({ children }) => {
       discounts: [],
       blouses: [],
       boutiques: [],
-      boutiqueSearch: "",
-      categorySearch: "",
     });
     setNavbarCategory("");
   }, []);

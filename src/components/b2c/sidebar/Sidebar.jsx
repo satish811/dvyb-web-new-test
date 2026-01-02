@@ -14,33 +14,10 @@ const Sidebar = ({ products = [] }) => {
   const isBoutiquePage = urlCategory?.toLowerCase() === "boutique" || urlCategory?.toLowerCase() === "boutiques";
   const isURLSaree = urlCategory?.toLowerCase() === "saree";
 
-  const [filterData, setFilterData] = useState({
-    categories: [],
-    sizes: [],
-    colors: [],
-    boutiques: [], // New state for boutiques
-    priceRange: { min: 0, max: 0 },
-  });
-
-  const { selectedFilters, updateFilter } = useFilter();
-  const selectedCategory = selectedFilters.categories[0] || null;
-
-  const customCategories = [
-    { name: "LEHENGA", count: 5 },
-    { name: "SAREE", count: 4 },
-    { name: "KURTA SETS", count: 5 },
-    { name: "ANARKALIS", count: 6 },
-    { name: "SHARARAS", count: 8 },
-    { name: "WEDDING", count: 9 },
-    { name: "BOUTIQUE", count: 10 },
-    { name: "SALE", count: 5 },
-    { name: "VIRTUAL TRYON", count: 7 },
-  ];
-
   const customDiscounts = [
-    { range: "0% - 20%", count: 10 },
-    { range: "21% - 30%", count: 12 },
-    { range: "31% - 40%", count: 11 },
+    { range: "0% - 20%" },
+    { range: "21% - 30%" },
+    { range: "31% - 40%" },
   ];
 
   const defaultSizes = [
@@ -53,12 +30,23 @@ const Sidebar = ({ products = [] }) => {
     { name: "3XL", count: 11 },
   ];
 
+  const [filterData, setFilterData] = useState({
+    categories: [],
+    sizes: [],
+    colors: [],
+    boutiques: [], // New state for boutiques
+    priceRange: { min: 0, max: 0 },
+  });
+
+  const { selectedFilters, updateFilter } = useFilter();
+  const selectedCategory = selectedFilters.categories[0] || null;
+
   useEffect(() => {
     if (products.length > 0) {
-      const dynamicData = extractDynamicFilterData(products, urlCategory);
+      const dynamicData = extractDynamicFilterData(products, urlCategory, selectedFilters.boutiques);
       setFilterData(dynamicData);
     }
-  }, [products, urlCategory]);
+  }, [products, urlCategory, selectedFilters.boutiques]);
 
   const isSareeCategory =
     (selectedCategory && selectedCategory.toUpperCase().includes("SAREE")) || isURLSaree;
@@ -78,62 +66,23 @@ const Sidebar = ({ products = [] }) => {
     "
     >
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-0 sm:pt-0 space-y-6 sm:space-y-7 no-scrollbar">
-        {/* Category Search + Select Section */}
-        <div className="space-y-3">
-          <div className="pb-1">
-            <h3 className="font-medium text-gray-900 text-xs sm:text-sm mb-2.5">SEARCH CATEGORY</h3>
-            <div className="relative">
-              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-                <Search size={14} className="text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Type category (e.g. Saree)..."
-                  className="w-full text-[10px] sm:text-xs bg-transparent border-none outline-none placeholder-gray-400"
-                  value={selectedFilters.categorySearch || ""}
-                  onChange={(e) => updateFilter("categorySearch", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <FilterSection
-            title="SELECT CATEGORY"
-            items={customCategories}
-            searchable={false} // We already have a primary search bar above
-            defaultOpen={true}
-            filterType="categories"
-          />
-        </div>
+        {/* Designer Section (Top) */}
+        <FilterSection
+          title="SELECT DESIGNER"
+          items={filterData.boutiques}
+          searchable={false}
+          defaultOpen={true}
+          filterType="boutiques"
+        />
 
-        {/* Dynamic Boutique Handling */}
-        {isBoutiquePage ? (
-          <div className="pb-3 sm:pb-4 border-b border-gray-100">
-            <h3 className="font-medium text-gray-900 text-xs sm:text-sm mb-3">SEARCH BOUTIQUE</h3>
-            <div className="relative">
-              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-                <Search
-                  size={14}
-                  className="text-gray-400 mr-2"
-                />
-                <input
-                  type="text"
-                  placeholder="Type shop name..."
-                  className="w-full text-[10px] sm:text-xs bg-transparent border-none outline-none placeholder-gray-400"
-                  value={selectedFilters.boutiqueSearch || ""}
-                  onChange={(e) => updateFilter("boutiqueSearch", e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <FilterSection
-            title="BOUTIQUES"
-            items={filterData.boutiques}
-            searchable
-            defaultOpen={true}
-            filterType="boutiques"
-          />
-        )}
+        {/* Category Section (Below Designers) */}
+        <FilterSection
+          title="SELECT CATEGORY"
+          items={filterData.categories}
+          searchable={false}
+          defaultOpen={true}
+          filterType="categories"
+        />
 
         {!isSareeCategory && (
           <FilterSection
@@ -162,14 +111,24 @@ const Sidebar = ({ products = [] }) => {
   );
 };
 
-/* Helper Functions (unchanged) */
-function extractDynamicFilterData(products, activeCategory) {
+/* Helper Functions */
+function extractDynamicFilterData(products, activeCategory, selectedBoutiques) {
+  // If designers are selected, filter the products for category/size/color extraction
+  let filteredProducts = products;
+  if (selectedBoutiques && selectedBoutiques.length > 0) {
+    const selectedLower = selectedBoutiques.map(b => b.toLowerCase());
+    filteredProducts = products.filter((p) => {
+      const shopName = (p.shopName?.trim() || p.boutiqueName?.trim() || "").toLowerCase();
+      return selectedLower.includes(shopName);
+    });
+  }
+
   return {
-    categories: extractCategories(products),
+    categories: extractCategories(filteredProducts),
     boutiques: extractBoutiques(products, activeCategory),
-    sizes: extractSizes(products),
-    colors: extractColors(products),
-    priceRange: getPriceRange(products),
+    sizes: extractSizes(filteredProducts),
+    colors: extractColors(filteredProducts),
+    priceRange: getPriceRange(filteredProducts),
   };
 }
 
@@ -179,7 +138,11 @@ function extractBoutiques(products, activeCategory) {
   products.forEach((product) => {
     // Contextual filtering: If a category is selected, only show boutiques from that category
     // Skip this check if we are on the 'boutique' landing page
-    if (activeCategory && activeCategory.toLowerCase() !== "boutique" && activeCategory.toLowerCase() !== "boutiques") {
+    if (
+      activeCategory &&
+      activeCategory.toLowerCase() !== "boutique" &&
+      activeCategory.toLowerCase() !== "boutiques"
+    ) {
       const selectedCat = activeCategory.toLowerCase();
       const productCat = product.category?.trim()?.toLowerCase();
       const productDressType = product.dressType?.trim()?.toLowerCase();
@@ -204,24 +167,52 @@ function extractBoutiques(products, activeCategory) {
     .sort((a, b) => b.count - a.count);
 }
 
+const STANDARD_CATEGORIES = [
+  "LEHENGA",
+  "SAREE",
+  "KURTA SETS",
+  "ANARKALIS",
+  "SHARARAS",
+  "WEDDING",
+  "BOUTIQUE",
+  "SALE",
+  "VIRTUAL TRYON",
+];
+
 function extractCategories(products) {
-  const map = new Map();
+  const counts = {};
+  STANDARD_CATEGORIES.forEach((cat) => (counts[cat] = 0));
 
   products.forEach((product) => {
-    if (product.category && product.category.trim()) {
-      const category = product.category.trim();
-      map.set(category, (map.get(category) || 0) + 1);
-    }
+    const cat = (String(product.category || "")).toUpperCase().trim();
+    const dressType = (String(product.dressType || "")).toUpperCase().trim();
+    const subDressType = (String(product.subDressType || "")).toUpperCase().trim();
 
-    if (product.subDressType && product.subDressType.trim()) {
-      const sub = product.subDressType.trim();
-      map.set(sub, (map.get(sub) || 0) + 1);
+    const checkMatch = (str) => {
+      if (str.includes("SAREE")) counts["SAREE"]++;
+      else if (str.includes("LEHENGA")) counts["LEHENGA"]++;
+      else if (str.includes("KURTA")) counts["KURTA SETS"]++;
+      else if (str.includes("ANARKALI")) counts["ANARKALIS"]++;
+      else if (str.includes("SHARARA")) counts["SHARARAS"]++;
+      else if (str.includes("WEDDING")) counts["WEDDING"]++;
+      else if (str.includes("BOUTIQUE")) counts["BOUTIQUE"]++;
+      else if (str.includes("SALE")) counts["SALE"]++;
+      else if (str.includes("VIRTUAL") || str.includes("TRYON")) counts["VIRTUAL TRYON"]++;
+      else return false;
+      return true;
+    };
+
+    if (!checkMatch(dressType)) {
+      if (!checkMatch(cat)) {
+        checkMatch(subDressType);
+      }
     }
   });
 
-  return Array.from(map.entries())
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
+  return STANDARD_CATEGORIES.map((name) => ({
+    name,
+    count: counts[name],
+  })).filter((cat) => cat.count > 0); // Only show categories with products
 }
 
 function extractSizes(products) {
