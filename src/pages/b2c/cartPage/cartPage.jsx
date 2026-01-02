@@ -57,7 +57,7 @@ const CodeAppliedPopup = ({ onClose, code }) => (
 );
 
 // --- B2B CART ITEM COMPONENT ---
-const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit, updatingItemId }) => {
+const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit, updatingItemId, role }) => {
   const variants = item.variants || [];
   const [showFullDescription, setShowFullDescription] = useState(false);
   const isUpdating = updatingItemId === item.uniqueId;
@@ -568,7 +568,7 @@ function CartPage() {
         cartUniqueId: item.uniqueId,
       })
     );
-    navigate(`/product/${item.productId}`);
+    navigate(`/products/${item.productId}`);
   };
 
   // Size change for B2C items

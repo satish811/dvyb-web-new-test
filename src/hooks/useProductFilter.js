@@ -7,9 +7,6 @@ export const useProductFilter = (products = []) => {
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products) || products.length === 0) return [];
 
-    console.log("Selected Filters:", selectedFilters);
-    console.log("Products count:", products.length);
-
     const hasFilters =
       selectedFilters.categories?.length > 0 ||
       selectedFilters.subcategories?.length > 0 ||

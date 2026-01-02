@@ -3,6 +3,8 @@ import multer from "multer";
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
+import FormData from 'form-data'; 
+
 
 dotenv.config();
 
@@ -10,7 +12,24 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
+
+
+  const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
+const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY; // Add to your .env file
+
+const getMinimaxHeaders = () => ({
+  'Authorization': `Bearer ${MINIMAX_API_KEY}`,
+  'Content-Type': 'application/json'
+});
+
+
+
 function getApiKeyByOutfit(outfitType) {
+
+
+
+  //  return GEMINI_API_KEY;
+   
   console.log(`🔍 Getting API key for: ${outfitType}`);
   switch (outfitType?.toLowerCase()) {
     case "saree":
@@ -37,26 +56,19 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Background options with URLs
-const backgrounds = {
-  hallway: {
-    name: "Temple Hallway",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279561/bg1_xz7rvw.jpg" // Use your actual Firebase/Cloudinary URL
-  },
-  pool: {
-    name: "Beach Pool",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg2_xjq6jk.jpg"
-   
-  },
-  wedding: {
-    name: "Wedding Hall",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279560/bg3_thakvm.jpg"
-  },
-  trees: {
-    name: "Nature Trees",
-    url: "https://res.cloudinary.com/doiezptnn/image/upload/v1765279687/Screenshot_2025-12-09_165745_mj2via.png"
-  }
-};
+const backgrounds = [
+    {
+      id: "hallway",
+      name: "Temple Hall",
+      image:
+        'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background4_gqcvpg.jpg',
+    },
 
+    { id: "pool", name: "Grand Hall", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background6_cmouwo.jpg' },
+    { id: "wedding", name: "Archway", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970854/background5_a9sfuo.jpg'},
+    { id: "trees", name: "Floral lights", image: 'https://res.cloudinary.com/doiezptnn/image/upload/v1765970853/background11_lctohz.jpg' },
+
+  ];
 
 // Download garment as base64
 async function downloadAsBase64(url) {
@@ -66,6 +78,162 @@ async function downloadAsBase64(url) {
   console.log(`✅ Image downloaded successfully (${res.data.length} bytes)`);
   return Buffer.from(res.data).toString("base64");
 }
+
+
+
+
+
+
+
+
+
+// 3d video 
+
+app.post('/api/video/create', upload.single('tryOnImage'), async (req, res) => {
+  console.log('\n🎬 === VIDEO GENERATION REQUEST ===');
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Try-on image required" 
+      });
+    }
+
+    console.log(`📊 Image size: ${req.file.size} bytes`);
+
+    // Upload image to MiniMax (they need a URL)
+    // For now, convert to base64 data URL
+    const imageBase64 = req.file.buffer.toString("base64");
+    const imageDataUrl = `data:image/jpeg;base64,${imageBase64}`;
+
+    const payload = {
+      model: 'MiniMax-Hailuo-2.3-Fast',
+      first_frame_image: imageDataUrl,
+      prompt:  'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
+      duration: 6,
+      resolution: '1080P',
+      prompt_optimizer: true,
+      fast_pretreatment: true
+    };
+
+    console.log('🚀 Calling MiniMax API...');
+    
+    const response = await axios.post(
+      `${MINIMAX_BASE_URL}/video_generation`,
+      payload,
+      { headers: getMinimaxHeaders() }
+    );
+
+    const { task_id } = response.data;
+    
+    console.log(`✅ Task created: ${task_id}`);
+
+    res.json({ 
+      success: true,
+      taskId: task_id,
+      message: 'Video generation started'
+    });
+
+  } catch (error) {
+    console.error('❌ Video creation error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to create video generation task',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// 2. Check video status
+app.get('/api/video/status/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+
+    const response = await axios.get(
+      `${MINIMAX_BASE_URL}/query/video_generation`,
+      { 
+        headers: getMinimaxHeaders(),
+        params: { task_id: taskId }
+      }
+    );
+
+    const data = response.data;
+    
+    // Calculate progress
+    let progress = 0;
+    if (data.status === 'Queueing') progress = 10;
+    else if (data.status === 'Preparing') progress = 25;
+    else if (data.status === 'Processing') progress = 60;
+    else if (data.status === 'Success') progress = 100;
+    
+    res.json({
+      success: true,
+      status: data.status,
+      progress: progress,
+      file_id: data.file_id,
+      taskId: data.task_id
+    });
+
+  } catch (error) {
+    console.error('❌ Status check error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to check video status',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// 3. Get video download URL
+app.get('/api/video/download/:fileId', async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    const response = await axios.get(
+      `${MINIMAX_BASE_URL}/files/retrieve`,
+      { 
+        headers: getMinimaxHeaders(),
+        params: { file_id: fileId }
+      }
+    );
+
+    const download_url = response.data.file?.download_url;
+
+    if (!download_url) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Download URL not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      videoUrl: download_url
+    });
+
+  } catch (error) {
+    console.error('❌ Video retrieval error:', error.response?.data || error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to retrieve video',
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ============================================================
 // ENDPOINT: /api/change-tryon-background
@@ -230,83 +398,174 @@ app.post('/api/tryon-from-urls', async (req, res) => {
 async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   console.log(`🎨 Generating AI try-on for: ${garmentName}`);
   
-  const isSaree = garmentName.toLowerCase() === 'saree';
+  // const isSaree = garmentName.toLowerCase() === 'saree';
+  // const islehenga = garmentName.toLowerCase()=== 'lehenga'
   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+const lowerName = garmentName?.toLowerCase() || "";
 
-  const prompt = isBackgroundSwap ? `
-You are performing a REALISTIC background replacement task. Place the person naturally into the new environment.
+// const isBackgroundSwap = lowerName.includes("background");
+const isSaree = lowerName === "saree";
+const isLehenga = lowerName === "lehenga";
+const isAnarkali = lowerName === "anarkali";
+const isSharara = lowerName === "sharara";
+const isKurtaSet = lowerName === "kurta set" || lowerName === "kurta sets";
 
-CORE TASK:
-- Take the person from the first image (with transparent/removed background)
-- Place them realistically into the background scene from the second image
-- Make it look like the person is actually standing/present in that location
+const prompt = isBackgroundSwap
+? `
+ROLE
+You are a professional photo editor performing a REALISTIC background replacement.
 
-CRITICAL REQUIREMENTS:
-1. PRESERVE THE PERSON 100%:
-   - Keep their EXACT pose, outfit, face, body, and all details unchanged
-   - Do NOT modify their clothing, appearance, or any aspect of them
-   - Only change the background/environment around them
+CORE TASK
+- Image 1 contains a person with transparent or removed background (human OR AI-generated)
+- Image 2 is the new background scene
+- Place the SAME person naturally into Image 2
 
-2. NATURAL INTEGRATION:
-   - Match lighting direction and intensity from the background scene
-   - Add appropriate shadows on the ground/floor where person stands
-   - Adjust color temperature to match the scene (warm/cool tones)
-   - Ensure perspective matches (person's size should fit the scene naturally)
-   - Add subtle ambient occlusion where person meets the ground
+IDENTITY LOCK (ABSOLUTE)
+- Face, expression, skin tone, hair, body shape, pose → UNCHANGED
+- Clothing remains exactly the same
+- No beautification, enhancement, or reshaping
 
-3. DEPTH & REALISM:
-   - If background has depth of field, apply slight blur to match
-   - Ensure person's edges blend naturally (no harsh cutouts)
-   - Add reflected light from the environment onto the person
-   - Match the scene's atmosphere (indoor/outdoor, time of day)
+REALISTIC INTEGRATION
+- Match lighting direction, intensity, and color temperature
+- Add natural ground and contact shadows
+- Match perspective and scale
+- Clean edge blending only
+- Subtle ambient light spill if present
 
-4. PROHIBITED:
-   - NO changes to the person's clothing, face, or body
-   - NO text, watermarks, or multiple images
-   - NO floating or unrealistic placement
-   - NEVER return the unchanged reference image
+PROHIBITED
+- No clothing changes
+- No face/body edits
+- No floating placement
+- No text, watermarks, or frames
+- NEVER return unchanged input
 
-OUTPUT:
-ONLY one high-resolution inline_data image showing the person naturally integrated into the new background scene.
-NO text, JSON, explanations, or additional content.
-` : `
-You are performing a STRICT photo-realistic virtual try-on. Dress the person in the EXACT garment from the reference image.
+OUTPUT
+Return ONE high-resolution inline_data image only.
+`
+:
+`
+ROLE
+Expert fashion AI specializing in STRICT photorealistic Indian ethnic wear virtual try-on.
 
-CORE TASK:
-- Replace ONLY the person's clothing with the garment from the reference image
-- Preserve person's exact face, skin tone, hair, body shape, pose, lighting, shadows, and background 100% unchanged
+INPUT IMAGES
+- Image 1: Person image (HUMAN OR AI-generated)
+- Image 2: Garment reference (HUMAN photo OR AI-generated design)
 
-GARMENT-SPECIFIC GUIDELINES:
+CORE OBJECTIVE
+Create ONE realistic photograph where:
+- The SAME person from Image 1 wears the EXACT garment from Image 2
+- ONLY the clothing may change
+
+━━━━━━━━━━ INTELLIGENT IMAGE ANALYSIS ━━━━━━━━━━
+Analyze BOTH images before generation:
+
+PERSON IMAGE (Image 1)
+- If human → preserve natural anatomy and lighting
+- If AI-generated → preserve proportions, pose, and facial identity
+In ALL cases: Image 1 defines identity, pose, body shape, and background
+
+GARMENT IMAGE (Image 2)
+- If AI-generated (flat lighting, symmetry, clean background):
+  → Extract garment design as TEMPLATE
+  → Ignore model/background
+  → Reconstruct realistic fabric physics and drape
+- If real photograph:
+  → Copy garment appearance EXACTLY
+  → Preserve natural folds, texture, and imperfections
+
+Image 2 is the ABSOLUTE SOURCE OF TRUTH for garment design.
+
+━━━━━━━━━━ GLOBAL IDENTITY & SCENE LOCK ━━━━━━━━━━
+- Face, hair, skin tone, body shape, height, pose → UNCHANGED
+- Background, camera angle, framing → UNCHANGED
+- No beautification, stylisation, cleanup, or enhancement
+
+━━━━━━━━━━ UNIVERSAL GARMENT TRANSFER RULES ━━━━━━━━━━
+
+1. COLOR ACCURACY
+- Extract exact fabric colors from Image 2 only
+- Ignore background color bleeding
+- No hue, saturation, brightness, gamma shifts
+- Adapt shadows ONLY to Image 1 lighting
+
+2. PATTERN & EMBELLISHMENT
+- Transfer ALL embroidery, prints, zari, motifs, borders
+- Maintain exact scale, density, and placement
+- No simplification or regeneration
+
+3. FABRIC PROPERTIES
+- Preserve texture: silk shine, cotton matte, georgette flow
+- Maintain transparency and fabric weight
+- Retain weave and material realism
+
+4. DRAPING & PHYSICS
+- Apply natural gravity-based folds
+- If Image 2 is flat/ideal → add realistic draping
+- If Image 2 shows natural drape → preserve style
+- No floating or broken fabric
+
+━━━━━━━━━━ GARMENT STRUCTURE RULES ━━━━━━━━━━
 ${isSaree ? `
-SAREE REQUIREMENTS:
-- Drape saree in Nivi style (most common): pleats tucked at waist, pallu flowing naturally over LEFT shoulder
-- Create 8-10 realistic pleats at waist with proper folds/shadows
-- Show fitted blouse underneath pallu (match reference blouse color/style)
-- Saree length reaches ankles; pallu extends to mid-back
-- Replicate ALL fabric texture, borders, embroidery, patterns exactly from reference
-` : `
-GENERAL GARMENT REQUIREMENTS:
-- Adapt garment to fit person's exact pose/body naturally
-- Match fabric material, color, texture, patterns, sleeves, neckline, length precisely
-- Ensure realistic draping following body curves/gravity
-`}
+SAREE (CRITICAL)
+- ONE continuous fabric (not skirt + dupatta)
+- Natural Nivi drape ONLY
+- 6–8 waist pleats
+- Pallu over LEFT shoulder
+- Blouse must match Image 2 EXACTLY
+` : ``}
 
-UNIVERSAL REALISM RULES:
-- Perfect edge blending (NO floating, jagged, or visible seams)
-- Fabric follows body's exact perspective/curvature
-- Lighting/shadows match original image completely
-- Photo-realistic quality, high-resolution
+${isLehenga ? `
+LEHENGA
+- Choli + Lehenga skirt + Dupatta are DISTINCT
+- Preserve panel count, flare, hem embroidery
+- No silhouette conversion
+` : ``}
 
-STRICTLY PROHIBITED:
-- NO changes to face, expression, hair, body, pose, or background
-- NO added jewelry, accessories, makeup, or props
-- NO text, watermarks, or multiple images
-- NEVER return unchanged reference image
+${isAnarkali ? `
+ANARKALI
+- Bodice + panelled flare + dupatta
+- Preserve seam positions and flare volume
+- No gown or skirt conversion
+` : ``}
 
-OUTPUT:
-ONLY one high-resolution inline_data image of the person wearing the garment correctly.
-NO text, JSON, explanations, or additional content.
+${isSharara ? `
+SHARARA
+- Kurta + upper flare + lower wide panels + dupatta
+- No palazzo/churidar/lehenga conversion
+- Preserve flare rate and panel width
+` : ``}
+
+${isKurtaSet ? `
+KURTA SET
+- Kurta + bottom + dupatta are DISTINCT
+- Bottom type must match Image 2 exactly
+- No silhouette changes
+` : ``}
+
+━━━━━━━━━━ LIGHTING & REALISM ━━━━━━━━━━
+- Match Image 1 lighting direction and intensity
+- Add contact shadows at body–fabric intersections
+- Final output must look like a real camera photograph
+- No AI-rendered appearance
+
+━━━━━━━━━━ STRICT PROHIBITIONS ━━━━━━━━━━
+- No face/body/background edits
+- No accessories or props
+- No logos, text, borders, watermarks
+- Do NOT return Image 1 or Image 2 unchanged
+- Do NOT create collage or split views
+
+QUALITY CHECK BEFORE OUTPUT
+✓ Face matches Image 1 exactly  
+✓ Garment matches Image 2 exactly  
+✓ Natural draping and physics  
+✓ Accurate colors  
+✓ No artifacts or floating fabric  
+
+OUTPUT REQUIREMENT
+Return ONE high-resolution photorealistic inline_data image only.
 `;
+
 
   const payload = {
     contents: [
@@ -392,6 +651,136 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
     }
   }
 }
+
+
+//blouse change function
+
+
+async function generateBlouseChange(tryOnBase64, blouseType) {
+  const prompt = `
+ROLE
+You are a professional fashion photo editor specializing in saree blouse modifications.
+
+
+TASK
+Modify ONLY the blouse in this saree image to a ${blouseType} design.
+
+
+STRICT RULES
+- Keep the SAME person, face, pose, and body
+- Keep the SAME saree (fabric, color, design, draping)
+- ONLY change the blouse sleeve style to: ${blouseType}
+- Maintain realistic fit and proportions
+- NO other changes to the image
+
+
+OUTPUT
+Return ONLY one high-resolution photorealistic inline_data image.
+NO text or explanations.
+`;
+
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+ 
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
+
+//neck change function
+
+async function generateNeckChange(tryOnBase64, neckType) {
+  const prompt = `
+ROLE
+You are a professional Indian fashion photo editor.
+
+TASK
+Modify ONLY the blouse NECKLINE to a BOAT NECK design.
+
+ABSOLUTE LOCKS (NON-NEGOTIABLE)
+- SAME person (face, hair, skin tone, expression)
+- SAME body shape, pose, proportions
+- SAME saree (fabric, color, design, draping)
+- SAME blouse (fabric, color, sleeves, length, fit)
+- SAME background, camera angle, lighting
+
+BOAT NECK DEFINITION (CRITICAL)
+- Wide horizontal neckline
+- Runs close to the collarbone
+- Straight or gently curved line
+- NO depth, NO plunge, NO collar stand
+- Elegant, classic Indian saree blouse style
+
+FORBIDDEN CHANGES
+- No sleeve modification
+- No blouse reshaping
+- No jewelry, makeup, or beautification
+- No color correction or enhancement
+- No background alteration
+
+FAILURE CONDITIONS
+- If anything other than the neckline changes → REJECT internally and regenerate correctly
+
+OUTPUT
+Return ONE high-resolution photorealistic image.
+NO text. NO explanation.
+`;
+
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        {
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: tryOnBase64
+          }
+        }
+      ]
+    }]
+  };
+
+  const response = await axios.post(GEMINI_URL, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    timeout: 180000
+  });
+
+  const parts = response.data.candidates?.[0]?.content?.parts || [];
+  const img = parts.find(p => p.inline_data?.data || p.inlineData?.data);
+
+  return img?.inline_data?.data || img?.inlineData?.data;
+}
+
+
 
 
 
@@ -557,6 +946,81 @@ app.post("/api/myprofile-multi-tryon", upload.single("model"), async (req, res) 
 
 
 
+
+
+app.post('/api/change-blouse', upload.single('tryOnImage'), async (req, res) => {
+  console.log('\n👚 === BLOUSE CHANGE REQUEST ===');
+ 
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "Try-on image is required"
+      });
+    }
+
+
+    const { blouseType } = req.body;
+   
+    console.log(`👚 Blouse type: ${blouseType}`);
+
+
+    const tryOnBase64 = req.file.buffer.toString("base64");
+   
+    // Call Gemini with blouse-specific prompt
+    const result = await generateBlouseChange(tryOnBase64, blouseType);
+
+
+    if (!result) {
+      throw new Error("No image returned from AI");
+    }
+
+
+    console.log("✨ SUCCESS — Blouse Changed! 👚");
+   
+    return res.json({
+      success: true,
+      result: `data:image/png;base64,${result}`,
+      blouseType: blouseType
+    });
+   
+  } catch (err) {
+    console.error("❌ BLOUSE CHANGE ERROR:", err.message);
+    return res.status(500).json({
+      error: "Blouse change failed",
+      details: err.message,
+    });
+  }
+});
+
+
+app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Try-on image required" });
+    }
+
+    const { neckType } = req.body;
+    const resolvedNeckType = neckType === "collar" ? "boat neck" : "regular round neck";
+    const base64 = req.file.buffer.toString("base64");
+const result = await generateNeckChange(base64, resolvedNeckType);
+
+    if (!result) throw new Error("No image returned");
+
+    res.json({
+      success: true,
+      result: `data:image/png;base64,${result}`,
+      neckType,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Neck change failed",
+      details: err.message,
+    });
+  }
+});
+
+
 // ============================================================
 // ENDPOINT 1: /api/single-tryon (Used by MyProfile)
 // ============================================================
@@ -701,7 +1165,7 @@ app.post("/api/multi-tryon", upload.single("model"), async (req, res) => {
 });
 
 // Add BEFORE the PORT declaration
-app.post('/api/test-tryon', upload.fields([
+app.post('/api/garnment-swap', upload.fields([
   { name: 'model', maxCount: 1 },
   { name: 'garment', maxCount: 1 }
 ]), async (req, res) => {

@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
-import { ArrowLeft, Funnel, X } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User } from "lucide-react";
 import { mainlogo } from "../assets";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
@@ -125,110 +125,46 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Mobile Header (Back + Logo + Icons) */}
       {/* -------------------------------------------------------------- */}
-      <div className="items-center justify-between lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 flex ">
-        {/* Back Arrow - Left Side */}
-        <button
-          onClick={() => navigate("/")}
-          className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-        >
-          <ArrowLeft size={24} className="text-gray-800" />
-        </button>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 grid grid-cols-3 items-center">
 
-        {/* Logo - Center */}
-        <img
-          src={mainlogo}
-          alt="Logo"
-          onClick={() => navigate("/")}
-          className="h-12 mt-3 cursor-pointer"
-        />
+        {/* Left column */}
+        <div className="flex justify-start">
+          <button
+            onClick={() => navigate("/")}
+            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
+          >
+            <ArrowLeft size={24} className="text-gray-800" />
+          </button>
+        </div>
 
-        {/* Icons Container - Right Side */}
-        <div className="flex items-end justyify-end">
-          {/* Search Icon */}
+        {/* Center column (LOGO) */}
+        <div className="flex justify-center mr-5">
+          <img
+            src={mainlogo}
+            alt="Logo"
+            onClick={() => navigate("/")}
+            className="h-12 cursor-pointer"
+          />
+        </div>
+
+        {/* Right column */}
+        <div className="flex justify-end">
           <button
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-              />
-            </svg>
+            <Search size={20} className="text-gray-700" />
           </button>
 
-          {/* Wishlist Icon - Heart */}
-          <button
-            onClick={() => navigate("/wishlist")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-
-          {/* Cart Icon - Shopping Bag */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition relative"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-              />
-            </svg>
-          </button>
-
-          {/* Profile Icon */}
           <button
             onClick={() => navigate("/profile")}
             className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5.121 17.804A12.073 12.073 0 0112 15c2.507 0 4.824.776 6.879 2.121M12 12a4 4 0 100-8 4 4 0 000 8z"
-              />
-            </svg>
+            <User size={20} className="text-gray-700" />
           </button>
         </div>
       </div>
+
 
       {/* -------------------------------------------------------------- */}
       {/* 🔥 Funnel + Sort Bar (Reduced Height) */}

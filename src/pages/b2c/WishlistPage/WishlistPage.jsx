@@ -376,7 +376,7 @@ const WishlistPage = () => {
         wishlistUniqueId: item.uniqueId,
       })
     );
-    navigate(`/product/${item.productId}`);
+    navigate(`/products/${item.productId}`);
   };
 
   // Filter items logic
