@@ -685,7 +685,7 @@ const IndividualProductDetailsPage = () => {
           <HelpAndTryonSection />
           <ProductReviewsSection
             productId={product?.id}
-            reviews={product?.vendorReviews}
+            vendorReviews={product?.vendorReviews}
             onAverageRatingChange={handleAverageRatingChange}
           />
         </div>

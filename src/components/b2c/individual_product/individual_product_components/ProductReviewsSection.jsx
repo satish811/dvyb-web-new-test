@@ -5,7 +5,7 @@ import { auth } from "../../../../config";
 import ReviewService from "../../../../services/reviewService";
 import ErrorBoundary from "../../../common/ErrorBoundary";
 
-const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange }) => {
+const ProductReviewsSection = ({ productId, reviews = [], vendorReviews = [], onAverageRatingChange }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -13,6 +13,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [displayReviews, setDisplayReviews] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null); // Lightbox state
 
   // Use ref for callback to prevent infinite loops
   const onAverageRatingChangeRef = useRef(onAverageRatingChange);
@@ -26,11 +27,19 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
     if (!firebaseReviews || !Array.isArray(firebaseReviews)) return [];
 
     return firebaseReviews.map((review, index) => {
-      let name = "Anonymous User";
-      if (review.userName) {
+      let name = "Vendor Review";
+      if (review.userName && review.userName !== "Anonymous User") {
         name = review.userName;
       } else if (review.userEmail) {
         name = review.userEmail.split("@")[0];
+      }
+
+      // Handle both array of images (standard) and single image (vendor)
+      let images = [];
+      if (Array.isArray(review.images)) {
+        images = review.images;
+      } else if (review.image) {
+        images = [review.image];
       }
 
       return {
@@ -39,7 +48,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
         rating: review.rating || 5,
         comment: review.comment || review.text || "No comment provided",
         date: formatDate(review.createdAt) || "Recently",
-        images: review.images || [],
+        images: images,
       };
     });
   }, []);
@@ -74,6 +83,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
       try {
         let reviewsToUse = [];
 
+        // 1. Try to get Real Reviews
         // If reviews are passed as props, use them
         if (reviews && reviews.length > 0) {
           reviewsToUse = transformFirebaseReviews(reviews);
@@ -86,10 +96,14 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
           }
         }
 
+        // 2. Fallback to Vendor Reviews if Real Reviews are empty
+        if (reviewsToUse.length === 0 && vendorReviews && vendorReviews.length > 0) {
+          reviewsToUse = transformFirebaseReviews(vendorReviews);
+        }
+
         if (isMounted) {
           setDisplayReviews(reviewsToUse);
 
-          // Calculate average rating
           if (reviewsToUse.length > 0) {
             const avgRating =
               reviewsToUse.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsToUse.length;
@@ -112,7 +126,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
     return () => {
       isMounted = false;
     };
-  }, [productId, reviews, transformFirebaseReviews]); // Only these dependencies
+  }, [productId, reviews, transformFirebaseReviews, vendorReviews]);
 
   // Calculate current average rating for display
   const currentAvgRating =
@@ -206,8 +220,8 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
           <h4 className="font-semibold text-gray-900 text-[16px] mb-1">{review.name}</h4>
         )}
 
-        {/* Rating */}
-        {review.rating && (
+        {/* Rating - HIDDEN as per request */}
+        {/* {review.rating && (
           <div className="flex items-center gap-1 mb-1">
             {[...Array(5)].map((_, i) => (
               <span
@@ -218,7 +232,7 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
               </span>
             ))}
           </div>
-        )}
+        )} */}
 
         {/* Comment */}
         {review.comment && (
@@ -235,13 +249,17 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
                 key={index}
                 src={img}
                 alt=""
-                className="w-8 h-8 object-cover rounded"
+                className="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setSelectedImage(img)}
                 onError={(e) => (e.target.style.display = "none")}
               />
             ))}
 
             {review.images.length > 3 && (
-              <div className="w-8 h-8 bg-gray-200 flex items-center justify-center text-[10px] text-gray-600 rounded">
+              <div 
+                className="w-8 h-8 bg-gray-200 flex items-center justify-center text-[10px] text-gray-600 rounded cursor-pointer hover:bg-gray-300"
+                onClick={() => setSelectedImage(review.images[3])} // Open 4th image (or could open gallery)
+              >
                 +{review.images.length - 3}
               </div>
             )}
@@ -270,7 +288,11 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
         {/* Reviews Container - ONLY SHOWS WHEN THERE ARE REVIEWS */}
         {displayReviews.length > 0 && (
           <div className="w-full max-w-[615px] mt-4 flex flex-col">
-            <div className="w-full flex flex-col overflow-y-auto" style={{ maxHeight: "300px" }}>
+            {/* Scrollable container with hidden scrollbar */}
+            <div 
+              className="w-full flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden" 
+              style={{ maxHeight: "300px", scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {displayReviews.map((review, index) => (
                 <ReviewCard key={review?.id || index} review={review} />
               ))}
@@ -300,6 +322,33 @@ const ProductReviewsSection = ({ productId, reviews = [], onAverageRatingChange 
             handleSubmitReview={handleSubmitReview}
             handleCloseForm={handleCloseForm}
           />
+        )}
+
+        {/* Image Lightbox Modal */}
+        {selectedImage && (
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-80 p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-full max-h-full">
+              <img 
+                src={selectedImage} 
+                alt="Full view" 
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              />
+              <button 
+                className="absolute top-2 right-2 md:-top-10 md:-right-10 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage(null);
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </ErrorBoundary>

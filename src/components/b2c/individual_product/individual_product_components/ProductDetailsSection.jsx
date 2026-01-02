@@ -71,6 +71,14 @@ const ProductDetailsSection = ({ product }) => {
           <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">FIT</h4>
           <p className="text-gray-700">{fit}</p>
         </div>
+
+        {/* BOUTIQUE PRODUCT LABEL */}
+        {product.boutique && (
+          <div>
+            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">LABEL</h4>
+            <p className="text-gray-700 font-medium text-[#800000]">Boutique Product</p>
+          </div>
+        )}
       </div>
 
       {/* NOTE - Full width */}
@@ -78,6 +86,16 @@ const ProductDetailsSection = ({ product }) => {
         <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">NOTE</h4>
         <p className="text-gray-700">{note}</p>
       </div>
+
+      {/* ADDITIONAL DETAILS - Full width (Optional) */}
+      {product?.additionalDetails && (
+        <div className="mt-6">
+          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
+            ADDITIONAL DETAILS
+          </h4>
+          <p className="text-gray-700 whitespace-pre-wrap">{product.additionalDetails}</p>
+        </div>
+      )}
     </div>
   );
 };
