@@ -3,6 +3,7 @@ import { FilterSection, ColorFilter, PriceRange, DiscountFilter } from "../filte
 import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
 import BlouseFilter from "../filters/BlouseFilter";
+import { Search } from "lucide-react";
 
 const Sidebar = ({ products = [] }) => {
   const location = useLocation();
@@ -10,16 +11,18 @@ const Sidebar = ({ products = [] }) => {
   const params = new URLSearchParams(location.search);
   const urlCategory = params.get("category");
 
+  const isBoutiquePage = urlCategory?.toLowerCase() === "boutique" || urlCategory?.toLowerCase() === "boutiques";
   const isURLSaree = urlCategory?.toLowerCase() === "saree";
 
   const [filterData, setFilterData] = useState({
     categories: [],
     sizes: [],
     colors: [],
+    boutiques: [], // New state for boutiques
     priceRange: { min: 0, max: 0 },
   });
 
-  const { selectedFilters } = useFilter();
+  const { selectedFilters, updateFilter } = useFilter();
   const selectedCategory = selectedFilters.categories[0] || null;
 
   const customCategories = [
@@ -28,9 +31,8 @@ const Sidebar = ({ products = [] }) => {
     { name: "KURTA SETS", count: 5 },
     { name: "ANARKALIS", count: 6 },
     { name: "SHARARAS", count: 8 },
-    { name: "PRET", count: 3 },
-    { name: "FUSION", count: 2 },
     { name: "WEDDING", count: 9 },
+    { name: "BOUTIQUE", count: 10 },
     { name: "SALE", count: 5 },
     { name: "VIRTUAL TRYON", count: 7 },
   ];
@@ -53,10 +55,10 @@ const Sidebar = ({ products = [] }) => {
 
   useEffect(() => {
     if (products.length > 0) {
-      const dynamicData = extractDynamicFilterData(products);
+      const dynamicData = extractDynamicFilterData(products, urlCategory);
       setFilterData(dynamicData);
     }
-  }, [products]);
+  }, [products, urlCategory]);
 
   const isSareeCategory =
     (selectedCategory && selectedCategory.toUpperCase().includes("SAREE")) || isURLSaree;
@@ -76,15 +78,62 @@ const Sidebar = ({ products = [] }) => {
     "
     >
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-0 sm:pt-0 space-y-6 sm:space-y-7 no-scrollbar">
-        <FilterSection
-          title="CATEGORY"
-          items={customCategories}
-          searchable
-          defaultOpen={true}
-          filterType="categories"
-        />
+        {/* Category Search + Select Section */}
+        <div className="space-y-3">
+          <div className="pb-1">
+            <h3 className="font-medium text-gray-900 text-xs sm:text-sm mb-2.5">SEARCH CATEGORY</h3>
+            <div className="relative">
+              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+                <Search size={14} className="text-gray-400 mr-2" />
+                <input
+                  type="text"
+                  placeholder="Type category (e.g. Saree)..."
+                  className="w-full text-[10px] sm:text-xs bg-transparent border-none outline-none placeholder-gray-400"
+                  value={selectedFilters.categorySearch || ""}
+                  onChange={(e) => updateFilter("categorySearch", e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <FilterSection
+            title="SELECT CATEGORY"
+            items={customCategories}
+            searchable={false} // We already have a primary search bar above
+            defaultOpen={true}
+            filterType="categories"
+          />
+        </div>
 
-        <BlouseFilter />
+        {/* Dynamic Boutique Handling */}
+        {isBoutiquePage ? (
+          <div className="pb-3 sm:pb-4 border-b border-gray-100">
+            <h3 className="font-medium text-gray-900 text-xs sm:text-sm mb-3">SEARCH BOUTIQUE</h3>
+            <div className="relative">
+              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
+                <Search
+                  size={14}
+                  className="text-gray-400 mr-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Type shop name..."
+                  className="w-full text-[10px] sm:text-xs bg-transparent border-none outline-none placeholder-gray-400"
+                  value={selectedFilters.boutiqueSearch || ""}
+                  onChange={(e) => updateFilter("boutiqueSearch", e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <FilterSection
+            title="BOUTIQUES"
+            items={filterData.boutiques}
+            searchable
+            defaultOpen={true}
+            filterType="boutiques"
+          />
+        )}
 
         {!isSareeCategory && (
           <FilterSection
@@ -114,13 +163,45 @@ const Sidebar = ({ products = [] }) => {
 };
 
 /* Helper Functions (unchanged) */
-function extractDynamicFilterData(products) {
+function extractDynamicFilterData(products, activeCategory) {
   return {
     categories: extractCategories(products),
+    boutiques: extractBoutiques(products, activeCategory),
     sizes: extractSizes(products),
     colors: extractColors(products),
     priceRange: getPriceRange(products),
   };
+}
+
+function extractBoutiques(products, activeCategory) {
+  const map = new Map();
+
+  products.forEach((product) => {
+    // Contextual filtering: If a category is selected, only show boutiques from that category
+    // Skip this check if we are on the 'boutique' landing page
+    if (activeCategory && activeCategory.toLowerCase() !== "boutique" && activeCategory.toLowerCase() !== "boutiques") {
+      const selectedCat = activeCategory.toLowerCase();
+      const productCat = product.category?.trim()?.toLowerCase();
+      const productDressType = product.dressType?.trim()?.toLowerCase();
+
+      const matchesCategory =
+        productCat === selectedCat ||
+        productDressType === selectedCat ||
+        (selectedCat === "saree" && productDressType === "sarees") ||
+        (selectedCat === "lehenga" && productDressType === "lehengas");
+
+      if (!matchesCategory) return;
+    }
+
+    const shopName = product.shopName?.trim() || product.boutiqueName?.trim();
+    if (shopName) {
+      map.set(shopName, (map.get(shopName) || 0) + 1);
+    }
+  });
+
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 function extractCategories(products) {

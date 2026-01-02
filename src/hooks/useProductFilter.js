@@ -15,7 +15,10 @@ export const useProductFilter = (products = []) => {
       selectedFilters.priceMin != null ||
       selectedFilters.priceMax != null ||
       selectedFilters.discounts?.length > 0 ||
-      selectedFilters.blouses?.length > 0;
+      selectedFilters.blouses?.length > 0 ||
+      selectedFilters.boutiques?.length > 0 ||
+      (selectedFilters.boutiqueSearch && selectedFilters.boutiqueSearch.trim() !== "") ||
+      (selectedFilters.categorySearch && selectedFilters.categorySearch.trim() !== "");
 
     if (!hasFilters) {
       console.log("No filters applied, returning all products");
@@ -23,6 +26,29 @@ export const useProductFilter = (products = []) => {
     }
 
     return products.filter((product) => {
+      // === BOUTIQUE SEARCH FILTER (Direct string match) ===
+      if (selectedFilters.boutiqueSearch && selectedFilters.boutiqueSearch.trim() !== "") {
+        const searchStr = selectedFilters.boutiqueSearch.toLowerCase();
+        const shopName = (product.shopName?.trim() || product.boutiqueName?.trim() || "").toLowerCase();
+        
+        if (!shopName.includes(searchStr)) return false;
+      }
+
+      // === CATEGORY SEARCH FILTER (Partial match on dressType or category) ===
+      if (selectedFilters.categorySearch && selectedFilters.categorySearch.trim() !== "") {
+        const searchStr = selectedFilters.categorySearch.toLowerCase();
+        const dressType = (product.dressType || "").toLowerCase();
+        const category = (product.category || "").toLowerCase();
+        const subDressType = (product.subDressType || "").toLowerCase();
+
+        const matchesSearch = 
+           dressType.includes(searchStr) || 
+           category.includes(searchStr) || 
+           subDressType.includes(searchStr);
+        
+        if (!matchesSearch) return false;
+      }
+
       // === CATEGORY FILTER ===
       if (selectedFilters.categories?.length > 0) {
         const selectedCat = selectedFilters.categories[0].toLowerCase();
@@ -36,6 +62,18 @@ export const useProductFilter = (products = []) => {
           (selectedCat === "lehenga" && productDressType === "lehengas");
 
         if (!matchesCategory) return false;
+      }
+
+      // === BOUTIQUE FILTER ===
+      if (selectedFilters.boutiques?.length > 0) {
+        const productShopName = product.shopName?.trim() || product.boutiqueName?.trim();
+        if (!productShopName) return false;
+
+        const hasBoutiqueMatch = selectedFilters.boutiques.some(
+          (selectedBoutique) => selectedBoutique.trim() === productShopName
+        );
+
+        if (!hasBoutiqueMatch) return false;
       }
 
       // === BLOUSE FILTER === (FIXED - Only apply to blouse products)

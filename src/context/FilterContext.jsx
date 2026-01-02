@@ -43,6 +43,9 @@ export const FilterProvider = ({ children }) => {
     priceMax: null,
     discounts: [],
     blouses: [],
+    boutiques: [],
+    boutiqueSearch: "",
+    categorySearch: "",
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -92,6 +95,23 @@ export const FilterProvider = ({ children }) => {
             } else {
               newFilters.blouses = [...blouses, value];
             }
+            break;
+
+          case "boutiques":
+            const boutiques = newFilters.boutiques || [];
+            if (boutiques.includes(value)) {
+              newFilters.boutiques = boutiques.filter((item) => item !== value);
+            } else {
+              newFilters.boutiques = [...boutiques, value];
+            }
+            break;
+
+          case "boutiqueSearch":
+            newFilters.boutiqueSearch = value;
+            break;
+
+          case "categorySearch":
+            newFilters.categorySearch = value;
             break;
 
           case "sizes":
@@ -151,6 +171,9 @@ export const FilterProvider = ({ children }) => {
       priceMax: null,
       discounts: [],
       blouses: [],
+      boutiques: [],
+      boutiqueSearch: "",
+      categorySearch: "",
     });
     setNavbarCategory("");
   }, []);
