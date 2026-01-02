@@ -4,6 +4,7 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import FormData from 'form-data'; 
+import cloudinary from 'cloudinary';
 
 
 dotenv.config();
@@ -21,7 +22,6 @@ const getMinimaxHeaders = () => ({
   'Authorization': `Bearer ${MINIMAX_API_KEY}`,
   'Content-Type': 'application/json'
 });
-
 
 
 function getApiKeyByOutfit(outfitType) {
@@ -45,14 +45,20 @@ function getApiKeyByOutfit(outfitType) {
       return GEMINI_API_KEY;
   }
 }
-
 const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.json()); // ⭐ This must be BEFORE your routes!
-app.use(express.urlencoded({ extended: true }));
 
+// ✅ Set limits FIRST before any routes
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+
+cloudinary.v2.config({
+  cloud_name: process.env.VITE_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.VITE_CLOUDINARY_API_KEY,
+  api_secret: process.env.VITE_CLOUDINARY_API_SECRET
+});
 
 
 // Background options with URLs
@@ -230,6 +236,80 @@ app.get('/api/video/download/:fileId', async (req, res) => {
 
 
 
+// ============================================================
+// ENDPOINT: Upload Base64 to Cloudinary
+// ============================================================
+app.post('/api/upload-to-cloudinary', async (req, res) => {
+  console.log('\n☁️ === CLOUDINARY UPLOAD REQUEST ===');
+  
+  try {
+    const { images } = req.body; // Array of { outfitType, base64Image }
+    
+    if (!images || !Array.isArray(images)) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Images array required" 
+      });
+    }
+
+    console.log(`📤 Uploading ${images.length} images to Cloudinary...`);
+    
+    const uploadPromises = images.map(async ({ outfitType, base64Image }) => {
+      try {
+        // Remove data URL prefix if present
+        const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+        
+        // Upload to Cloudinary
+        const result = await cloudinary.v2.uploader.upload(
+          `data:image/png;base64,${base64Data}`,
+          {
+            folder: 'tryon-results',
+            public_id: `${Date.now()}_${outfitType}`,
+            resource_type: 'image'
+          }
+        );
+
+        console.log(`✅ ${outfitType} uploaded: ${result.secure_url}`);
+        
+        return {
+          outfitType,
+          url: result.secure_url,
+          success: true
+        };
+      } catch (error) {
+        console.error(`❌ Failed to upload ${outfitType}:`, error.message);
+        return {
+          outfitType,
+          error: error.message,
+          success: false
+        };
+      }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    
+    const successCount = results.filter(r => r.success).length;
+    console.log(`\n✨ Upload complete: ${successCount}/${images.length} successful`);
+    
+    res.json({
+      success: true,
+      results: results.reduce((acc, r) => {
+        if (r.success) {
+          acc[r.outfitType] = r.url;
+        }
+        return acc;
+      }, {})
+    });
+
+  } catch (err) {
+    console.error("❌ CLOUDINARY UPLOAD ERROR:", err.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload images",
+      details: err.message
+    });
+  }
+});
 
 
 
@@ -239,75 +319,38 @@ app.get('/api/video/download/:fileId', async (req, res) => {
 // ENDPOINT: /api/change-tryon-background
 // ============================================================
 app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req, res) => {
-  console.log('\n🎨 === BACKGROUND CHANGE REQUEST ===');
-  
   try {
     if (!req.file) {
-      console.log('❌ No try-on image uploaded');
-      return res.status(400).json({ 
-        success: false,
-        error: "Try-on image is required" 
-      });
+      return res.status(400).json({ error: "Try-on image is required" });
     }
 
     const { background } = req.body;
-    
-    if (!background || !backgrounds[background]) {
-      console.log('❌ Invalid background selection');
+    const selectedBg = backgrounds.find(bg => bg.id === background);
+
+    if (!background || !selectedBg) {
       return res.status(400).json({
         error: "Valid background selection required",
-        availableBackgrounds: Object.keys(backgrounds)
+        availableBackgrounds: backgrounds.map(b => b.id),
       });
     }
 
-    console.log(`📸 Try-on image size: ${req.file.size} bytes`);
-    console.log(`🌍 Selected background: ${backgrounds[background].name}`);
-
-    // Validate image size (max 10MB)
-    if (req.file.size > 10 * 1024 * 1024) {
-      return res.status(400).json({
-        error: "Image too large. Please use an image smaller than 10MB"
-      });
-    }
-
-    // Convert try-on result to base64
     const tryOnBase64 = req.file.buffer.toString("base64");
-    console.log(`✅ Try-on image converted to base64`);
-    
-    // Download background image
-    console.log("⬇️ Downloading background image...");
-    const bgBase64 = await downloadAsBase64(backgrounds[background].url);
+    const bgBase64 = await downloadAsBase64(selectedBg.image);
 
-    console.log("🔁 Calling Gemini API for background swap...");
     const result = await generateTryOnWithRetry(
-      tryOnBase64, 
-      bgBase64, 
+      tryOnBase64,
+      bgBase64,
       "background-swap"
     );
 
-    if (!result) {
-      throw new Error("No image returned from AI");
-    }
-
-    console.log("✨ SUCCESS — Background Changed! 🎉");
-    console.log('=== BACKGROUND CHANGE COMPLETE ===\n');
-    
     return res.json({
       success: true,
       result: `data:image/png;base64,${result}`,
-      background: backgrounds[background].name
+      background: selectedBg.name,
     });
-    
+
   } catch (err) {
-    console.error("❌ BACKGROUND CHANGE ERROR:", err.message);
-    console.error("❌ Stack:", err.stack);
-    
-    if (!res.headersSent) {
-      return res.status(500).json({
-        error: "Background change failed",
-        details: err.message,
-      });
-    }
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -400,7 +443,8 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   
   // const isSaree = garmentName.toLowerCase() === 'saree';
   // const islehenga = garmentName.toLowerCase()=== 'lehenga'
-  const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+
+   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
 const lowerName = garmentName?.toLowerCase() || "";
 
 // const isBackgroundSwap = lowerName.includes("background");
@@ -659,25 +703,31 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
 async function generateBlouseChange(tryOnBase64, blouseType) {
   const prompt = `
 ROLE
-You are a professional fashion photo editor specializing in saree blouse modifications.
-
+You are a professional Indian fashion photo editor.
 
 TASK
-Modify ONLY the blouse in this saree image to a ${blouseType} design.
+Change ONLY the blouse sleeve style to: ${blouseType}.
 
+ABSOLUTE LOCKS
+- SAME person, face, pose, body
+- SAME saree (fabric, color, drape)
+- SAME blouse body and neckline
+- SAME background and lighting
 
-STRICT RULES
-- Keep the SAME person, face, pose, and body
-- Keep the SAME saree (fabric, color, design, draping)
-- ONLY change the blouse sleeve style to: ${blouseType}
-- Maintain realistic fit and proportions
-- NO other changes to the image
+SLEEVE RULES (VERY IMPORTANT)
+- Sleeve style MUST visibly change
+- Half sleeve, full sleeve, sleeveless must be OBVIOUS
+- No neckline or fabric change
+- No color change
 
+FAILURE CONDITION
+- If sleeve style is unchanged → regenerate correctly
 
 OUTPUT
-Return ONLY one high-resolution photorealistic inline_data image.
-NO text or explanations.
+Return ONE high-resolution photorealistic image only.
+NO text.
 `;
+
 
 
   const payload = {
@@ -720,37 +770,29 @@ ROLE
 You are a professional Indian fashion photo editor.
 
 TASK
-Modify ONLY the blouse NECKLINE to a BOAT NECK design.
+Modify ONLY the blouse NECKLINE to: ${neckType}.
 
 ABSOLUTE LOCKS (NON-NEGOTIABLE)
 - SAME person (face, hair, skin tone, expression)
 - SAME body shape, pose, proportions
 - SAME saree (fabric, color, design, draping)
-- SAME blouse (fabric, color, sleeves, length, fit)
+- SAME blouse fabric, sleeves, length, fit
 - SAME background, camera angle, lighting
 
-BOAT NECK DEFINITION (CRITICAL)
-- Wide horizontal neckline
-- Runs close to the collarbone
-- Straight or gently curved line
-- NO depth, NO plunge, NO collar stand
-- Elegant, classic Indian saree blouse style
+NECKLINE RULES (CRITICAL)
+- Change ONLY the neckline shape
+- Clearly visible neckline difference is REQUIRED
+- No sleeve or blouse body change
+- No jewelry or accessories added
+- No color or fabric change
 
-FORBIDDEN CHANGES
-- No sleeve modification
-- No blouse reshaping
-- No jewelry, makeup, or beautification
-- No color correction or enhancement
-- No background alteration
-
-FAILURE CONDITIONS
-- If anything other than the neckline changes → REJECT internally and regenerate correctly
+FAILURE CONDITION
+- If neckline does not visibly change → regenerate correctly
 
 OUTPUT
-Return ONE high-resolution photorealistic image.
-NO text. NO explanation.
+Return ONE high-resolution photorealistic image only.
+NO text.
 `;
-
 
   const payload = {
     contents: [{
@@ -1001,7 +1043,11 @@ app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
     }
 
     const { neckType } = req.body;
-    const resolvedNeckType = neckType === "collar" ? "boat neck" : "regular round neck";
+   const resolvedNeckType =
+  neckType === "collar"
+    ? "boat neck neckline"
+    : "regular round neckline";
+
     const base64 = req.file.buffer.toString("base64");
 const result = await generateNeckChange(base64, resolvedNeckType);
 

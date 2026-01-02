@@ -1,0 +1,75 @@
+// src/components/b2c/TryOn/components/customization/NeckCustomizer.jsx
+
+import React from "react";
+import LazyImageLoader from "../../LazyImageLoader/LazyImageLoader";
+import { NECK_OPTIONS } from "../../../../utils/tryOnConstants";
+
+/**
+ * Neck Style Customizer Component
+ */
+const NeckCustomizer = ({
+  selectedNeck,
+  isChangingNeck,
+  changeNeck,
+  tryOnResult,
+}) => {
+  return (
+<div className="
+  bg-white
+  shadow-sm
+  border border-gray-200
+  p-4
+  w-full max-w-[300px]
+  grid grid-cols-2 gap-4
+  max-h-[calc(100vh-120px)]
+">
+
+      {NECK_OPTIONS.map((neck) => (
+        <div key={neck.id} className="flex flex-col items-center">
+          <div className="w-28 h-28 mb-2 shadow-sm overflow-hidden relative">
+            <img
+              src={neck.image}
+              className={`w-full h-full object-cover transition-opacity ${
+                isChangingNeck && selectedNeck === neck.id
+                  ? "opacity-30"
+                  : "opacity-100"
+              }`}
+              alt={neck.label}
+            />
+            {isChangingNeck && selectedNeck === neck.id && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                <LazyImageLoader isProcessing={true} size="overlay" />
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => changeNeck(neck.id)}
+            disabled={!tryOnResult || isChangingNeck}
+            className={`
+              w-full py-2 px-3 text-sm font-medium transition-all
+              border border-gray-300
+              ${
+                selectedNeck === neck.id
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white text-gray-800 hover:bg-gray-50"
+              }
+              ${
+                !tryOnResult || isChangingNeck
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+              }
+              flex items-center justify-center gap-2
+            `}
+          >
+            {isChangingNeck && selectedNeck === neck.id && (
+              <LazyImageLoader isProcessing={true} size="button" />
+            )}
+            <span>{neck.label}</span>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default NeckCustomizer;

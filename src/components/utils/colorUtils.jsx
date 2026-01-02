@@ -40,7 +40,7 @@ export const FILTER_OPTIONS = {
   })),
 };
 
-export const colorUtils = {
+ const colorUtils = {
   /**
    * Parse color from "colorName_#hexCode" format
    * Handles both formats: "red_#FF0000" and just "red"

@@ -1231,32 +1231,36 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2.5 xs:gap-3 px-2">
-          <button
-            onClick={async () => {
-              try {
-                const dataToSave = {
-                  ...profileData,
-                  photoUrl: capturedImage || profileData.photoUrl,
-                };
-                await profileService.saveProfile(dataToSave);
-                for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
-                  await profileService.saveTryOnResult(outfitType, imageUrl);
-                }
-                setCurrentStep(9);
-              } catch (error) {
-                console.error("❌ Save error:", error);
-                alert(`Error saving profile: ${error.message}`);
-              }
-            }}
-            disabled={Object.keys(generatedResults).length === 0}
-            className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
-              text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
-              disabled:opacity-50 transition-all"
-          >
-            <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
-            SAVE & CONTINUE
-          </button>
-
+<button
+  onClick={async () => {
+    try {
+      // 1. Save profile data
+      const dataToSave = {
+        ...profileData,
+        photoUrl: capturedImage || profileData.photoUrl,
+      };
+      await profileService.saveProfile(dataToSave);
+      
+      // 2. Save try-on results (uploads to Cloudinary + saves URLs to Firestore)
+      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults);
+      
+      console.log("✅ All data saved successfully");
+      console.log("Cloudinary URLs:", cloudinaryUrls);
+      
+      setCurrentStep(9);
+    } catch (error) {
+      console.error("❌ Save error:", error);
+      alert(`Error saving profile: ${error.message}`);
+    }
+  }}
+  disabled={Object.keys(generatedResults).length === 0}
+  className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
+    text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
+    disabled:opacity-50 transition-all"
+>
+  <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
+  SAVE & CONTINUE
+</button>
           <button
             onClick={() => setCurrentStep(5)}
             className="w-full h-10 xs:h-12 border-2 border-[#FF6B4A] text-[#FF6B4A] 
@@ -1395,30 +1399,28 @@ case 8: // AI TRY-ON - Mobile & Desktop versions
 
         {/* SAVE & EDIT BUTTONS */}
         <div className="flex justify-center items-center gap-6 md:gap-8 mt-10 md:mt-14">
-          <button
-            onClick={async () => {
-              try {
-                const dataToSave = {
-                  ...profileData,
-                  photoUrl: capturedImage || profileData.photoUrl,
-                };
-                await profileService.saveProfile(dataToSave);
-                for (const [outfitType, imageUrl] of Object.entries(generatedResults)) {
-                  await profileService.saveTryOnResult(outfitType, imageUrl);
-                }
-                setCurrentStep(9);
-              } catch (error) {
-                console.error("❌ Save error:", error);
-                alert(`Error saving profile: ${error.message}`);
-              }
-            }}
-            disabled={Object.keys(generatedResults).length === 0}
-            className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
-              text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-          >
-            SAVE & CONTINUE
-          </button>
-
+<button
+  onClick={async () => {
+    try {
+      const dataToSave = {
+        ...profileData,
+        photoUrl: capturedImage || profileData.photoUrl,
+      };
+      await profileService.saveProfile(dataToSave);
+      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults);
+      console.log("✅ All data saved successfully");
+      setCurrentStep(9);
+    } catch (error) {
+      console.error("❌ Save error:", error);
+      alert(`Error saving profile: ${error.message}`);
+    }
+  }}
+  disabled={Object.keys(generatedResults).length === 0}
+  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
+    text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+>
+  SAVE & CONTINUE
+</button>
           <button
             onClick={() => setCurrentStep(5)}
             className="text-gray-600 text-sm md:text-base font-medium hover:text-gray-900 flex items-center gap-2"
