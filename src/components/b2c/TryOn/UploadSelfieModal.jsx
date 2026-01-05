@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle, Camera, RefreshCcw } from "lucide-react";
 import step1img from "../../../assets/TryOn/step1img.svg";
 import Tickic from "../../../assets/TryOn/tick_ic.svg";
 import black_warnIc from "../../../assets/TryOn/black_warnIc.svg";
@@ -80,6 +80,10 @@ const UploadSelfieModal = ({
   const [selectedModel, setSelectedModel] = useState(null);
   const [showModelPreview, setShowModelPreview] = useState(false);
   const [makeDefault, setMakeDefault] = useState(false);
+  
+  const videoRef = useRef(null);
+  const [stream, setStream] = useState(null);
+  const [cameraError, setCameraError] = useState("");
 
   const navigate = useNavigate();
   // ⭐ Conditional based on garment type
@@ -350,7 +354,104 @@ const UploadSelfieModal = ({
       setUploadError("");
       setIsUploading(false);
     }
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, [isOpen]);
+
+  const startCamera = async () => {
+    setUploadError("");
+
+    // Check if browser supports mediaDevices
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const errorMsg = window.isSecureContext
+        ? "Your browser does not support camera access."
+        : "Camera access requires a secure connection (HTTPS). Please try using HTTPS or localhost.";
+      setUploadError(errorMsg);
+      console.error("Camera access not supported:", errorMsg);
+      setStep(5);
+      return;
+    }
+
+    try {
+      const constraints = {
+        video: { 
+          facingMode: "user", 
+          width: { ideal: 1024 }, 
+          height: { ideal: 1024 },
+          aspectRatio: { ideal: 0.75 } 
+        }
+      };
+
+      let mediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        console.warn("Retrying with simple constraints...");
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
+      setStream(mediaStream);
+      setStep(6);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.play().catch(e => console.error("Video play error:", e));
+        }
+      }, 100);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setUploadError("Could not access camera. Please ensure you have granted permission.");
+      setStep(5);
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+
+    // Mirror if using front camera usually
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+      stopCamera();
+
+      setStep(3);
+      setIsUploading(true);
+      setUploadError("");
+
+      try {
+        const cloudinaryUrl = await uploadToCloudinary(file);
+        setSelectedImage(cloudinaryUrl);
+        setImageSource("camera");
+
+        const isValid = await validateImage(cloudinaryUrl);
+        setStep(isValid ? 4 : 5);
+      } catch {
+        setUploadError("Failed to upload captured image.");
+        setStep(5);
+      } finally {
+        setIsUploading(false);
+      }
+    }, "image/jpeg");
+  };
 
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
@@ -676,7 +777,11 @@ const UploadSelfieModal = ({
               </label>
 
               {/* Camera Button */}
-              <button className="mt-3 w-full md:w-[388px] border border-[#8A0000] text-primary py-3 font-medium hover:bg-hoverBg hover:text-white cursor-pointer transition text-sm">
+              <button
+                onClick={startCamera}
+                className="mt-3 w-full md:w-[388px] border border-[#8A0000] text-primary py-3 font-medium hover:bg-hoverBg hover:text-white cursor-pointer transition text-sm flex items-center justify-center gap-2"
+              >
+                <Camera size={18} />
                 Use camera
               </button>
             </div>
@@ -790,6 +895,58 @@ const UploadSelfieModal = ({
           <p className="text-xs text-gray-600 mt-4">
             Your photos are never stored in our system. We respect your privacy and are committed to
             protecting your personal data.
+          </p>
+        </div>
+      )}
+
+      {/* Step 6: Camera Interface */}
+      {step === 6 && (
+        <div className="p-4 bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col items-center relative">
+          <button
+            onClick={() => {
+              stopCamera();
+              setStep(2);
+            }}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10"
+          >
+            <X size={24} />
+          </button>
+
+          <h3 className="text-lg font-bold mb-4">Take a Selfie</h3>
+
+          <div className="relative w-full aspect-[3/4] bg-black rounded-lg overflow-hidden mb-6">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              style={{ transform: "scaleX(-1)" }} // Mirror effect for selfie
+            />
+            <div className="absolute inset-0 border-2 border-white/30 pointer-events-none rounded-lg" />
+          </div>
+
+          <div className="flex gap-4 w-full">
+            <button
+              onClick={() => {
+                stopCamera();
+                setStep(2);
+              }}
+              className="flex-1 border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={capturePhoto}
+              className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-red-800 transition flex items-center justify-center gap-2"
+            >
+              <Camera size={20} />
+              Capture
+            </button>
+          </div>
+
+          <p className="text-[10px] text-gray-500 mt-4 text-center">
+            Position your face within the frame and ensure good lighting for the best results.
           </p>
         </div>
       )}

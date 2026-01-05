@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { X, ArrowLeft, Check } from "lucide-react";
+import { X, ArrowLeft, Check, Camera, RefreshCcw } from "lucide-react";
 
 const TryOnUploadPage = () => {
   const navigate = useNavigate();
@@ -11,6 +11,10 @@ const TryOnUploadPage = () => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [showComparison, setShowComparison] = useState(false); // ⭐ NEW
+  
+  const videoRef = useRef(null);
+  const [stream, setStream] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   const isModelSelection = tryOnData?.selectModel;
 
@@ -136,6 +140,93 @@ const TryOnUploadPage = () => {
     } else {
       navigate(-1);
     }
+  };
+
+  const startCamera = async () => {
+    setUploadError("");
+    
+    // Check if browser supports mediaDevices
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const errorMsg = window.isSecureContext 
+        ? "Your browser does not support camera access." 
+        : "Camera access requires a secure connection (HTTPS). Please try using HTTPS or localhost.";
+      setUploadError(errorMsg);
+      console.error("Camera access not supported:", errorMsg);
+      return;
+    }
+
+    try {
+      // Try with ideal constraints first
+      const constraints = {
+        video: { 
+          facingMode: "user", 
+          width: { ideal: 1024 }, 
+          height: { ideal: 1024 },
+          aspectRatio: { ideal: 0.75 } 
+        }
+      };
+      
+      let mediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        console.warn("Retrying with simple constraints...");
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
+      setStream(mediaStream);
+      setShowCamera(true);
+      
+      // Use onLoadedMetadata to ensure stream is ready
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.play().catch(e => console.error("Video play error:", e));
+        }
+      }, 100);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setUploadError("Could not access camera. Please ensure you have granted permission.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+
+      const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        stopCamera();
+        navigate("/tryon/processing", {
+          state: {
+            ...tryOnData,
+            uploadedFile: file,
+            uploadedImagePreview: reader.result,
+            processingType: "upload",
+          },
+        });
+      };
+      reader.readAsDataURL(file);
+    }, "image/jpeg");
   };
 
   const handleClose = () => {
@@ -352,13 +443,63 @@ const TryOnUploadPage = () => {
               </label>
 
               <button
-                onClick={() => document.getElementById("uploadInput").click()}
+                onClick={startCamera}
                 disabled={isUploading}
-                className="w-full border-2 border-[#8B0000] text-[#8B0000] py-3.5 font-semibold hover:bg-[#8B0000] hover:text-white transition-all "
+                className="w-full border-2 border-[#8B0000] text-[#8B0000] py-3.5 font-semibold hover:bg-[#8B0000] hover:text-white transition-all flex items-center justify-center gap-2"
               >
+                <Camera size={18} />
                 USE CAMERA
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CAMERA VIEW */}
+      {showCamera && (
+        <div className="fixed inset-0 z-50 bg-white flex flex-col items-center">
+          <div className="w-full max-w-lg flex flex-col items-center p-4">
+            <div className="w-full flex justify-between items-center mb-6">
+              <button
+                onClick={stopCamera}
+                className="p-2 text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft size={24} />
+              </button>
+              <h3 className="text-lg font-bold">Take a Selfie</h3>
+              <div className="w-10" /> {/* Spacer */}
+            </div>
+
+            <div className="relative w-full aspect-[3/4] bg-black rounded-xl overflow-hidden shadow-2xl mb-8">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+                style={{ transform: "scaleX(-1)" }}
+              />
+            </div>
+
+            <div className="w-full flex gap-4">
+              <button
+                onClick={stopCamera}
+                className="flex-1 border-2 border-gray-300 py-4 font-bold rounded-lg"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={capturePhoto}
+                className="flex-1 bg-[#8B0000] text-white py-4 font-bold rounded-lg flex items-center justify-center gap-2"
+              >
+                <Camera size={20} />
+                CAPTURE
+              </button>
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-6 text-center px-4">
+              Position your face clearly for the best try-on accuracy.
+            </p>
           </div>
         </div>
       )}

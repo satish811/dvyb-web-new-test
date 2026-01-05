@@ -208,7 +208,7 @@ const razorpayKeyId = defineSecret("RZP_KEY_ID");
 const razorpayKeySecret = defineSecret("RZP_KEY_SECRET");
 
 export const createRazorpayOrder = onCall(
-  { secrets: [razorpayKeyId, razorpayKeySecret] },
+  { secrets: [razorpayKeyId, razorpayKeySecret], cors: true },
   async (request) => {
     try {
       const { amount } = request.data;
@@ -259,7 +259,7 @@ export const createRazorpayOrder = onCall(
   }
 );
 
-export const verifyRazorpayPayment = onCall({ secrets: [razorpayKeySecret] }, async (request) => {
+export const verifyRazorpayPayment = onCall({ secrets: [razorpayKeySecret], cors: true }, async (request) => {
   if (!request.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Sign in required");
   }
@@ -313,3 +313,177 @@ export const verifyRazorpayPayment = onCall({ secrets: [razorpayKeySecret] }, as
     throw new functions.https.HttpsError("internal", err.message);
   }
 });
+
+// ==================== SHIPROCKET  INTEGRATION ====================
+
+import shiprocketService from './shiprocketService.js';
+
+// Get shipping rates
+export const getShippingRates = onCall({ cors: true }, async (request) => {
+  try {
+    const { deliveryPostcode, weight, cod, declaredValue, pickupPostcode } = request.data;
+
+    if (!deliveryPostcode) {
+      throw new functions.https.HttpsError('invalid-argument', 'Delivery postcode is required');
+    }
+
+    console.log('📦 Fetching shipping rates for:', deliveryPostcode);
+
+    const result = await shiprocketService.getShippingRates({
+      pickupPostcode: pickupPostcode || "110001",
+      deliveryPostcode,
+      weight: weight || 0.5,
+      cod: cod || false,
+      declaredValue: declaredValue || 1000
+    });
+
+    if (!result.success) {
+      throw new functions.https.HttpsError('internal', result.error);
+    }
+
+    console.log('✅ Shipping rates fetched successfully');
+    return result;
+  } catch (error) {
+    console.error('❌ Get shipping rates error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// Create Shiprocket order
+export const createShiprocketOrder = onCall({ cors: true }, async (request) => {
+  try {
+    const data = request.data;
+    
+    console.log('📦 Creating Shiprocket order:', data.orderId);
+    console.log('🔍 Payment method:', data.paymentMethod);
+    console.log('🔍 Razorpay Order ID:', data.razorpayOrderId);
+
+    const orderResult = await shiprocketService.createOrder(data);
+
+    if (!orderResult.success) {
+      throw new functions.https.HttpsError('internal', orderResult.error);
+    }
+
+    // Log if test order
+    if (orderResult.isTestOrder) {
+      console.log('🧪 TEST ORDER created - No real shipment');
+    } else {
+      console.log('✅ REAL Shiprocket order created:', orderResult.data.order_id);
+    }
+
+    // Auto-assign courier if courier_id is provided and not test order
+    if (data.courierId && orderResult.data.shipment_id && !orderResult.isTestOrder) {
+      console.log('🚚 Assigning courier:', data.courierId);
+      const assignResult = await shiprocketService.assignCourier(
+        orderResult.data.shipment_id,
+        data.courierId
+      );
+      
+      return {
+        ...orderResult,
+        courierAssignment: assignResult
+      };
+    }
+
+    return orderResult;
+  } catch (error) {
+    console.error('❌ Create Shiprocket order error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// Track shipment
+export const trackShipment = onCall({ cors: true }, async (request) => {
+  try {
+    const { shipmentId } = request.data;
+
+    if (!shipmentId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Shipment ID is required');
+    }
+
+    // Don't track test shipments
+    if (shipmentId.startsWith('TEST-')) {
+      return {
+        success: true,
+        isTestOrder: true,
+        data: {
+          status: 'TEST',
+          message: 'Test shipment - tracking not available'
+        }
+      };
+    }
+
+    console.log('📍 Tracking shipment:', shipmentId);
+
+    const result = await shiprocketService.trackShipment(shipmentId);
+
+    if (!result.success) {
+      throw new functions.https.HttpsError('internal', result.error);
+    }
+
+    console.log('✅ Tracking data retrieved');
+    return result;
+  } catch (error) {
+    console.error('❌ Track shipment error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// Shiprocket webhook handler
+export const shiprocketWebhook = functions.https.onRequest(async (req, res) => {
+  try {
+    const webhookData = req.body;
+    console.log('📬 Shiprocket webhook received:', JSON.stringify(webhookData));
+
+    // Update order status in Firestore based on webhook data
+    if (webhookData.order_id && webhookData.current_status) {
+      // TODO: Implement order update logic
+      // Find the order by shiprocketOrderId and update its status
+      
+      console.log(`📝 Order ${webhookData.order_id} status: ${webhookData.current_status}`);
+      
+      res.status(200).json({ success: true, message: 'Webhook processed' });
+    } else {
+      console.error('❌ Invalid webhook data');
+      res.status(400).json({ success: false, message: 'Invalid webhook data' });
+    }
+  } catch (error) {
+    console.error('❌ Webhook error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Cancel shipment
+export const cancelShipment = onCall({ cors: true }, async (request) => {
+  try {
+    const { orderIds } = request.data;
+
+    if (!orderIds) {
+      throw new functions.https.HttpsError('invalid-argument', 'Order IDs are required');
+    }
+
+    // Don't cancel test orders
+    if (Array.isArray(orderIds) && orderIds.some(id => id.startsWith('TEST-'))) {
+      return {
+        success: true,
+        isTestOrder: true,
+        message: 'Test order cancellation - no action needed'
+      };
+    }
+
+    console.log('🚫 Cancelling shipment:', orderIds);
+
+    const result = await shiprocketService.cancelShipment(orderIds);
+
+    if (!result.success) {
+      throw new functions.https.HttpsError('internal', result.error);
+    }
+
+    console.log('✅ Shipment cancelled');
+    return result;
+  } catch (error) {
+    console.error('❌ Cancel shipment error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+

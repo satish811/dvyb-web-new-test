@@ -43,6 +43,7 @@ export const FilterProvider = ({ children }) => {
     priceMax: null,
     discounts: [],
     blouses: [],
+    boutiques: [],
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -91,6 +92,15 @@ export const FilterProvider = ({ children }) => {
               newFilters.blouses = blouses.filter((item) => item !== value);
             } else {
               newFilters.blouses = [...blouses, value];
+            }
+            break;
+
+          case "boutiques":
+            const boutiques = newFilters.boutiques || [];
+            if (boutiques.includes(value)) {
+              newFilters.boutiques = boutiques.filter((item) => item !== value);
+            } else {
+              newFilters.boutiques = [...boutiques, value];
             }
             break;
 
@@ -151,6 +161,7 @@ export const FilterProvider = ({ children }) => {
       priceMax: null,
       discounts: [],
       blouses: [],
+      boutiques: [],
     });
     setNavbarCategory("");
   }, []);

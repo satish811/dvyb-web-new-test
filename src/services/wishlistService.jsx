@@ -142,9 +142,11 @@ class WishlistOperationalService {
       // Measure write operation time
       const writeStartTime = Date.now();
 
+      let writeEndTime;
+
       try {
         await setDoc(wishlistItemRef, wishlistData);
-        const writeEndTime = Date.now();
+        writeEndTime = Date.now();
         console.log(
           `✅ WRITE: setDoc completed successfully in ${writeEndTime - writeStartTime}ms`
         );
@@ -416,7 +418,7 @@ class WishlistOperationalService {
         const user = auth.currentUser;
         if (!user) {
           callback([]);
-          resolve(() => {});
+          resolve(() => { });
           return;
         }
 
@@ -446,7 +448,7 @@ class WishlistOperationalService {
       } catch (error) {
         console.error("❌ Error setting up wishlist listener:", error);
         callback([]);
-        resolve(() => {});
+        resolve(() => { });
       }
     });
   }

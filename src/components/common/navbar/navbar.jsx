@@ -83,6 +83,7 @@ export default function Navbar({ setShowLoader }) {
       wedding: "WEDDING",
       sale: "SALE",
       lehenga: "LEHENGA",
+      boutique: "DESIGNER",
     };
     return map[param] === item.label;
   };

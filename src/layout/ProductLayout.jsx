@@ -35,9 +35,14 @@ export default function ProductLayout({ children, products }) {
    * Filter products based on category
    */
   const filteredProducts = useMemo(() => {
-    return category
-      ? products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase())
-      : products;
+    if (!category) return products;
+    
+    // Special filter for boutique
+    if (category.toLowerCase() === "boutique") {
+      return products.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
+    }
+
+    return products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase());
   }, [category, products]);
 
   /**

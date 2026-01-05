@@ -47,11 +47,11 @@ const TryOnPreviewPage = () => {
     const hex = color.match(/#([0-9A-F]{6})/i)?.[1] || "000000";
     return { name, hex: `#${hex}` };
   }) || [
-    { name: "blue", hex: "#1E3A8A" },
-    { name: "yellow", hex: "#CA8A04" },
-    { name: "green", hex: "#16A34A" },
-    { name: "purple", hex: "#7C3AED" },
-  ];
+      { name: "blue", hex: "#1E3A8A" },
+      { name: "yellow", hex: "#CA8A04" },
+      { name: "green", hex: "#16A34A" },
+      { name: "purple", hex: "#7C3AED" },
+    ];
 
   const fabrics = [
     { name: tryOnData?.fabric || "Pure Silk", category: "Premium" },
@@ -211,6 +211,8 @@ const TryOnPreviewPage = () => {
           name: tryOnData.garmentName,
           price: tryOnData.price,
           image: tryOnData.garmentImage,
+          size: tryOnData.selectedSize,
+          selectedSize: tryOnData.selectedSize,
         });
         setIsInWishlist(true);
         toast.success("Added to wishlist!");
@@ -305,17 +307,15 @@ const TryOnPreviewPage = () => {
             <div className="flex gap-2 mb-4 mt-5 bg-[#F0E0E0] p-1 ">
               <button
                 onClick={() => setSelectedTab("colours")}
-                className={`flex-1 py-2 text-sm font-medium transition-all  ${
-                  selectedTab === "colours" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
-                }`}
+                className={`flex-1 py-2 text-sm font-medium transition-all  ${selectedTab === "colours" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
+                  }`}
               >
                 Colours
               </button>
               <button
                 onClick={() => setSelectedTab("fabrics")}
-                className={`flex-1 py-2 text-sm font-medium transition-all  ${
-                  selectedTab === "fabrics" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
-                }`}
+                className={`flex-1 py-2 text-sm font-medium transition-all  ${selectedTab === "fabrics" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
+                  }`}
               >
                 Fabrics
               </button>
@@ -331,11 +331,10 @@ const TryOnPreviewPage = () => {
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
-                      className={`aspect-square transition-all h-12 mt-1.5 rounded  ${
-                        selectedColor === color.name
+                      className={`aspect-square transition-all h-12 mt-1.5 rounded  ${selectedColor === color.name
                           ? "ring-2 ring-gray-900 ring-offset-2"
                           : "ring-1 ring-gray-200"
-                      }`}
+                        }`}
                       style={{ backgroundColor: color.hex }}
                     />
                   ))}
@@ -369,14 +368,12 @@ const TryOnPreviewPage = () => {
               </div>
               <button
                 onClick={() => setView360Enabled(!view360Enabled)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full  transition-colors ${
-                  view360Enabled ? "bg-[#8B0000]" : "bg-gray-300"
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full  transition-colors ${view360Enabled ? "bg-[#8B0000]" : "bg-gray-300"
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform  bg-white rounded-full transition-transform ${
-                    view360Enabled ? "translate-x-6" : "translate-x-1"
-                  }`}
+                  className={`inline-block h-4 w-4 transform  bg-white rounded-full transition-transform ${view360Enabled ? "translate-x-6" : "translate-x-1"
+                    }`}
                 />
               </button>
             </div>
@@ -395,11 +392,10 @@ const TryOnPreviewPage = () => {
                 <button
                   key={bg.id}
                   onClick={() => setSelectedBackground(bg.id)}
-                  className={`relative  overflow-hidden ${
-                    selectedBackground === bg.id
+                  className={`relative  overflow-hidden ${selectedBackground === bg.id
                       ? "ring-2 ring-gray-900 ring-offset-2"
                       : "ring-1 ring-gray-200"
-                  }`}
+                    }`}
                 >
                   <div className="aspect-video">
                     <img src={bg.image} alt={bg.name} className="w-full h-full object-cover" />
@@ -429,11 +425,10 @@ const TryOnPreviewPage = () => {
             {/* <div className=" gap-3"> */}
             <button
               onClick={handleAddToWishlist}
-              className={`py-3  w-full font-medium flex items-center justify-center gap-2 transition-all ${
-                isInWishlist
+              className={`py-3  w-full font-medium flex items-center justify-center gap-2 transition-all ${isInWishlist
                   ? "bg-red-50 border-2 border-red-500 text-red-500"
                   : "border-2 border-[#8B0000] text-[#8B0000] hover:bg-[#8B0000] hover:text-white"
-              }`}
+                }`}
             >
               <Heart size={19} className={isInWishlist ? "fill-current" : ""} />
               Add to Wishlist

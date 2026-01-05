@@ -15,7 +15,8 @@ export const useProductFilter = (products = []) => {
       selectedFilters.priceMin != null ||
       selectedFilters.priceMax != null ||
       selectedFilters.discounts?.length > 0 ||
-      selectedFilters.blouses?.length > 0;
+      selectedFilters.blouses?.length > 0 ||
+      selectedFilters.boutiques?.length > 0;
 
     if (!hasFilters) {
       console.log("No filters applied, returning all products");
@@ -36,6 +37,18 @@ export const useProductFilter = (products = []) => {
           (selectedCat === "lehenga" && productDressType === "lehengas");
 
         if (!matchesCategory) return false;
+      }
+
+      // === BOUTIQUE FILTER ===
+      if (selectedFilters.boutiques?.length > 0) {
+        const productShopName = product.shopName?.trim() || product.boutiqueName?.trim();
+        if (!productShopName) return false;
+
+        const hasBoutiqueMatch = selectedFilters.boutiques.some(
+          (selectedBoutique) => selectedBoutique.trim() === productShopName
+        );
+
+        if (!hasBoutiqueMatch) return false;
       }
 
       // === BLOUSE FILTER === (FIXED - Only apply to blouse products)

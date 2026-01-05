@@ -3,6 +3,7 @@ import { FilterSection, ColorFilter, PriceRange, DiscountFilter } from "../filte
 import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
 import BlouseFilter from "../filters/BlouseFilter";
+import { Search } from "lucide-react";
 
 const Sidebar = ({ products = [] }) => {
   const location = useLocation();
@@ -10,35 +11,13 @@ const Sidebar = ({ products = [] }) => {
   const params = new URLSearchParams(location.search);
   const urlCategory = params.get("category");
 
+  const isBoutiquePage = urlCategory?.toLowerCase() === "boutique" || urlCategory?.toLowerCase() === "boutiques";
   const isURLSaree = urlCategory?.toLowerCase() === "saree";
 
-  const [filterData, setFilterData] = useState({
-    categories: [],
-    sizes: [],
-    colors: [],
-    priceRange: { min: 0, max: 0 },
-  });
-
-  const { selectedFilters } = useFilter();
-  const selectedCategory = selectedFilters.categories[0] || null;
-
-  const customCategories = [
-    { name: "LEHENGA", count: 5 },
-    { name: "SAREE", count: 4 },
-    { name: "KURTA SETS", count: 5 },
-    { name: "ANARKALIS", count: 6 },
-    { name: "SHARARAS", count: 8 },
-    { name: "PRET", count: 3 },
-    { name: "FUSION", count: 2 },
-    { name: "WEDDING", count: 9 },
-    { name: "SALE", count: 5 },
-    { name: "VIRTUAL TRYON", count: 7 },
-  ];
-
   const customDiscounts = [
-    { range: "0% - 20%", count: 10 },
-    { range: "21% - 30%", count: 12 },
-    { range: "31% - 40%", count: 11 },
+    { range: "0% - 20%" },
+    { range: "21% - 30%" },
+    { range: "31% - 40%" },
   ];
 
   const defaultSizes = [
@@ -51,12 +30,23 @@ const Sidebar = ({ products = [] }) => {
     { name: "3XL", count: 11 },
   ];
 
+  const [filterData, setFilterData] = useState({
+    categories: [],
+    sizes: [],
+    colors: [],
+    boutiques: [], // New state for boutiques
+    priceRange: { min: 0, max: 0 },
+  });
+
+  const { selectedFilters, updateFilter } = useFilter();
+  const selectedCategory = selectedFilters.categories[0] || null;
+
   useEffect(() => {
     if (products.length > 0) {
-      const dynamicData = extractDynamicFilterData(products);
+      const dynamicData = extractDynamicFilterData(products, urlCategory, selectedFilters.boutiques);
       setFilterData(dynamicData);
     }
-  }, [products]);
+  }, [products, urlCategory, selectedFilters.boutiques]);
 
   const isSareeCategory =
     (selectedCategory && selectedCategory.toUpperCase().includes("SAREE")) || isURLSaree;
@@ -76,15 +66,23 @@ const Sidebar = ({ products = [] }) => {
     "
     >
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-0 sm:pt-0 space-y-6 sm:space-y-7 no-scrollbar">
+        {/* Designer Section (Top) */}
         <FilterSection
-          title="CATEGORY"
-          items={customCategories}
-          searchable
+          title="SELECT DESIGNER"
+          items={filterData.boutiques}
+          searchable={false}
+          defaultOpen={true}
+          filterType="boutiques"
+        />
+
+        {/* Category Section (Below Designers) */}
+        <FilterSection
+          title="SELECT CATEGORY"
+          items={filterData.categories}
+          searchable={false}
           defaultOpen={true}
           filterType="categories"
         />
-
-        <BlouseFilter />
 
         {!isSareeCategory && (
           <FilterSection
@@ -113,34 +111,108 @@ const Sidebar = ({ products = [] }) => {
   );
 };
 
-/* Helper Functions (unchanged) */
-function extractDynamicFilterData(products) {
+/* Helper Functions */
+function extractDynamicFilterData(products, activeCategory, selectedBoutiques) {
+  // If designers are selected, filter the products for category/size/color extraction
+  let filteredProducts = products;
+  if (selectedBoutiques && selectedBoutiques.length > 0) {
+    const selectedLower = selectedBoutiques.map(b => b.toLowerCase());
+    filteredProducts = products.filter((p) => {
+      const shopName = (p.shopName?.trim() || p.boutiqueName?.trim() || "").toLowerCase();
+      return selectedLower.includes(shopName);
+    });
+  }
+
   return {
-    categories: extractCategories(products),
-    sizes: extractSizes(products),
-    colors: extractColors(products),
-    priceRange: getPriceRange(products),
+    categories: extractCategories(filteredProducts),
+    boutiques: extractBoutiques(products, activeCategory),
+    sizes: extractSizes(filteredProducts),
+    colors: extractColors(filteredProducts),
+    priceRange: getPriceRange(filteredProducts),
   };
 }
 
-function extractCategories(products) {
+function extractBoutiques(products, activeCategory) {
   const map = new Map();
 
   products.forEach((product) => {
-    if (product.category && product.category.trim()) {
-      const category = product.category.trim();
-      map.set(category, (map.get(category) || 0) + 1);
+    // Contextual filtering: If a category is selected, only show boutiques from that category
+    // Skip this check if we are on the 'boutique' landing page
+    if (
+      activeCategory &&
+      activeCategory.toLowerCase() !== "boutique" &&
+      activeCategory.toLowerCase() !== "boutiques"
+    ) {
+      const selectedCat = activeCategory.toLowerCase();
+      const productCat = product.category?.trim()?.toLowerCase();
+      const productDressType = product.dressType?.trim()?.toLowerCase();
+
+      const matchesCategory =
+        productCat === selectedCat ||
+        productDressType === selectedCat ||
+        (selectedCat === "saree" && productDressType === "sarees") ||
+        (selectedCat === "lehenga" && productDressType === "lehengas");
+
+      if (!matchesCategory) return;
     }
 
-    if (product.subDressType && product.subDressType.trim()) {
-      const sub = product.subDressType.trim();
-      map.set(sub, (map.get(sub) || 0) + 1);
+    const shopName = product.shopName?.trim() || product.boutiqueName?.trim();
+    if (shopName) {
+      map.set(shopName, (map.get(shopName) || 0) + 1);
     }
   });
 
   return Array.from(map.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
+}
+
+const STANDARD_CATEGORIES = [
+  "LEHENGA",
+  "SAREE",
+  "KURTA SETS",
+  "ANARKALIS",
+  "SHARARAS",
+  "WEDDING",
+  "BOUTIQUE",
+  "SALE",
+  "VIRTUAL TRYON",
+];
+
+function extractCategories(products) {
+  const counts = {};
+  STANDARD_CATEGORIES.forEach((cat) => (counts[cat] = 0));
+
+  products.forEach((product) => {
+    const cat = (String(product.category || "")).toUpperCase().trim();
+    const dressType = (String(product.dressType || "")).toUpperCase().trim();
+    const subDressType = (String(product.subDressType || "")).toUpperCase().trim();
+
+    const checkMatch = (str) => {
+      if (str.includes("SAREE")) counts["SAREE"]++;
+      else if (str.includes("LEHENGA")) counts["LEHENGA"]++;
+      else if (str.includes("KURTA")) counts["KURTA SETS"]++;
+      else if (str.includes("ANARKALI")) counts["ANARKALIS"]++;
+      else if (str.includes("SHARARA")) counts["SHARARAS"]++;
+      else if (str.includes("WEDDING")) counts["WEDDING"]++;
+      else if (str.includes("BOUTIQUE")) counts["BOUTIQUE"]++;
+      else if (str.includes("SALE")) counts["SALE"]++;
+      else if (str.includes("VIRTUAL") || str.includes("TRYON")) counts["VIRTUAL TRYON"]++;
+      else return false;
+      return true;
+    };
+
+    if (!checkMatch(dressType)) {
+      if (!checkMatch(cat)) {
+        checkMatch(subDressType);
+      }
+    }
+  });
+
+  return STANDARD_CATEGORIES.map((name) => ({
+    name,
+    count: counts[name],
+  })).filter((cat) => cat.count > 0); // Only show categories with products
 }
 
 function extractSizes(products) {
