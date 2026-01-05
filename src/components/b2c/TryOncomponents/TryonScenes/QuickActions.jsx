@@ -16,6 +16,7 @@ const QuickActions = ({
   isInWishlistState,
   wishlistLoading,
   handleToggleWishlist,
+   onClose 
 }) => {
   return (
     <div>
@@ -25,7 +26,8 @@ const QuickActions = ({
       <div className="space-y-2">
         <button
           onClick={() => {
-            navigate(`/products/${tryOnData?.productId}`);
+          onClose();
+
           }}
           className="w-full bg-primary hover:bg-hoverBg text-white py-2.5 transition-all font-medium flex items-center justify-center gap-2 text-sm"
         >
@@ -33,24 +35,34 @@ const QuickActions = ({
           {UI_TEXT.VIEW_PRODUCT}
         </button>
 
-        <button
-          onClick={handleToggleWishlist}
-          disabled={wishlistLoading}
-          className={`w-full py-2.5 cursor-pointer transition-all font-medium flex gap-4 text-sm ${
-            isInWishlistState
-              ? "text-primary pl-3"
-              : "bg-white border-2 justify-center border-primary text-primary"
-          }`}
-        >
-          <Heart
-            className={`w-5 h-5 ${
-              isInWishlistState ? "fill-current text-red-600" : ""
-            }`}
-          />
-          {isInWishlistState
-            ? UI_TEXT.ADDED_TO_WISHLIST
-            : UI_TEXT.ADD_TO_WISHLIST}
-        </button>
+     <button
+  onClick={handleToggleWishlist}
+  disabled={wishlistLoading}
+  className={`w-full py-2.5 transition-all font-medium flex gap-2 items-center text-sm ${
+    isInWishlistState
+      ? "text-primary pl-3"
+      : "bg-white border-2 justify-center border-primary text-primary"
+  } ${wishlistLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+>
+  {wishlistLoading ? (
+    <>
+      <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+      <span>Updating...</span>
+    </>
+  ) : (
+    <>
+      <Heart
+        className={`w-5 h-5 ${
+          isInWishlistState ? "fill-current text-red-600" : ""
+        }`}
+      />
+      {isInWishlistState
+        ? UI_TEXT.ADDED_TO_WISHLIST
+        : UI_TEXT.ADD_TO_WISHLIST}
+    </>
+  )}
+</button>
+
 
         <button
           onClick={() => toast.info("Share feature coming soon!")}

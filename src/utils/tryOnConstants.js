@@ -80,12 +80,12 @@ export const NECK_OPTIONS = [
   {
     id: "collar",
     label: "Collar",
-    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766750005/Screenshot_2025-12-26_172216_wwr0qb.png",
+    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1767595811/Gemini_Generated_Image_gtmddsgtmddsgtmd_kwxsta.png",
   },
   {
     id: "regular",
     label: "Regular",
-    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766750004/Screenshot_2025-12-26_172014_tbzxnt.png",
+    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1767595811/Gemini_Generated_Image_y8utf4y8utf4y8ut_d3ektd.png",
   },
 ];
 

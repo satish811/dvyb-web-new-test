@@ -19,14 +19,14 @@ const NeckCustomizer = ({
   shadow-sm
   border border-gray-200
   p-4
-  w-full max-w-[300px]
+  w-full md:max-w-[300px]
   grid grid-cols-2 gap-4
   max-h-[calc(100vh-120px)]
 ">
 
       {NECK_OPTIONS.map((neck) => (
         <div key={neck.id} className="flex flex-col items-center">
-          <div className="w-18 h-18 mb-2 shadow-sm overflow-hidden relative">
+          <div className="w-32 h-32 mb-2 shadow-sm overflow-hidden relative">
             <img
               src={neck.image}
               className={`w-full h-full object-cover transition-opacity ${

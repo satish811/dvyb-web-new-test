@@ -1,12 +1,14 @@
 
 import React from "react";
 import { ArrowLeft } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 /**
  * Try-On Header Component
  * Back button and navigation
  */
-const TryOnHeader = ({ onClose }) => {
+const TryOnHeader = () => {
+ const navigate = useNavigate();
+  
   return (
 <div className="
   absolute 
@@ -16,7 +18,9 @@ const TryOnHeader = ({ onClose }) => {
 ">
 
       <button
-        onClick={onClose}
+        onClick={()=>{
+          navigate(-1)
+        }}
         className="flex items-center gap-2 px-4 py-2 shadow-sm hover:shadow-md transition-all text-sm font-medium text-primary border border-primary"
       >
         <ArrowLeft size={18} />

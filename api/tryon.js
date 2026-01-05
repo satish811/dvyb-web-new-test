@@ -5,6 +5,8 @@
 
 import axios from "axios";
 import multer from "multer";
+import cloudinary from "cloudinary";
+
 
 // ============ VERCEL CONFIG ============
 export const config = {
@@ -14,6 +16,16 @@ export const config = {
   },
   maxDuration: 300, // 5 minutes for complex operations
 };
+
+// CLAUDINARY CONFIGS
+
+cloudinary.v2.config({
+  cloud_name: process.env.VITE_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.VITE_CLOUDINARY_API_KEY,
+  api_secret: process.env.VITE_CLOUDINARY_API_SECRET,
+});
+
+
 
 // ============ MULTER SETUP ============
 const upload = multer({
@@ -579,6 +591,21 @@ export default async function handler(req, res) {
   console.log(`🎯 API called: ${req.method} ${path}`);
 
   try {
+
+    if (req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
+  let body = "";
+  await new Promise((resolve) => {
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", resolve);
+  });
+  try {
+    req.body = JSON.parse(body);
+  } catch {
+    req.body = {};
+  }
+}
+
+
     // ======== GET: /api/tryon-backgrounds ========
     if (req.method === "GET" && path === "/api/tryon-backgrounds") {
       const bgList = Object.entries(backgrounds).map(([key, value]) => ({
@@ -890,6 +917,78 @@ if (req.method === "POST" && path === "/api/change-neck") {
         result: `data:image/png;base64,${output}`
       });
     }
+
+
+
+
+    // CLAUDINARY UPLOAD HANDLER
+
+    // ======== POST: /api/upload-to-cloudinary ========
+if (req.method === "POST" && path === "/api/upload-to-cloudinary") {
+  console.log("\n☁️ === CLOUDINARY UPLOAD REQUEST ===");
+
+  try {
+    const { images } = req.body;
+
+    if (!images || !Array.isArray(images)) {
+      return res.status(400).json({
+        success: false,
+        error: "Images array required",
+      });
+    }
+
+    console.log(`📤 Uploading ${images.length} images to Cloudinary...`);
+
+    const uploadPromises = images.map(async ({ outfitType, base64Image }) => {
+      try {
+        const base64Data = base64Image.replace(
+          /^data:image\/\w+;base64,/,
+          ""
+        );
+
+        const result = await cloudinary.v2.uploader.upload(
+          `data:image/png;base64,${base64Data}`,
+          {
+            folder: "tryon-results",
+            public_id: `${Date.now()}_${outfitType}`,
+            resource_type: "image",
+          }
+        );
+
+        console.log(`✅ ${outfitType} uploaded`);
+
+        return {
+          outfitType,
+          url: result.secure_url,
+          success: true,
+        };
+      } catch (error) {
+        console.error(`❌ Upload failed for ${outfitType}`, error.message);
+        return {
+          outfitType,
+          success: false,
+          error: error.message,
+        };
+      }
+    });
+
+    const results = await Promise.all(uploadPromises);
+
+    return res.json({
+      success: true,
+      results: results.reduce((acc, r) => {
+        if (r.success) acc[r.outfitType] = r.url;
+        return acc;
+      }, {}),
+    });
+  } catch (err) {
+    console.error("❌ Cloudinary error:", err.message);
+    return res.status(500).json({
+      success: false,
+      error: "Cloudinary upload failed",
+    });
+  }
+}
 
 
 

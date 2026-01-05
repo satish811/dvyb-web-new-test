@@ -33,6 +33,10 @@ import CustomizationPanel from "../TryOncomponents/TryOncustomization/Customizat
 // ============================================
 import ScenesPanel from "../TryOncomponents/TryonScenes/ScenesPanel";
 
+
+// WISHLIST
+import { useWishlist } from "../../../context/WishlistContext";
+
 // ============================================
 // UTILS & CONSTANTS
 // ============================================
@@ -43,7 +47,7 @@ import { UI_TEXT } from "../../../utils/tryOnConstants";
  * Main Try-On Preview Modal Component
  * ✅ Separated into clean sections with custom hooks
  */
-const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
+const TryOnPreviewModal = ({ isOpen, onClose, tryOnData,product  }) => {
   const navigate = useNavigate();
 
   // ============================================
@@ -57,6 +61,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData }) => {
   const [viewMode, setViewMode] = useState("2D");
   const [showBgWarning, setShowBgWarning] = useState(false);
 const [currentImage, setCurrentImage] = useState(null);
+const [wishlistLoading, setWishlistLoading] = useState(false);
+const [isInWishlistState, setIsInWishlistState] = useState(false);
+const { toggleWishlist, isInWishlist } = useWishlist();
 
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
@@ -101,6 +108,13 @@ const [currentImage, setCurrentImage] = useState(null);
     videoError,
     generateVideo,
   } = useVideoGeneration(backgroundChangedImage);
+
+
+// WISHLIST 
+useEffect(() => {
+  if (!isOpen || !product?.id) return;
+  setIsInWishlistState(isInWishlist(product.id));
+}, [isOpen, product?.id]);
 
 
 
@@ -170,6 +184,34 @@ const getCurrentDisplayImage = () => {
     window.location.reload();
   };
 
+
+
+  //  wishlist handler
+const handleToggleWishlist = async () => {
+  if (!product?.id) return;
+
+  setWishlistLoading(true);
+
+  // optimistic UI
+  setIsInWishlistState((prev) => !prev);
+
+  try {
+    await toggleWishlist(
+      product, // ✅ REAL PRODUCT OBJECT
+      tryOnData?.selectedSize || "One Size",
+      tryOnData?.selectedColors?.[0] || "Default"
+    );
+  } catch (err) {
+    console.error("Wishlist toggle failed:", err);
+    // rollback UI
+    setIsInWishlistState((prev) => !prev);
+  } finally {
+    setWishlistLoading(false);
+  }
+};
+
+
+
   // ============================================
   // RENDER - Don't render if not open
   // ============================================
@@ -184,7 +226,7 @@ const getCurrentDisplayImage = () => {
       {/* ============================================ */}
       {/* HEADER */}
       {/* ============================================ */}
-      <TryOnHeader onClose={handleClose} />
+      <TryOnHeader  />
 
       {/* ============================================ */}
       {/* CENTER STAGE - Main Preview Area */}
@@ -250,9 +292,10 @@ const getCurrentDisplayImage = () => {
         isChangingBackground={isChangingBackground}
         tryOnResult={tryOnResult}
         tryOnData={tryOnData}
-        // isInWishlistState={isInWishlistState}
-        // wishlistLoading={wishlistLoading}
-        // handleToggleWishlist={handleToggleWishlist}
+        isInWishlistState={isInWishlistState}
+        onClose={handleClose}
+        wishlistLoading={wishlistLoading}
+        handleToggleWishlist={handleToggleWishlist}
         navigate={navigate}
       />
 

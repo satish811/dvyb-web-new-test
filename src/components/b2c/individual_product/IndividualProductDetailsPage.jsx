@@ -721,6 +721,7 @@ const handleUploadSelfieNext = (data) => {
             isOpen={showTryOnPreviewModal}
             onClose={handleModalClose}
             tryOnData={tryOnData}
+            product={product} 
           />
         )}
       </Suspense>

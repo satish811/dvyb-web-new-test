@@ -16,6 +16,7 @@ const ScenesPanel = ({
   isChangingBackground,
   tryOnResult,
   tryOnData,
+  onClose,
   isInWishlistState,
   wishlistLoading,
   handleToggleWishlist,
@@ -60,6 +61,7 @@ const ScenesPanel = ({
       <QuickActions
         tryOnData={tryOnData}
         navigate={navigate}
+     onClose={onClose}
         isInWishlistState={isInWishlistState}
         wishlistLoading={wishlistLoading}
         handleToggleWishlist={handleToggleWishlist}
