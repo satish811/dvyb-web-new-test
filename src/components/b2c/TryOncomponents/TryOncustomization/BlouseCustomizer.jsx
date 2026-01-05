@@ -26,7 +26,7 @@ const BlouseCustomizer = ({
 
       {BLOUSE_SLEEVE_OPTIONS.map((blouse) => (
         <div key={blouse.id} className="flex flex-col items-center">
-          <div className="w-28 h-28 mb-2 shadow-sm overflow-hidden relative">
+          <div className="w-20 h-14 mb-2 shadow-sm overflow-hidden relative">
             <img
               src={blouse.image}
               alt={blouse.name}
@@ -46,7 +46,7 @@ const BlouseCustomizer = ({
             onClick={() => changeBlouse(blouse.id)}
             disabled={!tryOnResult || isChangingBlouse}
             className={`
-              w-full py-2 px-3 text-sm font-medium transition-all
+              w-full py-1 px-2 text-xs font-medium transition-all
               border border-gray-300
               ${
                 selectedBlouse === blouse.id

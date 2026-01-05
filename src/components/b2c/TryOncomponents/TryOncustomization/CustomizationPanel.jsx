@@ -41,7 +41,7 @@ const CustomizationPanel = ({
       {/* MAIN CUSTOMIZATION PANEL */}
       {/* ============================================ */}
      <div className="
-  absolute top-32 
+  absolute top-20
   left-6 xl:left-24 2xl:left-52
   z-20 hidden lg:block
   w-[260px] xl:w-[294px]
@@ -109,7 +109,7 @@ const CustomizationPanel = ({
     <div
   className="
     absolute
-    top-[440px] xl:top-[500px]
+    top-[440px] xl:top-[425px]
     left-4 md:left-6 xl:left-24 2xl:left-52
     z-20
     hidden lg:block

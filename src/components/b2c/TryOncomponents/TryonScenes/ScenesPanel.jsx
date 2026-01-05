@@ -23,12 +23,12 @@ const ScenesPanel = ({
 }) => {
   return (
   <div className="
-  absolute top-32 
+  absolute top-20 
   right-6 xl:right-24 2xl:right-52
   z-20 hidden lg:block
   w-[260px] xl:w-[290px]
   scrollbar-none bg-white shadow-lg p-5
-  max-h-[calc(100vh-120px)] overflow-y-auto
+  max-h-[calc(100vh-120px)] overflow-y-auto hide-scrollbar
 ">
 
       {/* ============================================ */}

@@ -171,7 +171,7 @@ export const UI_TEXT = {
   ADD_TO_WISHLIST: "Add to Wishlist",
   ADDED_TO_WISHLIST: "Added to Wishlist",
   SHARE_MY_LOOK: "Share my look",
-  CUSTOMIZE_OUTFIT: "Customize Outfit",
+  CUSTOMIZE_OUTFIT: "Outfit Details",
   CUSTOMIZE_SUBTITLE: "Try different colors, fabrics, and styles",
   SCENES: "Scenes",
   BACKGROUNDS: "Backgrounds",

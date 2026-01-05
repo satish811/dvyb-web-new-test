@@ -26,7 +26,7 @@ const NeckCustomizer = ({
 
       {NECK_OPTIONS.map((neck) => (
         <div key={neck.id} className="flex flex-col items-center">
-          <div className="w-28 h-28 mb-2 shadow-sm overflow-hidden relative">
+          <div className="w-18 h-18 mb-2 shadow-sm overflow-hidden relative">
             <img
               src={neck.image}
               className={`w-full h-full object-cover transition-opacity ${
@@ -46,7 +46,7 @@ const NeckCustomizer = ({
             onClick={() => changeNeck(neck.id)}
             disabled={!tryOnResult || isChangingNeck}
             className={`
-              w-full py-2 px-3 text-sm font-medium transition-all
+              w-full p-1.5 text-xs font-medium transition-all
               border border-gray-300
               ${
                 selectedNeck === neck.id

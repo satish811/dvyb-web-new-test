@@ -7,11 +7,11 @@ import React from "react";
  */
 const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
   return (
-<div className="flex mb-4 w-full max-w-[300px] border border-gray-200 overflow-hidden">
+<div className="flex mb-2 w-full max-w-[300px] border border-gray-200 overflow-hidden">
 
       <button
         onClick={() => setActiveCustomizer("blouse")}
-        className={`flex-1 py-2 text-sm font-medium ${
+        className={`flex-1  text-sm font-medium ${
           activeCustomizer === "blouse"
             ? "bg-primary text-white"
             : "bg-white text-gray-700 hover:bg-gray-50"
@@ -22,7 +22,7 @@ const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
 
       <button
         onClick={() => setActiveCustomizer("neck")}
-        className={`flex-1 py-2 text-sm font-medium ${
+        className={`flex-1 p-1 text-sm font-medium ${
           activeCustomizer === "neck"
             ? "bg-primary text-white"
             : "bg-white text-gray-700 hover:bg-gray-50"

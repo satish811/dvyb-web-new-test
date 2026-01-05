@@ -179,7 +179,7 @@ const getCurrentDisplayImage = () => {
   // MAIN RENDER
   // ============================================
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="fixed s  inset-0 overflow-y-auto z-50 hide-scrollbar bg-gradient-to-br from-gray-50 to-gray-100">
       
       {/* ============================================ */}
       {/* HEADER */}

@@ -10,7 +10,7 @@ const TryOnHeader = ({ onClose }) => {
   return (
 <div className="
   absolute 
-  top-4 md:top-16
+  top-4 md:top-6
   left-4 md:left-6 xl:left-24 2xl:left-52
   z-20
 ">
