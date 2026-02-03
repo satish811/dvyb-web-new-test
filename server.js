@@ -7,7 +7,11 @@ import FormData from 'form-data';
 import cloudinary from 'cloudinary';
 
 
+
+
 dotenv.config();
+
+
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
