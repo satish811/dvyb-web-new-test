@@ -239,9 +239,8 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                   <button
                     key={idx}
                     onClick={() => setSelectedColor(hex)}
-                    className={`w-7 h-7 border-2 ${
-                      selectedColor === hex ? "border-black" : "border-transparent"
-                    }`}
+                    className={`w-7 h-7 border-2 ${selectedColor === hex ? "border-black" : "border-transparent"
+                      }`}
                     style={{ backgroundColor: hex }}
                   />
                 ))}
@@ -261,11 +260,10 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 text-[12px] border ${
-                        selectedSize === size
-                          ? "bg-[#7a0000] text-white border-[#7a0000]"
-                          : "border-gray-300 text-gray-700"
-                      }`}
+                      className={`px-4 py-2 text-[12px] border ${selectedSize === size
+                        ? "bg-[#33022F] text-white border-[#33022F]"
+                        : "border-gray-300 text-gray-700"
+                        }`}
                     >
                       {size}
                     </button>
@@ -312,11 +310,10 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                   <button
                     onClick={increment}
                     disabled={quantity >= availableQuantity}
-                    className={`px-3 py-2 hover:bg-gray-100 cursor-pointer ${
-                      quantity >= availableQuantity
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-amber-800"
-                    }`}
+                    className={`px-3 py-2 hover:bg-gray-100 cursor-pointer ${quantity >= availableQuantity
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-amber-800"
+                      }`}
                   >
                     <Plus size={14} />
                   </button>
@@ -334,13 +331,12 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                 quantity > availableQuantity ||
                 (!isSaree && !selectedSize)
               }
-              className={`w-full mt-6 py-3 border font-semibold tracking-wide transition text-sm ${
-                isCurrentSelectionAdded ||
+              className={`w-full mt-6 py-3 border font-semibold tracking-wide transition text-sm ${isCurrentSelectionAdded ||
                 quantity > availableQuantity ||
                 (!isSaree && !selectedSize)
-                  ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
-                  : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white cursor-pointer"
-              }`}
+                ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
+                : "border-[#33022F] text-[#33022F] cursor-pointer"
+                }`}
             >
               {isCurrentSelectionAdded
                 ? "ALREADY ADDED"
@@ -410,11 +406,10 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                         <button
                           onClick={() => handleUpdateItemQuantity(idx, item.quantity + 1)}
                           disabled={item.quantity >= (item.availableQuantity || 999)}
-                          className={`w-6 h-6 flex items-center justify-center rounded ${
-                            item.quantity >= (item.availableQuantity || 999)
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-gray-200"
-                          }`}
+                          className={`w-6 h-6 flex items-center justify-center rounded ${item.quantity >= (item.availableQuantity || 999)
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200"
+                            }`}
                         >
                           <Plus size={12} />
                         </button>
@@ -446,7 +441,7 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                 onClick={handleContinue}
                 // Ensure total order quantity is at least 6
                 disabled={totalItems < 6}
-                className={`mt-6 w-full py-3 cursor-pointer text-white font-semibold tracking-wide transition ${totalItems < 6 ? "bg-gray-400 cursor-not-allowed" : "bg-[#7a0000] hover:bg-[#5a0000]"}`}
+                className={`mt-6 w-full py-3 cursor-pointer text-white font-semibold tracking-wide transition ${totalItems < 6 ? "bg-gray-400 cursor-not-allowed" : "bg-[#33022F]"}`}
               >
                 {editingItem ? "UPDATE CART" : `CONTINUE (${totalItems} items)`}
               </button>

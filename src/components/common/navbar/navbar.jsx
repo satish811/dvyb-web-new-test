@@ -15,6 +15,7 @@ import { useUI } from "../../../context/UIContext";
 
 // --- Your original Virtual Try-On assets ---
 import twodpopup from "../../../assets/Navbar/twodpopup.svg";
+import navbarLogo from "../../../assets/b2c/landing/Landing-villy/navbar-logo.png";
 
 // --- Search service & hook ---
 import { searchService } from "../../../services/searchService";
@@ -208,7 +209,7 @@ export default function Navbar({ setShowLoader }) {
   const cartCount = 0;
 
   return (
-    <header className="sticky top-0 z-50 bg-white w-full overflow-hidden">
+    <div className="sticky top-0 z-50 font-sans shadow-md">
       {searchOpen ? (
         <SearchDropdown
           searchResults={searchResults}
@@ -230,39 +231,48 @@ export default function Navbar({ setShowLoader }) {
         />
       ) : (
         <>
-          {/* Top gray bar */}
-          {/* <div className="flex hidden md:flex items-center bg-[#e6e6e6] h-10 px-5 gap-10 font-poppins pl-12">
-            <span
-              onClick={() => navigate("/womenwear")}
-              className="text-[12px] font-medium tracking-wider cursor-pointer hover:underline"
-            >
-              CATEGORIES
-            </span>
-            <span
-              onClick={() => setShowModal(true)}
-              className="text-[12px] font-medium tracking-wider cursor-pointer hover:underline"
-            >
-              VIRTUAL TRY-ON
-            </span>
-          </div> */}
+          {/* Top Bar */}
+          <div className="bg-gray-100 text-center py-2 text-lg text-gray-600 relative z-50">
+            Get early access for <span className="font-semibold text-purple-900 uppercase">Virtual Try On</span>{" "}
+            <a href="#" className="underline text-gray-500 hover:text-gray-800 ml-1">
+              Sign Up
+            </a>
+          </div>
 
-          {/* Main bar */}
-          <div className="flex items-center justify-between px-3 py-2 sm:px-4 md:px-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden flex items-center gap-1 font-medium text-sm text-gray-800 ml-1"
-            >
-              WOMEN <MdOutlineArrowDropDown className="text-xl" />
-            </button>
+          {/* Main Navbar */}
+          <header className="bg-[#B794B9] text-white w-full relative z-40 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 
-            <div className="flex-1 flex justify-center">
-              {logoLoading ? (
-                <div className="w-8 h-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-              ) : (
-                <img
-                  src={mainlogo}
-                  alt="Logo"
-                  className="h-12 xs:h-12 md:h-14 lg:h-16 ml-1 sm:ml-8 md:ml-16 lg:ml-28 transition-all duration-200 cursor-pointer"
+              {/* Mobile Menu Toggle (Left on Mobile) */}
+              <div className="lg:hidden flex items-center">
+                <button
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="p-2 text-white hover:bg-white/10 rounded-full transition"
+                >
+                  <MdOutlineArrowDropDown className="text-2xl transform rotate-90" />
+                </button>
+              </div>
+
+              {/* Left: Desktop Nav Links */}
+              <div className="hidden lg:flex items-center space-x-8 pl-6">
+                <button
+                  onClick={() => navigate("/womenwear")}
+                  className="text-lg font-medium tracking-wide hover:text-gray-100 transition uppercase border-b-2 border-transparent hover:border-white pb-1"
+                >
+                  Women
+                </button>
+                <button
+                  onClick={() => navigate("/menwear")}
+                  className="text-lg font-medium tracking-wide hover:text-gray-100 transition uppercase border-b-2 border-transparent hover:border-white pb-1"
+                >
+                  Men
+                </button>
+              </div>
+
+              {/* Center: Logo */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div
+                  className="cursor-pointer"
                   onClick={() => {
                     if (setShowLoader) setShowLoader(true);
                     setTimeout(() => {
@@ -270,70 +280,30 @@ export default function Navbar({ setShowLoader }) {
                       setShowLoader(false);
                     }, 1200);
                   }}
+                >
+                  <img
+                    src={navbarLogo}
+                    alt="Villy Logo"
+                    className="h-12 md:h-14 w-auto object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Right: Icons */}
+              <div className="flex items-center">
+                <NavIcons
+                  className="text-white"
+                  wishlistCount={wishlistCount}
+                  cartCount={cartCount}
+                  onSearch={() => setSearchOpen(true)}
+                  onWishlist={() => navigate("/wishlist")}
+                  onCart={() => navigate("/cart")}
+                  onProfile={() => guard("/profile")}
                 />
-              )}
+              </div>
+
             </div>
-
-            <NavIcons
-              wishlistCount={wishlistCount}
-              cartCount={cartCount}
-              onSearch={() => setSearchOpen(true)}
-              onWishlist={() => navigate("/wishlist")}
-              onCart={() => navigate("/cart")}
-              onProfile={() => guard("/profile")}
-            />
-
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav
-            className="
-                flex 
-                text-[11px] 
-                gap-2
-                px-3 
-                overflow-x-auto 
-                hide-scrollbar 
-                whitespace-nowrap 
-                xs:gap-8
-                sm:text-sm 
-                sm:gap-5
-                sm:px-8 
-                md:text-[13px] 
-                md:gap-6 
-                md:px-10 
-                lg:gap-6 
-                xl:gap-9
-                2xl:gap-10
-                justify-start 
-                sm:justify-center 
-            "
-          >
-            {navItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => {
-                  if (item.isTryOn) {
-                    setShowModal(true);
-                  } else {
-                    navigate(item.path);
-                  }
-                }}
-                className={`
-        relative pb-1 transition-all duration-200 font-semibold
-        ${
-          isActive(item)
-            ? "text-primary after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary"
-            : "text-[#2C2C2C] hover:text-black hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-primary"
-        }
-        ${item.isHighlight ? "text-primary" : ""}
-        cursor-pointer
-      `}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+          </header>
 
           {/* Login Modal */}
           {showLogin &&
@@ -354,7 +324,7 @@ export default function Navbar({ setShowLoader }) {
         onProtectedClick={guard}
       />
 
-      {/* ==== Your Original Virtual Try-On Modal (fully preserved) ==== */}
+      {/* Virtual Try-On Modal */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-2xl w-[830px] mx-4 my-4 sm:my-8 relative flex flex-col md:flex-row">
@@ -392,11 +362,10 @@ export default function Navbar({ setShowLoader }) {
                   <button
                     key={product}
                     onClick={() => setSelectedProduct(product)}
-                    className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${
-                      selectedProduct === product
-                        ? "bg-[#F0E0E0] text-primary border-none"
-                        : "border-primary bg-white text-primary"
-                    } focus:outline-none focus:ring-black`}
+                    className={`text-center p-1.5 cursor-pointer border-2 transition-all text-sm sm:text-base font-medium ${selectedProduct === product
+                      ? "bg-[#F0E0E0] text-primary border-none"
+                      : "border-primary bg-white text-primary"
+                      } focus:outline-none focus:ring-black`}
                   >
                     {product}
                   </button>
@@ -414,13 +383,12 @@ export default function Navbar({ setShowLoader }) {
                     }
                   }}
                   disabled={!selectedProduct}
-                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${
-                    selectedProduct
-                      ? "bg-primary hover:bg-hoverBg cursor-pointer"
-                      : "bg-[#BF8080] opacity-60 cursor-not-allowed"
-                  } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
+                  className={`w-full py-3 font-medium text-white transition-colors uppercase tracking-wide text-sm sm:text-base ${selectedProduct
+                    ? "bg-primary hover:bg-hoverBg cursor-pointer"
+                    : "bg-[#BF8080] opacity-60 cursor-not-allowed"
+                    } focus:outline-none focus:ring-2 focus:ring-[#5B9BA5]`}
                 >
-                  Continue Try On
+                  Browse {selectedProduct || "Products"}
                 </button>
 
                 <button
@@ -437,6 +405,6 @@ export default function Navbar({ setShowLoader }) {
           </div>
         </div>
       )}
-    </header>
+    </div>
   );
 }

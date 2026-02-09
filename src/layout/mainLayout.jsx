@@ -1,5 +1,6 @@
 import Navbar from "../components/common/navbar/navbar";
 import Footer from "../components/common/footer/footer";
+import HomeFooter from "../components/b2c/home/HomeFooter";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
@@ -35,8 +36,8 @@ export default function MainLayout({ children }) {
           {children}
         </main>
 
-        <footer className="footer">
-          <Footer />
+        <footer >
+          <HomeFooter />
         </footer>
       </div>
     </>

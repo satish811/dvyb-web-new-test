@@ -98,9 +98,8 @@ const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
           {/* Product Description */}
           <div className="mb-1">
             <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${
-                showFullDescription ? "" : "line-clamp-2"
-              }`}
+              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
+                }`}
             >
               {item.description || "No description available"}
             </p>
@@ -201,9 +200,8 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
 
   return (
     <div
-      className={`group w-full overflow-hidden transition bg-white ${
-        showFullTitle ? "min-h-[450px] sm:min-h-[500px] lg:min-h-[550px]" : "min-h-[420px] sm:min-h-[470px] lg:min-h-[502px]"
-      }`}
+      className={`group w-full overflow-hidden transition bg-white ${showFullTitle ? "min-h-[450px] sm:min-h-[500px] lg:min-h-[550px]" : "min-h-[420px] sm:min-h-[470px] lg:min-h-[502px]"
+        }`}
     >
       {/* Fixed Image Area - Responsive heights */}
       <Link to={`/products/${item.productId || item.id}`}>
@@ -245,7 +243,7 @@ const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
           {/* Add to Cart Button */}
           <button
             onClick={() => onAddToCart(item)}
-            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] bg-[#800000] text-white text-xs sm:text-sm font-medium hover:bg-[#600000] transition px-3"
+            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] bg-[#33022F] text-white text-xs sm:text-sm font-medium transition px-3"
             title="Add to Cart"
           >
             <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
@@ -273,7 +271,7 @@ const WishlistPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
-  const {} = useCart(); // addToCart extracted but using service directly below
+  const { } = useCart(); // addToCart extracted but using service directly below
   const [userRole, setUserRole] = useState("B2C");
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -410,8 +408,7 @@ const WishlistPage = () => {
             Please Login to View Your Wishlist
           </h2>
           <button
-            onClick={() => setShowLoginModal(true)}
-            className="px-8 py-4 bg-[#9C0000] text-white font-semibold rounded-lg hover:bg-[#7A0000] transition"
+            className="px-8 py-4 bg-[#33022F] text-white font-semibold rounded-lg transition"
           >
             LOGIN TO CONTINUE
           </button>

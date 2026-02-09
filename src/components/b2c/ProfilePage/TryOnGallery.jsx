@@ -117,7 +117,7 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         <div className="space-y-2">
           <button
             onClick={() => onAddToCart(item)}
-            className="w-full bg-white border text-primary hover:bg-gray-50 cursor-pointer border-gray-300 hover:text-black font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-white border border-[#33022F] text-[#33022F] cursor-pointer font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2"
           >
             ADD TO CART
           </button>

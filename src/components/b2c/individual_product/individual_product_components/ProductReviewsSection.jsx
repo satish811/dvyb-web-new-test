@@ -132,8 +132,8 @@ const ProductReviewsSection = ({ productId, reviews = [], vendorReviews = [], on
   const currentAvgRating =
     displayReviews.length > 0
       ? (
-          displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
-        ).toFixed(1)
+        displayReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / displayReviews.length
+      ).toFixed(1)
       : 0;
 
   // Handle review submission
@@ -256,7 +256,7 @@ const ProductReviewsSection = ({ productId, reviews = [], vendorReviews = [], on
             ))}
 
             {review.images.length > 3 && (
-              <div 
+              <div
                 className="w-8 h-8 bg-gray-200 flex items-center justify-center text-[10px] text-gray-600 rounded cursor-pointer hover:bg-gray-300"
                 onClick={() => setSelectedImage(review.images[3])} // Open 4th image (or could open gallery)
               >
@@ -274,40 +274,75 @@ const ProductReviewsSection = ({ productId, reviews = [], vendorReviews = [], on
 
   return (
     <ErrorBoundary>
-      <div className="w-full max-w-[615px] flex flex-col">
-        {/* Write Review Button - ALWAYS SHOWS */}
+      <div className="w-full border-b border-gray-200">
         <button
-          onClick={handleWriteReviewClick}
-          className="w-full h-[40px] md:h-[40px] bg-red-800 text-white text-[12px] md:text-[14px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!canWriteReview}
-          style={{ minHeight: "36px", maxHeight: "40px" }}
+          onClick={() => setShowReviewForm(!showReviewForm)}
+          className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
         >
-          {canWriteReview ? "WRITE A REVIEW" : "LOGIN TO WRITE REVIEW"}
+          <div className="flex items-center gap-3">
+            <h3 className="text-base font-semibold text-gray-900">
+              Reviews({displayReviews.length})
+            </h3>
+            {displayReviews.length > 0 && (
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    className={`${i < Math.round(currentAvgRating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                      }`}
+                  />
+                ))}
+                <span className="text-sm text-gray-600 ml-1">{currentAvgRating}</span>
+              </div>
+            )}
+          </div>
+          {showReviewForm ? (
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          )}
         </button>
 
-        {/* Reviews Container - ONLY SHOWS WHEN THERE ARE REVIEWS */}
-        {displayReviews.length > 0 && (
-          <div className="w-full max-w-[615px] mt-4 flex flex-col">
-            {/* Scrollable container with hidden scrollbar */}
-            <div 
-              className="w-full flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden" 
-              style={{ maxHeight: "300px", scrollbarWidth: "none", msOverflowStyle: "none" }}
+        {showReviewForm && (
+          <div className="pb-4">
+            {/* Write Review Button */}
+            <button
+              onClick={() => {
+                if (!canWriteReview) {
+                  alert("Please log in to write a review");
+                  return;
+                }
+                setShowReviewForm(true);
+              }}
+              className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+              disabled={!canWriteReview}
             >
-              {displayReviews.map((review, index) => (
-                <ReviewCard key={review?.id || index} review={review} />
-              ))}
-            </div>
+              {canWriteReview ? "WRITE A REVIEW" : "LOGIN TO WRITE REVIEW"}
+            </button>
+
+            {/* Reviews List */}
+            {displayReviews.length > 0 ? (
+              <div className="max-h-[400px] overflow-y-auto space-y-3">
+                {displayReviews.map((review, index) => (
+                  <ReviewCard key={review?.id || index} review={review} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-sm">No reviews yet. Be the first to write one!</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* No Reviews Message */}
-        {displayReviews.length === 0 && (
-          <div className="w-full max-w-[615px] mt-4 flex items-center justify-center h-[100px]">
-            <p className="text-gray-500 text-[14px]">No reviews yet. Be the first to write one!</p>
-          </div>
-        )}
-
-        {/* Review Form Modal */}
+        {/* Review Form Modal (unchanged) */}
         {showReviewForm && (
           <ReviewFormModal
             rating={rating}
@@ -324,19 +359,19 @@ const ProductReviewsSection = ({ productId, reviews = [], vendorReviews = [], on
           />
         )}
 
-        {/* Image Lightbox Modal */}
+        {/* Image Lightbox Modal (unchanged) */}
         {selectedImage && (
-          <div 
+          <div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-80 p-4"
             onClick={() => setSelectedImage(null)}
           >
             <div className="relative max-w-full max-h-full">
-              <img 
-                src={selectedImage} 
-                alt="Full view" 
+              <img
+                src={selectedImage}
+                alt="Full view"
                 className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               />
-              <button 
+              <button
                 className="absolute top-2 right-2 md:-top-10 md:-right-10 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
                 onClick={(e) => {
                   e.stopPropagation();

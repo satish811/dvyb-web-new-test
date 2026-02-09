@@ -100,9 +100,8 @@ const B2BCartItem = ({ item, onRemove, onQuantityChange, onEdit, updatingItemId,
           {/* Product Description */}
           <div className="mb-1">
             <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${
-                showFullDescription ? "" : "line-clamp-2"
-              }`}
+              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
+                }`}
             >
               {item.description || "Product description unavailable"}
             </p>
@@ -775,11 +774,10 @@ function CartPage() {
               <button
                 onClick={() => handleQuantityChange(item.uniqueId, -1)}
                 disabled={item.quantity <= 1 || isUpdating}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
-                  item.quantity <= 1 || isUpdating
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-amber-700"
-                }`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${item.quantity <= 1 || isUpdating
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "hover:bg-gray-100 text-amber-700"
+                  }`}
               >
                 <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -791,11 +789,10 @@ function CartPage() {
               <button
                 onClick={() => handleQuantityChange(item.uniqueId, 1)}
                 disabled={item.quantity >= 5 || isUpdating}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${
-                  item.quantity >= 5 || isUpdating
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-amber-700"
-                }`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 ${item.quantity >= 5 || isUpdating
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "hover:bg-gray-100 text-amber-700"
+                  }`}
               >
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -969,7 +966,7 @@ function CartPage() {
                     />
                     <button
                       onClick={handleApplyCoupon}
-                      className="bg-[#800000] text-white py-[10px] px-6 font-[Outfit] font-medium uppercase tracking-[0px] rounded-sm sm:rounded-r-sm sm:rounded-l-none hover:bg-[#600000] transition text-[14px] leading-[15.14px] mt-2 sm:mt-0"
+                      className="bg-[#33022F] text-white py-[10px] px-6 font-[Outfit] font-medium uppercase tracking-[0px] rounded-sm sm:rounded-r-sm sm:rounded-l-none text-[14px] leading-[15.14px] mt-2 sm:mt-0"
                     >
                       Apply
                     </button>
@@ -990,14 +987,14 @@ function CartPage() {
                 <div className="space-y-3">
                   <button
                     onClick={handleProceedToCheckout}
-                    className="w-full bg-[#800000] text-white py-[15px] font-[Outfit] font-medium uppercase tracking-[0px]  hover:bg-[#600000] transition text-[14px] leading-[15.14px]"
+                    className="w-full bg-[#33022F] text-white py-[15px] font-[Outfit] font-medium uppercase tracking-[0px] text-[14px] leading-[15.14px]"
                   >
                     Proceed To Checkout
                   </button>
 
                   <button
                     onClick={() => navigate("/")}
-                    className="w-full border border-[#800000] text-[#800000] py-[15px] font-[Outfit] font-medium uppercase tracking-[0px]  hover:bg-gray-50 transition text-[14px] leading-[15.14px]"
+                    className="w-full border border-[#33022F] text-[#33022F] py-[15px] font-[Outfit] font-medium uppercase tracking-[0px]  hover:bg-gray-50 transition text-[14px] leading-[15.14px]"
                   >
                     Continue Shopping
                   </button>
@@ -1011,7 +1008,7 @@ function CartPage() {
               <div>
                 <TrendingProducts
                   column={6}
-                  onClose={() => {}}
+                  onClose={() => { }}
                   heading="Trending Products"
                   cardSize="small"
                 />
@@ -1022,7 +1019,7 @@ function CartPage() {
               <div>
                 <RecentlyViewedProducts
                   column={6}
-                  onClose={() => {}}
+                  onClose={() => { }}
                   heading="Recently Viewed"
                   cardSize="small"
                 />
@@ -1082,7 +1079,7 @@ function CartPage() {
                   setShowBulkPopup(false);
                   navigate("/b2bhome");
                 }}
-                className="flex-1 py-2 bg-[#9C0000] text-white hover:bg-[#7A0000]"
+                className="flex-1 py-2 bg-[#33022F] text-white"
               >
                 Go to Bulk Order
               </button>

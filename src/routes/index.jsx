@@ -9,6 +9,7 @@ import Home from "../pages/b2c/homePage/homePage";
 import CartPage from "../pages/b2c/cartPage/cartPage";
 import CheckoutPage from "../pages/b2c/cartPage/CheckoutPage";
 import ProductDetailsPageIndividual from "../pages/b2c/ProductDetailsPageIndividual";
+import CategoryPage from "../pages/b2c/CategoryPage";
 
 // 📰 Common Pages
 import BlogPage from "../components/common/BlogPage/BlogPage";
@@ -85,13 +86,24 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 🧷 Product listing page */}
+      {/* 🧷 Product listing pages */}
 
+      {/* All Products */}
       <Route
         path="/womenwear"
         element={
           <MainLayout>
             <ProductLayout products={products} />
+          </MainLayout>
+        }
+      />
+
+      {/* Category-specific pages */}
+      <Route
+        path="/women/:category"
+        element={
+          <MainLayout>
+            <CategoryPage products={products} />
           </MainLayout>
         }
       />

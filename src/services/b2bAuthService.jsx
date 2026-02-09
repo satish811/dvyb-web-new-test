@@ -176,12 +176,23 @@ class B2BAuthService {
       if (!uid) throw new Error("User ID is required");
 
       const userRef = doc(db, "B2BBulkOrders_users", uid);
-      const snapshot = await getDoc(userRef);
+      let snapshot;
+
+      try {
+        snapshot = await getDoc(userRef);
+      } catch (err) {
+        if (err.code === 'permission-denied' || err.message.includes('Missing or insufficient permissions')) {
+          console.log("Permission denied fetching B2B user, assuming not B2B.");
+          return { success: false, data: null };
+        }
+        throw err;
+      }
+
       console.log("The snapshot data we get", snapshot);
 
-      // if (!snapshot.exists()) {
-      //     throw new Error("B2B User not found");
-      // }
+      if (!snapshot.exists()) {
+        return { success: false, data: null };
+      }
 
       const user = snapshot.data();
 
@@ -199,7 +210,8 @@ class B2BAuthService {
       };
     } catch (error) {
       console.error("Get user error:", error);
-      throw new Error(error.message || "Failed to fetch user");
+      // Return false instead of throwing to prevent app crash on role check
+      return { success: false, error: error.message };
     }
   }
 
@@ -222,22 +234,41 @@ class B2BAuthService {
           userRole = "B2B";
           collectionName = "B2BBulkOrders_users";
           console.log("User found in B2B collection:", user);
-        } else {
-          // If not found in B2B, try B2C collection
-          const b2cUserRef = doc(db, "b2c_users", uid);
-          const b2cSnapshot = await getDoc(b2cUserRef);
 
-          if (b2cSnapshot.exists()) {
-            user = b2cSnapshot.data();
-            userRole = "b2c";
-            collectionName = "b2c_users";
-            console.log("User found in B2C collection:", user);
-          } else {
-            throw new Error("User not found in both B2B and B2C collections");
-          }
+          return {
+            success: true,
+            data: user,
+            role: userRole,
+            collection: collectionName,
+          };
         }
-      } catch (searchError) {
-        throw new Error(`User search failed: ${searchError.message}`);
+      } catch (b2bError) {
+        // Continue to B2C check if B2B check fails (e.g. permission denied)
+        console.warn("B2B check skipped or failed:", b2bError.message);
+      }
+
+      // If not found in B2B or error occurred, try B2C collection
+      try {
+        const b2cUserRef = doc(db, "b2c_users", uid);
+        const b2cSnapshot = await getDoc(b2cUserRef);
+
+        if (b2cSnapshot.exists()) {
+          user = b2cSnapshot.data();
+          userRole = "b2c";
+          collectionName = "b2c_users";
+          console.log("User found in B2C collection:", user);
+
+          return {
+            success: true,
+            data: user,
+            role: userRole,
+            collection: collectionName,
+          };
+        } else {
+          throw new Error("User not found in both B2B and B2C collections");
+        }
+      } catch (b2cError) {
+        throw new Error(`User search failed: ${b2cError.message}`);
       }
 
       // Return all user data as is

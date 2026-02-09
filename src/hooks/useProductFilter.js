@@ -18,23 +18,63 @@ export const useProductFilter = (products = []) => {
       selectedFilters.blouses?.length > 0 ||
       selectedFilters.boutiques?.length > 0;
 
+    console.log(`[useProductFilter] Total products: ${products.length}`);
+    console.log(`[useProductFilter] Active filters:`, selectedFilters);
+    console.log(`[useProductFilter] Has filters: ${hasFilters}`);
+
     if (!hasFilters) {
-      console.log("No filters applied, returning all products");
+      console.log("[useProductFilter] No filters applied, returning all products");
       return products;
     }
 
-    return products.filter((product) => {
+    const result = products.filter((product) => {
       // === CATEGORY FILTER ===
       if (selectedFilters.categories?.length > 0) {
-        const selectedCat = selectedFilters.categories[0].toLowerCase();
-        const productCat = product.category?.trim()?.toLowerCase();
-        const productDressType = product.dressType?.trim()?.toLowerCase();
+        const selectedCat = selectedFilters.categories[0].trim().toUpperCase();
 
+        // Get all possible category-related fields from product
+        const productCat = (product.category?.trim() || "").toUpperCase();
+        const productDressType = (product.dressType?.trim() || "").toUpperCase();
+        const productSubDressType = (product.subDressType?.trim() || "").toUpperCase();
+        const productSubcategory = (product.subcategory?.trim() || "").toUpperCase();
+        const productType = (product.type?.trim() || "").toUpperCase();
+
+        // Helper: Check if a value matches or is related to the selected category
+        const belongsToCategory = (value, category) => {
+          if (!value || !category) return false;
+
+          // Exact match
+          if (value === category) return true;
+
+          // Plural variations (SAREE <-> SAREES, LEHENGA <-> LEHENGAS)
+          if (value === category + "S" || value + "S" === category) return true;
+
+          // The value contains the category as a major component
+          // e.g., "BANARASI SAREE" contains "SAREE"
+          if (value.includes(category)) {
+            // Only match if category is a significant part (not just coincidental)
+            const parts = value.split(/\s+/);
+            if (parts.some(part => part === category || part === category + "S")) {
+              return true;
+            }
+          }
+
+          // The category contains the value (for shorter subcategory names)
+          // e.g., category "SAREES" contains type "SAREE"
+          if (category.includes(value) && value.length >= 4) {
+            return true;
+          }
+
+          return false;
+        };
+
+        // Check if product belongs to the selected category through ANY field
         const matchesCategory =
-          productCat === selectedCat ||
-          productDressType === selectedCat ||
-          (selectedCat === "saree" && productDressType === "sarees") ||
-          (selectedCat === "lehenga" && productDressType === "lehengas");
+          belongsToCategory(productCat, selectedCat) ||
+          belongsToCategory(productDressType, selectedCat) ||
+          belongsToCategory(productSubDressType, selectedCat) ||
+          belongsToCategory(productSubcategory, selectedCat) ||
+          belongsToCategory(productType, selectedCat);
 
         if (!matchesCategory) return false;
       }
@@ -113,6 +153,9 @@ export const useProductFilter = (products = []) => {
 
       return true;
     });
+
+    console.log(`[useProductFilter] Filtered from ${products.length} to ${result.length} products`);
+    return result;
   }, [products, selectedFilters]);
 
   return filteredProducts;

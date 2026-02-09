@@ -12,8 +12,13 @@ import ProductColorSelector from "./individual_product_components/ProductColorSe
 import ProductPriceSection from "./individual_product_components/ProductPriceSection";
 import ProductSizeSelector from "./individual_product_components/ProductSizeSelector";
 import ProductActionButtons from "./individual_product_components/ProductActionButtons";
+import MemberPricingSection from "./individual_product_components/MemberPricingSection";
+import FindInStoreSection from "./individual_product_components/FindInStoreSection";
 import OfferAndShippingInfo from "./individual_product_components/OfferAndShippingInfo";
 import ProductDescriptionSection from "./individual_product_components/ProductDescriptionSection";
+import MaterialsSection from "./individual_product_components/MaterialsSection";
+import CareGuideSection from "./individual_product_components/CareGuideSection";
+import DeliveryReturnsSection from "./individual_product_components/DeliveryReturnsSection";
 import ProductDetailsSection from "./individual_product_components/ProductDetailsSection";
 import DisclaimerSection from "./individual_product_components/DisclaimerSection";
 import HelpAndTryonSection from "./individual_product_components/HelpAndTryonSection";
@@ -228,66 +233,66 @@ const IndividualProductDetailsPage = () => {
     }
   };
 
-const handleTryOnClick = () => {
-  if (userRole === "B2B") {
-    alert("Virtual Try-On is not available for your account");
-    return;
-  }
+  const handleTryOnClick = () => {
+    if (userRole === "B2B") {
+      alert("Virtual Try-On is not available for your account");
+      return;
+    }
 
-  if (requiresSizeSelection && !validateSizeSelection()) {
-    return;
-  }
+    if (requiresSizeSelection && !validateSizeSelection()) {
+      return;
+    }
 
-  const garmentImage = product.imageUrls?.[0];
-  if (!garmentImage) {
-    alert("No image available for try-on");
-    return;
-  }
+    const garmentImage = product.imageUrls?.[0];
+    if (!garmentImage) {
+      alert("No image available for try-on");
+      return;
+    }
 
-  const tryOnPayload = {
-    garmentImage,
-    garmentName: product.title || product.name,
-    productId: product.id,
-    selectedColors: product.selectedColors || [],
-    selectedSizes: product.selectedSizes || [],
-    fabric: product.fabric || "",
-    price: parseFloat(product.price) || 0,
-    discount: product.discount || 0,
-    imageUrls: product.imageUrls || [garmentImage],
-    selectedSize: requiresSizeSelection ? selectedSize : "One Size",
-    dressType: product.dressType?.toLowerCase() || "lehenga",
-    outfitType: product.dressType?.toLowerCase() || "lehenga",
+    const tryOnPayload = {
+      garmentImage,
+      garmentName: product.title || product.name,
+      productId: product.id,
+      selectedColors: product.selectedColors || [],
+      selectedSizes: product.selectedSizes || [],
+      fabric: product.fabric || "",
+      price: parseFloat(product.price) || 0,
+      discount: product.discount || 0,
+      imageUrls: product.imageUrls || [garmentImage],
+      selectedSize: requiresSizeSelection ? selectedSize : "One Size",
+      dressType: product.dressType?.toLowerCase() || "lehenga",
+      outfitType: product.dressType?.toLowerCase() || "lehenga",
+    };
+
+    if (isMobile()) {
+      navigate(`/tryon/start/${product.id}`, {
+        state: tryOnPayload,
+      });
+    } else {
+      setTryOnData(tryOnPayload);
+      setShowUploadSelfieModal(true);
+      // ✅ DO NOT call performTryOn here
+    }
   };
 
-  if (isMobile()) {
-    navigate(`/tryon/start/${product.id}`, {
-      state: tryOnPayload,
+
+  const handleUploadSelfieNext = (data) => {
+    console.log("📥 Received data from UploadSelfieModal:", data);
+
+    setShowUploadSelfieModal(false);
+
+    // ✅ Merge data properly
+    setTryOnData((prev) => {
+      const merged = { ...prev, ...data };
+      console.log("🔄 Merged tryOnData:", merged);
+      return merged;
     });
-  } else {
-    setTryOnData(tryOnPayload);
-    setShowUploadSelfieModal(true);
-    // ✅ DO NOT call performTryOn here
-  }
-};
 
-
-const handleUploadSelfieNext = (data) => {
-  console.log("📥 Received data from UploadSelfieModal:", data);
-  
-  setShowUploadSelfieModal(false);
-  
-  // ✅ Merge data properly
-  setTryOnData((prev) => {
-    const merged = { ...prev, ...data };
-    console.log("🔄 Merged tryOnData:", merged);
-    return merged;
-  });
-  
-  // ✅ Small delay to ensure state updates
-  setTimeout(() => {
-    setShowTryOnPreviewModal(true);
-  }, 100);
-};
+    // ✅ Small delay to ensure state updates
+    setTimeout(() => {
+      setShowTryOnPreviewModal(true);
+    }, 100);
+  };
 
   const handleModalClose = () => {
     setShowUploadSelfieModal(false);
@@ -631,7 +636,7 @@ const handleUploadSelfieNext = (data) => {
           <ProductImageGallery images={imageUrls} product={product} />
         </div>
 
-        <div className="w-full lg:w-1/2 lg:space-y-12 xl:space-y-10">
+        <div className="w-full lg:w-1/2 space-y-6">
           <ProductTitleSection
             user={auth.currentUser}
             userRole={userRole}
@@ -641,8 +646,6 @@ const handleUploadSelfieNext = (data) => {
             addingToWishlist={wishlistLoading}
             isWishlisted={isWishlisted}
           />
-
-          <ProductStarRatingSection averageRating={averageRating} />
 
           <ProductPriceSection product={product} />
 
@@ -690,17 +693,20 @@ const handleUploadSelfieNext = (data) => {
             />
           )}
 
-          <ProductStockAndShipping />
-          <OfferAndShippingInfo />
-          <ProductDescriptionSection product={product} />
-          <ProductDetailsSection product={product} />
-          <DisclaimerSection />
-          <HelpAndTryonSection />
-          <ProductReviewsSection
-            productId={product?.id}
-            vendorReviews={product?.vendorReviews}
-            onAverageRatingChange={handleAverageRatingChange}
-          />
+          <MemberPricingSection />
+          <FindInStoreSection />
+
+          <div className="pt-4">
+            <ProductReviewsSection
+              productId={product?.id}
+              vendorReviews={product?.vendorReviews}
+              onAverageRatingChange={handleAverageRatingChange}
+            />
+            <ProductDescriptionSection product={product} />
+            <MaterialsSection product={product} />
+            <CareGuideSection product={product} />
+            <DeliveryReturnsSection />
+          </div>
         </div>
       </div>
 
@@ -721,7 +727,7 @@ const handleUploadSelfieNext = (data) => {
             isOpen={showTryOnPreviewModal}
             onClose={handleModalClose}
             tryOnData={tryOnData}
-            product={product} 
+            product={product}
           />
         )}
       </Suspense>

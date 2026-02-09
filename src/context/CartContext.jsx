@@ -252,6 +252,10 @@ export const CartProvider = ({ children }) => {
       // Add all guest cart items to user's Firestore cart
       for (const item of guestCart) {
         try {
+          if (!item.productId) {
+            console.warn("Skipping migration of invalid cart item (missing productId):", item);
+            continue;
+          }
           await cartService.addToCart(item.productId, item, item.quantity);
         } catch (error) {
           console.error(`Failed to migrate item ${item.id}:`, error);

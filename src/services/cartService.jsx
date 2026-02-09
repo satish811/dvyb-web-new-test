@@ -62,6 +62,7 @@ class CartOperationalService {
   async addToCart(productId, productData = {}, variantsOrQuantity = 1, userIdOverride) {
     const user = this.auth.currentUser;
     if (!user) throw new Error("User must be authenticated");
+    if (!productId) throw new Error("Product ID is required for addToCart");
 
     const uid = userIdOverride || user.uid;
     const userCollection = await this.getUserCollection(uid);
@@ -150,7 +151,7 @@ class CartOperationalService {
       const user = this.auth.currentUser;
       if (!user) {
         callback([]);
-        resolve(() => {});
+        resolve(() => { });
         return;
       }
 

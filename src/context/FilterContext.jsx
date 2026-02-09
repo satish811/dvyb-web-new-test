@@ -50,9 +50,12 @@ export const FilterProvider = ({ children }) => {
 
   const updateFilter = useCallback(
     (filterType, value) => {
+      console.log(`[FilterContext] updateFilter called: ${filterType} = "${value}"`);
+
       setSelectedFilters((prev) => {
         // Quick optimization: Check if value actually changes
         if (filterType === "categories" && prev.categories[0] === value) {
+          console.log(`[FilterContext] Category already set to "${value}", no change`);
           return prev; // No change
         }
 
@@ -82,6 +85,7 @@ export const FilterProvider = ({ children }) => {
                 // Select
                 newFilters.categories = [value];
                 setNavbarCategory(value);
+                newFilters.subcategories = [];
               }
             }
             break;
@@ -142,9 +146,10 @@ export const FilterProvider = ({ children }) => {
             break;
 
           default:
-            return prev;
+            break;
         }
 
+        console.log(`[FilterContext] Updated filters:`, newFilters);
         return newFilters;
       });
     },

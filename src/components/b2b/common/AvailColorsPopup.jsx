@@ -215,9 +215,8 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                   <button
                     key={idx}
                     onClick={() => setSelectedColor(hex)}
-                    className={`w-7 h-7 border-2 ${
-                      selectedColor === hex ? "border-black" : "border-transparent"
-                    }`}
+                    className={`w-7 h-7 border-2 ${selectedColor === hex ? "border-black" : "border-transparent"
+                      }`}
                     style={{ backgroundColor: hex }}
                   />
                 ))}
@@ -236,11 +235,10 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 text-[12px] border ${
-                        selectedSize === size
-                          ? "bg-[#7a0000] text-white border-[#7a0000]"
-                          : "border-gray-300 text-gray-700"
-                      }`}
+                      className={`px-4 py-2 text-[12px] border ${selectedSize === size
+                        ? "bg-[#33022F] text-white border-[#33022F]"
+                        : "border-gray-300 text-gray-700"
+                        }`}
                     >
                       {size}
                     </button>
@@ -285,11 +283,10 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                   <button
                     onClick={increment}
                     disabled={quantity >= availableQuantity}
-                    className={`px-3 py-2 hover:bg-gray-100 cursor-pointer ${
-                      quantity >= availableQuantity
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-amber-800"
-                    }`}
+                    className={`px-3 py-2 hover:bg-gray-100 cursor-pointer ${quantity >= availableQuantity
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-amber-800"
+                      }`}
                   >
                     <Plus size={14} />
                   </button>
@@ -303,11 +300,10 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
             <button
               onClick={handleAdd}
               disabled={isCurrentSelectionAdded || quantity > availableQuantity}
-              className={`w-full mt-8 py-3 border font-semibold tracking-wide transition ${
-                isCurrentSelectionAdded || quantity > availableQuantity
-                  ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
-                  : "border-[#7a0000] text-[#7a0000] hover:bg-[#7a0000] hover:text-white cursor-pointer"
-              }`}
+              className={`w-full mt-8 py-3 border font-semibold tracking-wide transition ${isCurrentSelectionAdded || quantity > availableQuantity
+                ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
+                : "border-[#33022F] text-[#33022F] cursor-pointer"
+                }`}
             >
               {isCurrentSelectionAdded
                 ? "ALREADY ADDED"
@@ -365,11 +361,10 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                         <button
                           onClick={() => handleUpdateItemQuantity(idx, item.quantity + 1)}
                           disabled={item.quantity >= (item.availableQuantity || 999)}
-                          className={`w-5 h-5 flex items-center justify-center rounded ${
-                            item.quantity >= (item.availableQuantity || 999)
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-gray-200"
-                          }`}
+                          className={`w-5 h-5 flex items-center justify-center rounded ${item.quantity >= (item.availableQuantity || 999)
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200"
+                            }`}
                         >
                           <Plus size={10} />
                         </button>
@@ -391,7 +386,7 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
             {addedItems.length > 0 && (
               <button
                 onClick={handleContinue}
-                className="mt-6 w-full py-3 cursor-pointer bg-[#7a0000] text-white font-semibold tracking-wide hover:bg-[#5a0000] transition"
+                className="mt-6 w-full py-3 cursor-pointer bg-[#33022F] text-white font-semibold tracking-wide transition"
               >
                 {editingItem ? "UPDATE CART" : `CONTINUE (${totalItems} items)`}
               </button>

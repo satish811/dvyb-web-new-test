@@ -4,6 +4,7 @@ import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
 import BlouseFilter from "../filters/BlouseFilter";
 import { Search } from "lucide-react";
+import { extractCategories, extractSubcategories } from "../../../utils/categoryExtractor";
 
 const Sidebar = ({ products = [] }) => {
   const location = useLocation();
@@ -34,17 +35,43 @@ const Sidebar = ({ products = [] }) => {
     categories: [],
     sizes: [],
     colors: [],
-    boutiques: [], // New state for boutiques
+    boutiques: [],
     priceRange: { min: 0, max: 0 },
   });
 
   const { selectedFilters, updateFilter } = useFilter();
   const selectedCategory = selectedFilters.categories[0] || null;
 
+  // Helper function to update filter data
+  const updateAllFilterData = ({ categories, boutiques, sizes, colors, priceRange }) => {
+    setFilterData({
+      categories,
+      boutiques,
+      sizes,
+      colors,
+      priceRange,
+    });
+  };
+
+  // Get current category from URL to extract subcategories
+  const getCurrentCategory = () => {
+    const pathParts = location.pathname.split("/");
+    if (pathParts.includes("women") && pathParts.length >= 3) {
+      return pathParts[2].toUpperCase();
+    }
+    return null;
+  };
+
+  // Extract dynamic subcategories for current category
+  const currentCategory = getCurrentCategory();
+  const dynamicSubcategories = currentCategory
+    ? extractSubcategories(products, currentCategory)
+    : [];
+
   useEffect(() => {
-    if (products.length > 0) {
+    if (products && products.length > 0) {
       const dynamicData = extractDynamicFilterData(products, urlCategory, selectedFilters.boutiques);
-      setFilterData(dynamicData);
+      updateAllFilterData(dynamicData); // Use the new helper function
     }
   }, [products, urlCategory, selectedFilters.boutiques]);
 
@@ -82,6 +109,7 @@ const Sidebar = ({ products = [] }) => {
           searchable={false}
           defaultOpen={true}
           filterType="categories"
+          subcategoryItems={dynamicSubcategories}
         />
 
         {!isSareeCategory && (
@@ -136,8 +164,6 @@ function extractBoutiques(products, activeCategory) {
   const map = new Map();
 
   products.forEach((product) => {
-    // Contextual filtering: If a category is selected, only show boutiques from that category
-    // Skip this check if we are on the 'boutique' landing page
     if (
       activeCategory &&
       activeCategory.toLowerCase() !== "boutique" &&
@@ -165,54 +191,6 @@ function extractBoutiques(products, activeCategory) {
   return Array.from(map.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
-}
-
-const STANDARD_CATEGORIES = [
-  "LEHENGA",
-  "SAREE",
-  "KURTA SETS",
-  "ANARKALIS",
-  "SHARARAS",
-  "WEDDING",
-  "BOUTIQUE",
-  "SALE",
-  "VIRTUAL TRYON",
-];
-
-function extractCategories(products) {
-  const counts = {};
-  STANDARD_CATEGORIES.forEach((cat) => (counts[cat] = 0));
-
-  products.forEach((product) => {
-    const cat = (String(product.category || "")).toUpperCase().trim();
-    const dressType = (String(product.dressType || "")).toUpperCase().trim();
-    const subDressType = (String(product.subDressType || "")).toUpperCase().trim();
-
-    const checkMatch = (str) => {
-      if (str.includes("SAREE")) counts["SAREE"]++;
-      else if (str.includes("LEHENGA")) counts["LEHENGA"]++;
-      else if (str.includes("KURTA")) counts["KURTA SETS"]++;
-      else if (str.includes("ANARKALI")) counts["ANARKALIS"]++;
-      else if (str.includes("SHARARA")) counts["SHARARAS"]++;
-      else if (str.includes("WEDDING")) counts["WEDDING"]++;
-      else if (str.includes("BOUTIQUE")) counts["BOUTIQUE"]++;
-      else if (str.includes("SALE")) counts["SALE"]++;
-      else if (str.includes("VIRTUAL") || str.includes("TRYON")) counts["VIRTUAL TRYON"]++;
-      else return false;
-      return true;
-    };
-
-    if (!checkMatch(dressType)) {
-      if (!checkMatch(cat)) {
-        checkMatch(subDressType);
-      }
-    }
-  });
-
-  return STANDARD_CATEGORIES.map((name) => ({
-    name,
-    count: counts[name],
-  })).filter((cat) => cat.count > 0); // Only show categories with products
 }
 
 function extractSizes(products) {
@@ -315,7 +293,7 @@ function hexToClass(hex) {
     "#0000FF": "bg-blue-500",
   };
 
-  return colorMap[hex] || `bg-[${hex}]`;
+  return colorMap[hex] || `bg - [${hex}]`;
 }
 
 function getPriceRange(products) {

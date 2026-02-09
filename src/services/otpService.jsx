@@ -7,11 +7,6 @@ import app from "../config/firebaseConfig";
 const auth = getAuth(app);
 let recaptchaVerifier = null;
 
-// Only for local testing - remove in production
-if (process.env.NODE_ENV === "development") {
-  auth.settings.appVerificationDisabledForTesting = true;
-}
-
 // Detect user type based on route or other criteria
 const detectUserType = () => {
   const urlParams = new URLSearchParams(window.location.search);

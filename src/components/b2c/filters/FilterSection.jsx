@@ -3,9 +3,6 @@ import { Search, ChevronDown, ChevronUp } from "lucide-react";
 import { useFilter } from "../../../context/FilterContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
-// Import subcategories
-import subCategories from "../../../static/navbar/subCategories";
-
 // Define mapping directly in the file
 const categoryPathMap = {
   LEHENGA: "/womenwear?category=lehenga",
@@ -33,16 +30,20 @@ const urlToSubcategoryKey = {
   sale: "sale",
 };
 
-const FilterSection = ({ title, items, searchable = false, defaultOpen = false, filterType }) => {
+const FilterSection = ({ title, items, searchable = false, defaultOpen = false, filterType, subcategoryItems = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [displayItems, setDisplayItems] = useState(items);
   const { selectedFilters, updateFilter } = useFilter();
-  const navigate = useNavigate(); // Fixed: useNavigate for navigation
-  const location = useLocation(); // useLocation for reading current location
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Get current category from URL
   const getCurrentCategory = () => {
+    const pathParts = location.pathname.split("/");
+    if (pathParts.includes("women") && pathParts.length >= 3) {
+      return pathParts[2].toUpperCase();
+    }
     const params = new URLSearchParams(location.search);
     const categoryParam = params.get("category");
     return urlToSubcategoryKey[categoryParam] || null;
@@ -52,10 +53,9 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
   useEffect(() => {
     const currentCategory = getCurrentCategory();
 
-    if (filterType === "categories" && currentCategory) {
-      // Show subcategories for the current main category
-      const subCategoryList = subCategories[currentCategory] || [];
-      const subCategoryItems = subCategoryList.map((subCat) => ({
+    if (filterType === "categories" && currentCategory && subcategoryItems.length > 0) {
+      // Show dynamic subcategories for the current main category
+      const subCategoryItems = subcategoryItems.map((subCat) => ({
         name: subCat,
         count: 0,
       }));
@@ -64,7 +64,7 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
       // Show main categories or other filter items
       setDisplayItems(items);
     }
-  }, [location.search, items, filterType]);
+  }, [location.search, items, filterType, subcategoryItems]);
 
   // Handle filter selection based on filter type
   const handleFilterClick = (itemName) => {
@@ -148,10 +148,10 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
       {/* Header with toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left mb-1.5 sm:mb-2"
+        className="flex items-center justify-between w-full text-left mb-2.5 sm:mb-3"
       >
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <h3 className="font-medium text-gray-900 text-xs sm:text-sm">{title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{title}</h3>
           {filterType === "categories" && getCurrentCategory() && (
             <span className="text-xs text-gray-500 hidden sm:inline">
               ({getCurrentCategoryDisplayName()})
@@ -183,9 +183,9 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
             </div>
           )}
 
-          <div className="space-y-0.5 sm:space-y-1 max-h-32 sm:max-h-40 overflow-y-auto hide-scrollbar text-[10px] sm:text-xs">
+          <div className="space-y-1 sm:space-y-1.5 max-h-48 sm:max-h-60 overflow-y-auto hide-scrollbar text-sm">
             {filtered.length === 0 && (
-              <div className="text-gray-500 text-center py-2 sm:py-3 text-[10px] sm:text-xs">
+              <div className="text-gray-500 text-center py-2 sm:py-3 text-sm">
                 No {filterType} available.
               </div>
             )}
@@ -194,18 +194,18 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
               filtered.map((item, i) => (
                 <label
                   key={i}
-                  className="flex items-center justify-between cursor-pointer p-0.5 sm:p-1 rounded hover:bg-gray-50"
+                  className="flex items-center justify-between cursor-pointer p-1.5 rounded hover:bg-gray-50"
                 >
-                  <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={isChecked(item.name)}
                       onChange={() => handleFilterClick(item.name)}
-                      className="border-2  border-black text-black focus:ring-0 focus:ring-offset-0 focus:outline-none w-3.5 h-2.5 sm:w-3 sm:h-3 rounded-none"
+                      className="border-gray-300 text-black focus:ring-0 focus:ring-offset-0 focus:outline-none w-4 h-4 rounded"
                     />
-                    <span className="text-black text-[10px] sm:text-xs">{item.name}</span>
+                    <span className="text-gray-700 text-sm">{item.name}</span>
                   </div>
-                  {item.count > 0 && <span className="text-gray-500 text-[10px] sm:text-xs">({item.count})</span>}
+                  {item.count > 0 && <span className="text-gray-400 text-xs">({item.count})</span>}
                 </label>
               ))}
           </div>

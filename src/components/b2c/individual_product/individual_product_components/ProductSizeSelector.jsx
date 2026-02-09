@@ -78,7 +78,7 @@ const ProductSizeSelector = ({
       <div
         className={`flex flex-col w-full max-w-[539px] ${showError ? "animate-shake" : ""}`}
         style={{
-          gap: "15px", 
+          gap: "15px",
         }}
       >
         {/* ---------------------------------- */}
@@ -88,7 +88,7 @@ const ProductSizeSelector = ({
           className="flex items-center"
           style={{
             gap: "10px",
-            whiteSpace: "nowrap", 
+            whiteSpace: "nowrap",
           }}
         >
           {/* Title */}
@@ -142,9 +142,9 @@ const ProductSizeSelector = ({
         {/* SIZE BOX ROW */}
         {/* ------------------------------- */}
         <div
-          className={`flex flex-wrap xl:gap-[28px] 2xl:gap-[36px] `}
+          className={`flex flex-wrap gap-3`}
           style={{
-            gap: "16px",
+            gap: "12px",
           }}
         >
           {displaySizes.map((size, index) => {
@@ -156,12 +156,14 @@ const ProductSizeSelector = ({
                 <button
                   onClick={() => handleSizeSelect(size)}
                   disabled={!available}
+                  className="rounded-lg transition-all duration-200"
                   style={{
-                    width: "46.22px",
-                    height: "42.67px",
-                    borderRadius: "px",
+                    minWidth: "64px",
+                    height: "48px",
+                    padding: "0 16px",
                     fontFamily: "Outfit, sans-serif",
-                    fontSize: "14px",
+                    fontSize: "16px",
+                    fontWeight: 500,
                     color: available
                       ? internalSelectedSize === size
                         ? "#FFFFFF"
@@ -169,23 +171,21 @@ const ProductSizeSelector = ({
                       : "#808080",
                     background: available
                       ? internalSelectedSize === size
-                        ? "#573131ff"
+                        ? "#000000"
                         : "#FFFFFF"
-                      : "#F4F4F4",
+                      : "#F5F5F5",
                     border: available
                       ? internalSelectedSize === size
-                        ? "1px solid #573131ff"
+                        ? "2px solid #000000"
                         : showError
-                          ? "1px solid #EF4444"
-                          : "0.89px solid #D8D8D8"
-                      : "0.89px solid #D8D8D8",
+                          ? "2px solid #EF4444"
+                          : "2px solid #D1D5DB"
+                      : "2px solid #E5E7EB",
                     cursor: available ? "pointer" : "not-allowed",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "all 0.2s ease",
                   }}
-                  className={showError && !internalSelectedSize ? "hover:border-red-500" : ""}
                 >
                   {size === "FREE SIZE" ? "FREE" : size}
 

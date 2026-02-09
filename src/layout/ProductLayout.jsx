@@ -1,16 +1,21 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
-import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown } from "lucide-react";
 import { mainlogo } from "../assets";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
 import { searchService } from "../services/searchService";
 import useDebounce from "../hooks/useDebounce";
 import ProductGrid from "../components/b2c/products/ProductGrid";
+import { useFilter } from "../context/FilterContext";
+import CategoryTags, { normalizeCategory } from "../components/b2c/products/CategoryTags";
+import { extractSubcategories } from "../utils/categoryExtractor";
 
-export default function ProductLayout({ children, products }) {
+export default function ProductLayout({ children, products, categoryFromRoute }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { updateFilter, selectedFilters, clearAllFilters } = useFilter();
+
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -26,23 +31,71 @@ export default function ProductLayout({ children, products }) {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   /**
-   * Get category from URL query params
+   * Get category from route param (priority) or URL query params (fallback)
+   * Also get subcategory from query params
    */
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
-  const category = queryParams.get("category");
+  const category = categoryFromRoute || queryParams.get("category");
+  const subcategory = queryParams.get("sub");
 
   /**
-   * Filter products based on category
+   * Get available subcategories dynamically from product data
    */
-  const filteredProducts = useMemo(() => {
-    if (!category) return products;
-    
-    // Special filter for boutique
-    if (category.toLowerCase() === "boutique") {
-      return products.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
+  const availableSubcategories = useMemo(() => {
+    if (!category) return [];
+
+    // Extract subcategories dynamically from actual products
+    const categoryUpper = category.toUpperCase();
+    return extractSubcategories(products, categoryUpper);
+  }, [category, products]);
+
+  /**
+   * Sync category to FilterContext when route changes
+   * NOTE: Only runs when category/subcategory changes, NOT on filter updates
+   */
+  useEffect(() => {
+    console.log(`[ProductLayout] Category from URL: "${category}"`);
+    console.log(`[ProductLayout] Current selectedFilters:`, selectedFilters);
+
+    if (!category) {
+      // On "All Products" page - clear filters
+      console.log("[ProductLayout] No category, clearing filters");
+      clearAllFilters();
+      return;
     }
 
-    return products.filter((p) => p.dressType?.trim().toLowerCase() === category?.trim().toLowerCase());
+    // Update category in filter context
+    const normalized = normalizeCategory(category);
+    const MAIN_CATEGORIES = {
+      "saree": "SAREE",
+      "lehenga": "LEHENGA",
+      "kurta-sets": "KURTA SETS",
+      "anarkalis": "ANARKALIS",
+      "shararas": "SHARARAS",
+      "pret": "PRÊT",
+      "fusion": "FUSION",
+      "wedding": "WEDDING",
+      "sale": "SALE"
+    };
+
+    const filterValue = MAIN_CATEGORIES[normalized] || normalized.toUpperCase();
+
+    console.log(`[ProductLayout] Normalized: "${normalized}", Filter value: "${filterValue}"`);
+    console.log(`[ProductLayout] Calling updateFilter("categories", "${filterValue}")`);
+
+    // Only update category when it changes
+    updateFilter("categories", filterValue);
+
+  }, [category, subcategory]); // REMOVED selectedFilters dependency to prevent infinite loop
+
+  /**
+   * Filter products locally ONLY for special cases like "Boutique"
+   */
+  const visibleProducts = useMemo(() => {
+    if (category?.toLowerCase() === "boutique") {
+      return products.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
+    }
+    return products;
   }, [category, products]);
 
   /**
@@ -93,10 +146,10 @@ export default function ProductLayout({ children, products }) {
   }, []);
 
   return (
-    <>
+    <div className="bg-white min-h-screen">
       {/* Full Screen Search Dropdown */}
       {searchOpen && (
-        <div className="fixed inset-0 bg-white z-[60] md:hidden">
+        <div className="fixed inset-0 bg-white z-[60]">
           <SearchDropdown
             searchResults={searchResults}
             suggestions={searchSuggestions}
@@ -128,73 +181,62 @@ export default function ProductLayout({ children, products }) {
       )}
 
       {/* -------------------------------------------------------------- */}
-      {/* 🔥 Mobile Header (Back + Logo + Icons) */}
+      {/* Horizontal Category Bar */}
       {/* -------------------------------------------------------------- */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 h-[60px] px-4 grid grid-cols-3 items-center">
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-[1600px] mx-auto px-4 py-4">
+          {/* Fixed height container to prevent layout shift */}
+          <div className="h-[40px] mb-6">
+            <CategoryTags
+              products={products}
+              currentCategory={category}
+              availableSubcategories={availableSubcategories}
+            />
+          </div>
 
-        {/* Left column */}
-        <div className="flex justify-start">
-          <button
-            onClick={() => navigate("/")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-          >
-            <ArrowLeft size={24} className="text-gray-800" />
-          </button>
+          <div className="flex items-center justify-between mb-2">
+            {/* Breadcrumbs / Title */}
+            <div className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-widest">
+              HOME / WOMEN / {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
+            </div>
+
+            {/* Filter & Sort Controls */}
+            <div className="flex items-center gap-6">
+              {/* Filter Prompt */}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="flex items-center gap-2 group cursor pointer"
+              >
+                <div className="hidden sm:block">
+                  <ListFilter size={18} className="text-gray-800" />
+                </div>
+                <span className="text-sm font-bold text-gray-800 border-b border-transparent group-hover:border-black uppercase tracking-wider">
+                  FILTER
+                </span>
+                <Funnel size={16} className="text-gray-800 ml-1" />
+              </button>
+
+              {/* Sort Prompt */}
+              <div className="relative flex items-center gap-2 group cursor-pointer">
+                <span className="text-sm font-bold text-gray-800 border-b border-transparent group-hover:border-black uppercase tracking-wider">
+                  SORT
+                </span>
+                <ArrowUpDown size={16} className="text-gray-800" />
+                {/* Native select for logic */}
+                <select
+                  value={sortValue}
+                  onChange={(e) => setSortValue(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                >
+                  <option value="recommended">Recommended</option>
+                  <option value="low-to-high">Price: Low to High</option>
+                  <option value="high-to-low">Price: High to Low</option>
+                  <option value="newest">Newest First</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Center column (LOGO) */}
-        <div className="flex justify-center mr-5">
-          <img
-            src={mainlogo}
-            alt="Logo"
-            onClick={() => navigate("/")}
-            className="h-12 cursor-pointer"
-          />
-        </div>
-
-        {/* Right column */}
-        <div className="flex justify-end">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-          >
-            <Search size={20} className="text-gray-700" />
-          </button>
-
-          <button
-            onClick={() => navigate("/profile")}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-          >
-            <User size={20} className="text-gray-700" />
-          </button>
-        </div>
-      </div>
-
-
-      {/* -------------------------------------------------------------- */}
-      {/* 🔥 Funnel + Sort Bar (Reduced Height) */}
-      {/* -------------------------------------------------------------- */}
-      <div className="lg:hidden fixed top-[60px] left-0 right-0 bg-white z-40 px-3 py-2 flex items-center justify-between">
-        {/* Funnel Button */}
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md active:scale-95 transition"
-        >
-          <Funnel size={16} className="text-gray-700" />
-          <span className="text-xs font-medium text-gray-700">Filters</span>
-        </button>
-
-        {/* SortBy Dropdown */}
-        <select
-          value={sortValue}
-          onChange={(e) => setSortValue(e.target.value)}
-          className="border border-gray-300 rounded-md px-2 py-1 text-xs font-medium text-gray-700 bg-white"
-        >
-          <option value="recommended">Recommended</option>
-          <option value="low-to-high">Price: Low to High</option>
-          <option value="high-to-low">Price: High to Low</option>
-          <option value="newest">Newest First</option>
-        </select>
       </div>
 
       {/* -------------------------------------------------------------- */}
@@ -202,85 +244,43 @@ export default function ProductLayout({ children, products }) {
       {/* -------------------------------------------------------------- */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-50"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* -------------------------------------------------------------- */}
-      {/* Mobile Sidebar (ONLY for mobile) */}
+      {/* Sidebar Drawer (Right Side slide-in) */}
       {/* -------------------------------------------------------------- */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        {/* Header with Logo in Center and Close on Right */}
-        <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-10 shadow-sm">
-
-          {/* Empty div to balance the layout - keeps logo centered */}
-          <div className="w-10"></div>
-
-          {/* Logo - Centered */}
-          <img
-            src={mainlogo}
-            alt="Logo"
-            className="h-10 cursor-pointer"
-            onClick={() => {
-              navigate("/");
-              setIsSidebarOpen(false);
-            }}
-          />
-
-          {/* Close Button - Right */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
+            className="p-2 -mr-2 text-gray-500 hover:text-black transition"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
-
-        <Sidebar products={products} />
-      </div>
-
-      {/* -------------------------------------------------------------- */}
-      {/* Main Layout */}
-      {/* -------------------------------------------------------------- */}
-      <div className="lg:mt-10 mx-[5px] lg:mx-[60px] my-[10px] lg:my-[20px] min-h-screen">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
-
-          {/* -------------------------------------------------------------- */}
-          {/* Desktop Sidebar (ONLY for desktop) - This is the only desktop sidebar */}
-          {/* -------------------------------------------------------------- */}
-          <aside className="hidden lg:block lg:w-80 xl:w-72 lg:sticky lg:top-15 lg:self-start lg:h-full">
-            <div className="h-full">
-              <Sidebar products={products} />
-            </div>
-          </aside>
-
-          <section className="flex-1 w-full pb-20 lg:pb-0 lg:h-full">
-            {/* -------------------------------------------------------------- */}
-            {/* Desktop Sort Section (if needed) */}
-            {/* -------------------------------------------------------------- */}
-            <div className="hidden lg:hidden lg:flex items-center justify-end mb-6">
-              <select
-                value={sortValue}
-                onChange={(e) => setSortValue(e.target.value)}
-                className="border border-gray-300 rounded-md px-4 py-2 text-sm font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
-              >
-                <option value="recommended">Recommended</option>
-                <option value="low-to-high">Price: Low to High</option>
-                <option value="high-to-low">Price: High to Low</option>
-                <option value="newest">Newest First</option>
-              </select>
-            </div>
-
-            {/* Render ProductGrid directly here */}
-            <div className="mt-4 lg:mt-0 lg:px-6 lg:py-8 h-full">
-              <ProductGrid products={filteredProducts} category={category} />
-            </div>
-          </section>
+        <div className="h-full overflow-y-auto pb-20">
+          <Sidebar products={products} />
         </div>
       </div>
-    </>
+
+      {/* -------------------------------------------------------------- */}
+      {/* Main Content Area */}
+      {/* -------------------------------------------------------------- */}
+      <div className="max-w-[1600px] mx-auto px-4 pb-20">
+        <ProductGrid
+          products={visibleProducts}
+          category={category}
+          sortBy={sortValue}
+          hideHeader={true}
+          columns={4}
+        />
+      </div>
+    </div>
   );
 }
