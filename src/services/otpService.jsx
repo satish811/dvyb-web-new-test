@@ -30,6 +30,9 @@ const detectUserType = () => {
 // Create user collection after OTP verification
 const createUserCollection = async (user, phoneNumber) => {
   try {
+    // ✅ Detect user type (B2C or B2B) based on URL
+    const userType = detectUserType();
+
     const userData = {
       uid: user.uid,
       phoneNumber: phoneNumber,

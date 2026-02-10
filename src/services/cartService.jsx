@@ -11,6 +11,7 @@ import {
   orderBy,
   onSnapshot,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 
 class CartOperationalService {
@@ -240,6 +241,46 @@ class CartOperationalService {
     });
 
     await setDoc(ref, cartItem.toFirestore());
+    return true;
+  }
+
+  /**
+   * Clear entire cart atomically using batch write
+   */
+  async clearCart() {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error("Authentication required");
+
+    const userCollection = await this.getUserCollection(user.uid);
+    const cartRef = collection(this.db, userCollection, user.uid, "cart");
+    const snapshot = await getDocs(cartRef);
+
+    const batch = writeBatch(this.db);
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    return true;
+  }
+
+  /**
+   * Clear specific cart items atomically
+   * @param {string[]} productIds - Array of product IDs to remove
+   */
+  async clearCartItems(productIds) {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error("Authentication required");
+
+    const userCollection = await this.getUserCollection(user.uid);
+    const batch = writeBatch(this.db);
+
+    productIds.forEach((productId) => {
+      const ref = doc(this.db, userCollection, user.uid, "cart", productId);
+      batch.delete(ref);
+    });
+
+    await batch.commit();
     return true;
   }
 }

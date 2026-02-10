@@ -9,7 +9,7 @@ export default function FooterGuarantee() {
         <img src={originalIcon} alt="100% Original" className="w-12 h-12" />
         <div className="mt-2">
           <p className="font-semibold text-sm">100% ORIGINAL</p>
-          <p className="text-xs text-gray-600">guarantee for all products at dvyb.in</p>
+          <p className="text-xs text-gray-600">guarantee for all products at villy.in</p>
         </div>
       </div>
       {/* Place 14 Days Return at the end */}

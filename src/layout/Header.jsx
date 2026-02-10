@@ -6,7 +6,7 @@ const Header = () => {
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="text-2xl font-bold text-teal-600">DVYB</div>
+        <div className="text-2xl font-bold text-teal-600">Villy</div>
 
         {/* Search Bar - Desktop */}
         <div className="hidden md:flex items-center flex-1 max-w-md mx-8">

@@ -1,10 +1,12 @@
 import React, { Suspense, useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProducts } from "../../../hooks/useProducts";
 import { cartService } from "../../../services/cartService";
 import { useWishlist } from "../../../context/WishlistContext";
 import { auth } from "../../../config";
 import B2BAuthService from "../../../services/b2bAuthService";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ProductImageGallery from "./individual_product_components/ProductImageGallery";
 import ProductTitleSection from "./individual_product_components/ProductTitleSection";
@@ -37,6 +39,55 @@ import img6 from "../../../assets/lazyloading/logoimg6.svg";
 
 const UploadSelfieModal = React.lazy(() => import("../TryOn/UploadSelfieModal"));
 const TryOnPreviewModal = React.lazy(() => import("../TryOn/TryOnPreviewModal"));
+
+// Portal Component for Try-On Modal
+// Portal Component for Try-On Modal
+const TryOnModalContainer = ({ children, onClose }) => {
+  useEffect(() => {
+    // 1. Block background scrolling
+    document.body.style.overflow = "hidden";
+
+    // 2. Cleanup on unmount
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  // 3. Render outside normal flow (Portal)
+  return ReactDOM.createPortal(
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 9999,
+        }}
+      >
+        {/* Animation wrapper */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="w-full h-full flex items-center justify-center pointer-events-none"
+        >
+          <div className="pointer-events-auto">
+            {children}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
+  );
+};
 
 const IndividualProductDetailsPage = () => {
   const { id } = useParams();
@@ -588,6 +639,8 @@ const IndividualProductDetailsPage = () => {
     }
   };
 
+
+
   return (
     <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16">
 
@@ -712,23 +765,27 @@ const IndividualProductDetailsPage = () => {
 
       <Suspense fallback={<div className="p-10 text-center">Loading Try-On...</div>}>
         {showUploadSelfieModal && (
-          <UploadSelfieModal
-            isOpen={showUploadSelfieModal}
-            onClose={handleModalClose}
-            onNext={handleUploadSelfieNext}
-            garmentImage={tryOnData.garmentImage}
-            garmentName={tryOnData.garmentName}
-            tryOnData={tryOnData}
-            isSaree={isSaree}
-          />
+          <TryOnModalContainer onClose={handleModalClose}>
+            <UploadSelfieModal
+              isOpen={showUploadSelfieModal}
+              onClose={handleModalClose}
+              onNext={handleUploadSelfieNext}
+              garmentImage={tryOnData.garmentImage}
+              garmentName={tryOnData.garmentName}
+              tryOnData={tryOnData}
+              isSaree={isSaree}
+            />
+          </TryOnModalContainer>
         )}
         {showTryOnPreviewModal && (
-          <TryOnPreviewModal
-            isOpen={showTryOnPreviewModal}
-            onClose={handleModalClose}
-            tryOnData={tryOnData}
-            product={product}
-          />
+          <TryOnModalContainer onClose={handleModalClose}>
+            <TryOnPreviewModal
+              isOpen={showTryOnPreviewModal}
+              onClose={handleModalClose}
+              tryOnData={tryOnData}
+              product={product}
+            />
+          </TryOnModalContainer>
         )}
       </Suspense>
     </div>

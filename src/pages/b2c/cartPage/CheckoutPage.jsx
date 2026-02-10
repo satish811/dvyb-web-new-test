@@ -98,7 +98,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [email, setEmail] = useState("");
-  
+
   // Shiprocket State
   const [shippingRates, setShippingRates] = useState([]);
   const [selectedCourier, setSelectedCourier] = useState(null);
@@ -107,11 +107,11 @@ export default function CheckoutPage() {
   // Fetch shipping rates
   const fetchShippingRates = async (postalCode) => {
     if (!postalCode || postalCode.length !== 6) return;
-    
+
     setLoadingRates(true);
     setShippingRates([]);
     setSelectedCourier(null);
-    
+
     try {
       console.log("📦 Fetching shipping rates for:", postalCode);
       const result = await shiprocketService.getShippingRates(
@@ -119,15 +119,15 @@ export default function CheckoutPage() {
         transformedCartItems,
         paymentMethod === 'cod'
       );
-      
+
       if (result.success && result.data?.available_courier_companies) {
         // Filter out couriers with 0 charge if necessary, or just keep all
         const couriers = result.data.available_courier_companies.filter(c => c.freight_charge > 0);
         setShippingRates(couriers);
-        
+
         // Auto-select cheapest courier
         if (couriers.length > 0) {
-          const cheapest = couriers.reduce((prev, curr) => 
+          const cheapest = couriers.reduce((prev, curr) =>
             prev.freight_charge < curr.freight_charge ? prev : curr
           );
           setSelectedCourier(cheapest);
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
   const handleProceedToPayment = async () => {
     if (userDetails.role === "B2B" && defaultAddress) {
       if (defaultAddress.zipPostalCode) {
-         await fetchShippingRates(defaultAddress.zipPostalCode);
+        await fetchShippingRates(defaultAddress.zipPostalCode);
       }
       setStep3Unlocked(true);
       setOpenStep(3);
@@ -398,19 +398,33 @@ export default function CheckoutPage() {
       return;
     }
 
+
     if (paymentMethod === "cod") {
       try {
         setIsLoading(true);
-        const orderResult = await orderService.createOrder({
-          products: transformedCartItems,
-          paymentMethod: "cod",
-          shipping: shippingForm,
-          amount: totalPayable,
-          status: "Active",
-          email: finalEmail,
-          userId: userDetails.id || null,
-          userRole: userDetails.role || "B2C",
-        });
+
+        // ✨ ATOMIC OPERATION: Create order and clear cart together
+        const orderResult = userDetails.isLoggedIn
+          ? await orderService.moveCartToOrder({
+            products: transformedCartItems,
+            paymentMethod: "cod",
+            shipping: shippingForm,
+            amount: totalPayable,
+            status: "Active",
+            email: finalEmail,
+            userId: userDetails.id || null,
+            userRole: userDetails.role || "B2C",
+          }, cartItems)
+          : await orderService.createOrder({
+            products: transformedCartItems,
+            paymentMethod: "cod",
+            shipping: shippingForm,
+            amount: totalPayable,
+            status: "Active",
+            email: finalEmail,
+            userId: userDetails.id || null,
+            userRole: userDetails.role || "B2C",
+          });
 
         // 🚀 Shiprocket Order Creation (COD)
         try {
@@ -423,10 +437,10 @@ export default function CheckoutPage() {
             shippingFee: shippingFee,
             discount: discount,
             amount: totalPayable,
-            weight: 0.5, 
+            weight: 0.5,
             courierId: selectedCourier?.courier_company_id
           });
-          
+
           if (shiprocketResult.success && shiprocketResult.data) {
             await orderService.updateShipmentData(orderResult.orderId, shiprocketResult.data);
             console.log('✅ Shiprocket order created successfully');
@@ -435,12 +449,8 @@ export default function CheckoutPage() {
           console.error("❌ Shiprocket order creation failed:", shipError);
         }
 
-        if (userDetails.isLoggedIn) {
-          // Fire and forget cart cleanup
-          Promise.all(
-            cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))
-          ).catch((e) => console.error("Background cart cleanup failed", e));
-        } else {
+        // Clear guest cart if not logged in
+        if (!userDetails.isLoggedIn) {
           sessionStorage.removeItem("guest_cart");
         }
 
@@ -493,18 +503,32 @@ export default function CheckoutPage() {
             });
 
             if (result.data.success) {
-              const orderResult = await orderService.createOrder({
-                products: transformedCartItems,
-                paymentMethod,
-                shipping: shippingForm,
-                amount: totalPayable,
-                status: "Active",
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                email: finalEmail,
-                userId: userDetails.id || null,
-                userRole: userDetails.role || "B2C",
-              });
+              // ✨ ATOMIC OPERATION: Create order and clear cart together
+              const orderResult = userDetails.isLoggedIn
+                ? await orderService.moveCartToOrder({
+                  products: transformedCartItems,
+                  paymentMethod,
+                  shipping: shippingForm,
+                  amount: totalPayable,
+                  status: "Active",
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  email: finalEmail,
+                  userId: userDetails.id || null,
+                  userRole: userDetails.role || "B2C",
+                }, cartItems)
+                : await orderService.createOrder({
+                  products: transformedCartItems,
+                  paymentMethod,
+                  shipping: shippingForm,
+                  amount: totalPayable,
+                  status: "Active",
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  email: finalEmail,
+                  userId: userDetails.id || null,
+                  userRole: userDetails.role || "B2C",
+                });
 
               // 🚀 Shiprocket Order Creation (Prepaid)
               try {
@@ -515,14 +539,14 @@ export default function CheckoutPage() {
                   email: finalEmail,
                   shipping: shippingForm,
                   products: transformedCartItems,
-                  paymentMethod: paymentMethod, 
+                  paymentMethod: paymentMethod,
                   shippingFee: shippingFee,
                   discount: discount,
                   amount: totalPayable,
                   weight: 0.5,
                   courierId: selectedCourier?.courier_company_id
                 });
-                
+
                 if (shiprocketResult.success && shiprocketResult.data) {
                   await orderService.updateShipmentData(orderResult.orderId, shiprocketResult.data);
                   console.log('✅ Shiprocket prepaid order created successfully');
@@ -531,12 +555,8 @@ export default function CheckoutPage() {
                 console.error("❌ Shiprocket prepaid order failed:", shipError);
               }
 
-              if (userDetails.isLoggedIn) {
-                // Fire and forget, don't await to speed up navigation
-                Promise.all(cartItems.map((item) => cartService.removeFromCart(item.productId || item.id))).catch(
-                  (err) => console.error("Background cart cleanup error", err)
-                );
-              } else {
+              // Clear guest cart if not logged in
+              if (!userDetails.isLoggedIn) {
                 sessionStorage.removeItem("guest_cart");
               }
 
@@ -578,408 +598,421 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white font-[Outfit] py-10 lg:py-2">
-      <div className="max-w-7xl mx-auto px-9 md:px-10">
-        {/* {userDetails.isLoggedIn && (
-          <div className="bg-gray-50 border-b border-t p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-primary">Welcome back!</h3>
-                <p className="text-sm text-primary">
-                  Logged in as: <strong>{userDetails.email}</strong>
-                  {userDetails.role && ` (${userDetails.role})`}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-grey-800">Faster checkout ✓</p>
-                <p className="text-xs text-grey-600">Order history saved</p>
-              </div>
+    <div className="min-h-screen bg-white font-[Outfit] pb-20">
+
+      {/* Top Progress Bar - Exact Replication of Image 2 */}
+      <div className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+
+            {/* Shipping Step */}
+            <div className="flex flex-col items-center justify-center h-full relative cursor-pointer min-w-[100px]" onClick={() => openStep > 1 && openRequestedStep(1)}>
+              <span className={`text-sm font-bold uppercase tracking-wide mb-1 ${openStep >= 1 ? 'text-[#800000]' : 'text-gray-400'}`}>Shipping</span>
+              {openStep >= 1 && (
+                <div className="absolute bottom-0 left-0 w-full h-[4px] bg-[#800000] rounded-t-sm"></div>
+              )}
+            </div>
+
+            {/* Payment Step */}
+            <div className="flex flex-col items-center justify-center h-full relative cursor-pointer min-w-[100px]" onClick={() => openStep > 2 && openRequestedStep(3)}>
+              <span className={`text-sm font-bold uppercase tracking-wide mb-1 ${openStep >= 3 ? 'text-[#800000]' : 'text-gray-400'}`}>Payment</span>
+              {openStep >= 3 && (
+                <div className="absolute bottom-0 left-0 w-full h-[4px] bg-[#800000] rounded-t-sm"></div>
+              )}
+            </div>
+
+            {/* Review Step (Visual Placeholder) */}
+            <div className="flex flex-col items-center justify-center h-full relative min-w-[100px]">
+              <span className="text-sm font-bold uppercase tracking-wide mb-1 text-gray-400">Review</span>
+            </div>
+
+            {/* Confirmation Step (Visual Placeholder) */}
+            <div className="flex flex-col items-center justify-center h-full relative min-w-[100px]">
+              <span className="text-sm font-bold uppercase tracking-wide mb-1 text-gray-400">Confirmation</span>
             </div>
           </div>
-        )} */}
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+          {/* Left Column: Forms - 8 Cols */}
+          <div className="lg:col-span-8 space-y-10">
+
+            {/* Step 1: Email (Preserving Logic but wrapping in new card style if needed, or keeping hidden if logged in/valid) */}
             {(!userDetails.isLoggedIn || !userDetails.email || openStep === 1) && (
-              <div className="border border-gray-300 rounded-sm overflow-hidden">
-                <div
-                  className="bg-gray-100 px-5 py-4 flex justify-between items-center cursor-pointer border-l-4"
-                  style={{ borderColor: openStep === 1 ? MAROON : "transparent" }}
-                  onClick={() => openRequestedStep(1)}
-                >
-                  <h2 className="font-semibold uppercase">1. User Email</h2>
-                  {email && openStep !== 1 && (
-                    <span className="text-sm text-gray-600">{email}</span>
-                  )}
-                  {userDetails.isLoggedIn && !userDetails.email && (
-                    <span className="text-sm text-orange-600">Email required for payment</span>
-                  )}
-                </div>
-                {openStep === 1 && (
-                  <div className="p-6 grid md:grid-cols-2 gap-8">
-                    <div>
-                      <p className="text-sm mb-4 ">
-                        {userDetails.isLoggedIn
-                          ? "Email is required for order confirmation and payment processing"
-                          : "Enter your email to continue"}
-                      </p>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="w-full border px-4 py-3 rounded-sm focus:ring-2 focus:ring-maroon focus:outline-none"
-                        required
-                      />
-                      <button
-                        onClick={handleCheckoutAsGuest}
-                        className="bg-primary text-gray-800 w-full mt-4 bg-maroon text-white py-3 uppercase font-medium hover:bg-[#660000]"
-                      >
-                        {userDetails.isLoggedIn ? "Save Email & Continue" : "Continue as Guest"}
-                      </button>
-                    </div>
-                    <div className="text-sm">
-                      {!userDetails.isLoggedIn && (
-                        <>
-                          <p>Have an account?</p>
-                          <Link to="/login" className="text-maroon font-bold">
-                            Log in for faster checkout →
-                          </Link>
-                        </>
-                      )}
-                      {userDetails.isLoggedIn && (
-                        <div className="space-y-2">
-                          <p className="text-green-600">
-                            ✓ You're logged in. Just need your email for order confirmation.
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            Your email will be used for order updates and payment receipts.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {userDetails.isLoggedIn && userDetails.email && openStep !== 1 && (
-              <div className="bg-gray-100 border-l-4 border-l-maroon px-5 py-4 flex justify-between items-center">
-                <h2 className="font-semibold uppercase">1. User Email</h2>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">{userDetails.email}</span>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 font-[Outfit]">Your Email</h2>
+                <div className="max-w-md">
+                  <p className="text-gray-600 mb-4 text-sm">Enter your email to continue checkout.</p>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
+                  />
                   <button
-                    onClick={() => openRequestedStep(1)}
-                    className="text-sm text-maroon hover:text-[#660000] font-medium underline"
+                    onClick={handleCheckoutAsGuest}
+                    className="mt-4 bg-[#800000] text-white px-8 py-3 rounded-lg font-bold uppercase tracking-wide hover:bg-[#600000] transition text-sm"
                   >
-                    Edit
+                    Continue
                   </button>
                 </div>
               </div>
             )}
 
-            <div className=" overflow-hidden">
-              <div
-                className="bg-gray-100 px-5 py-4 cursor-pointer border-l-4"
-                style={{ borderColor: openStep === 2 ? MAROON : "transparent" }}
-                onClick={() => openRequestedStep(2)}
-              >
-                <h2 className="font-semibold uppercase">2. Shipping Address</h2>
-
-                {defaultAddress && (
-                  <div className="text-sm mt-1">
-                    <span className="text-green-700 font-medium">
-                      {defaultAddress.firstName} {defaultAddress.lastName}
-                    </span>
-                    <span className="text-gray-600">, {defaultAddress.city}</span>
-                    <span className="text-gray-500 text-xs ml-2">— click to edit</span>
-                  </div>
-                )}
-
-                {!defaultAddress && userDetails.isLoggedIn && (
-                  <p className="text-xs text-gray-500 mt-1">No saved address</p>
-                )}
-              </div>
-
-              {openStep === 2 && (
-                <div className="p-6">
-                  {userDetails.isLoggedIn && defaultAddress && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-sm">
-                      <p className="text-green-700 font-medium">Default address auto-selected</p>
-                      <div className="text-sm text-gray-700 mt-2">
-                        <p>
-                          {defaultAddress.firstName} {defaultAddress.lastName}
-                        </p>
-                        <p>{defaultAddress.address}</p>
-                        <p>
-                          {defaultAddress.city}, {defaultAddress.stateProvince}{" "}
-                          {defaultAddress.zipPostalCode}
-                        </p>
-                      </div>
-                    </div>
+            {/* Step 2: Shipping Information Form - Strict "Image 2" Style */}
+            <div className={`transition-opacity duration-300 ${openStep === 2 ? 'block opacity-100' : 'hidden opacity-0'}`}>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-xl font-bold text-gray-900">Shipping Information</h2>
+                  {userDetails.isLoggedIn && (
+                    <span className="text-sm text-gray-500">Logged in as {userDetails.email}</span>
                   )}
+                </div>
 
-                  <div className="space-y-5">
-                    <div className="grid md:grid-cols-2 gap-4">
+                {/* 2-Column Grid Form */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+
+                  {/* Full Name (Combined Logic / Split UI if needed, sticking to Request "Full Name *" as one field mostly, but logic splits. I will render two side-by-side to act as "Full Name" line) */}
+                  <div className="md:col-span-2 grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">First Name *</label>
                       <input
                         name="firstName"
-                        placeholder="First Name"
                         value={shippingForm.firstName}
                         onChange={handleShippingChange}
-                        className="border px-4 py-3 rounded-sm"
-                      />
-                      <input
-                        name="lastName"
-                        placeholder="Last Name"
-                        value={shippingForm.lastName}
-                        onChange={handleShippingChange}
-                        className="border px-4 py-3 rounded-sm"
+                        placeholder="Enter first name"
+                        className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Last Name *</label>
+                      <input
+                        name="lastName"
+                        value={shippingForm.lastName}
+                        onChange={handleShippingChange}
+                        placeholder="Enter last name"
+                        className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email (Readonly) */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Email Address *</label>
+                    <input
+                      value={userDetails.email || email}
+                      readOnly
+                      className="w-full h-12 px-4 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 outline-none"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Phone Number *</label>
+                    <input
+                      name="phone"
+                      value={shippingForm.phone}
+                      onChange={handleShippingChange}
+                      placeholder="+91 98765 43210"
+                      maxLength={10}
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
+                    />
+                  </div>
+
+                  {/* Address Line 1 */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Address Line 1 *</label>
                     <input
                       name="streetAddress"
-                      placeholder="Street Address"
                       value={shippingForm.streetAddress}
                       onChange={handleShippingChange}
-                      className="w-full border px-4 py-3 rounded-sm"
+                      placeholder="Street address"
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
                     />
+                  </div>
 
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <select
-                        value={selectedCountryCode}
-                        onChange={(e) => {
-                          const code = e.target.value;
-                          setSelectedCountryCode(code);
-                          const country = Country.getCountryByCode(code);
-                          setShippingForm((prev) => ({
-                            ...prev,
-                            country: country?.name || "",
-                            state: "",
-                            city: "",
-                          }));
-                          setSelectedStateCode("");
-                        }}
-                        className="border px-4 py-3 rounded-sm"
-                      >
-                        <option value="">Country</option>
-                        {Country.getAllCountries().map((c) => (
-                          <option key={c.isoCode} value={c.isoCode}>
+                  {/* Address Line 2 */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Address Line 2</label>
+                    <input
+                      placeholder="Apartment, suite, etc. (optional)"
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
+                    />
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">City *</label>
+                    <select
+                      value={shippingForm.city}
+                      onChange={(e) =>
+                        setShippingForm((prev) => ({ ...prev, city: e.target.value }))
+                      }
+                      disabled={!selectedStateCode}
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 bg-white disabled:bg-gray-50"
+                    >
+                      <option value="">Select City</option>
+                      {selectedStateCode &&
+                        City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((c) => (
+                          <option key={c.name} value={c.name}>
                             {c.name}
                           </option>
                         ))}
-                      </select>
+                    </select>
+                  </div>
 
-                      <select
-                        value={selectedStateCode}
-                        onChange={(e) => {
-                          const code = e.target.value;
-                          setSelectedStateCode(code);
-                          const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
-                          setShippingForm((prev) => ({
-                            ...prev,
-                            state: state?.name || "",
-                            city: "",
-                          }));
-                        }}
-                        disabled={!selectedCountryCode}
-                        className="border px-4 py-3 rounded-sm"
-                      >
-                        <option value="">State</option>
-                        {selectedCountryCode &&
-                          State.getStatesOfCountry(selectedCountryCode).map((s) => (
-                            <option key={s.isoCode} value={s.isoCode}>
-                              {s.name}
-                            </option>
-                          ))}
-                      </select>
-
-                      <select
-                        value={shippingForm.city}
-                        onChange={(e) =>
-                          setShippingForm((prev) => ({ ...prev, city: e.target.value }))
-                        }
-                        disabled={!selectedStateCode}
-                        className="border px-4 py-3 rounded-sm"
-                      >
-                        <option value="">City</option>
-                        {selectedStateCode &&
-                          City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((c) => (
-                            <option key={c.name} value={c.name}>
-                              {c.name}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <input
-                        name="postalCode"
-                        placeholder="Postal Code"
-                        maxLength={6}
-                        value={shippingForm.postalCode}
-                        onChange={handleShippingChange}
-                        className="border px-4 py-3 rounded-sm"
-                      />
-                      <input
-                        name="phone"
-                        placeholder="Phone Number"
-                        maxLength={10}
-                        value={shippingForm.phone}
-                        onChange={handleShippingChange}
-                        className="border px-4 py-3 rounded-sm"
-                      />
-                    </div>
-
-                    <button
-                      onClick={handleProceedToPayment}
-                      className="bg-primary text-gray-800 w-full bg-maroon text-white py-4 uppercase font-medium hover:bg-[#660000]"
+                  {/* State */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">State *</label>
+                    <select
+                      value={selectedStateCode}
+                      onChange={(e) => {
+                        const code = e.target.value;
+                        setSelectedStateCode(code);
+                        const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
+                        setShippingForm((prev) => ({
+                          ...prev,
+                          state: state?.name || "",
+                          city: "",
+                        }));
+                      }}
+                      disabled={!selectedCountryCode}
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 bg-white disabled:bg-gray-50"
                     >
-                      {userDetails.role === "B2B" && defaultAddress
-                        ? "Confirm Address & Proceed"
-                        : "Proceed to Payment"}
-                    </button>
+                      <option value="">Select State</option>
+                      {selectedCountryCode &&
+                        State.getStatesOfCountry(selectedCountryCode).map((s) => (
+                          <option key={s.isoCode} value={s.isoCode}>
+                            {s.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* ZIP Code */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">ZIP Code *</label>
+                    <input
+                      name="postalCode"
+                      value={shippingForm.postalCode}
+                      onChange={handleShippingChange}
+                      placeholder="110001"
+                      maxLength={6}
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 placeholder-gray-400"
+                    />
+                  </div>
+
+                  {/* Country - Fixed as requested or searchable */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Country *</label>
+                    <select
+                      value={selectedCountryCode}
+                      onChange={(e) => {
+                        const code = e.target.value;
+                        setSelectedCountryCode(code);
+                        const country = Country.getCountryByCode(code);
+                        setShippingForm((prev) => ({
+                          ...prev,
+                          country: country?.name || "",
+                          state: "",
+                          city: "",
+                        }));
+                        setSelectedStateCode("");
+                      }}
+                      className="w-full h-12 px-4 border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#800000] focus:border-[#800000] transition-colors outline-none text-gray-900 bg-white"
+                    >
+                      <option value="">Select Country</option>
+                      {Country.getAllCountries().map((c) => (
+                        <option key={c.isoCode} value={c.isoCode}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="border border-gray-200 rounded-sm">
-              <div
-                className="border-l-4 bg-gray-100 px-4 py-3 flex justify-between items-center cursor-pointer"
-                style={{ borderColor: openStep === 3 ? MAROON : "transparent" }}
-                onClick={() => openRequestedStep(3)}
-              >
-                <h2 className="font-semibold text-[15px] uppercase">3. Payment Method</h2>
-              </div>
-              {openStep === 3 && (
-                <div className="p-6 space-y-4">
-                  {/* Shipping Courier Selection UI */}
-                  {step3Unlocked && loadingRates && (
-                    <div className="text-center py-4 bg-gray-50 rounded mb-4">
-                      <p className="text-gray-600 animate-pulse">Computing best shipping rates...</p>
-                    </div>
-                  )}
+            {/* Step 3: Payment & Shipping Selection - Strict Cards Style */}
+            <div className={`transition-opacity duration-300 ${openStep === 3 ? 'block opacity-100' : 'hidden opacity-0'}`}>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-xl font-bold text-gray-900">Shipping Method</h2>
+                  <button onClick={() => openRequestedStep(2)} className="text-sm font-medium text-[#800000] underline">Change Address</button>
+                </div>
 
-                  {step3Unlocked && shippingRates.length > 0 && (
-                    <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-sm">
-                      <h3 className="font-semibold mb-3 text-gray-800">Select Shipping Partner</h3>
-                      <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
-                        {shippingRates.map((courier) => (
-                          <div
-                            key={courier.courier_company_id}
-                            onClick={() => setSelectedCourier(courier)}
-                            className={`flex justify-between items-center p-3 border rounded-sm cursor-pointer transition-all ${
-                              selectedCourier?.courier_company_id === courier.courier_company_id
-                                ? 'border-[#800000] bg-white shadow-sm ring-1 ring-[#800000]'
-                                : 'border-gray-300 hover:border-gray-400 bg-white'
-                            }`}
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-800">{courier.courier_name}</span>
-                                {selectedCourier?.courier_company_id === courier.courier_company_id && (
-                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Selected</span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                Est. Delivery: {courier.etd || '3-5 days'}
-                              </p>
-                              {courier.rating && (
-                                <p className="text-[10px] text-yellow-600 mt-0.5">
-                                  ★ {courier.rating}/5 Rating
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-[#800000]">₹{courier.freight_charge}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2 italic">
-                        * Shipping rates are calculated based on weight and location.
-                      </p>
+                {/* Shipping Partners Cards */}
+                <div className="space-y-4 mb-10">
+                  {!loadingRates && shippingRates.length === 0 && (
+                    <div className="p-4 border border-red-100 bg-red-50 rounded-lg text-red-600 text-sm">
+                      Please verify your address to see shipping methods.
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
-                    {["cod", "card", "netbank", "upi"].map((method) => (
-                      <button
-                        key={method}
-                        onClick={() => setPaymentMethod(method)}
-                        className={`border border-gray-300 py-4 rounded-sm uppercase ${paymentMethod === method ? "bg-[#800000] text-white" : ""
+                  {loadingRates && (
+                    <div className="text-gray-500 text-sm py-4">Calculating best rates...</div>
+                  )}
+                  {shippingRates.map((courier) => {
+                    const isSelected = selectedCourier?.courier_company_id === courier.courier_company_id;
+                    return (
+                      <div
+                        key={courier.courier_company_id}
+                        onClick={() => setSelectedCourier(courier)}
+                        className={`relative flex items-center justify-between p-6 rounded-xl border transition-all cursor-pointer ${isSelected
+                            ? 'border-[#800000] bg-[#800000]/5 ring-1 ring-[#800000]'
+                            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                           }`}
                       >
-                        {method === "cod"
-                          ? "Cash on Delivery"
-                          : method === "card"
-                            ? "Credit/Debit Card"
-                            : method === "netbank"
-                              ? "Net Banking"
-                              : "UPI"}
-                      </button>
-                    ))}
-                  </div>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#800000]' : 'border-gray-400'}`}>
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#800000]"></div>}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900 text-base">{courier.courier_name}</p>
+                            <p className="text-sm text-gray-500 mt-0.5">{courier.etd || 'Standard Delivery'}</p>
+                          </div>
+                        </div>
+                        <p className="font-bold text-gray-900 text-base">
+                          {courier.freight_charge === 0 ? 'FREE' : `₹${courier.freight_charge}`}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                  <button
-                    onClick={handlePayNow}
-                    disabled={isProcessingPayment}
-                    className="bg-[#800000] text-white px-6 py-3 rounded-sm hover:bg-[#660000] disabled:bg-gray-400"
-                  >
-                    {isProcessingPayment ? "Processing..." : "Pay Now"}
-                  </button>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Method</h2>
+                <div className="space-y-4">
+                  {["cod", "card", "netbank", "upi"].map((method) => {
+                    const isSelected = paymentMethod === method;
+                    return (
+                      <div
+                        key={method}
+                        onClick={() => setPaymentMethod(method)}
+                        className={`relative flex items-center justify-between p-6 rounded-xl border transition-all cursor-pointer ${isSelected
+                            ? 'border-[#800000] bg-[#800000]/5 ring-1 ring-[#800000]'
+                            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                          }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#800000]' : 'border-gray-400'}`}>
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#800000]"></div>}
+                          </div>
+                          <span className="font-bold text-gray-900 uppercase tracking-wide text-sm">
+                            {method === 'cod' ? 'Cash on Delivery' : method === 'card' ? 'Credit / Debit Card' : method === 'netbank' ? 'Net Banking' : 'UPI Payment'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
-          </div>
 
-          <div className="space-y-6">
-            <div className="border border-gray-300 mt-4 rounded-sm p-6">
-              <h3 className="font-bold uppercase mb-4">Order Summary</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Subtotal</span> <span>₹{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Discount</span> <span>-₹{discount.toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span> <span>₹{shippingFee}</span>
-                </div>
-                <div className="border-t pt-3 font-bold text-lg flex justify-between">
-                  <span>Total</span>
-                  <span>₹{totalPayable.toLocaleString()}</span>
-                </div>
               </div>
             </div>
 
-            <div className="border border-gray-300 rounded-sm p-6">
-              <h3 className="font-bold uppercase mb-4">Items</h3>
-              {transformedCartItems.length === 0 ? (
-                <p className="text-gray-600 text-center py-4">Your cart is empty.</p>
-              ) : (
-                transformedCartItems.map((item, i) => (
-                  <div key={i} className="flex gap-4 mb-4 pb-4 border-b last:border-0">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-20 h-24 object-cover rounded-sm"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-gray-600">
-                        {item.color} | Size: {item.size}
-                      </p>
-                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                      {item.isB2BVariant && <p className="text-xs text-blue-600">B2B Variant</p>}
-                    </div>
-                    <p className="font-medium">
-                      ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-                    </p>
+          </div>
+
+          {/* Right Column: Order Summary - 4 Cols */}
+          <div className="lg:col-span-4 relative">
+            <div className="sticky top-24">
+
+              {/* Summary Card */}
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 font-[Outfit] border-b border-gray-100 pb-4">Order Summary</h3>
+
+                {/* Promo Code Input (Visual match) */}
+                <div className="flex gap-2 mb-8">
+                  <input
+                    placeholder="Enter code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    className="flex-1 h-10 px-3 border border-gray-200 rounded-md text-sm outline-none focus:border-gray-400"
+                  />
+                  <button className="bg-[#3D0C2E] text-white px-5 h-10 rounded-md text-sm font-medium hover:bg-[#2a0820] transition">
+                    Apply
+                  </button>
+                </div>
+
+                {/* Pricing */}
+                <div className="space-y-4 mb-6 text-sm">
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Subtotal</span>
+                    <span className="font-bold text-gray-900">₹{subtotal.toLocaleString()}</span>
                   </div>
-                ))
-              )}
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Shipping</span>
+                    <span className="font-bold text-gray-900">
+                      {shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Tax (18% GST)</span>
+                    <span className="font-bold text-gray-900">₹{(subtotal * 0.18).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between items-center text-green-700">
+                      <span>Discount</span>
+                      <span className="font-bold">- ₹{discount.toFixed(0)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Total */}
+                <div className="flex justify-between items-end border-t border-gray-100 pt-6 mb-8">
+                  <span className="font-bold text-gray-900 text-base">Total</span>
+                  <span className="font-bold text-gray-900 text-2xl font-[Outfit]">₹{(totalPayable + (subtotal * 0.18)).toLocaleString()}</span>
+                </div>
+
+                {/* Eligibility Banner from Ref */}
+                <div className="bg-blue-50 text-blue-700 p-3 rounded-md text-xs font-semibold flex items-center gap-2 mb-6">
+                  <span>🎉</span> You're eligible for FREE shipping!
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() => openStep === 2 ? handleProceedToPayment() : handlePayNow()}
+                  disabled={isProcessingPayment}
+                  className="w-full bg-[#3D0C2E] text-white h-12 rounded-lg font-bold uppercase tracking-wider hover:bg-[#2a0820] transition shadow-md disabled:bg-gray-400"
+                >
+                  {isProcessingPayment ? 'Processing...' : (openStep === 2 ? 'Proceed to Checkout' : 'Complete Order')}
+                </button>
+
+                <p className="text-xs text-center text-gray-400 mt-4">Estimated delivery: 5-7 business days</p>
+              </div>
+
+              {/* Items in Cart Card (Separate below Summary) */}
+              <div className="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Items</h3>
+                <div className="space-y-6">
+                  {transformedCartItems.map((item, i) => (
+                    <div key={i} className="flex gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-20 object-cover rounded-md flex-shrink-0 bg-gray-50"
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm line-clamp-2 leading-snug">{item.name}</p>
+                          <p className="text-xs text-gray-500 mt-1">{item.color} | Size: {item.size}</p>
+                        </div>
+                        <div className="flex justify-between items-end mt-2">
+                          <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
+                          <span className="font-bold text-gray-900 text-sm">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
+
         </div>
       </div>
     </div>

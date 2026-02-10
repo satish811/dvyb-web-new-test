@@ -1,0 +1,201 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    /* ============================================
+       ADMINS
+       ============================================ */
+    match /admins/super-admin {
+      allow read, write: if isAuthenticated();
+    }
+    
+    /* ============================================
+       B2C USERS COLLECTION
+       ============================================ */
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+
+      // Sub-collections inside users
+      match /cart/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /wishlist/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /addresses/{addressId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /bulkOrders/{orderId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    /* ============================================
+       B2B USERS COLLECTION
+       ============================================ */
+    match /B2BBulkOrders_users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+      
+      match /cart/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /orders/{orderId} {
+        allow create: if isOwner(userId);
+        allow read: if isOwner(userId);
+        allow update: if isOwner(userId);
+      }
+    }
+    
+    match /b2c_users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+      
+      // Sub-collections inside b2c_users
+      match /addresses/{addressId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /cart/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /wishlist/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /orders/{orderId} {
+        allow create: if isOwner(userId);
+        allow read: if isOwner(userId);
+        allow update: if isOwner(userId);
+      }
+    }
+    
+    /* ============================================
+       ROOT ORDERS COLLECTION
+       ============================================ */
+    match /orders/{orderId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    match /B2BBulkOrders_orders/{orderId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    
+    /* ============================================
+       PRODUCTS (Public Read)
+       ============================================ */
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false; // Only admins via backend
+    }
+    
+    match /{parentPath=**}/products/{productId} {
+      allow read: if true;
+    }
+    
+    match /vendor_products/{productId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    /* ============================================
+       PRODUCT REVIEWS (Public Read, Auth Write)
+       ============================================ */
+    match /product_reviews/{reviewId} {
+      // Anyone can read reviews (including guests)
+      allow read: if true;
+      // Authenticated users can create reviews
+      allow create: if isAuthenticated();
+      // Users can update/delete only their own reviews
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    /* ============================================
+       CART COLLECTIONS (B2C)
+       ============================================ */
+    match /carts/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /carts/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    /* ============================================
+       CART COLLECTIONS (B2B)
+       ============================================ */
+    match /B2BBulkOrders_carts/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /B2BBulkOrders_carts/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    /* ============================================
+       WISHLIST COLLECTIONS (B2C)
+       ============================================ */
+    match /wishlists/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /wishlists/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    /* ============================================
+       WISHLIST COLLECTIONS (B2B)
+       ============================================ */
+    match /B2BBulkOrders_wishlists/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /B2BBulkOrders_wishlists/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    /* ============================================
+       TRY-ON GALLERY
+       ============================================ */
+    match /tryon_gallery/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /tryon_gallery/{userId}/items/{itemId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    /* ============================================
+       CATEGORIES & VENDOR
+       ============================================ */
+    match /categories/{doc} {
+      allow read: if true;
+    }
+    
+    match /vendor_registrations/{docId} {
+      allow read, write: if true;
+    }
+    
+    /* ============================================
+       FALLBACK - Deny all other access
+       ============================================ */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

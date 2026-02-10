@@ -70,12 +70,12 @@ const FaqPage = () => {
         {/* Right: Content */}
         <div className="text-center space-y-6">
           <div className="flex flex-col items-center">
-            <img src={logoImage} alt="DVYB Logo" className="w-24 mb-3" />
-            <img src={LogoName} alt="DVYB" className="w-32" />
+            <img src={logoImage} alt="Villy Logo" className="w-24 mb-3" />
+            <img src={LogoName} alt="Villy" className="w-32" />
           </div>
 
           <p className="text-lg md:text-xl leading-relaxed text-gray-800 max-w-2xl mx-auto">
-            At DVYB, we're here to assist you with shopping that's both simple and budget-friendly,
+            At Villy, we're here to assist you with shopping that's both simple and budget-friendly,
             all while ensuring you don't sacrifice style, quality, or variety. Whether you're
             preparing for weddings or family gatherings, our carefully selected collections for men,
             women, and kids are tailored to create cohesive looks at incredible prices.
@@ -99,16 +99,14 @@ const FaqPage = () => {
               >
                 <span className="pr-8 text-base leading-snug">{faq.question}</span>
                 <ChevronDown
-                  className={`w-5 h-5 text-gray-700 transition-transform duration-300 ${
-                    openFAQIndex === index ? "rotate-180" : ""
-                  }`}
+                  className={`w-5 h-5 text-gray-700 transition-transform duration-300 ${openFAQIndex === index ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openFAQIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                }`}
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${openFAQIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  }`}
               >
                 {openFAQIndex === index && (
                   <div className="px-6 pb-6 pt-2 border-t border-gray-100">

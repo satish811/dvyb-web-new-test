@@ -25,7 +25,7 @@ class ShiprocketService {
       this.token = response.data.token;
       // Token expires in 10 days, refresh after 9 days
       this.tokenExpiry = Date.now() + (9 * 24 * 60 * 60 * 1000);
-      
+
       console.log('✅ Shiprocket authentication successful');
       return this.token;
     } catch (error) {
@@ -46,7 +46,7 @@ class ShiprocketService {
   async getShippingRates(params) {
     try {
       const token = await this.getToken();
-      
+
       const payload = {
         pickup_postcode: params.pickupPostcode || "110001",
         delivery_postcode: params.deliveryPostcode,
@@ -83,8 +83,8 @@ class ShiprocketService {
 
       // Test mode detection logic
       const isTestMode = process.env.VITE_SHIPROCKET_TEST_MODE === 'true';
-      const isRazorpayTest = orderData.razorpayOrderId?.startsWith('order_test_') || 
-                             orderData.paymentId?.startsWith('pay_test_');
+      const isRazorpayTest = orderData.razorpayOrderId?.startsWith('order_test_') ||
+        orderData.paymentId?.startsWith('pay_test_');
 
       // Real order creation payload
       const payload = {
@@ -92,7 +92,7 @@ class ShiprocketService {
         order_date: new Date().toISOString().split('T')[0],
         pickup_location: "Primary",
         channel_id: "",
-        comment: orderData.comment || "Order from DVYB",
+        comment: orderData.comment || "Order from Villy",
         billing_customer_name: orderData.billingName,
         billing_last_name: orderData.billingLastName || "",
         billing_address: orderData.billingAddress,
@@ -135,9 +135,9 @@ class ShiprocketService {
         });
 
         console.log('✅ Real Shiprocket order created:', response.data.order_id);
-        
+
         return {
-          success: true,  
+          success: true,
           isTestOrder: false,
           data: response.data
         };
