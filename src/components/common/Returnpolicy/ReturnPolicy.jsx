@@ -13,7 +13,7 @@ export default function ReturnExchangePolicy() {
 
       {/* Introduction */}
       <p className="text-[20px] font-normal text-gray-700 mb-8 leading-relaxed">
-        DVYB Company Limited is dedicated to ensuring complete customer satisfaction regarding the
+        Villy Company Limited is dedicated to ensuring complete customer satisfaction regarding the
         products available on our website, security, and customer support. If you are not satisfied
         with your purchase, you may return the order.
       </p>
@@ -21,7 +21,7 @@ export default function ReturnExchangePolicy() {
       {/* NOTE Section */}
       <h2 className="text-[24px] font-medium mb-3">NOTE:</h2>
       <p className="text-[20px] font-normal text-gray-700 mb-8 leading-relaxed">
-        Customers should contact DVYB customer support as soon as possible (within 7 days of
+        Customers should contact Villy customer support as soon as possible (within 7 days of
         delivery) to proceed with a return. We will not return the defective item unused and in its
         original condition, including packaging and invoice, for a refund. Please report within 7
         days of receiving the damaged product with supporting images/videos to our customer support
@@ -51,11 +51,11 @@ export default function ReturnExchangePolicy() {
       {/* How to Initiate Refund */}
       <h2 className="text-[24px] font-medium mb-3">How to Initiate the Refund Process?</h2>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        Customers should contact DVYB customer support at 1800-266-0123 or email
-        DVYBsupport@DVYB.com within 7 days of receiving the product to proceed with their return.
+        Customers should contact Villy customer support at 1800-266-0123 or email
+        Villysupport@Villy.com within 7 days of receiving the product to proceed with their return.
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        Do not return the product before receiving confirmation from DVYB.
+        Do not return the product before receiving confirmation from Villy.
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
         All products must be returned in their original, unaltered, and unused condition. The
@@ -89,7 +89,7 @@ export default function ReturnExchangePolicy() {
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
         If paid online, the refund will be processed within 7-15 working days from the receipt of
-        returned product(s) at the DVYB Warehouse in Neon, Tamil Nadu.
+        returned product(s) at the Villy Warehouse in Neon, Tamil Nadu.
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
         For Cash on Delivery (COD) customers, art receive an SMS and email with a secure payout link
@@ -106,7 +106,7 @@ export default function ReturnExchangePolicy() {
       {/* International Orders */}
       <h2 className="text-[24px] font-medium mb-3">International Orders:</h2>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        Currently, we do not have a refund policy for international orders. However, DVYB will
+        Currently, we do not have a refund policy for international orders. However, Villy will
         refund customers only under the following circumstances at our discretion:
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
@@ -115,7 +115,7 @@ export default function ReturnExchangePolicy() {
         However, for non-defective returns, customers may be responsible for return shipping costs.
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        DVYB products are made from pure cotton and natural fabrics, which may be prone to shrinkage
+        Villy products are made from pure cotton and natural fabrics, which may be prone to shrinkage
         and color bleed (especially with natural dyes). Due to the unique and handcrafted nature of
         the products, dimensions and weight may vary slightly from those declared.
       </p>
@@ -146,7 +146,7 @@ export default function ReturnExchangePolicy() {
       {/* Disclaimer */}
       <h2 className="text-[24px] font-medium mb-3">Disclaimer</h2>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        All of the information displayed on DVYB.com constitutes an invitation to offer. Your order
+        All of the information displayed on Villy.com constitutes an invitation to offer. Your order
         constitutes your offer, subject to the terms and conditions linked herein. We reserve the
         right to accept or reject your offer in part or in full. Our acceptance occurs upon dispatch
         of the ordered product(s), which may get delayed, annulled, varied, or rejected on the way
@@ -154,7 +154,7 @@ export default function ReturnExchangePolicy() {
         without assigning any reason.
       </p>
       <p className="text-[20px] font-normal text-gray-700 mb-8 leading-relaxed">
-        No act or omission by DVYB prior to actual dispatch will constitute any acceptance of your
+        No act or omission by Villy prior to actual dispatch will constitute any acceptance of your
         offer. If you provided your email address, we will notify you of order-receipt and dispatch
         confirmation.
       </p>
@@ -162,7 +162,7 @@ export default function ReturnExchangePolicy() {
       {/* Website Content */}
       <h2 className="text-[24px] font-medium mb-3">Website Content</h2>
       <p className="text-[20px] font-normal text-gray-700 mb-3 leading-relaxed">
-        DVYB owns copyright to all website content, including images. All trademarks and
+        Villy owns copyright to all website content, including images. All trademarks and
         intellectual property are owned or licensed to us. We make every effort to display product
         images accurately.
       </p>
@@ -170,7 +170,7 @@ export default function ReturnExchangePolicy() {
         You may not copy, reproduce, distribute, republish, download, display, post, or transmit any
         part of the website without our written consent. You may print or download pages for
         personal, non-commercial use only. For any doubts, please contact us at 1800-266-0123 or
-        email DVYBsupport@DVYB.com. While we strive for accuracy, we cannot accept responsibility
+        email Villysupport@Villy.com. While we strive for accuracy, we cannot accept responsibility
         for inaccuracies or errors beyond our control. We cannot guarantee that content images will
         render identically.
       </p>
@@ -212,7 +212,7 @@ export default function ReturnExchangePolicy() {
       {/* Additional Disclaimer */}
       <p className="text-[20px] font-normal text-gray-700 mb-8 leading-relaxed">
         Any product purchased from our website is at your discretion, and you acknowledge that you
-        place the order after thoroughly inquiring about the product and its features. DVYB is not
+        place the order after thoroughly inquiring about the product and its features. Villy is not
         liable for any damages or losses suffered by customers due to product use, applicable to
         both individuals and minors.
       </p>
@@ -220,9 +220,9 @@ export default function ReturnExchangePolicy() {
       {/* Cancellation Policy */}
       <h2 className="text-[24px] font-medium mb-3">Cancellation Policy</h2>
 
-      <h3 className="text-[20px] font-normal mb-3">Cancellation by DVYB</h3>
+      <h3 className="text-[20px] font-normal mb-3">Cancellation by Villy</h3>
       <p className="text-[20px] font-normal text-gray-700 mb-8 leading-relaxed">
-        Under an DVYB Company Limited. Certain orders may not be accepted by DVYB, and we reserve
+        Under an Villy Company Limited. Certain orders may not be accepted by Villy, and we reserve
         the right to refuse or cancel any orders due to product unavailability, incorrect pricing,
         fraudulent transactions, or issues with payment or information verification or exception. We
         may also request additional information to accept orders. We will notify you if your order

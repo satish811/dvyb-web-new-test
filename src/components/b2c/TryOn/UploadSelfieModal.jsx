@@ -80,7 +80,7 @@ const UploadSelfieModal = ({
   const [selectedModel, setSelectedModel] = useState(null);
   const [showModelPreview, setShowModelPreview] = useState(false);
   const [makeDefault, setMakeDefault] = useState(false);
-  
+
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [cameraError, setCameraError] = useState("");
@@ -377,11 +377,11 @@ const UploadSelfieModal = ({
 
     try {
       const constraints = {
-        video: { 
-          facingMode: "user", 
-          width: { ideal: 1024 }, 
+        video: {
+          facingMode: "user",
+          width: { ideal: 1024 },
           height: { ideal: 1024 },
-          aspectRatio: { ideal: 0.75 } 
+          aspectRatio: { ideal: 0.75 }
         }
       };
 
@@ -997,7 +997,7 @@ const UploadSelfieModal = ({
                   <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
                 </label>
 
-                <span className="text-sm font-medium text-gray-700">DVYB Models</span>
+                <span className="text-sm font-medium text-gray-700">Villy Models</span>
               </div>
             </div>
           )}

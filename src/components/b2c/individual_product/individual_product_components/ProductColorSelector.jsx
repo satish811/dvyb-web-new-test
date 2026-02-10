@@ -4,7 +4,7 @@ const ProductColorSelector = ({ colors = [] }) => {
   // Static fallback colors
   const staticColors = ["#424647", "#E9D252", "#EC8CB7", "#A32033"];
 
-  
+
   const backendColors = colors
     .map((c) => {
       if (typeof c === "string") {
@@ -28,7 +28,7 @@ const ProductColorSelector = ({ colors = [] }) => {
     // Clean the hex code
     const cleanHex = hex.replace("#", "").toLowerCase();
 
-    
+
     let rgbHex = cleanHex;
     if (cleanHex.length === 8) {
       rgbHex = cleanHex.slice(0, 6);
@@ -39,7 +39,7 @@ const ProductColorSelector = ({ colors = [] }) => {
     const g = parseInt(rgbHex.slice(2, 4), 16);
     const b = parseInt(rgbHex.slice(4, 6), 16);
 
-    
+
     return r > 240 && g > 240 && b > 240;
   };
 
@@ -89,26 +89,21 @@ const ProductColorSelector = ({ colors = [] }) => {
             <button
               key={index}
               onClick={() => setSelectedColor(hex)}
+              className="transition-all duration-200"
               style={{
-                width: "30px",
-                height: "30px",
-                border: isSelected ? `2px solid ${borderColor}` : `1px solid ${borderColor}`,
-                padding: 1,
+                width: "24px",
+                height: "24px",
+                border: isSelected ? `3px solid ${borderColor}` : `2px solid ${borderColor}`,
+                padding: 0,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "transparent",
-                borderRadius: "2px",
+                backgroundColor: hex,
+                borderRadius: "50%",
+                cursor: "pointer",
+                boxShadow: isSelected ? "0 0 0 2px white, 0 0 0 4px " + borderColor : "none",
               }}
             >
-              <div
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  backgroundColor: hex,
-                  borderRadius: "1px",
-                }}
-              />
             </button>
           );
         })}

@@ -16,25 +16,27 @@ const ProductPriceSection = ({ product }) => {
   }, [price, discountPercent]);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       {/* Price Row */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         {/* Current Selling Price */}
-        <span className="text-2xl md:text-3xl font-semibold text-gray-900">
+        <span className="text-3xl md:text-4xl font-bold text-gray-900">
           ₹{price?.toLocaleString()}
         </span>
 
         {/* Original Price (strikethrough) */}
-        <span className="text-gray-400 line-through text-lg">
+        <span className="text-gray-500 line-through text-xl font-medium">
           ₹{originalPrice?.toLocaleString()}
         </span>
 
-        {/* Discount Percentage */}
-        <span className="text-red-500 font-semibold text-sm">{discountPercent}% OFF</span>
+        {/* Discount Percentage Badge */}
+        <span className="bg-red-100 text-red-600 font-bold text-sm px-3 py-1 rounded-full">
+          {discountPercent}% OFF
+        </span>
       </div>
 
       {/* Tax Info */}
-      <p className="text-sm text-gray-600">inclusive of all taxes</p>
+      <p className="text-sm text-gray-600 font-normal">inclusive of all taxes</p>
     </div>
   );
 };

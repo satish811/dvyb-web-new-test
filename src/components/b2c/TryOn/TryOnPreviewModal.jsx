@@ -47,7 +47,7 @@ import { UI_TEXT } from "../../../utils/tryOnConstants";
  * Main Try-On Preview Modal Component
  * ✅ Separated into clean sections with custom hooks
  */
-const TryOnPreviewModal = ({ isOpen, onClose, tryOnData,product  }) => {
+const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   const navigate = useNavigate();
 
   // ============================================
@@ -60,15 +60,15 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData,product  }) => {
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [viewMode, setViewMode] = useState("2D");
   const [showBgWarning, setShowBgWarning] = useState(false);
-const [currentImage, setCurrentImage] = useState(null);
-const [wishlistLoading, setWishlistLoading] = useState(false);
-const [isInWishlistState, setIsInWishlistState] = useState(false);
-const { toggleWishlist, isInWishlist } = useWishlist();
+  const [currentImage, setCurrentImage] = useState(null);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isInWishlistState, setIsInWishlistState] = useState(false);
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
   // ============================================
-  
+
   // Core try-on logic
   const {
     tryOnResult,
@@ -110,20 +110,20 @@ const { toggleWishlist, isInWishlist } = useWishlist();
   } = useVideoGeneration(backgroundChangedImage);
 
 
-// WISHLIST 
-useEffect(() => {
-  if (!isOpen || !product?.id) return;
-  setIsInWishlistState(isInWishlist(product.id));
-}, [isOpen, product?.id]);
-
-
-
-// CURRENT IMG SETTING
+  // WISHLIST 
   useEffect(() => {
-  if (tryOnResult) {
-    setCurrentImage(tryOnResult);
-  }
-}, [tryOnResult]);
+    if (!isOpen || !product?.id) return;
+    setIsInWishlistState(isInWishlist(product.id));
+  }, [isOpen, product?.id]);
+
+
+
+  // CURRENT IMG SETTING
+  useEffect(() => {
+    if (tryOnResult) {
+      setCurrentImage(tryOnResult);
+    }
+  }, [tryOnResult]);
 
 
 
@@ -153,9 +153,9 @@ useEffect(() => {
     [tryOnData?.fabric]
   );
 
-const getCurrentDisplayImage = () => {
-  return backgroundChangedImage || currentImage || tryOnResult;
-};
+  const getCurrentDisplayImage = () => {
+    return backgroundChangedImage || currentImage || tryOnResult;
+  };
 
 
   // ============================================
@@ -187,28 +187,28 @@ const getCurrentDisplayImage = () => {
 
 
   //  wishlist handler
-const handleToggleWishlist = async () => {
-  if (!product?.id) return;
+  const handleToggleWishlist = async () => {
+    if (!product?.id) return;
 
-  setWishlistLoading(true);
+    setWishlistLoading(true);
 
-  // optimistic UI
-  setIsInWishlistState((prev) => !prev);
-
-  try {
-    await toggleWishlist(
-      product, // ✅ REAL PRODUCT OBJECT
-      tryOnData?.selectedSize || "One Size",
-      tryOnData?.selectedColors?.[0] || "Default"
-    );
-  } catch (err) {
-    console.error("Wishlist toggle failed:", err);
-    // rollback UI
+    // optimistic UI
     setIsInWishlistState((prev) => !prev);
-  } finally {
-    setWishlistLoading(false);
-  }
-};
+
+    try {
+      await toggleWishlist(
+        product, // ✅ REAL PRODUCT OBJECT
+        tryOnData?.selectedSize || "One Size",
+        tryOnData?.selectedColors?.[0] || "Default"
+      );
+    } catch (err) {
+      console.error("Wishlist toggle failed:", err);
+      // rollback UI
+      setIsInWishlistState((prev) => !prev);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
 
 
@@ -222,11 +222,11 @@ const handleToggleWishlist = async () => {
   // ============================================
   return (
     <div className="fixed s  inset-0 overflow-y-auto z-50 hide-scrollbar bg-gradient-to-br from-gray-50 to-gray-100">
-      
+
       {/* ============================================ */}
       {/* HEADER */}
       {/* ============================================ */}
-      <TryOnHeader  />
+      <TryOnHeader />
 
       {/* ============================================ */}
       {/* CENTER STAGE - Main Preview Area */}
@@ -266,19 +266,19 @@ const handleToggleWishlist = async () => {
         // Blouse props
         selectedBlouse={selectedBlouse}
         isChangingBlouse={isChangingBlouse}
- changeBlouse={async (type) => {
-  const newImg = await changeBlouse(type);
-  if (newImg) setCurrentImage(newImg);
-}}
+        changeBlouse={async (type) => {
+          const newImg = await changeBlouse(type);
+          if (newImg) setCurrentImage(newImg);
+        }}
 
         tryOnResult={tryOnResult}
         // Neck props
         selectedNeck={selectedNeck}
         isChangingNeck={isChangingNeck}
-     changeNeck={async (type) => {
-  const newImg = await changeNeck(type);
-  if (newImg) setCurrentImage(newImg);
-}}
+        changeNeck={async (type) => {
+          const newImg = await changeNeck(type);
+          if (newImg) setCurrentImage(newImg);
+        }}
 
       />
 

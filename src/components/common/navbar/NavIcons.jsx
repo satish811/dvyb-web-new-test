@@ -7,16 +7,16 @@ import { useCart } from "../../../context/CartContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import { IoMdHeartEmpty } from "react-icons/io";
 
-export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
+export default function NavIcons({ onSearch, onWishlist, onCart, onProfile, className = "" }) {
   const { cartCount, loading } = useCart();
   const { wishlistCount, loading: wishlistLoading } = useWishlist();
   return (
-    <div className="md:flex items-center gap-6 sm:pr-0 md:pr-10 ">
+    <div className={`md:flex items-center gap-6 sm:pr-0 md:pr-10 ${className}`}>
       <button
         onClick={onSearch}
-        className="hidden md:block text-gray-700 hover:text-black transition cursor-pointer"
+        className="hidden md:block hover:opacity-80 transition cursor-pointer"
       >
-        <HiMiniMagnifyingGlass size={24} />
+        <HiMiniMagnifyingGlass size={32} />
       </button>
 
       <button
@@ -24,7 +24,7 @@ export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
         className="relative hidden md:block cursor-pointer"
         disabled={wishlistLoading}
       >
-        <IoMdHeartEmpty size={24} />
+        <IoMdHeartEmpty size={32} />
         {wishlistCount > 0 && (
           <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
             {wishlistLoading ? "..." : wishlistCount}
@@ -33,12 +33,12 @@ export default function NavIcons({ onSearch, onWishlist, onCart, onProfile }) {
       </button>
 
       <button onClick={onProfile} className="px-2 sm:px-0 cursor-pointer">
-        <GoPerson size={24} />
+        <GoPerson size={32} />
 
       </button>
 
       <button onClick={onCart} className="relative cursor-pointer" disabled={loading}>
-        <BsCart4 size={24} />
+        <BsCart4 size={32} />
         {cartCount > 0 && (
           <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5  flex items-center justify-center font-bold">
             {loading ? "..." : cartCount}

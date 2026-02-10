@@ -61,7 +61,10 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
 
       if (!response.ok) {
         const err = await response.text();
-        throw new Error(err);
+        const errorMsg = response.status === 500
+          ? "Try-On service is currently unavailable. Please try again later or contact support."
+          : err || `Server error: ${response.status}`;
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();

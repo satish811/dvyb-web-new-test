@@ -102,22 +102,20 @@ const ProductTitleSection = ({
           {displayTitle && (
             <h1
               style={{
-                fontFamily: "Outfit, sans-serif",
-                fontWeight: 500,
-                fontSize: "22px",
-                lineHeight: "1.2",
-                letterSpacing: "0.66px",
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: 600,
+                fontSize: "36px",
+                lineHeight: "1.3",
+                letterSpacing: "0.5px",
                 color: "#000000",
                 margin: 0,
                 padding: 0,
-                textTransform: "uppercase",
+                textTransform: "capitalize",
                 display: "-webkit-box",
-                WebkitLineClamp: isExpanded ? "none" : 4,
+                WebkitLineClamp: isExpanded ? "none" : 3,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                minHeight: "26.4px",
-                maxHeight: isExpanded ? "none" : "105.6px",
                 flex: 1,
                 marginRight: "12px",
               }}
@@ -147,10 +145,10 @@ const ProductTitleSection = ({
               <Heart
                 size={20}
                 className={`${addingToWishlist
-                    ? "text-gray-400"
-                    : isWishlisted
-                      ? "text-red-500 fill-current"
-                      : "text-gray-700 hover:text-red-500"
+                  ? "text-gray-400"
+                  : isWishlisted
+                    ? "text-red-500 fill-current"
+                    : "text-gray-700 hover:text-red-500"
                   }`}
               />
               {addingToWishlist && (

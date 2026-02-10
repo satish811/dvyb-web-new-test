@@ -7,7 +7,7 @@
 
 export const config = {
   app: {
-    name: import.meta.env.VITE_APP_NAME || "Dvyb Web",
+    name: import.meta.env.VITE_APP_NAME || "Villy",
     mode: import.meta.env.MODE || "development",
     baseUrl: import.meta.env.VITE_BASE_URL || "http://localhost:5173",
     deepLink: import.meta.env.VITE_DEEP_LINK || "",

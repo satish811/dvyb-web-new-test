@@ -12,6 +12,7 @@ import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth"
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import envConfig from "./envConfig";
 
 const firebaseConfig = {
@@ -35,6 +36,20 @@ for (const key of requiredKeys) {
 }
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// Initialize App Check for phone authentication
+if (typeof window !== 'undefined' && import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY) {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true
+    });
+    console.log("✅ Firebase App Check initialized");
+  } catch (error) {
+    console.warn("⚠️ App Check initialization failed:", error);
+  }
+}
+
 export const auth = getAuth(app);
 
 try {

@@ -7,11 +7,6 @@ import app from "../config/firebaseConfig";
 const auth = getAuth(app);
 let recaptchaVerifier = null;
 
-// Only for local testing - remove in production
-if (process.env.NODE_ENV === "development") {
-  auth.settings.appVerificationDisabledForTesting = true;
-}
-
 // Detect user type based on route or other criteria
 const detectUserType = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -35,6 +30,9 @@ const detectUserType = () => {
 // Create user collection after OTP verification
 const createUserCollection = async (user, phoneNumber) => {
   try {
+    // ✅ Detect user type (B2C or B2B) based on URL
+    const userType = detectUserType();
+
     const userData = {
       uid: user.uid,
       phoneNumber: phoneNumber,

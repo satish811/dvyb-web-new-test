@@ -5,18 +5,31 @@ import FooterAppLinks from "./footerAppLinks";
 import FooterAccordion from "./FooterAccordion";
 import FooterGuarantee from "./FooterGuarantee";
 import { footerSections } from "./footerData";
+import { motion } from "framer-motion"; // ✨ Animation import
+import { fadeIn, staggerContainer, slideUp } from "../../../utils/animations"; // ✨ Global animations
 
 export default function Footer() {
   return (
-    <footer className="bg-white md:mx-12 md:px-9">
+    <motion.footer
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={fadeIn}
+      className="bg-white md:mx-12 md:px-9"
+    >
       <div className=" py-12 max-w-7xl mx-auto">
         {/* DESKTOP */}
-        <div className="hidden md:grid  grid-cols-2 lg:grid-cols-5 gap-10">
+        <motion.div
+          variants={staggerContainer}
+          className="hidden md:grid  grid-cols-2 lg:grid-cols-5 gap-10"
+        >
           {footerSections.map((section) => (
-            <FooterLinks key={section.key} {...section} />
+            <motion.div key={section.key} variants={slideUp}>
+              <FooterLinks {...section} />
+            </motion.div>
           ))}
 
-          <div className="space-y-8">
+          <motion.div variants={slideUp} className="space-y-8">
             <div>
               <h5 className="font-medium uppercase text-xs tracking-wider mb-4">Follow Us On</h5>
               <FooterSocials />
@@ -24,12 +37,12 @@ export default function Footer() {
 
             <div>
               <h5 className="font-medium uppercase text-xs tracking-wider mb-4">
-                Experience DVYB App on Mobile
+                Experience Villy App on Mobile
               </h5>
               <FooterAppLinks />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* MOBILE */}
         <div className="block md:hidden px-5">
@@ -45,7 +58,7 @@ export default function Footer() {
 
             <div className="border-t pt-6">
               <h5 className="font-medium uppercase text-xs tracking-wider mb-4">
-                Experience DVYB App on Mobile
+                Experience Villy App on Mobile
               </h5>
               <FooterAppLinks />
             </div>
@@ -53,8 +66,10 @@ export default function Footer() {
         </div>
 
         {/* GUARANTEE SECTION - Both Mobile & Desktop */}
-        <FooterGuarantee />
+        <motion.div variants={fadeIn}>
+          <FooterGuarantee />
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }
