@@ -1,5 +1,7 @@
 // components/b2b/AuthContainer/AuthContainer.jsx
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import LoginForm from "../../../components/b2b/login/LoginForm";
 import B2BRegistrationModal from "../resigration/registrationModal";
 import cross from "@/assets/common/icons/cross.svg";
@@ -13,6 +15,18 @@ const AuthContainer = ({ isOpen, onClose }) => {
   const [authError, setAuthError] = useState("");
   const navigate = useNavigate();
   const { switchUserType } = useAuth();
+
+  // Scroll lock effect
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   const handleLogin = async (credentials) => {
     setAuthError("");
@@ -78,40 +92,57 @@ const AuthContainer = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="relative bg-white shadow-xl w-full max-w-md mx-4 p-4 rounded-lg font-outfit">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 h-6 w-6 mb-2"
+  return ReactDOM.createPortal(
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="relative bg-white shadow-xl w-full max-w-md mx-4 p-4 rounded-lg font-outfit"
+          onClick={(e) => e.stopPropagation()}
         >
-          <img src={cross} alt="cross" />
-        </button>
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 h-6 w-6 mb-2"
+          >
+            <img src={cross} alt="cross" />
+          </button>
 
-        {showRegister ? (
-          <B2BRegistrationModal
-            isOpen={showRegister}
-            onClose={() => {
-              setShowRegister(false);
-              setAuthError("");
-            }}
-            onSubmit={handleRegister}
-            loading={loading}
-            authError={authError}
-          />
-        ) : (
-          <LoginForm
-            onSubmit={handleLogin}
-            onShowRegister={() => setShowRegister(true)}
-            onGoogleLogin={handleGoogleLogin} // Pass Google login handler
-            loading={loading}
-            authError={authError}
-          />
-        )}
-      </div>
-    </div>
+          {showRegister ? (
+            <B2BRegistrationModal
+              isOpen={showRegister}
+              onClose={() => {
+                setShowRegister(false);
+                setAuthError("");
+              }}
+              onSubmit={handleRegister}
+              loading={loading}
+              authError={authError}
+            />
+          ) : (
+            <LoginForm
+              onSubmit={handleLogin}
+              onShowRegister={() => setShowRegister(true)}
+              onGoogleLogin={handleGoogleLogin} // Pass Google login handler
+              loading={loading}
+              authError={authError}
+            />
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
   );
 };
 
 export default AuthContainer;
+

@@ -14,7 +14,7 @@ export default function MainLayout({ children }) {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen hide-scrollbar">
+      <div className="flex flex-col min-h-screen hide-scrollbar overflow-x-hidden">
         {/* FULL PAGE LOADER */}
         {showLoader && (
           <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">

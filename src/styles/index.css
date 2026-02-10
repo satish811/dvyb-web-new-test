@@ -56,8 +56,9 @@ html,
 body {
   font-size: 16px !important;
   zoom: 1 !important;
-  transform: none !important;
   -webkit-text-size-adjust: 100% !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
 }
 
 /* Override purely to fix accidental scaling */
@@ -67,9 +68,8 @@ body {
   }
 }
 
-/* Ensure no element is accidentally transformed/zoomed down */
+/* Ensure no element is accidentally transformed/zoomed down - REMOVED DESTRUCTIVE TRANSFORM RESET */
 body * {
-  transform: none !important;
   zoom: 1 !important;
 }
 
