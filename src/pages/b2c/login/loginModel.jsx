@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import LoginForm from "./compononts/loginForm";
 import { useNavigate } from "react-router-dom";
 import OtpVerification from "../../../components/common/login/otpVerification";
@@ -9,6 +11,18 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [confirmation, setConfirmation] = useState(null);
   const [mobile, setMobile] = useState("");
   const navigate = useNavigate();
+
+  // Scroll lock effect
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -49,31 +63,47 @@ const LoginModal = ({ isOpen, onClose }) => {
     navigate("/checkout", { state: { guest: true } });
   };
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 ">
-      <div className="relative bg-white shadow-xl w-full max-w-md mx-4 p-4 bg-white shadow-lg  font-outfit">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 h-6 w-6 mb-2"
+  return ReactDOM.createPortal(
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="relative bg-white shadow-xl w-full max-w-md mx-4 p-4 font-outfit rounded-lg"
+          onClick={(e) => e.stopPropagation()}
         >
-          <img src={cross} alt="cross" />
-        </button>
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 h-6 w-6 mb-2"
+          >
+            <img src={cross} alt="cross" />
+          </button>
 
-        {/* Content */}
-        {step === "login" ? (
-          <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
-        ) : (
-          <OtpVerification
-            confirmation={confirmation}
-            mobile={mobile}
-            onSuccess={handleOtpSuccess}
-            onError={handleOtpError}
-            onResend={() => setStep("login")}
-          />
-        )}
-      </div>
-    </div>
+          {/* Content */}
+          {step === "login" ? (
+            <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
+          ) : (
+            <OtpVerification
+              confirmation={confirmation}
+              mobile={mobile}
+              onSuccess={handleOtpSuccess}
+              onError={handleOtpError}
+              onResend={() => setStep("login")}
+            />
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
   );
 };
 

@@ -41,50 +41,44 @@ const UploadSelfieModal = React.lazy(() => import("../TryOn/UploadSelfieModal"))
 const TryOnPreviewModal = React.lazy(() => import("../TryOn/TryOnPreviewModal"));
 
 // Portal Component for Try-On Modal
-// Portal Component for Try-On Modal
 const TryOnModalContainer = ({ children, onClose }) => {
   useEffect(() => {
     // 1. Block background scrolling
+    const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = "hidden";
 
     // 2. Cleanup on unmount
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = originalStyle;
     };
   }, []);
 
   // 3. Render outside normal flow (Portal)
   return ReactDOM.createPortal(
-    <AnimatePresence>
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 9999,
+      }}
+      onClick={onClose} // Allow clicking backdrop to close
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 9999,
-        }}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="relative w-full h-full flex items-center justify-center pointer-events-none"
       >
-        {/* Animation wrapper */}
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full h-full flex items-center justify-center pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            {children}
-          </div>
-        </motion.div>
+        <div className="pointer-events-auto relative" onClick={(e) => e.stopPropagation()}>
+          {children}
+        </div>
       </motion.div>
-    </AnimatePresence>,
+    </div>,
     document.body
   );
 };
