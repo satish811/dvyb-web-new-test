@@ -3,7 +3,7 @@ import { useStaticProducts } from "../../../hooks/useStaticProducts";
 import WishlistHeartButton from "../../common/WishlistHeartButton";
 
 // Assets
-import vector1 from "../../../assets/b2c/landing/Landing-villy/vector1.png";
+import vector1 from "../../../assets/b2c/landing/Landing-villy/Vector1.png";
 import vector2 from "../../../assets/b2c/landing/Landing-villy/vector2.png";
 
 export default function PopularProductsSection() {
