@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { extractCategories } from "../../../utils/categoryExtractor";
 import { useFilter } from "../../../context/FilterContext";
 
@@ -34,11 +34,28 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
     const navigate = useNavigate();
     const location = useLocation();
     const { updateFilter, selectedFilters } = useFilter();
+    const scrollContainerRef = useRef(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(false);
+
+    // Check if we're on the "All Products" page
+    const isAllActive = location.pathname === "/womenwear";
+
+    // Determine what to show
+    const showMainCategoriesOnly = !currentCategory || isAllActive;
 
     // Extract main categories
     const mainCategories = useMemo(() => {
         return extractCategories(products);
     }, [products]);
+
+    // Calculate button width for 6 items
+    const buttonWidth = 100; // Approximate width in pixels
+    const gapSize = 8; // gap-2 = 8px
+    const containerWidth = (buttonWidth * 6) + (gapSize * 5); // Width for exactly 6 buttons with gaps
+
+    // Check if we should show arrows based on subcategory count
+    const shouldShowArrows = availableSubcategories.length > 6;
 
     // Prevent scroll restoration on navigation
     useEffect(() => {
@@ -47,6 +64,49 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
         }
     }, []);
 
+    // Check scroll position to show/hide arrows for subcategories
+    const checkScroll = () => {
+        const container = scrollContainerRef.current;
+        if (container && shouldShowArrows) {
+            setShowLeftArrow(container.scrollLeft > 10);
+            setShowRightArrow(
+                container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+            );
+        }
+    };
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (container && !showMainCategoriesOnly && shouldShowArrows) {
+            checkScroll();
+            container.addEventListener('scroll', checkScroll);
+            window.addEventListener('resize', checkScroll);
+
+            return () => {
+                container.removeEventListener('scroll', checkScroll);
+                window.removeEventListener('resize', checkScroll);
+            };
+        }
+    }, [availableSubcategories, showMainCategoriesOnly, shouldShowArrows]);
+
+    // Scroll one button at a time for subcategories
+    const scrollOneStep = (direction) => {
+        const container = scrollContainerRef.current;
+        if (container) {
+            const button = container.querySelector('button');
+            if (button) {
+                const buttonWidth = button.offsetWidth;
+                const gap = 8;
+                const scrollAmount = (buttonWidth + gap) * (direction === 'left' ? -1 : 1);
+
+                container.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    };
+
     const handleCategoryClick = (catName, isSubcategory = false) => {
         if (catName === "ALL") {
             navigate("/womenwear");
@@ -54,116 +114,205 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
         }
 
         if (isSubcategory) {
-            // Update filter - no navigation, no scroll
             updateFilter("categories", catName);
         } else {
-            // Save scroll position before navigation
             const scrollY = window.pageYOffset;
-
-            // Navigate to main category page
             const normalizedValue = normalizeCategory(catName);
             navigate(`/women/${normalizedValue}`);
-
-            // Immediately restore scroll position
             requestAnimationFrame(() => {
                 window.scrollTo(0, scrollY);
             });
         }
     };
 
-    // Check if we're on the "All Products" page
-    const isAllActive = location.pathname === "/womenwear";
-
-    // Determine what to show in the bar
-    const showMainCategoriesOnly = !currentCategory || isAllActive;
-
-    return (
-        <div
-            className="flex items-center gap-3 overflow-x-auto h-full"
-            style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch'
-            }}
-        >
-            <style jsx>{`
-        div::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-
-            {/* ALL Button - only show on main page */}
-            {showMainCategoriesOnly && (
-                <button
-                    onClick={() => handleCategoryClick("ALL")}
-                    className={`
-            flex-shrink-0 px-6 py-2.5 text-xs font-bold tracking-wider border transition-colors duration-200 uppercase
-            ${isAllActive
-                            ? "bg-[#4A002C] text-white border-[#4A002C]"
-                            : "bg-white text-gray-600 border-gray-300 hover:border-gray-800"
-                        }
-          `}
-                >
-                    ALL
-                </button>
-            )}
-
-            {/* Show MAIN categories only (initial state) */}
-            {showMainCategoriesOnly && mainCategories.map((category) => {
-                const normalizedLabel = normalizeCategory(category.name);
-                const isActive = currentCategory === normalizedLabel;
-
-                return (
+    // If we're on the "All Products" page or no category selected
+    if (showMainCategoriesOnly) {
+        return (
+            <div className="flex items-center w-full bg-white gap-4">
+                {/* ALL Button - Far Left */}
+                <div className="flex-shrink-0">
                     <button
-                        key={category.name}
-                        onClick={() => handleCategoryClick(category.name)}
+                        onClick={() => handleCategoryClick("ALL")}
                         className={`
-              flex-shrink-0 px-5 py-2.5 text-xs font-bold tracking-wider border transition-colors duration-200 uppercase
-              ${isActive
-                                ? "bg-[#4A002C] text-white border-[#4A002C]"
-                                : "bg-white text-gray-600 border-gray-300 hover:border-gray-800"
+                            px-4 py-1.5 text-sm font-medium rounded-full border transition-all duration-200
+                            ${isAllActive
+                                ? "bg-black text-white border-black"
+                                : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
                             }
-            `}
+                        `}
                     >
-                        {category.name}
+                        ALL
                     </button>
-                );
-            })}
+                </div>
 
-            {/* Show MAIN CATEGORY + SUBCATEGORIES (when on category page) */}
-            {!showMainCategoriesOnly && (
-                <>
-                    {/* Main category button (highlighted) */}
-                    <button
-                        onClick={() => navigate("/womenwear")}
-                        className="flex-shrink-0 px-6 py-2.5 text-xs font-bold tracking-wider border transition-colors duration-200 uppercase bg-[#4A002C] text-white border-[#4A002C]"
-                    >
-                        {currentCategory.toUpperCase().replace("-", " ")}
-                    </button>
+                {/* Main Categories - Left Side */}
+                <div className="flex flex-1 gap-2 overflow-x-auto"
+                    style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                    }}
+                >
+                    <style>{`
+                        div::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}</style>
 
-                    {/* Subcategories */}
-                    {availableSubcategories.length > 0 && availableSubcategories.map((subCatName) => {
-                        // Check if this subcategory is selected in filters
-                        const isActive = selectedFilters.categories.includes(subCatName);
+                    {mainCategories.map((category) => {
+                        const normalizedLabel = normalizeCategory(category.name);
+                        const isActive = currentCategory === normalizedLabel;
 
                         return (
                             <button
-                                key={subCatName}
-                                onClick={() => handleCategoryClick(subCatName, true)}
+                                key={category.name}
+                                onClick={() => handleCategoryClick(category.name)}
                                 className={`
-                  flex-shrink-0 px-5 py-2.5 text-xs font-bold tracking-wider border transition-colors duration-200
-                  ${isActive
-                                        ? "bg-[#4A002C] text-white border-[#4A002C]"
-                                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-800"
+                                    flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200
+                                    ${isActive
+                                        ? "bg-black text-white border-black"
+                                        : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
                                     }
-                `}
+                                `}
                             >
-                                {subCatName}
+                                {category.name}
                             </button>
                         );
                     })}
-                </>
-            )}
+                </div>
+            </div>
+        );
+    }
+
+    // When a category is selected - Main Category on Left, Subcategories on Right
+    return (
+        <div className="flex justify-between items-center w-full bg-white">
+            {/* Left Side - Main Category Button */}
+            <div className="flex-shrink-0">
+                <button
+                    onClick={() => navigate("/womenwear")}
+                    className="px-4 py-1.5 transition-all duration-200 whitespace-nowrap"
+                    style={{
+                        backgroundColor: '#ffffff',
+                        color: '#33022F',
+                        fontFamily: 'Outfit',
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        lineHeight: '14.77px',
+                        letterSpacing: '1px',
+                        textAlign: 'center',
+                        textTransform: 'uppercase',
+                        
+                    }}
+                >
+                    {currentCategory?.toUpperCase().replace("-", " ") || "WOMEN"}
+                </button>
+            </div>
+
+            <div className="flex-1 flex justify-end items-center min-w-0 ml-4">
+                <div
+                    className="relative bg-white rounded-lg shadow-sm overflow-hidden"
+                    style={{
+                        width: `${containerWidth}px`,
+                        maxWidth: '100%'
+                    }}
+                >
+                    {/* Left Arrow Overlay - Only show if more than 6 subcategories */}
+                    {shouldShowArrows && showLeftArrow && (
+                        <div className="absolute left-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-r from-white via-white to-transparent pl-1">
+                            <button
+                                onClick={() => scrollOneStep('left')}
+                                className="w-7 h-7 flex items-center justify-center bg-white border border-gray-300 shadow-md hover:bg-gray-50 transition-colors rounded-full"
+                                aria-label="Scroll left"
+                            >
+                                <svg
+                                    className="w-4 h-4 text-gray-700"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Scrollable subcategories container */}
+                    <div
+                        ref={scrollContainerRef}
+                        className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
+                            ? 'overflow-x-auto scroll-smooth'
+                            : 'overflow-x-hidden'
+                            }`}
+                        style={{
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            width: '100%',
+                            justifyContent: shouldShowArrows ? 'flex-start' : 'flex-end'
+                        }}
+                    >
+                        <style>{`
+                div::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
+
+                        {/* Subcategory buttons */}
+                        {availableSubcategories.map((subCatName, index) => {
+                            const isActive = selectedFilters.categories?.includes(subCatName) || false;
+
+                            return (
+                                <button
+                                    key={subCatName}
+                                    onClick={() => handleCategoryClick(subCatName, true)}
+                                    className={`
+                flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200 whitespace-nowrap
+                ${isActive
+                                            ? "bg-black text-white border-black"
+                                            : "bg-white border-[#9B8B9A66] hover:border-gray-400"
+                                        }
+                ${index === 0 ? 'ml-0' : ''}
+            `}
+                                    style={{
+                                        fontFamily: 'Outfit',
+                                        fontWeight: 300,
+                                        fontSize: '8px',
+                                        lineHeight: '14.77px',
+                                        letterSpacing: '1.11px',
+                                        textAlign: 'center',
+                                        textTransform: 'uppercase',
+                                        color: isActive ? 'white' : '#815279',
+                                        borderWidth: '0.92px'
+                                    }}
+                                >
+                                    {subCatName}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Right Arrow Overlay - Only show if more than 6 subcategories */}
+                    {shouldShowArrows && showRightArrow && (
+                        <div className="absolute right-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-l from-white via-white to-transparent pr-1">
+                            <button
+                                onClick={() => scrollOneStep('right')}
+                                className="w-7 h-7 flex items-center justify-center bg-white border border-gray-300 shadow-md hover:bg-gray-50 transition-colors rounded-full"
+                                aria-label="Scroll right"
+                            >
+                                <svg
+                                    className="w-4 h-4 text-gray-700"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

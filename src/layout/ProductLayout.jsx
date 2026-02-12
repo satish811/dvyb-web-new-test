@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
-import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown, Minus, Plus } from "lucide-react";
 import { mainlogo } from "../assets";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
@@ -27,6 +27,12 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   const [popularSearches, setPopularSearches] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [noResults, setNoResults] = useState(false);
+
+  // Zoom slider state - stored in localStorage to persist across sessions
+  const [zoomLevel, setZoomLevel] = useState(() => {
+    const savedZoom = localStorage.getItem("productZoomLevel");
+    return savedZoom ? parseInt(savedZoom, 10) : 100;
+  });
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -86,7 +92,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     // Only update category when it changes
     updateFilter("categories", filterValue);
 
-  }, [category, subcategory]); // REMOVED selectedFilters dependency to prevent infinite loop
+  }, [category, subcategory]);
 
   /**
    * Filter products locally ONLY for special cases like "Boutique"
@@ -105,6 +111,13 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
   }, []);
+
+  /**
+   * Save zoom level to localStorage whenever it changes
+   */
+  useEffect(() => {
+    localStorage.setItem("productZoomLevel", zoomLevel.toString());
+  }, [zoomLevel]);
 
   /**
    * Search effect
@@ -144,6 +157,40 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       return updated;
     });
   }, []);
+
+  /**
+   * Handle zoom slider change
+   */
+  const handleZoomChange = (e) => {
+    setZoomLevel(parseInt(e.target.value, 10));
+  };
+
+  const decreaseZoom = () => {
+    setZoomLevel((prev) => Math.max(60, prev - 10));
+  };
+
+  const increaseZoom = () => {
+    setZoomLevel((prev) => Math.min(140, prev + 10));
+  };
+
+  /**
+   * Calculate grid columns based on zoom level
+   */
+  const gridColumns = useMemo(() => {
+    if (zoomLevel >= 120) return 3;
+    if (zoomLevel >= 90) return 4;
+    if (zoomLevel >= 60) return 5;
+    return 5;
+  }, [zoomLevel]);
+
+  /**
+   * Calculate product card size class based on zoom level
+   */
+  const cardSizeClass = useMemo(() => {
+    if (zoomLevel >= 120) return "lg";
+    if (zoomLevel >= 90) return "md";
+    return "sm"; // Default to sm for zoom out
+  }, [zoomLevel]);
 
   return (
     <div className="bg-white min-h-screen">
@@ -185,6 +232,11 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       {/* -------------------------------------------------------------- */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 py-4">
+
+          <div className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-widest mb-6">
+            HOME / WOMEN / {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
+          </div>
+
           {/* Fixed height container to prevent layout shift */}
           <div className="h-[40px] mb-6">
             <CategoryTags
@@ -195,12 +247,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
           </div>
 
           <div className="flex items-center justify-between mb-2">
-            {/* Breadcrumbs / Title */}
-            <div className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-widest">
-              HOME / WOMEN / {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
-            </div>
-
-            {/* Filter & Sort Controls */}
+            {/* Left side - Filter & Sort Controls */}
             <div className="flex items-center gap-6">
               {/* Filter Prompt */}
               <button
@@ -233,6 +280,64 @@ export default function ProductLayout({ children, products, categoryFromRoute })
                   <option value="high-to-low">Price: High to Low</option>
                   <option value="newest">Newest First</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Right side - Zoom Slider Control */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:block">
+                ZOOM
+              </span>
+
+              <div className="flex items-center gap-2">
+                {/* Minus button - square no border */}
+                <button
+                  onClick={decreaseZoom}
+                  className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  disabled={zoomLevel <= 60}
+                  aria-label="Decrease product size"
+                >
+                  <Minus size={14} className="text-gray-700" />
+                </button>
+
+                {/* Square slider track */}
+                <div className="relative w-24 md:w-32 h-8 bg-gray-100 flex items-center justify-center px-3">
+                  <input
+                    type="range"
+                    min="60"
+                    max="140"
+                    step="5"
+                    value={zoomLevel}
+                    onChange={handleZoomChange}
+                    className="w-full h-0.5 bg-gray-300 appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:w-3
+                [&::-webkit-slider-thumb]:h-3
+                [&::-webkit-slider-thumb]:bg-gray-900
+                [&::-webkit-slider-thumb]:rounded-none
+                [&::-webkit-slider-thumb]:cursor-pointer
+                [&::-moz-range-thumb]:w-3
+                [&::-moz-range-thumb]:h-3
+                [&::-moz-range-thumb]:bg-gray-900
+                [&::-moz-range-thumb]:rounded-none
+                [&::-moz-range-thumb]:cursor-pointer"
+                    aria-label="Adjust product card size"
+                  />
+                </div>
+
+                {/* Plus button - square no border */}
+                <button
+                  onClick={increaseZoom}
+                  className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  disabled={zoomLevel >= 140}
+                  aria-label="Increase product size"
+                >
+                  <Plus size={14} className="text-gray-700" />
+                </button>
+
+                <span className="text-xs font-medium text-gray-700 min-w-[40px] ml-1">
+                  {zoomLevel}%
+                </span>
               </div>
             </div>
           </div>
@@ -278,7 +383,9 @@ export default function ProductLayout({ children, products, categoryFromRoute })
           category={category}
           sortBy={sortValue}
           hideHeader={true}
-          columns={4}
+          columns={gridColumns}
+          zoomLevel={zoomLevel}
+          cardSize={cardSizeClass}
         />
       </div>
     </div>
