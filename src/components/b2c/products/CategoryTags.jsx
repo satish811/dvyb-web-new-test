@@ -38,6 +38,7 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
     const scrollContainerRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
+    const [buttonWidth, setButtonWidth] = useState(100); // Default width
 
     // Check if we're on the "All Products" page
     const isAllActive = location.pathname === "/womenwear";
@@ -50,13 +51,33 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
         return extractCategories(products);
     }, [products]);
 
-    // Calculate button width for 6 items
-    const buttonWidth = 100; // Approximate width in pixels
-    const gapSize = 8; // gap-2 = 8px
-    const containerWidth = (buttonWidth * 6) + (gapSize * 5); // Width for exactly 6 buttons with gaps
-
     // Check if we should show arrows based on subcategory count
     const shouldShowArrows = availableSubcategories.length > 6;
+
+    // Calculate dynamic button width and container width
+    useEffect(() => {
+        if (!showMainCategoriesOnly && scrollContainerRef.current) {
+            const buttons = scrollContainerRef.current.querySelectorAll('button');
+            if (buttons.length > 0) {
+                // Get the maximum button width
+                let maxWidth = 0;
+                buttons.forEach(button => {
+                    const width = button.offsetWidth;
+                    if (width > maxWidth) maxWidth = width;
+                });
+                setButtonWidth(maxWidth || 100);
+            }
+        }
+    }, [availableSubcategories, showMainCategoriesOnly]);
+
+    // Container width based on actual button sizes
+    const containerWidth = useMemo(() => {
+        if (!shouldShowArrows) return '100%';
+        const gapSize = 8; // gap-2 = 8px
+        const visibleButtons = 6;
+        const totalWidth = (buttonWidth * visibleButtons) + (gapSize * (visibleButtons - 1));
+        return `${totalWidth}px`;
+    }, [buttonWidth, shouldShowArrows]);
 
     // Prevent scroll restoration on navigation
     useEffect(() => {
@@ -169,7 +190,7 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                                 key={category.name}
                                 onClick={() => handleCategoryClick(category.name)}
                                 className={`
-                                    flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200
+                                    flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200 whitespace-nowrap
                                     ${isActive
                                         ? "bg-black text-white border-black"
                                         : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
@@ -203,7 +224,6 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                         letterSpacing: '1px',
                         textAlign: 'center',
                         textTransform: 'uppercase',
-                        
                     }}
                 >
                     {currentCategory?.toUpperCase().replace("-", " ") || "WOMEN"}
@@ -214,7 +234,7 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                 <div
                     className="relative bg-white rounded-lg shadow-sm overflow-hidden"
                     style={{
-                        width: `${containerWidth}px`,
+                        width: containerWidth,
                         maxWidth: '100%'
                     }}
                 >
@@ -241,10 +261,11 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     {/* Scrollable subcategories container */}
                     <div
                         ref={scrollContainerRef}
-                        className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
-                            ? 'overflow-x-auto scroll-smooth'
-                            : 'overflow-x-hidden'
-                            }`}
+                        className={`flex items-center gap-2 py-2 px-2 ${
+                            shouldShowArrows
+                                ? 'overflow-x-auto scroll-smooth'
+                                : 'overflow-x-hidden'
+                        }`}
                         style={{
                             scrollbarWidth: 'none',
                             msOverflowStyle: 'none',
@@ -254,38 +275,54 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                         }}
                     >
                         <style>{`
-                div::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
+                            div::-webkit-scrollbar {
+                                display: none;
+                            }
+                        `}</style>
 
                         {/* Subcategory buttons */}
                         {availableSubcategories.map((subCatName, index) => {
                             const isActive = selectedFilters.categories?.includes(subCatName) || false;
+                            
+                            // Calculate dynamic font size based on text length
+                            const getFontSize = (text) => {
+                                const length = text.length;
+                                if (length > 20) return '10px';
+                                if (length > 15) return '11px';
+                                if (length > 10) return '12px';
+                                return '13px';
+                            };
 
                             return (
                                 <button
                                     key={subCatName}
                                     onClick={() => handleCategoryClick(subCatName, true)}
                                     className={`
-                flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200 whitespace-nowrap
-                ${isActive
+                                        flex-shrink-0 px-4 py-1.5 font-medium border transition-all duration-200 whitespace-nowrap
+                                        ${isActive
                                             ? "bg-black text-white border-black"
                                             : "bg-white border-[#9B8B9A66] hover:border-gray-400"
                                         }
-                ${index === 0 ? 'ml-0' : ''}
-            `}
+                                        ${index === 0 ? 'ml-0' : ''}
+                                    `}
                                     style={{
                                         fontFamily: 'Outfit',
                                         fontWeight: 300,
-                                        fontSize: '8px',
-                                        lineHeight: '14.77px',
-                                        letterSpacing: '1.11px',
+                                        fontSize: getFontSize(subCatName),
+                                        lineHeight: '1.2',
+                                        letterSpacing: '0.5px',
                                         textAlign: 'center',
                                         textTransform: 'uppercase',
                                         color: isActive ? 'white' : '#815279',
-                                        borderWidth: '0.92px'
+                                        borderWidth: '0.92px',
+                                        minWidth: 'fit-content',
+                                        maxWidth: '180px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        paddingLeft: '16px',
+                                        paddingRight: '16px'
                                     }}
+                                    title={subCatName} // Show full text on hover
                                 >
                                     {subCatName}
                                 </button>
