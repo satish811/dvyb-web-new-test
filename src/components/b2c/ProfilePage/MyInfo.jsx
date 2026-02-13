@@ -50,6 +50,7 @@ const MyInfo = () => {
     stateProvince: "",
     zipPostalCode: "",
     country: "",
+    phone: "", // Added phone field
   });
 
   // Fetch user data on mount
@@ -170,14 +171,19 @@ const MyInfo = () => {
   };
 
   const addAddress = async () => {
+    // Validate only required fields for address
     const errors = [
       b2cValidator.validateName(newAddress.firstName),
       b2cValidator.validateAddress(newAddress.address),
-      b2cValidator.validateEmail(newAddress.email),
       b2cValidator.validateCity(newAddress.city),
       b2cValidator.validateState(newAddress.stateProvince),
       b2cValidator.validateZip(newAddress.zipPostalCode),
     ].filter(Boolean);
+
+    // Only validate email if it's provided (optional field)
+    if (newAddress.email && b2cValidator.validateEmail(newAddress.email)) {
+      errors.push(b2cValidator.validateEmail(newAddress.email));
+    }
 
     if (errors.length > 0) {
       alert(errors[0]);
@@ -185,21 +191,35 @@ const MyInfo = () => {
     }
 
     try {
+      // Prepare address data without empty optional fields
+      const addressData = {
+        firstName: newAddress.firstName,
+        lastName: newAddress.lastName || "",
+        address: newAddress.address,
+        city: newAddress.city,
+        stateProvince: newAddress.stateProvince,
+        zipPostalCode: newAddress.zipPostalCode,
+        country: newAddress.country,
+        email: newAddress.email || null, // Send null if empty
+        phone: newAddress.phone || null, // Send null if empty
+      };
+
       if (userRole === "B2B") {
         if (editingAddress) {
-          await B2BAddressService.updateAddress(user.uid, "B2B", editingAddress.id, newAddress);
+          await B2BAddressService.updateAddress(user.uid, "B2B", editingAddress.id, addressData);
         } else {
-          await B2BAddressService.addAddress(user.uid, "B2B", newAddress);
+          await B2BAddressService.addAddress(user.uid, "B2B", addressData);
         }
       } else {
         if (editingAddress) {
-          await userService.updateAddress(user.uid, editingAddress.id, newAddress);
+          await userService.updateAddress(user.uid, editingAddress.id, addressData);
         } else {
-          await userService.addAddress(user.uid, newAddress);
+          await userService.addAddress(user.uid, addressData);
         }
       }
       await refreshUserData();
       cancelAddressForm();
+      alert(`Address ${editingAddress ? "updated" : "added"} successfully!`);
     } catch (error) {
       console.error("Address save failed:", error);
       alert(error.message || "Failed to save address");
@@ -298,6 +318,7 @@ const MyInfo = () => {
       stateProvince: address.stateProvince || "",
       zipPostalCode: address.zipPostalCode || "",
       country: address.country || "",
+      phone: address.phone || "",
     });
     setShowAddAddress(true);
   };
@@ -314,6 +335,7 @@ const MyInfo = () => {
       stateProvince: "",
       zipPostalCode: "",
       country: "",
+      phone: "",
     });
     setSelectedCountryCode("");
     setSelectedStateCode("");
@@ -321,15 +343,13 @@ const MyInfo = () => {
 
   if (loading || roleLoading) {
     return (
-      <div className="flex  mt-44 items-center justify-center h-64">
+      <div className="flex mt-44 items-center justify-center h-64">
         <LazyImageLoader isProcessing={true} />
-        {/* <div className="animate-spin h-8 w-8 border-b-2 border-amber-400"></div> */}
       </div>
     );
   }
 
   // User Details Section - Unified View/Edit Mode
-  // Note: We use the same structure but toggle disabled state and buttons based on editUserMode
   const renderUserDetails = () => {
     return (
       <div className="mb-12">
@@ -348,13 +368,25 @@ const MyInfo = () => {
             />
           </div>
 
+          {/* Email Input - Added for completeness */}
+          <div>
+            <input
+              name="email"
+              value={userRole === "B2B" ? b2bData.email : b2cData.email}
+              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              disabled={!editUserMode}
+              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
+              placeholder="Email"
+            />
+          </div>
+
           {/* Phone/Mobile Input */}
           <div>
             <input
               name={userRole === "B2B" ? "mobile" : "phoneNumber"}
               value={userRole === "B2B" ? b2bData.mobile : b2cData.phoneNumber}
-              disabled={!editUserMode} // Assuming phone is editable based on mockup, or we keep it read-only if backend restricts
-              // readOnly={true} // Validating if user wants it editable. For now match mockup which implies editability or just display
+              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              disabled={!editUserMode}
               className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
               placeholder="Phone Number"
             />
@@ -416,7 +448,7 @@ const MyInfo = () => {
                 name="firstName"
                 value={newAddress.firstName}
                 onChange={handleNewAddressChange}
-                placeholder="First Name"
+                placeholder="First Name *"
                 className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 required
               />
@@ -434,74 +466,40 @@ const MyInfo = () => {
               />
             </div>
 
+            {/* Email (Optional) */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <input
+                type="email"
+                name="email"
+                value={newAddress.email}
+                onChange={handleNewAddressChange}
+                placeholder="Email (Optional)"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+              />
+            </div>
+
+            {/* Phone (Optional) */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <input
+                type="tel"
+                name="phone"
+                value={newAddress.phone}
+                onChange={handleNewAddressChange}
+                placeholder="Phone (Optional)"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+              />
+            </div>
+
             {/* Address */}
             <div className="relative border border-dashed border-gray-400 p-3 col-span-1 md:col-span-2">
               <input
                 name="address"
                 value={newAddress.address}
                 onChange={handleNewAddressChange}
-                placeholder="Address (House No, Building, Street, Area)"
+                placeholder="Address (House No, Building, Street, Area) *"
                 className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 required
               />
-            </div>
-
-            {/* City */}
-            <div className="relative border border-dashed border-gray-400 p-3">
-              <input // Using input for City as per common mockup pattern, but keeping select logic if preferred. Mockup shows "Hyderabad" typed.
-                // Reverting to Select to keep functional logic but styling as input
-                name="city"
-                value={newAddress.city}
-                onChange={handleNewAddressChange} // If using input
-                // Using the select logic would be better but for visual match we use the structure.
-                // Let's keep the select functionality but style it better.
-                placeholder="City"
-                className="hidden"
-              />
-              <select
-                name="city"
-                value={newAddress.city}
-                onChange={handleNewAddressChange}
-                disabled={!selectedStateCode}
-                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
-                required
-              >
-                <option value="">City/District/Town</option>
-                {selectedStateCode &&
-                  City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((city) => (
-                    <option key={city.name} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            {/* State */}
-            <div className="relative border border-dashed border-gray-400 p-3">
-              <select
-                value={selectedStateCode}
-                onChange={(e) => {
-                  const code = e.target.value;
-                  setSelectedStateCode(code);
-                  const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
-                  setNewAddress((prev) => ({
-                    ...prev,
-                    stateProvince: state?.name || "",
-                    city: "",
-                  }));
-                }}
-                disabled={!selectedCountryCode}
-                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
-                required
-              >
-                <option value="">State</option>
-                {selectedCountryCode &&
-                  State.getStatesOfCountry(selectedCountryCode).map((state) => (
-                    <option key={state.isoCode} value={state.isoCode}>
-                      {state.name}
-                    </option>
-                  ))}
-              </select>
             </div>
 
             {/* Country */}
@@ -523,12 +521,60 @@ const MyInfo = () => {
                 className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
                 required
               >
-                <option value="">Country</option>
+                <option value="">Country *</option>
                 {Country.getAllCountries().map((country) => (
                   <option key={country.isoCode} value={country.isoCode}>
                     {country.name}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* State */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <select
+                value={selectedStateCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setSelectedStateCode(code);
+                  const state = State.getStateByCodeAndCountry(code, selectedCountryCode);
+                  setNewAddress((prev) => ({
+                    ...prev,
+                    stateProvince: state?.name || "",
+                    city: "",
+                  }));
+                }}
+                disabled={!selectedCountryCode}
+                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
+                required
+              >
+                <option value="">State *</option>
+                {selectedCountryCode &&
+                  State.getStatesOfCountry(selectedCountryCode).map((state) => (
+                    <option key={state.isoCode} value={state.isoCode}>
+                      {state.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* City */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <select
+                name="city"
+                value={newAddress.city}
+                onChange={handleNewAddressChange}
+                disabled={!selectedStateCode}
+                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
+                required
+              >
+                <option value="">City/District/Town *</option>
+                {selectedStateCode &&
+                  City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -539,19 +585,14 @@ const MyInfo = () => {
                 name="zipPostalCode"
                 value={newAddress.zipPostalCode}
                 onChange={handleNewAddressChange}
-                placeholder="Zip Code"
+                placeholder="Zip Code *"
                 className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                required
               />
             </div>
 
-
-            {/* Phone (Mockup has it in address form sometimes, usually separate, but if needed add here) */}
-            {/* <div className="relative border border-dashed border-gray-400 p-3">
-               <input placeholder="Phone" className="..." />
-             </div> */}
-
             {/* BUTTONS */}
-            <div className="flex gap-4 pt-6">
+            <div className="flex gap-4 pt-6 col-span-1 md:col-span-2">
               <button
                 onClick={addAddress}
                 className="px-8 py-2.5 bg-[#33022F] text-white font-bold text-sm tracking-wide hover:bg-[#5a0452] transition"
@@ -574,22 +615,6 @@ const MyInfo = () => {
   // Main View - Same design for both B2B and B2C
   return (
     <div className="min-h-screen bg-white">
-      {/* Role Toggle for Demo */}
-      {/* <div className="fixed top-4 right-4 z-50 flex gap-2">
-        <button
-          onClick={() => setUserRole("B2C")}
-          className={`px-4 py-2 text-sm ${userRole === "B2C" ? "bg-primary text-white" : "bg-gray-200"}`}
-        >
-          B2C
-        </button>
-        <button
-          onClick={() => setUserRole("B2B")}
-          className={`px-4 py-2 text-sm ${userRole === "B2B" ? "bg-primary text-white" : "bg-gray-200"}`}
-        >
-          B2B
-        </button>
-      </div> */}
-
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
         <div className="max-w-7xl mx-auto">
           {renderUserDetails()}
@@ -611,18 +636,22 @@ const MyInfo = () => {
               {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
                 (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
                   <div key={address.id} className="bg-[#F9F9F9] p-8 flex flex-col justify-between h-full min-h-[220px]">
-
                     {/* Address Details */}
                     <div className="mb-6">
                       <h3 className="text-sm font-bold text-gray-900 mb-2">
                         {address.firstName} {address.lastName || ""}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-4 font-medium">1234567890</p>
-                      {/* Note: Phone in address? Using mock logic or address.phone if available in future */}
+                      <p className="text-sm text-gray-500 mb-4 font-medium">
+                        {address.phone || "Phone not provided"}
+                      </p>
 
                       <p className="text-sm text-gray-600 leading-relaxed">
                         {address.address}, {address.city}, {address.stateProvince}, {address.zipPostalCode}
+                        {address.country && `, ${address.country}`}
                       </p>
+                      {address.email && (
+                        <p className="text-sm text-gray-500 mt-2">{address.email}</p>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -652,7 +681,6 @@ const MyInfo = () => {
                         </button>
                       </div>
                     </div>
-
                   </div>
                 ))
               ) : (
