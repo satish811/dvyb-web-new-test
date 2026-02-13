@@ -1252,9 +1252,9 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
-    text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
-    disabled:opacity-50 transition-all"
+                  className="w-full h-11 xs:h-12 bg-[#33022F] 
+text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
+disabled:opacity-50 transition-all"
                 >
                   <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
                   SAVE & CONTINUE
@@ -1412,8 +1412,8 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
-    text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-[#33022F] 
+text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   SAVE & CONTINUE
                 </button>
