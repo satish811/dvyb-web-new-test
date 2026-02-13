@@ -32,7 +32,16 @@ const generateFallbackProducts = (categoryName) => {
   });
 };
 
-const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = false, columns }) => {
+const ProductGrid = ({ 
+  products, 
+  category, 
+  sortBy: externalSortBy, 
+  hideHeader = false, 
+  columns = 4, // Default to 4 columns
+  responsiveClasses, // New prop for responsive grid classes
+  zoomLevel = 100, // New prop for zoom level
+  cardSize = "md" // New prop for card size
+}) => {
   const location = useLocation();
   const { selectedFilters, clearAllFilters } = useFilter();
 
@@ -58,14 +67,11 @@ const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = 
     const adminPublished = product.isAdminPublished ?? product.availability?.isAdminPublished;
 
     if (adminPublished !== undefined) {
-
       if (adminPublished === false) return false;
       if (adminPublished === true && !product.isPublished) return false;
-
     }
     return product.isPublished === true;
   };
-
 
   const sortedAndFilteredProducts = useMemo(() => {
     let items = [...filteredProducts];
@@ -103,6 +109,73 @@ const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = 
       window.history.replaceState({}, '', `${location.pathname}?${params.toString()}`);
     }
   }, [currentPage, totalPages, location, shouldPaginate]);
+
+  /**
+   * Generate grid classes based on zoom level
+   * This is the key part for zoom functionality - NOW WITH 2, 4, AND 6 COLUMNS
+   */
+  const getGridClasses = useMemo(() => {
+    // If responsiveClasses is provided (from ProductLayout), use that
+    if (responsiveClasses) {
+      return responsiveClasses;
+    }
+
+    // Otherwise determine based on zoom level or columns prop
+    // Zoom level determines column count: 
+    // - Zoom out (60-90) = 6 columns
+    // - Default (91-110) = 4 columns
+    // - Zoom in (111-140) = 2 columns
+    if (zoomLevel <= 90) {
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
+    } else if (zoomLevel <= 110) {
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+    } else {
+      return "grid-cols-1 sm:grid-cols-2";
+    }
+  }, [columns, responsiveClasses, zoomLevel]);
+
+  /**
+   * Get card size classes based on zoom level
+   */
+  const getCardSizeClasses = useMemo(() => {
+    switch (cardSize) {
+      case "lg": // Zoom in - larger cards
+        return "max-w-[500px] sm:max-w-full";
+      case "md": // Default
+        return "max-w-[350px] sm:max-w-full";
+      case "sm": // Zoom out - smaller cards
+        return "max-w-[280px] sm:max-w-full";
+      default:
+        return "max-w-[350px] sm:max-w-full";
+    }
+  }, [cardSize]);
+
+  /**
+   * Get gap classes based on zoom level
+   */
+  const getGapClasses = useMemo(() => {
+    if (zoomLevel >= 111) { // Zoom in - 2 columns
+      return "gap-6 sm:gap-7 md:gap-8";
+    }
+    if (zoomLevel >= 91) { // Default - 4 columns
+      return "gap-4 sm:gap-5 md:gap-6";
+    }
+    // Zoom out - 6 columns
+    return "gap-3 sm:gap-3 md:gap-4 lg:gap-5";
+  }, [zoomLevel]);
+
+  /**
+   * Get container padding based on zoom level
+   */
+  const getContainerClasses = useMemo(() => {
+    if (zoomLevel >= 111) {
+      return "px-2 sm:px-4";
+    }
+    if (zoomLevel >= 91) {
+      return "px-2 sm:px-3";
+    }
+    return "px-1 sm:px-2";
+  }, [zoomLevel]);
 
   // Global Empty State (No Category selected, and No Products)
   if ((!products || products.length === 0) && !category) {
@@ -166,7 +239,6 @@ const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = 
       {/* Title + Sort - hidden if hideHeader is true */}
       {!hideHeader && (
         <div className="hidden sm:flex justify-between items-center mb-3">
-
           {/* Title + Correct Count */}
           <div className="flex items-baseline gap-2">
             <h1 className="text-[1.3rem] font-semibold uppercase">
@@ -177,23 +249,26 @@ const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = 
             </span>
           </div>
 
-
-          <select
-            value={sortBy}
-            onChange={(e) => setInternalSortBy(e.target.value)}
-            className="border border-gray-300 rounded-md px-4 py-2 text-sm focus:ring-2 focus:ring-[#9C0000] focus:outline-none"
-          >
-            <option value="">Recommended</option>
-            <option value="low-to-high">Price: Low to High</option>
-            <option value="high-to-low">Price: High to Low</option>
-          </select>
+          {/* Zoom indicator - optional */}
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-500">
+              {zoomLevel <= 90 ? '6 columns' : zoomLevel <= 110 ? '4 columns' : '2 columns'}
+            </span>
+            <select
+              value={sortBy}
+              onChange={(e) => setInternalSortBy(e.target.value)}
+              className="border border-gray-300 rounded-md px-4 py-2 text-sm focus:ring-2 focus:ring-[#9C0000] focus:outline-none"
+            >
+              <option value="">Recommended</option>
+              <option value="low-to-high">Price: Low to High</option>
+              <option value="high-to-low">Price: High to Low</option>
+            </select>
+          </div>
         </div>
       )}
 
       {/* Black straight line after Title + Sort section */}
-      {!hideHeader && <div className="hidden sm:block border-t border-black mb-6"></div>
-      }
-
+      {!hideHeader && <div className="hidden sm:block border-t border-black mb-6"></div>}
 
       {/* Show Products (Real or Fallback) */}
       {productsToDisplay.length === 0 ? (
@@ -205,27 +280,50 @@ const ProductGrid = ({ products, category, sortBy: externalSortBy, hideHeader = 
         </div>
       ) : (
         <>
-          <div
+          {/* Product Grid - Dynamic columns based on zoom level (2, 4, or 6 columns) */}
+          <div 
             className={`
-          grid gap-4 sm:gap-6 md:gap-8
-          ${columns === 4 ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3'}
-        `}
+              grid 
+              ${getGridClasses} 
+              ${getGapClasses}
+              ${getContainerClasses}
+              transition-all duration-300 ease-in-out
+            `}
           >
             {paginatedProducts.map((product, idx) => (
-              <ProductCard key={product.id} product={product} />
+              <div 
+                key={product.id} 
+                className={`
+                  ${getCardSizeClasses} 
+                  w-full mx-auto
+                  transform transition-all duration-300 ease-in-out
+                `}
+              >
+                <ProductCard 
+                  product={product} 
+                  zoomLevel={zoomLevel}
+                  cardSize={cardSize}
+                />
+              </div>
             ))}
+          </div>
+
+          {/* Column count indicator for mobile */}
+          <div className="sm:hidden text-center mt-4 text-xs text-gray-500">
+            {zoomLevel <= 90 ? '6 products per row' : zoomLevel <= 110 ? '4 products per row' : '2 products per row'}
           </div>
 
           {/* Pagination - Only show on "All Products" page, not on category pages */}
           {shouldPaginate && totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-            />
+            <div className="mt-12">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+              />
+            </div>
           )}
         </>
       )}
-
     </div>
   );
 };
