@@ -260,11 +260,10 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     {/* Scrollable subcategories container */}
                     <div
                         ref={scrollContainerRef}
-                        className={`flex items-center gap-2 py-2 px-2 ${
-                            shouldShowArrows
+                        className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
                                 ? 'overflow-x-auto scroll-smooth'
                                 : 'overflow-x-hidden'
-                        }`}
+                            }`}
                         style={{
                             scrollbarWidth: 'none',
                             msOverflowStyle: 'none',
@@ -282,7 +281,7 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                         {/* Subcategory buttons */}
                         {availableSubcategories.map((subCatName, index) => {
                             const isActive = selectedFilters.categories?.includes(subCatName) || false;
-                            
+
                             // Calculate dynamic font size based on text length
                             const getFontSize = (text) => {
                                 const length = text.length;
@@ -297,13 +296,13 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                                     key={subCatName}
                                     onClick={() => handleCategoryClick(subCatName, true)}
                                     className={`
-                                        flex-shrink-0 px-4 py-1.5 font-medium border transition-all duration-200 whitespace-nowrap
-                                        ${isActive
-                                            ? "bg-black text-white border-black"
-                                            : "bg-white border-[#9B8B9A66] hover:border-gray-400"
+                flex-shrink-0 px-4 py-1.5 font-medium border transition-all duration-200 whitespace-nowrap
+                ${isActive
+                                            ? "bg-black text-white border-black hover:bg-gray-800 hover:border-gray-800"
+                                            : "bg-white border-[#9B8B9A66] hover:bg-[#815279] hover:text-white hover:border-[#815279]"
                                         }
-                                        ${index === 0 ? 'ml-0' : ''}
-                                    `}
+                ${index === 0 ? 'ml-0' : ''}
+            `}
                                     style={{
                                         fontFamily: 'Outfit',
                                         fontWeight: 300,
@@ -319,7 +318,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         paddingLeft: '16px',
-                                        paddingRight: '16px'
+                                        paddingRight: '16px',
+                                        transition: 'all 0.2s ease-in-out'
                                     }}
                                     title={subCatName} // Show full text on hover
                                 >
