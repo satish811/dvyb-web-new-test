@@ -616,7 +616,8 @@ const UploadSelfieModal = ({
             {/* BUTTONS */}
             <button
               onClick={() => setStep(2)}
-              className="w-full md:w-[345px] bg-[#8B0000] text-white h-[44px] text-sm hover:bg-[#A30000] transition rounded-md md:rounded-none"
+              className="w-full md:w-[345px] text-white h-[44px] text-sm hover:opacity-90 transition rounded-md md:rounded-none"
+              style={{ background: 'var(--villy-primary, #33022F)' }}
             >
               Upload a picture
             </button>
@@ -626,7 +627,10 @@ const UploadSelfieModal = ({
                 setShowModelSelector(true);
                 setStep(null); // hide Step1
               }}
-              className="w-full md:w-[345px] border mt-2 border-[#8B0000] text-[#8B0000] h-[44px] text-sm hover:bg-[#8B0000] hover:text-white transition rounded-md md:rounded-none"
+              className="w-full md:w-[345px] border mt-2 h-[44px] text-sm hover:text-white transition rounded-md md:rounded-none"
+              style={{ borderColor: 'var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--villy-primary, #33022F)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               Select a model
             </button>
@@ -994,7 +998,7 @@ const UploadSelfieModal = ({
                     }}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B0000]"></div>
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--villy-primary, #33022F)' }}></div>
                 </label>
 
                 <span className="text-sm font-medium text-gray-700">Villy Models</span>
@@ -1032,21 +1036,21 @@ const UploadSelfieModal = ({
                   <p className="text-left mt-2 text-sm font-medium text-gray-700">Your Model</p>
 
                   {selectedModel?.name === "Your Model" && (
-                    <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] border-[#8B0000] pointer-events-none rounded">
+                    <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
                       <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
                         <svg
                           width="14"
                           height="14"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke="#8B0000"
+                          stroke="var(--villy-primary, #33022F)"
                           strokeWidth="3"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        <span className="text-xs font-medium text-[#8B0000]">SELECTED</span>
+                        <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
                       </div>
                     </div>
                   )}
@@ -1079,21 +1083,21 @@ const UploadSelfieModal = ({
                       </p>
 
                       {selectedModel?.name === model.modelName && (
-                        <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] border-[#8B0000] pointer-events-none rounded">
+                        <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
                           <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
                             <svg
                               width="14"
                               height="14"
                               viewBox="0 0 24 24"
                               fill="none"
-                              stroke="#8B0000"
+                              stroke="var(--villy-primary, #33022F)"
                               strokeWidth="3"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             >
                               <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
-                            <span className="text-xs font-medium text-[#8B0000]">SELECTED</span>
+                            <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
                           </div>
                         </div>
                       )}
@@ -1109,7 +1113,8 @@ const UploadSelfieModal = ({
                 type="checkbox"
                 checked={makeDefault}
                 onChange={(e) => setMakeDefault(e.target.checked)}
-                className="mt-1 w-4 h-4 accent-[#8B0000]"
+                className="mt-1 w-4 h-4"
+                style={{ accentColor: 'var(--villy-primary, #33022F)' }}
               />
               <p className="text-sm text-gray-700">
                 Make it default model for all future try ons (you can always change the model in the
@@ -1124,7 +1129,9 @@ const UploadSelfieModal = ({
                   setShowModelSelector(false);
                   setStep(1);
                 }}
-                className="flex items-center gap-2 text-gray-700 border border-gray-300 px-6 py-2 rounded hover:bg-gray-50 hover:border-[#8B0000] hover:text-[#8B0000] transition-colors"
+                className="flex items-center gap-2 text-gray-700 border border-gray-300 px-6 py-2 rounded hover:bg-gray-50 transition-colors"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--villy-primary, #33022F)'; e.currentTarget.style.color = 'var(--villy-primary, #33022F)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.color = '#374151'; }}
               >
                 <ArrowLeft size={16} /> BACK
               </button>
@@ -1140,9 +1147,10 @@ const UploadSelfieModal = ({
                 }}
                 disabled={!selectedModel}
                 className={`px-8 py-2 rounded font-medium transition-colors ${selectedModel
-                  ? "bg-[#8B0000] text-white hover:bg-[#A30000]"
+                  ? "text-white hover:opacity-90"
                   : "bg-[#E5E5E5] text-gray-400 cursor-not-allowed"
                   }`}
+                style={selectedModel ? { background: 'var(--villy-primary, #33022F)' } : {}}
               >
                 NEXT →
               </button>
@@ -1220,7 +1228,8 @@ const UploadSelfieModal = ({
                 onClose();
                 navigate(`/products/${tryOnData?.productId}`);
               }}
-              className="w-full bg-[#8B0000] text-white py-2.5 text-sm font-medium hover:bg-[#A30000] transition rounded-md"
+              className="w-full text-white py-2.5 text-sm font-medium hover:opacity-90 transition rounded-md"
+              style={{ background: 'var(--villy-primary, #33022F)' }}
             >
               Select Another Dress
             </button>
@@ -1231,7 +1240,8 @@ const UploadSelfieModal = ({
                 setShowModelPreview(false);
                 setShowModelSelector(true);
               }}
-              className="w-full bg-[#8B0000] text-white py-2.5 text-sm font-medium hover:bg-[#A30000] transition rounded-md"
+              className="w-full text-white py-2.5 text-sm font-medium hover:opacity-90 transition rounded-md"
+              style={{ background: 'var(--villy-primary, #33022F)' }}
             >
               Select Another Model
             </button>
@@ -1258,7 +1268,9 @@ const UploadSelfieModal = ({
                   modelName: selectedModel.name,
                 });
               }}
-              className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:bg-[#8B0000] hover:text-white hover:border-[#8B0000] transition-all"
+              className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all"
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--villy-primary, #33022F)'; e.currentTarget.style.borderColor = 'var(--villy-primary, #33022F)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#374151'; }}
             >
               Continue
               <img src={right_ic} alt="" className="h-4 w-4 group-hover:hidden" />

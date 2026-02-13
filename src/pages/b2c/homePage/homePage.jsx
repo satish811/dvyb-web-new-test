@@ -5,7 +5,6 @@ import homeBannerWomen from "../../../assets/hero_women.jpg";
 import homeBannerMen from "../../../assets/hero_men.jpg";
 import ClosetIconsSection from "../../../components/b2c/home/ClosetIconsSection";
 import { useProducts } from "../../../hooks/useProducts";
-import { useStaticProducts } from "../../../hooks/useStaticProducts";
 import LuxuryPicks from "../../../components/b2c/home/LuxuryPicks";
 import SpotlightCollections from "../../../components/b2c/home/SpotlightCollections";
 import BestProducts from "../../../components/b2c/home/BestProducts";
@@ -21,19 +20,13 @@ import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 // import HomeFooter from "../../../components/b2c/home/HomeFooter";
 
 export default function Home() {
-  const { staticProducts, loading, error } = useStaticProducts();
+  const { products, loading, error } = useProducts();
   const navigate = useNavigate();
 
   if (loading) return <div className="text-center py-20 sm:py-2">Loading…</div>;
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
-  const productsArray = Array.isArray(staticProducts) ? staticProducts : [];
-  const wedding = productsArray.filter((p) => p.category === "Wedding");
-  const discount = productsArray.filter((p) => p.category === "Discount");
-  const bestsellers = productsArray.filter((p) => p.category === "Bestselling").slice(0, 8);
-  const spotlight = productsArray.find((p) => p.category === "Spotlight");
-  const luxuryPicks = productsArray.filter((p) => p.category === "Luxury").slice(0, 4);
-  const closetIcons = productsArray.filter((p) => p.category === "Closet").slice(0, 8);
+  const productsArray = Array.isArray(products) ? products : [];
 
   return (
     <div className="">
@@ -45,7 +38,7 @@ export default function Home() {
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-black/10"></div> {/* Subtle tint for text contrast if needed */}
 
@@ -54,7 +47,7 @@ export default function Home() {
               onClick={() => navigate("/womenwear")}
               className="bg-white text-black px-8 py-3 md:px-10 md:py-3 text-xs md:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
-              Shop Womens
+              Shop Women
             </button>
           </div>
         </div>
@@ -73,7 +66,7 @@ export default function Home() {
               onClick={() => navigate("/menwear")}
               className="bg-white text-black px-8 py-3 md:px-10 md:py-3 text-xs md:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
-              Shop Mens
+              Shop Men
             </button>
           </div>
         </div>
@@ -84,11 +77,11 @@ export default function Home() {
             className="text-white drop-shadow-xl z-20 text-center mx-4"
             style={{
               fontFamily: 'Antiga, serif',
-              fontSize: '100px',
+              fontSize: '99.69px',
               fontWeight: 400,
               fontStyle: 'normal',
-              lineHeight: '0.9',
-              letterSpacing: '4px',
+              lineHeight: '100%',
+              letterSpacing: '0.04em',
               textTransform: 'uppercase'
             }}
           >
@@ -130,7 +123,7 @@ export default function Home() {
       <TryItBuyItSection />
 
       {/* 2.98 POPULAR PRODUCTS SECTION */}
-      <PopularProductsSection />
+      <PopularProductsSection products={productsArray} />
 
       {/* 2.99 NEW ARRIVAL BANNER */}
       <NewArrivalBanner />

@@ -17,6 +17,7 @@ export const normalizeCategory = (categoryName) => {
         "lehengas": "lehenga",
         "lehenga": "lehenga",
         "kurta sets": "kurta-sets",
+        "kurta-sets": "kurta-sets",
         "anarkalis": "anarkalis",
         "shararas": "shararas",
         "pret": "pret",

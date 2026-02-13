@@ -1,17 +1,16 @@
 import React from "react";
-import { useStaticProducts } from "../../../hooks/useStaticProducts";
+import { useNavigate } from "react-router-dom";
 import WishlistHeartButton from "../../common/WishlistHeartButton";
 
 // Assets
-import vector1 from "../../../assets/b2c/landing/Landing-villy/Vector1.png";
-import vector2 from "../../../assets/b2c/landing/Landing-villy/vector2.png";
+import vector1 from "../../../assets/b2c/landing/Landing-villy/newvector1.png";
+import vector2 from "../../../assets/b2c/landing/Landing-villy/newvector2.png";
 
-export default function PopularProductsSection() {
-    const { staticProducts } = useStaticProducts();
+export default function PopularProductsSection({ products: firebaseProducts = [] }) {
+    const navigate = useNavigate();
 
-    // Get 8 products for the 4x2 grid
-    // Filter existing products or take a slice. Using slice(0, 8) as per plan.
-    const products = Array.isArray(staticProducts) ? staticProducts.slice(0, 8) : [];
+    // Get 8 products for the 4x2 grid from Firebase
+    const products = Array.isArray(firebaseProducts) ? firebaseProducts.slice(0, 8) : [];
 
     // Helper to format price
     const formatPrice = (price) => {
@@ -35,13 +34,16 @@ export default function PopularProductsSection() {
             <div className="max-w-[1400px] mx-auto px-4 md:px-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {products.map((product) => (
-                        <div key={product.id} className="relative group flex flex-col gap-3">
+                        <div
+                            key={product.id}
+                            className="relative group flex flex-col gap-3 cursor-pointer"
+                            onClick={() => navigate(`/products/${product.id}`)}
+                        >
 
-                            {/* Image Container */}
                             <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm bg-gray-200">
                                 <img
-                                    src={product.images ? product.images[0] : product.image}
-                                    alt={product.title}
+                                    src={product.imageUrls?.[0] || "/placeholder.jpg"}
+                                    alt={product.name || product.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
 
@@ -67,7 +69,7 @@ export default function PopularProductsSection() {
                             {/* Product Details */}
                             <div className="flex flex-col gap-1">
                                 <h3 className="text-sm font-medium text-gray-800 line-clamp-1">
-                                    {product.title}
+                                    {product.name || product.title}
                                 </h3>
 
                                 {/* Price */}
@@ -82,11 +84,22 @@ export default function PopularProductsSection() {
                                     )}
                                 </div>
 
-                                {/* Color Dots - Hardcoded for UI match if not in data, or generic map */}
+                                {/* Color Dots - Display actual product colors */}
                                 <div className="flex gap-1 mt-1">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF5733]"></span> {/* Red/Orange */}
-                                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFC300]"></span> {/* Yellow */}
-                                    {/* Add more based on logic if available, currently static to match reference style */}
+                                    {product.selectedColors?.slice(0, 3).map((color, idx) => {
+                                        // Parse color if it has underscore prefix (e.g., "color_#FF5733")
+                                        const hexColor = typeof color === 'string' && color.includes('_')
+                                            ? color.split('_')[1]
+                                            : color;
+
+                                        return (
+                                            <span
+                                                key={idx}
+                                                className="w-2.5 h-2.5  border border-gray-200"
+                                                style={{ backgroundColor: hexColor }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
 

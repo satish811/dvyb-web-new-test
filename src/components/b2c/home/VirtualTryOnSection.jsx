@@ -9,7 +9,7 @@ export default function VirtualTryOnSection() {
     const { setTryOnModalOpen } = useUI();
 
     return (
-        <section className="relative w-full bg-[#EEEAF4] overflow-hidden py-16 px-4 md:px-8">
+        <section className="relative w-full bg-[#EEEAF4] overflow-hidden pt-16 pb-0 px-4 md:px-8">
             {/* Background/Layout Container */}
             <div className="max-w-7xl mx-auto flex flex-col items-center relative">
 

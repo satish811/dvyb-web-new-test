@@ -1,94 +1,90 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
-// Assets for Grid
-import img1 from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
-import img2 from "../../../assets/b2c/landing/Landing-villy/Kurtas.jpg";
-import img3 from "../../../assets/b2c/landing/Landing-villy/Landingmen.jpg";
-import img4 from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
-import img5 from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
-import img6 from "../../../assets/b2c/landing/Landing-villy/Shararas.jpg";
-import img7 from "../../../assets/b2c/landing/Landing-villy/indowestern.png";
-import img8 from "../../../assets/b2c/landing/Landing-villy/indowestern2.jpg";
-import img9 from "../../../assets/b2c/landing/Landing-villy/landingwomen.png";
+// Import images for the grid
+import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
+import lehengaImg from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
+import kurtasImg from "../../../assets/b2c/landing/Landing-villy/Kurtas.jpg";
+import sareesImg from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
+import shararasImg from "../../../assets/b2c/landing/Landing-villy/Shararas.jpg";
+import wovenSareeImg from "../../../assets/b2c/landing/Landing-villy/Wovensaree.jpg";
+import paithaniImg from "../../../assets/b2c/landing/Landing-villy/paithanisilksaree.jpg";
+import silkSareeImg from "../../../assets/b2c/landing/Landing-villy/salwarsuit.png";
+import kanjeevaramImg from "../../../assets/b2c/landing/Landing-villy/kanjeevaramsaree.jpg";
 
-// Pattern Background
-import patternBg from "../../../assets/ProductsPage/bg4.svg";
+// Import background pattern
+import ethnicBgPattern from "../../../assets/b2c/landing/Landing-villy/backroundethic.png";
 
-export default function EthnicWearSection() {
+const EthnicWearSection = () => {
     const navigate = useNavigate();
 
+    // Grid images array
     const gridImages = [
-        { id: 1, src: img1, alt: "Ethnic Wear 1" },
-        { id: 2, src: img2, alt: "Ethnic Wear 2" },
-        { id: 3, src: img3, alt: "Ethnic Wear 3" },
-        { id: 4, src: img4, alt: "Ethnic Wear 4" },
-        { id: 5, src: img5, alt: "Ethnic Wear 5" },
-        { id: 6, src: img6, alt: "Ethnic Wear 6" },
-        { id: 7, src: img7, alt: "Ethnic Wear 7" },
-        { id: 8, src: img8, alt: "Ethnic Wear 8" },
-        { id: 9, src: img9, alt: "Ethnic Wear 9" },
+        bridalImg, lehengaImg, kurtasImg,
+        sareesImg, shararasImg, wovenSareeImg,
+        paithaniImg, silkSareeImg, kanjeevaramImg
     ];
 
     return (
-        <section className="w-full h-auto min-h-[600px] flex flex-col lg:flex-row">
-
-            {/* LEFT SIDE: 3x3 Grid */}
-            <div className="w-full lg:w-1/2 grid grid-cols-3 gap-0.5 md:gap-1">
-                {gridImages.map((item) => (
-                    <div key={item.id} className="w-full aspect-square overflow-hidden group">
+        <section className="w-full flex flex-col lg:flex-row h-auto lg:h-[600px]">
+            {/* LEFT SIDE: 3x3 Image Grid */}
+            <div className="w-full lg:w-1/2 grid grid-cols-3 grid-rows-3 h-[400px] lg:h-full">
+                {gridImages.map((img, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.05 }}
+                        className="relative w-full h-full overflow-hidden"
+                    >
                         <img
-                            src={item.src}
-                            alt={item.alt}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            src={img}
+                            alt={`Ethnic Style ${index + 1}`}
+                            className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-700"
                         />
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
-            {/* RIGHT SIDE: Decorative Card */}
-            <div className="w-full lg:w-1/2 bg-[#F9F4F0] relative flex items-center justify-center p-8 md:p-16">
+            {/* RIGHT SIDE: Content Card */}
+            <div className="w-full lg:w-1/2 relative flex items-center justify-center p-8 lg:p-16 h-[500px] lg:h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${ethnicBgPattern})` }}
+            >
+                {/* White Card Overlay */}
+                <div className="bg-[#FAF7F2] p-8 md:p-12 max-w-lg w-full text-center relative shadow-xl">
+                    {/* Double Border Effect */}
+                    <div className="border border-gray-800 p-6 md:p-10 h-full w-full relative">
 
-                {/* Pattern Background Overlay */}
-                <div
-                    className="absolute inset-0 opacity-20 pointer-events-none"
-                    style={{
-                        backgroundImage: `url(${patternBg})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                    }}
-                ></div>
+                        {/* Top Label */}
+                        <h4 className="text-gray-600 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-4">
+                            NEW IN:
+                        </h4>
 
-                {/* Decorative Frame Border (Purple/Pinkish) */}
-                <div className="w-full max-w-lg h-full max-h-[600px] border-[1px] border-[#70205D] p-2 relative bg-white/50 backdrop-blur-sm z-10 shadow-lg">
-                    {/* Inner Border */}
-                    <div className="w-full h-full border-[1.5px] border-[#70205D] flex flex-col items-center justify-center text-center p-8 md:p-12 gap-6">
-
-                        <span className="text-xs font-bold tracking-[0.2em] uppercase text-gray-800">
-                            New In:
-                        </span>
-
-                        <h2 className="text-5xl md:text-7xl text-[#4A0A4A] font-serif leading-none">
-                            Ethnic <br /> Wear
+                        {/* Main Title */}
+                        <h2 className="text-4xl md:text-6xl font-serif text-[#4A002C] mb-6 leading-tight">
+                            Ethnic<br />Wear
                         </h2>
 
-                        <p className="text-sm md:text-base text-gray-600 font-medium leading-relaxed max-w-sm">
-                            From Sun-Drenched Deserts To Cool Mountain Mornings,
-                            Discover Where To Go And What To Wear Out This Summer
+                        {/* Description */}
+                        <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-8 font-light">
+                            From Sun-Drenched Deserts To Cool Mountain Mornings, Discover Where To Go And What To Wear Out This Summer
                         </p>
 
-                        <button
-                            onClick={() => navigate('/womenwear')}
-                            className="bg-[#70205D] text-white px-10 py-3 text-sm font-bold tracking-widest uppercase hover:bg-[#5a1a4a] transition mt-4"
+                        {/* CTA Button */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/womenwear?category=saree')}
+                            className="bg-[#6A0DAD] text-white px-8 py-3 text-sm font-bold tracking-widest uppercase hover:bg-[#580b91] transition-colors"
                         >
-                            Shop Now
-                        </button>
-
+                            SHOP NOW
+                        </motion.button>
                     </div>
                 </div>
-
             </div>
-
         </section>
     );
-}
+};
+
+export default EthnicWearSection;
