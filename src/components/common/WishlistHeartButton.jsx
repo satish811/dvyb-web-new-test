@@ -69,11 +69,11 @@ const WishlistHeartButton = ({
   };
 
   const handleToggleWishlist = async () => {
-    // B2B users might not require login for wishlist functionality
-    // Or they might have different rules
+    // Check if user is authenticated using Firebase auth directly
+    const currentUser = auth.currentUser;
 
-    // OPTION 1: Allow B2B users even without userId
-    if (userRole !== "B2B" && !userId) {
+    // For B2C users, require authentication
+    if (userRole !== "B2B" && !currentUser) {
       toast.error("Please login to add items to wishlist");
       navigate("/login");
       return;

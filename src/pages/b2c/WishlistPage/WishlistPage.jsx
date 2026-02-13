@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Trash2, ShoppingCart, Edit2 } from "lucide-react";
+import { Trash2, ShoppingCart, Eye, Heart, ChevronDown } from "lucide-react";
 
 // Contexts
 import { usePopup } from "../../../context/ToastPopupContext";
@@ -17,263 +17,116 @@ import { cartService } from "../../../services/cartService";
 import empty_wishlistIc from "../../../assets/ProfileImages/empty_wishlistIc.png";
 import LoginModal from "../login/loginModel";
 
-// --- Reusable Wishlist Button Component ---
-export const WishlistButton = ({ productId, productData, className = "", variants = [] }) => {
-  const [inWishlist, setInWishlist] = useState(false);
-  const [loading, setLoading] = useState(false);
+// --- New Wishlist Card Component ---
+const WishlistProductCard = ({ item, onAddToCart, onRemove, onEdit }) => {
+  const navigate = useNavigate();
+  // Mock badges for visual match (In real app, use item.stockStatus)
+  // Randomly assign stock status if not present for demo visual fidelity
+  const stockStatus = item.stockStatus || (Math.random() > 0.7 ? "Low Stock" : Math.random() > 0.9 ? "Out of Stock" : "In Stock");
 
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const status = await wishlistService.isInWishlist(productId);
-        setInWishlist(status);
-      } catch (err) {
-        console.error("Wishlist status check failed:", err);
-      }
-    };
-    if (productId) checkStatus();
-  }, [productId]);
-
-  const handleToggle = async () => {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const result = await wishlistService.toggleWishlist(productId, productData, variants);
-      setInWishlist(result.inWishlist);
-      toast.success(result.inWishlist ? "Added to wishlist!" : "Removed from wishlist");
-    } catch (err) {
-      toast.error("Failed to update wishlist");
-    } finally {
-      setLoading(false);
+  const getBadgeColor = (status) => {
+    switch (status) {
+      case "In Stock": return "bg-[#00D95F] text-white"; // Green
+      case "Low Stock": return "bg-[#FFC107] text-black"; // Yellow
+      case "Out of Stock": return "bg-gray-500 text-white"; // Gray
+      default: return "bg-[#00D95F] text-white";
     }
   };
 
-  return (
-    <button
-      onClick={handleToggle}
-      disabled={loading}
-      className={`wishlist-btn ${inWishlist ? "in-wishlist" : ""} ${className}`}
-      style={{
-        background: inWishlist ? "#ff4757" : "#ddd",
-        color: inWishlist ? "white" : "#333",
-        border: "none",
-        padding: "8px 12px",
-        borderRadius: "4px",
-        cursor: loading ? "not-allowed" : "pointer",
-        opacity: loading ? 0.6 : 1,
-      }}
-    >
-      {loading ? "..." : inWishlist ? "❤️ Remove" : "🤍 Add to Wishlist"}
-    </button>
-  );
-};
-
-// --- B2B Wishlist Item Component ---
-const B2BWishlistItem = ({ item, onRemove, onAddToCart, onEdit }) => {
-  const variants = item.variants || [];
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  const isOutOfStock = stockStatus === "Out of Stock";
 
   return (
-    <div
-      className="border border-gray-200 p-6 mb-4 bg-white w-full max-w-[619px]"
-      style={{ borderRadius: "0px" }}
-    >
-      {/* ROW 1: Image, Details, Price & Actions */}
-      <div className="flex gap-4 mb-4">
+    <div className="group w-full flex flex-col">
+      {/* Image Container */}
+      <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden mb-4">
+        {/* Badge */}
+        <div className={`absolute top-2 left-2 px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${getBadgeColor(stockStatus)}`}>
+          {stockStatus}
+        </div>
+
         {/* Product Image */}
         <img
-          src={item.image}
+          src={item.image || item.imageUrls?.[0] || "/placeholder.jpg"}
           alt={item.name}
-          className="w-[70px] h-[90px] object-cover flex-shrink-0"
-          style={{ borderRadius: "0px" }}
+          className="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105"
         />
 
-        {/* Product Details */}
-        <div className="flex-1 min-w-0">
-          <h2 className="text-[14px] font-semibold text-gray-900 uppercase tracking-wide mb-1 leading-tight line-clamp-3">
-            {item.name}
-          </h2>
-
-          {/* Product Description */}
-          <div className="mb-1">
-            <p
-              className={`text-[12px] text-gray-600 lowercase leading-tight ${showFullDescription ? "" : "line-clamp-2"
-                }`}
-            >
-              {item.description || "No description available"}
-            </p>
-            {(item.description || "").length > 60 && (
-              <button
-                onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-[11px] text-gray-500 hover:text-gray-700 mt-1 underline"
-              >
-                {showFullDescription ? "Show Less" : "Show More"}
-              </button>
-            )}
-          </div>
-
-          <p className="text-[11px] text-gray-600 mb-1">CODE: {item.productId || "N/A"}</p>
-        </div>
-
-        {/* Price & Actions */}
-        <div className="flex flex-col items-end justify-between flex-shrink-0">
-          <p className="text-[16px] font-semibold text-gray-900 mb-2">
-            ₹{(item.price || 0).toLocaleString()}
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => onAddToCart(item)}
-              className="hover:text-green-600 text-gray-400"
-              title="Add to Cart"
-            >
-              <ShoppingCart className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onRemove(item.productId || item.id)}
-              className="hover:text-red-500 text-gray-400"
-              title="Remove"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ROW 2: Variants */}
-      {variants.length > 0 && (
-        <div className="space-y-2 mb-4">
-          {variants.map((variant, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between"
-              style={{ borderRadius: "0px" }}
-            >
-              <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 ps-3 pe-3 p-2">
-                <div
-                  className="w-6 h-6 border border-gray-300 flex-shrink-0"
-                  style={{
-                    backgroundColor: variant.color,
-                    borderRadius: "0px",
-                  }}
-                />
-                <div className="text-[12px] text-gray-700">
-                  <span className="font-medium text-[14px]">Size: {variant.size}</span>
-                  <span className="ml-3 text-[14px]">
-                    Quantity: {variant.quantity < 10 ? `0${variant.quantity}` : variant.quantity}
-                  </span>
-                </div>
-              </div>
-
-              <div
-                className="flex items-center border border-gray-300 bg-gray-50 flex-shrink-0"
-                style={{ borderRadius: "0px" }}
-              >
-                <span className="px-3 text-[14px] font-medium text-gray-600">
-                  {variant.quantity < 10 ? `0${variant.quantity}` : variant.quantity}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ROW 3: Edit Button */}
-      <button
-        className="flex items-center gap-2 px-3 py-2 border border-gray-800 hover:bg-gray-50 transition text-[14px] font-medium"
-        style={{ borderRadius: "0px" }}
-        onClick={() => onEdit(item)}
-      >
-        <Edit2 className="w-3 h-3" />
-        <span>Edit</span>
-      </button>
-    </div>
-  );
-};
-
-
-const B2CWishlistItem = ({ item, onAddToCart, onRemove }) => {
-  const [showFullTitle] = useState(false);
-
-  // Demo link component (replace with your actual Link component)
-  const Link = ({ to, children }) => <a href={to}>{children}</a>;
-
-  return (
-    <div
-      className={`group w-full overflow-hidden transition bg-white ${showFullTitle ? "min-h-[450px] sm:min-h-[500px] lg:min-h-[550px]" : "min-h-[420px] sm:min-h-[470px] lg:min-h-[502px]"
-        }`}
-    >
-      {/* Fixed Image Area - Responsive heights */}
-      <Link to={`/products/${item.productId || item.id}`}>
-        <div className="w-full h-[250px] sm:h-[280px] lg:h-[322px] bg-gray-100 overflow-hidden">
-          <img
-            src={item.image || item.imageUrls?.[0] || "/placeholder.jpg"}
-            alt={item.name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-      </Link>
-
-      {/* Content Areas - Responsive padding */}
-      <div className="p-3 sm:p-4">
-        {/* Title Area - Adaptive height */}
-        <div className="h-[42px] sm:h-[46px] lg:h-[48px] mb-1 sm:mb-1.5">
-          <h3
-            className="text-xs sm:text-sm font-medium text-gray-600 line-clamp-2"
-            style={{ lineHeight: "1.2" }}
-            title={item.name}
-          >
-            {item.name || "Product Name"}
-          </h3>
-        </div>
-
-        {/* Price Area - Responsive sizing */}
-        <div className="h-[22px] sm:h-[24px] mb-2 flex items-center">
-          {item.price ? (
-            <p className="text-sm sm:text-base font-semibold text-gray-900">
-              ₹{item.price?.toLocaleString("en-IN")}
-            </p>
-          ) : (
-            <div className="h-full"></div>
-          )}
-        </div>
-
-        {/* Buttons - Fully responsive */}
-        <div className="space-y-2">
-          {/* Add to Cart Button */}
+        {/* Hover Overlay Actions */}
+        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
           <button
-            onClick={() => onAddToCart(item)}
-            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] bg-[#33022F] text-white text-xs sm:text-sm font-medium transition px-3"
-            title="Add to Cart"
-          >
-            <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
-            <span>Add to Cart</span>
-          </button>
-
-          {/* Remove Button */}
-          <button
-            onClick={() => onRemove(item.productId || item.id)}
-            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 h-[34px] sm:h-[36px] lg:h-[38px] px-3 bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition text-xs sm:text-sm font-medium"
+            onClick={(e) => { e.stopPropagation(); onRemove(item.productId || item.id); }}
+            className="w-10 h-10 bg-[#33022F] rounded-full flex items-center justify-center text-white hover:bg-[#5a0452] transition transform hover:scale-110 shadow-lg"
             title="Remove from Wishlist"
           >
-            <Trash2 size={14} className="sm:w-4 sm:h-4" />
-            <span className="truncate">Remove from wishlist</span>
+            <Heart size={18} fill="white" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToCart(item); }}
+            disabled={isOutOfStock}
+            className={`w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 hover:text-[#33022F] transition transform hover:scale-110 shadow-lg ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title="Add to Cart"
+          >
+            <ShoppingCart size={18} />
+          </button>
+          <button
+            onClick={() => navigate(`/products/${item.productId || item.id}`)}
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 hover:text-[#33022F] transition transform hover:scale-110 shadow-lg"
+            title="View Details"
+          >
+            <Eye size={18} />
           </button>
         </div>
       </div>
+
+      {/* Details */}
+      <div className="space-y-1">
+        <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide truncate">
+          {item.name}
+        </h3>
+        <p className="text-sm font-bold text-gray-900">
+          ₹{item.price?.toLocaleString()}
+          {item.mrp && item.mrp > item.price && (
+            <span className="text-xs text-gray-400 line-through ml-2 font-normal">₹{item.mrp.toLocaleString()}</span>
+          )}
+        </p>
+
+        {/* Colors Swatches (Mock/Real) */}
+        <div className="flex gap-1 pt-1 h-3">
+          {/* If item has variants with color, map them. Else default */}
+          {(item.variants && item.variants.length > 0) ? (
+            item.variants.slice(0, 3).map((v, i) => (
+              <div key={i} className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: v.color || '#33022F' }} title={v.color}></div>
+            ))
+          ) : (
+            <>
+              <div className="w-3 h-3 rounded-full bg-[#FFD700]"></div>
+              <div className="w-3 h-3 rounded-full bg-[#33022F]"></div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Add To Cart Button (Bottom) */}
+      <button
+        onClick={() => onAddToCart(item)}
+        disabled={isOutOfStock}
+        className={`mt-4 w-full py-2.5 border border-[#33022F] text-[#33022F] font-medium text-xs uppercase tracking-wider hover:bg-[#33022F] hover:text-white transition-colors duration-300 ${isOutOfStock ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-400 hover:bg-transparent hover:text-gray-400' : ''}`}
+      >
+        {isOutOfStock ? 'Out of Stock' : 'Add to cart'}
+      </button>
+
     </div>
   );
 };
 
-
-// --- Main Wishlist Page ---
 const WishlistPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
-  const { } = useCart(); // addToCart extracted but using service directly below
   const [userRole, setUserRole] = useState("B2C");
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [sortBy, setSortBy] = useState("recently-added");
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   // Safe popup access
   const popupContext = usePopup();
@@ -296,17 +149,28 @@ const WishlistPage = () => {
     }
   }, [user]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showSortDropdown && !event.target.closest('.sort-dropdown-container')) {
+        setShowSortDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSortDropdown]);
+
   const handleRemoveItem = async (productId) => {
     try {
       const result = await removeFromWishlist(productId);
       if (result.success) {
         toast.success("Item removed from wishlist");
       } else {
-        toast.error("Failed to remove item. Please try again.");
+        toast.error("Failed to remove item.");
       }
     } catch (err) {
       console.error("Error removing item:", err);
-      toast.error("Failed to remove item.");
     }
   };
 
@@ -344,9 +208,7 @@ const WishlistPage = () => {
       }
 
       if (result === true) {
-        // Remove from wishlist after successful cart addition
         await removeFromWishlist(item.productId || item.id);
-
         if (showPopup) {
           showPopup("cart", {
             id: item.productId || item.id,
@@ -366,28 +228,20 @@ const WishlistPage = () => {
     }
   };
 
-  const handleEditItem = (item) => {
-    sessionStorage.setItem(
-      "editingWishlistItem",
-      JSON.stringify({
-        ...item,
-        wishlistUniqueId: item.uniqueId,
-      })
-    );
-    navigate(`/products/${item.productId}`);
-  };
+  const handleMoveAllToCart = async () => {
+    if (wishlistItems.length === 0) return;
 
-  // Filter items logic
-  const displayItems = wishlistItems.filter((item) => {
-    if (userRole === "B2B") {
-      return true;
-    } else {
-      return !item.isB2B;
+    const confirm = window.confirm("Are you sure you want to move all items to cart?");
+    if (!confirm) return;
+
+    let addedCount = 0;
+    for (const item of wishlistItems) {
+      // Check stock logic if needed
+      await handleAddToCart(item); // Note: this removes from wishlist one by one inside handleAddToCart, might be slow but safe
+      addedCount++;
     }
-  });
-
-  const b2bItems = displayItems.filter((item) => item.isB2B === true);
-  const b2cItems = displayItems.filter((item) => !item.isB2B);
+    if (addedCount > 0) toast.success("Moved all available items to cart!");
+  };
 
   // Loading State
   if (loading) {
@@ -408,6 +262,7 @@ const WishlistPage = () => {
             Please Login to View Your Wishlist
           </h2>
           <button
+            onClick={() => setShowLoginModal(true)}
             className="px-8 py-4 bg-[#33022F] text-white font-semibold rounded-lg transition"
           >
             LOGIN TO CONTINUE
@@ -419,76 +274,121 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-3 py-0 md:py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 font-[Outfit]">
+
+      {/* Header Section */}
+      <div className="mb-8">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
+          <Link to="/" className="hover:text-[#33022F]">Home</Link>
+          <span>&gt;</span>
+          <span className="text-[#33022F]">Wishlist</span>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#33022F]">My Wishlist</h1>
+            <p className="text-gray-500 mt-1 text-sm">{wishlistItems.length} items saved</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Sort Dropdown */}
+            <div className="relative sort-dropdown-container">
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium hover:border-[#33022F] transition-colors"
+              >
+                {sortBy === "recently-added" && "Recently Added"}
+                {sortBy === "price-high-low" && "Price high to low"}
+                {sortBy === "price-low-high" && "Price low to high"}
+                <ChevronDown size={14} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showSortDropdown && (
+                <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 shadow-lg z-50">
+                  <button
+                    onClick={() => { setSortBy("recently-added"); setShowSortDropdown(false); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition ${sortBy === "recently-added" ? "bg-[#33022F] text-white hover:bg-[#33022F]" : "text-gray-700"}`}
+                  >
+                    Recently added
+                  </button>
+                  <button
+                    onClick={() => { setSortBy("price-high-low"); setShowSortDropdown(false); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition ${sortBy === "price-high-low" ? "bg-[#33022F] text-white hover:bg-[#33022F]" : "text-gray-700"}`}
+                  >
+                    Price high to low
+                  </button>
+                  <button
+                    onClick={() => { setSortBy("price-low-high"); setShowSortDropdown(false); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition ${sortBy === "price-low-high" ? "bg-[#33022F] text-white hover:bg-[#33022F]" : "text-gray-700"}`}
+                  >
+                    Price low to high
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Move All to Cart */}
+            <button
+              onClick={handleMoveAllToCart}
+              disabled={wishlistItems.length === 0}
+              className="px-6 py-2 border border-[#33022F] text-[#33022F] font-semibold text-sm hover:bg-[#33022F] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Move All to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Empty Wishlist UI */}
-      {displayItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10">
-          <div className="h-[400px] w-full max-w-[800px] flex items-center justify-center rounded-full">
+      {wishlistItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-lg">
+          <div className="h-[200px] w-full max-w-[300px] flex items-center justify-center mb-6">
             <img
               src={empty_wishlistIc}
-              className="object-cover h-auto w-auto"
+              className="object-contain h-full w-full opacity-60"
               alt="Empty wishlist"
             />
           </div>
-
-          <p className="text-lg font-semibold text-gray-800 mt-4">Your Wishlist is Empty</p>
-          <p className="text-sm font-medium text-gray-700 mt-3 mb-6">Start adding your favorites</p>
+          <p className="text-xl font-bold text-gray-800">Your Wishlist is Empty</p>
+          <p className="text-sm font-medium text-gray-500 mt-2 mb-8">Items added to your wishlist will appear here</p>
 
           <Link
             to={userRole === "B2B" ? "/b2b-products" : "/products"}
-            className="px-6 py-2 border border-double border-gray-400 text-gray-900 hover:bg-gray-900 hover:text-white transition text-sm font-medium"
+            className="px-8 py-3 bg-[#33022F] text-white text-sm font-bold uppercase tracking-wide hover:bg-[#5a0452] transition shadow-lg"
           >
-            CONTINUE SHOPPING
+            Continue Shopping
           </Link>
         </div>
       ) : (
-        /* Populated Wishlist UI */
-        <>
-          <h1 className="font-medium text-[12.07px] py-2  leading-[18.67px] tracking-[0.27px] uppercase align-middle font-outfit">
-            MY WISHLIST ITEMS{" "}
-            <span className="text-sm font-medium text-gray-600">
-              ({displayItems.length} products)
-            </span>
-          </h1>
-
-          {/* B2B Items Section */}
-          {b2bItems.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold mb-4">B2B Items ({b2bItems.length})</h2>
-              <div className="space-y-4">
-                {b2bItems.map((item) => (
-                  <B2BWishlistItem
-                    key={item.productId || item.id}
-                    item={item}
-                    onRemove={handleRemoveItem}
-                    onAddToCart={handleAddToCart}
-                    onEdit={handleEditItem}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* B2C Items Section */}
-          {b2cItems.length > 0 && (
-            <div>
-              {b2bItems.length > 0 && (
-                <h2 className="text-lg font-semibold mb-4">B2C Items ({b2cItems.length})</h2>
-              )}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
-                {b2cItems.map((item) => (
-                  <B2CWishlistItem
-                    key={item.productId || item.id}
-                    item={item}
-                    onAddToCart={handleAddToCart}
-                    onRemove={handleRemoveItem}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        /* Wishlist Grid */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {[...wishlistItems]
+            .sort((a, b) => {
+              if (sortBy === "price-high-low") return (b.price || 0) - (a.price || 0);
+              if (sortBy === "price-low-high") return (a.price || 0) - (b.price || 0);
+              return 0; // recently-added (default order)
+            })
+            .map((item) => (
+              <WishlistProductCard
+                key={item.productId || item.id}
+                item={item}
+                onAddToCart={handleAddToCart}
+                onRemove={handleRemoveItem}
+              />))}
+        </div>
       )}
+
+      {/* Footer Navigation (as per mockup) */}
+      {wishlistItems.length > 0 && (
+        <div className="mt-12 text-center">
+          <Link to="/products" className="text-[#2B7CEC] font-medium text-sm hover:underline">
+            ← Continue Shopping
+          </Link>
+        </div>
+      )}
+
     </div>
   );
 };

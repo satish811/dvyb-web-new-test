@@ -63,14 +63,14 @@ const ProfilePage = () => {
       {/* DESKTOP VIEW - Sidebar + Content */}
       <div className="hidden md:flex min-h-screen mt-0 bg-gray-50">
         {/* Fixed Sidebar */}
-        
+
         {activeTab !== "profile-creation" && (
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         )}
 
         {/* Main Content Area - offset by sidebar width */}
         <div
-          className={`flex-1 p-6 min-h-screen -mt-12 ${activeTab !== "profile-creation" ? "ml-64" : ""}`}
+          className={`flex-1 p-6 min-h-screen pt-24 ${activeTab !== "profile-creation" ? "ml-64" : ""}`}
         >
           <div className="max-w-7xl mx-auto">
             {activeTab === "my-info" && <MyInfo userId={userId} />}

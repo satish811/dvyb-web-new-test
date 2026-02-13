@@ -1,45 +1,29 @@
-import Navbar from "../components/common/navbar/navbar";
-import Footer from "../components/common/footer/footer";
 import HomeFooter from "../components/b2c/home/HomeFooter";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
-import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
+import MarqueeStrip from "../components/common/navbar/MarqueeStrip";
 
 export default function MainLayout({ children }) {
   const location = useLocation();
-  const [showLoader, setShowLoader] = useState(false);
 
   const hideHeaderOnMobile =
     location.pathname.startsWith("/products") || location.pathname.startsWith("/womenwear");
 
   return (
     <>
-      <div className="flex flex-col min-h-screen hide-scrollbar overflow-x-hidden">
-        {/* FULL PAGE LOADER */}
-        {showLoader && (
-          <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">
-            <LazyImageLoader isProcessing={true} />
-          </div>
-        )}
-
-        {/* Fixed Header - Hidden on mobile for product pages */}
-        <header
-          className={`${hideHeaderOnMobile ? "hidden md:block" : "block"} fixed top-0 left-0 right-0 z-50`}
-        >
-          <Navbar setShowLoader={setShowLoader} />
-        </header>
-
-        {/* Main content with proper margin */}
+      <div className="flex flex-col min-h-screen">
+        {/* Main content - top padding for fixed header */}
         <main
-          className={`flex-grow overflow-y-auto hide-scrollbar scrollbar-hide ${hideHeaderOnMobile ? "md:mt-24" : "mt-20 sm:mt-24 md:mt-24 lg:mt-38"}`}
+          className={`flex-grow overflow-x-hidden ${hideHeaderOnMobile ? "md:mt-[73px]" : "mt-[73px]"}`}
         >
+          {/* Marquee Strip - Scrolls with content */}
+          {(location.pathname === "/" || location.pathname.includes("/usertype=b2b")) && <MarqueeStrip />}
           {children}
         </main>
 
-        <footer >
+        <footer>
           <HomeFooter />
         </footer>
-      </div>
+      </div >
     </>
   );
 }
