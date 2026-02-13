@@ -1,665 +1,377 @@
 import React, { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../../config/firebaseConfig"; // Adjust path as needed
-import { useAuth } from "../../../context/AuthContext"; // Adjust path as needed
-import { Loader2, CheckCircle } from "lucide-react";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { db } from "../../../config/firebaseConfig";
+import { useAuth } from "../../../context/AuthContext";
+import { Loader2, ArrowRight, ChevronLeft, Lock } from "lucide-react";
+
+// --- Assets & Constants ---
+const bodyTypes = [
+  { id: "slim", label: "Slim", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/Group_1_ijia0z.png" }, // Using existing/placeholder
+  { id: "athletic", label: "Fit / Athletic", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/noun-sexy-woman-body-687032_1_guoflx.png" },
+  { id: "average", label: "Average", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/noun-normal-woman-body-687036_1_hklqpb.png" },
+  { id: "curvy", label: "Curvy", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674507/Group_yiszhq.png" },
+  { id: "chubby", label: "Chubby", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674507/Group_yiszhq.png" }, // Need specific asset? using duplicate for now
+  { id: "plus-size", label: "Plus Size", img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674507/Group_yiszhq.png" }
+];
+
+const skinTones = [
+  { id: "porcelain", label: "Porcelain", color: "#F9E4D6" },
+  { id: "ivory", label: "Ivory", color: "#F3D2B5" },
+  { id: "warm-ivory", label: "Warm Ivory", color: "#F1C2A3" },
+  { id: "sand", label: "Sand", color: "#E8B790" },
+  { id: "beige", label: "Beige", color: "#E6C697" },
+  { id: "warm-beige", label: "Warm beige", color: "#D9A873" },
+  { id: "natural", label: "Natural", color: "#CE9F6F" },
+  { id: "honey", label: "Honey", color: "#CD8E53" },
+  { id: "golden", label: "Golden", color: "#C58848" },
+  { id: "almond", label: "Almond", color: "#B47743" },
+  { id: "chestnut", label: "Chestnut", color: "#A16335" },
+  { id: "espresso", label: "Espresso", color: "#794626" },
+];
 
 const MultiStepQuestionnaire = () => {
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState("initial");
-  const [selections, setSelections] = useState({
-    model: null,
-    bodyType: null,
-    skinTone: null,
-    hairStyle: null,
-    hairColor: null,
+  const [currentStep, setCurrentStep] = useState("welcome"); // welcome, height, bodyShape, skinTone, success
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [formData, setFormData] = useState({
+    heightVal: 178, // stored as cm internal reference or just value
+    unit: "cm", // cm or ft
+    heightCm: 178,
+    heightFt: "5.10",
+    bodyShape: "",
+    skinTone: "",
+    model: null
   });
 
-  const hairColors = ["Black", "Brown", "Blonde", "Burgundy"];
-  const hairStyles = ["Wavy", "Straight", "Coily", "Curly"];
-
-  const [showSaveMessage, setShowSaveMessage] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [collectionName, setCollectionName] = useState("");
-
-  // Dynamic body types configuration
-  const bodyTypes = [
-    {
-      id: "fat",
-      label: "Fat Body",
-      icon: "🟡",
-      img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674507/Group_yiszhq.png",
-    },
-    {
-      id: "normal",
-      label: "Normal Body",
-      icon: "🔵",
-      img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/noun-normal-woman-body-687036_1_hklqpb.png",
-    },
-    {
-      id: "superfit",
-      label: "Super Fit Body",
-      icon: "💪",
-      img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/noun-sexy-woman-body-687032_1_guoflx.png",
-    },
-    {
-      id: "slim",
-      label: "Slim Body",
-      icon: "📏",
-      img: "https://res.cloudinary.com/doiezptnn/image/upload/v1757674506/Group_1_ijia0z.png",
-    },
-  ];
-
-  // Dynamic skin tones configuration
-  const skinTones = [
-    { id: "very-fair", label: "Very Fair", color: "bg-orange-100" },
-    { id: "fair", label: "Fair", color: "bg-orange-200" },
-    { id: "medium", label: "Medium", color: "bg-orange-300" },
-    { id: "tan", label: "Tan", color: "bg-orange-400" },
-    { id: "deep", label: "Deep", color: "bg-orange-600" },
-  ];
-
-  // Load existing selections from Firebase
+  // Load existing data
   useEffect(() => {
     if (!user) return;
-
-    const loadExistingData = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-
-        // Try fetching from b2c_users first
+        // Checking B2C first as per previous logic
         let ref = doc(db, "b2c_users", user.uid);
         let snap = await getDoc(ref);
-
         if (snap.exists()) {
-          setCollectionName("b2c_users");
-          const userData = snap.data();
-          setSelections({
-            model: userData.model || null,
-            bodyType: userData.bodyType || null,
-            skinTone: userData.skinTone || null,
-            hairStyle: userData.hairStyle || null,
-            hairColor: userData.hairColor || null,
-          });
-        } else {
-          // If not found, try B2BBulkOrders_users
-          ref = doc(db, "B2BBulkOrders_users", user.uid);
-          snap = await getDoc(ref);
-          if (snap.exists()) {
-            setCollectionName("B2BBulkOrders_users");
-            const userData = snap.data();
-            setSelections({
-              model: userData.model || null,
-              bodyType: userData.bodyType || null,
-              skinTone: userData.skinTone || null,
-              hairStyle: userData.hairStyle || null,
-              hairColor: userData.hairColor || null,
-            });
+          const data = snap.data();
+          if (data.bodyType || data.skinTone) {
+            // Pre-fill
+            setFormData(prev => ({
+              ...prev,
+              bodyShape: data.bodyType || "",
+              skinTone: data.skinTone || "",
+              heightCm: data.height || 170
+              // height handling might need adjustment if not previously saved
+            }));
+            // If data exists, maybe skip welcome? Or let user choose to edit.
+            // setCurrentStep("welcome"); 
           }
         }
-      } catch (error) {
-        console.error("Error loading existing data:", error);
+      } catch (e) {
+        console.error("Load error", e);
       } finally {
         setLoading(false);
       }
     };
-
-    loadExistingData();
+    loadData();
   }, [user]);
 
-  const handleStepChange = (step) => {
-    setCurrentStep(step);
+
+  const handleNext = () => {
+    if (currentStep === "height") setCurrentStep("bodyShape");
+    else if (currentStep === "bodyShape") setCurrentStep("skinTone");
+    else if (currentStep === "skinTone") saveProfile();
   };
 
   const handleBack = () => {
-    if (currentStep === "bodyType" || currentStep === "skinTone" || currentStep === "hair") {
-      setCurrentStep("main");
-    }
+    if (currentStep === "height") setCurrentStep("welcome");
+    else if (currentStep === "bodyShape") setCurrentStep("height");
+    else if (currentStep === "skinTone") setCurrentStep("bodyShape");
   };
 
-  const handleSelection = (category, value) => {
-    setSelections((prev) => ({
-      ...prev,
-      [category]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    if (!user || !collectionName) {
-      console.error("User not authenticated or collection not determined");
-      return;
-    }
-
-    // ✅ Check if both fields are selected
-    if (
-      !selections.bodyType ||
-      !selections.skinTone ||
-      !selections.hairStyle ||
-      !selections.hairColor
-    ) {
-      setCurrentStep("main");
-      return;
-    }
-
+  const saveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
     try {
-      setLoading(true);
-
-      // Update Firestore document
-      const docRef = doc(db, collectionName, user.uid);
+      const docRef = doc(db, "b2c_users", user.uid);
       await updateDoc(docRef, {
-        bodyType: selections.bodyType,
-        skinTone: selections.skinTone,
-        hairStyle: selections.hairStyle,
-        hairColor: selections.hairColor,
-        model: selections.model,
-        updatedAt: new Date().toISOString(),
+        bodyType: formData.bodyShape,
+        skinTone: formData.skinTone,
+        height: formData.heightCm, // Saving standardized CM
+        unit: formData.unit,
+        updatedAt: new Date().toISOString()
       });
-
-      // Show success message
-      setShowSaveMessage(true);
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setShowSaveMessage(false);
-        setCurrentStep("main");
-      }, 3000);
+      setCurrentStep("success");
+      // Auto revert to welcome or main page after delay?
+      setTimeout(() => setCurrentStep("welcome"), 3000);
     } catch (error) {
-      console.error("Error saving selections:", error);
-      alert("Error saving selections. Please try again.");
+      console.error("Save failed", error);
+      alert("Failed to save profile");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  // Loading state
-  if (loading && currentStep === "initial") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 px-4 sm:px-6">
-        <div className="flex items-center space-x-2">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          <span className="text-gray-600 text-sm sm:text-base">Loading your preferences...</span>
-        </div>
-      </div>
-    );
+  // --- RENDERERS ---
+
+  if (loading) {
+    return <div className="min-h-screen flex text-center items-center justify-center"><Loader2 className="animate-spin text-[#33022F]" /></div>;
   }
 
-  // Success message overlay
-  if (showSaveMessage) {
+  // 1. WELCOME SCREEN
+  if (currentStep === "welcome") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 px-4 sm:px-6">
-        <div className="w-full flex items-center justify-evenly max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-8 text-center">
-          <img
-            src="https://res.cloudinary.com/doiezptnn/image/upload/v1757676610/Group_3_xxjwsg.png"
-            alt=""
-          />
-          {/* <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Success!</h2> */}
-          <p className="text-base sm:text-lg text-gray-600">Model Saved Successfully</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Initial questionnaire button
-  if (currentStep === "initial") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 px-4 sm:px-6">
-        <div className="w-full max-w-96 sm:max-w-md">
-          <div className="text-center mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Model Preferences</h2>
-            <p className="text-gray-600 text-sm sm:text-base">Customize your model preferences</p>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[#FCFCFC] pt-20 pb-20">
+        <div className="w-full max-w-sm text-center">
+          {/* Icon Graphic */}
+          <div className="mx-auto w-24 h-24 bg-[#C84F4F] rounded relative mb-8 flex items-center justify-center">
+            {/* Placeholder for the user avatar graphic */}
+            <div className="text-white text-6xl">👤</div>
+            {/* Sparkles */}
+            <div className="absolute -top-2 -right-2 text-yellow-400 text-xl">✨</div>
+            <div className="absolute bottom-2 -left-4 text-pink-300 text-lg">✨</div>
           </div>
+
+          <h1 className="text-xl font-bold text-[#141B34] mb-3">Create Your Tryon Profile</h1>
+          <p className="text-[#64748B] text-sm mb-12 leading-relaxed">
+            Answer a few quick questions to see outfits on a virtual version of you.
+          </p>
+
           <button
-            onClick={() => handleStepChange("main")}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-lg shadow-md transition-colors duration-200 text-sm sm:text-base"
+            onClick={() => setCurrentStep("height")}
+            style={{ background: "var(--villy-primary, #33022F)" }}
+            className="w-full py-4 text-white text-xs font-bold uppercase tracking-widest hover:opacity-90 transition mb-4"
           >
-            {selections.bodyType || selections.skinTone
-              ? "Edit Preferences"
-              : "Start Questionnaire"}
+            Start Creating
           </button>
-        </div>
-      </div>
-    );
-  }
 
-  // Main questionnaire screen
-  if (currentStep === "main") {
-    return (
-      <div className="min-h-screen p-4 px-4 sm:px-6 bg-gray-50 sm:bg-transparent">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Model Preferences
-            </h2>
+          <button className="w-full py-4 bg-[#F8F9FA] text-[#64748B] text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition">
+            Maybe Later
+          </button>
 
-            <div className="space-y-3 sm:space-y-4">
-              {/* Body Type Selection */}
-              <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleStepChange("bodyType")}
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                    <img
-                      src="https://res.cloudinary.com/doiezptnn/image/upload/v1757669308/Body_scqg9v.png"
-                      alt=""
-                      className="w-4 h-4 sm:w-6 sm:h-6"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                      Body Type
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 truncate">
-                      {selections.bodyType
-                        ? bodyTypes.find((bt) => bt.id === selections.bodyType)?.label
-                        : "Choose Body Type"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                  {selections.bodyType && (
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                  )}
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Skin Tone Selection */}
-              <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleStepChange("skinTone")}
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <div className="w-12 h-12 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <img
-                      src="https://res.cloudinary.com/doiezptnn/image/upload/v1757669323/Hair_zqikyb.png"
-                      alt=""
-                      className="w-12 h-12 sm:w-6 sm:h-6"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                      Skin Tone
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 truncate">
-                      {selections.skinTone
-                        ? skinTones.find((st) => st.id === selections.skinTone)?.label
-                        : "Choose Skin Tone"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                  {selections.skinTone && (
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                  )}
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Hair Selection */}
-              <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleStepChange("hair")}
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                    <img
-                      src="https://res.cloudinary.com/doiezptnn/image/upload/v1757669323/SkinTone_gz4isj.png"
-                      alt=""
-                      className="w-4 h-4 sm:w-6 sm:h-6"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                      Hair
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500 truncate">
-                      {selections.hairStyle && selections.hairColor
-                        ? `${selections.hairStyle}, ${selections.hairColor}`
-                        : "Choose Hair Style & Color"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-                  {selections.hairStyle && selections.hairColor && (
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                  )}
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
+          <div className="mt-12 pt-8 border-t border-gray-100 flex justify-center gap-6">
+            <div className="flex items-center gap-2 text-[10px] text-[#141B34] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              Private & Secure
+            </div>
+            <div className="flex items-center gap-2 text-[10px] text-[#141B34] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              Takes 2 minutes
             </div>
           </div>
-
-          {/* Save Button */}
-          <div className="p-4 sm:p-6 pt-0">
-            <button
-              onClick={handleSave}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <span>Save</span>
-              )}
-            </button>
-          </div>
         </div>
       </div>
     );
   }
 
-  // Dynamic Body Type Selection Screen
-  if (currentStep === "bodyType") {
+  // 2. HEIGHT SCREEN
+  if (currentStep === "height") {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 px-4 sm:px-6">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Select Body Type
-            </h2>
-
-            <div className="space-y-2 sm:space-y-3">
-              {bodyTypes.map((bodyType) => (
-                <div
-                  key={bodyType.id}
-                  className={`flex items-center p-3 sm:p-4 rounded-lg cursor-pointer transition-colors 
-                    ${
-                      selections.bodyType === bodyType.id
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-50 hover:bg-gray-100"
-                    }
-                  `}
-                  onClick={() => handleSelection("bodyType", bodyType.id)}
-                >
-                  <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                    <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full flex-shrink-0
-                         ${
-                           selections.bodyType === bodyType.id
-                             ? "bg-white text-white"
-                             : "bg-white hover:bg-gray-100"
-                         }  `}
-                    >
-                      <img src={bodyType.img} className="h-8 sm:h-10 m-1 sm:m-2" alt="" />
-                    </div>
-                    <span className="font-medium text-sm sm:text-base truncate">
-                      {bodyType.label}
-                    </span>
-                  </div>
-                  {selections.bodyType === bodyType.id && (
-                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
+      <WizardLayout
+        step={1}
+        totalSteps={3}
+        onBack={handleBack}
+        title="How tall are you?"
+        subtitle="We'll use this to scale your virtual try-on accurately."
+      >
+        <div className="flex flex-col items-center py-10">
+          {/* Unit Toggle */}
+          <div className="flex bg-[#F3F0F0] p-1 rounded mb-10">
+            <button
+              onClick={() => setFormData({ ...formData, unit: 'cm' })}
+              style={{ background: formData.unit === 'cm' ? "var(--villy-primary, #33022F)" : "transparent" }}
+              className={`px-6 py-2 text-sm font-medium transition rounded ${formData.unit === 'cm' ? 'text-white' : 'text-gray-500'}`}
+            >
+              cm
+            </button>
+            <button
+              onClick={() => setFormData({ ...formData, unit: 'ft' })}
+              style={{ background: formData.unit === 'ft' ? "var(--villy-primary, #33022F)" : "transparent" }}
+              className={`px-6 py-2 text-sm font-medium transition rounded ${formData.unit === 'ft' ? 'text-white' : 'text-gray-500'}`}
+            >
+              ft
+            </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="p-4 sm:p-6 pt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={handleBack}
-              className="w-full sm:flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={loading || !selections.bodyType}
-              className="w-full sm:flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <span>Save</span>
-              )}
-            </button>
+          {/* Value Display */}
+          <div className="text-center mb-10">
+            <span className="text-6xl font-normal text-[#141B34]">
+              {formData.unit === 'cm' ? formData.heightCm : formData.heightFt}
+            </span>
+            <span className="text-2xl text-gray-400 ml-2">{formData.unit}</span>
+          </div>
+
+          {/* Slider */}
+          <div className="w-full max-w-xs px-4">
+            <input
+              type="range"
+              min={formData.unit === 'cm' ? 140 : 4.0}
+              max={formData.unit === 'cm' ? 220 : 7.0}
+              step={formData.unit === 'cm' ? 1 : 0.1}
+              value={formData.unit === 'cm' ? formData.heightCm : parseFloat(formData.heightFt)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                if (formData.unit === 'cm') {
+                  setFormData({ ...formData, heightCm: val });
+                } else {
+                  setFormData({ ...formData, heightFt: val.toFixed(1) }); // simplified ft logic
+                }
+              }}
+              className="w-full accent-[#33022F] h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
           </div>
         </div>
-      </div>
+
+        <button
+          onClick={handleNext}
+          style={{ background: "var(--villy-primary, #33022F)" }}
+          className="w-full py-4 text-white text-xs font-bold uppercase tracking-widest hover:opacity-90 transition flex items-center justify-center gap-2"
+        >
+          Continue
+          <ArrowRight size={16} />
+        </button>
+      </WizardLayout>
     );
   }
 
-  if (currentStep === "hair") {
+  // 3. BODY SHAPE
+  if (currentStep === "bodyShape") {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 px-4 sm:px-6">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Hair Preferences
-            </h2>
-
-            <div className="space-y-2 sm:space-y-3">
-              <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                onClick={() => handleStepChange("hairStyle")}
-              >
-                <p className="font-medium text-sm sm:text-base">Hair Style</p>
-                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-20 sm:max-w-none text-right">
-                  {selections.hairStyle || "Choose Hair Style"}
-                </p>
-              </div>
-
-              <div
-                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                onClick={() => handleStepChange("hairColor")}
-              >
-                <p className="font-medium text-sm sm:text-base">Hair Color</p>
-                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-20 sm:max-w-none text-right">
-                  {selections.hairColor || "Choose Hair Color"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-6 pt-0">
+      <WizardLayout
+        step={2}
+        totalSteps={3}
+        onBack={handleBack}
+        title="Which body shape describes you best?"
+        subtitle="This helps us show you how clothes will fit your unique silhouette."
+      >
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {bodyTypes.map(type => (
             <button
-              onClick={handleSave}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
+              key={type.id}
+              onClick={() => setFormData({ ...formData, bodyShape: type.id })}
+              className={`p-6 border rounded flex flex-col items-center justify-center gap-4 transition-all h-40 ${formData.bodyShape === type.id
+                ? "border-[#FCF5F5] bg-[#FCF5F5] ring-1 ring-[#33022F]"
+                : "border-gray-100 bg-white hover:border-gray-200"
+                }`}
             >
-              Save Hair Preferences
+              <span className="text-sm font-medium text-[#141B34]">{type.label}</span>
             </button>
-          </div>
+          ))}
         </div>
-      </div>
+
+        <button
+          onClick={handleNext}
+          disabled={!formData.bodyShape}
+          style={{ background: formData.bodyShape ? "var(--villy-primary, #33022F)" : undefined }}
+          className={`w-full py-4 text-white text-xs font-bold uppercase tracking-widest transition flex items-center justify-center gap-2 ${formData.bodyShape ? "hover:opacity-90" : "bg-gray-300 cursor-not-allowed"
+            }`}
+        >
+          Continue
+          <ArrowRight size={16} />
+        </button>
+      </WizardLayout>
     );
   }
 
-  // Dynamic Skin Tone Selection Screen
+  // 4. SKIN TONE
   if (currentStep === "skinTone") {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 px-4 sm:px-6">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Select Skin Tone
-            </h2>
-
-            <div className="space-y-2 sm:space-y-3">
-              {skinTones.map((tone) => (
-                <div
-                  key={tone.id}
-                  className={`flex items-center p-3 sm:p-4 rounded-lg cursor-pointer transition-colors ${
-                    selections.skinTone === tone.id
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-50 hover:bg-gray-100"
+      <WizardLayout
+        step={3}
+        totalSteps={3}
+        onBack={handleBack}
+        title="Which skin tone is closest to yours?"
+        subtitle="This ensures your virtual avatar represents you authentically."
+      >
+        <div className="grid grid-cols-4 gap-3 mb-10">
+          {skinTones.map(tone => (
+            <button
+              key={tone.id}
+              onClick={() => setFormData({ ...formData, skinTone: tone.id })}
+              className={`flex flex-col items-center gap-2 group`}
+            >
+              <div
+                className={`w-full aspect-square rounded shadow-sm transition-transform ${formData.skinTone === tone.id ? "scale-110 ring-2 ring-[#33022F] ring-offset-2" : ""
                   }`}
-                  onClick={() => handleSelection("skinTone", tone.id)}
-                >
-                  <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                    <div
-                      className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${tone.color} border-2 border-white shadow-sm flex-shrink-0`}
-                    ></div>
-                    <span className="font-medium text-sm sm:text-base truncate">{tone.label}</span>
-                  </div>
-                  {selections.skinTone === tone.id && (
-                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="p-4 sm:p-6 pt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={handleBack}
-              className="w-full sm:flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Back
+                style={{ backgroundColor: tone.color }}
+              />
+              <span className={`text-[10px] sm:text-xs font-medium ${formData.skinTone === tone.id ? "text-[#141B34]" : "text-gray-400 group-hover:text-gray-600"
+                }`}>
+                {tone.label}
+              </span>
             </button>
-            <button
-              onClick={handleSave}
-              disabled={loading || !selections.skinTone}
-              className="w-full sm:flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <span>Save</span>
-              )}
-            </button>
-          </div>
+          ))}
         </div>
-      </div>
+
+        <button
+          onClick={saveProfile}
+          disabled={!formData.skinTone || saving}
+          style={{ background: formData.skinTone ? "var(--villy-primary, #33022F)" : undefined }}
+          className={`w-full py-4 text-white text-xs font-bold uppercase tracking-widest transition flex items-center justify-center gap-2 ${formData.skinTone ? "hover:opacity-90" : "bg-gray-300 cursor-not-allowed"
+            }`}
+        >
+          {saving ? <Loader2 className="animate-spin" size={16} /> : (
+            <>
+              Continue
+              <ArrowRight size={16} />
+            </>
+          )}
+        </button>
+      </WizardLayout>
     );
   }
 
-  if (currentStep === "hairStyle") {
+  // SUCCESS
+  if (currentStep === "success") {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 px-4 sm:px-6">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Select Hair Style
-            </h2>
-
-            <div className="space-y-2 sm:space-y-3">
-              {hairStyles.map((style) => (
-                <div
-                  key={style}
-                  className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-colors text-sm sm:text-base ${
-                    selections.hairStyle === style
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-50 hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleSelection("hairStyle", style)}
-                >
-                  {style}
-                </div>
-              ))}
-            </div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ArrowRight className="w-8 h-8" />
           </div>
-
-          <div className="p-4 sm:p-6 pt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={() => handleStepChange("hair")}
-              className="w-full sm:flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleSave}
-              className="w-full sm:flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Save
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-[#141B34] mb-2">Profile Created!</h2>
+          <p className="text-gray-500">Redirecting...</p>
         </div>
       </div>
-    );
+    )
   }
 
-  if (currentStep === "hairColor") {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4 px-4 sm:px-6">
-        <div className="w-full max-w-xs sm:max-w-md mx-auto bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-              Select Hair Color
-            </h2>
-
-            <div className="space-y-2 sm:space-y-3">
-              {hairColors.map((color) => (
-                <div
-                  key={color}
-                  className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-colors text-sm sm:text-base ${
-                    selections.hairColor === color
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-50 hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleSelection("hairColor", color)}
-                >
-                  {color}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-6 pt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={() => handleStepChange("hair")}
-              className="w-full sm:flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleSave}
-              className="w-full sm:flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm sm:text-base"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  // Default return (shouldn't reach here)
   return null;
+};
+
+// --- HELPER WRAPPER ---
+const WizardLayout = ({ step, totalSteps, onBack, title, subtitle, children }) => {
+  return (
+    <div className="min-h-screen bg-[#FCFCFC] flex flex-col">
+      {/* Header */}
+      <div className="pt-8 px-6 max-w-md mx-auto w-full">
+        <div className="flex items-center gap-2 text-xs text-gray-400 font-medium mb-8">
+          <span>{step} of {totalSteps}</span>
+          <div className="h-[1px] flex-1 bg-gray-200">
+            <div
+              style={{ width: `${(step / totalSteps) * 100}%`, background: "var(--villy-primary, #33022F)" }}
+              className="h-full transition-all duration-300"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-sm font-medium mb-8"
+        >
+          <ChevronLeft size={16} />
+          Back
+        </button>
+
+        <h2 className="text-lg font-bold text-[#141B34] mb-2">{title}</h2>
+        <p className="text-[#64748B] text-sm mb-10">{subtitle}</p>
+
+        {children}
+      </div>
+    </div>
+  );
 };
 
 export default MultiStepQuestionnaire;

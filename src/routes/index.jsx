@@ -1,10 +1,12 @@
 import { Routes, Route, useLocation } from "react-router-dom";
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "../components/common/PageTransition";
 import ProtectedRoute from "../components/protectedRoute";
 import MainLayout from "../layout/mainLayout";
 import ProductLayout from "../layout/ProductLayout";
 import { useProducts } from "../hooks/useProducts";
+import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
 
 // 🧱 Pages
 import Home from "../pages/b2c/homePage/homePage";
@@ -33,6 +35,7 @@ import TryOnStartPage from "../components/b2c/TryOnMobile_Pages/TryOnStartPage";
 import TryOnUploadPage from "../components/b2c/TryOnMobile_Pages/TryOnUploadPage";
 import TryOnProcessingPage from "../components/b2c/TryOnMobile_Pages/TryOnProcessingPage";
 import TryOnPreviewPage from "../components/b2c/TryOnMobile_Pages/TryOnPreviewPage";
+import LandingPage from "../pages/b2c/LandingPage/LandingPage";
 
 import BestSeller from "../components/common/footer/BestSeller/BestSeller";
 import OurStory from "../components/common/OurStory/ourStory";
@@ -40,256 +43,294 @@ import OurStory from "../components/common/OurStory/ourStory";
 export default function AppRoutes() {
   const { products, loading, error } = useProducts();
   const location = useLocation();
+  const [showLoader, setShowLoader] = useState(false);
 
   if (error) return <div>Error: {error}</div>;
 
+  const hideNavbar =
+    location.pathname.startsWith("/tryon/");
+
+  const hideHeaderOnMobile =
+    location.pathname.startsWith("/products") || location.pathname.startsWith("/womenwear");
+
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* 🏠 Home */}
-        <Route
-          path="/"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <Home />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/our-story"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <OurStory />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+    <>
+      {/* FULL PAGE LOADER */}
+      {showLoader && (
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">
+          <LazyImageLoader isProcessing={true} />
+        </div>
+      )}
 
-        <Route
-          path="/usertype=b2b"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <Home />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+      {/* Fixed Navbar - rendered OUTSIDE PageTransition so transforms don't break fixed positioning */}
+      {!hideNavbar && (
+        <header
+          className={`${hideHeaderOnMobile ? "hidden md:block" : "block"} fixed top-0 left-0 right-0 z-50`}
+        >
+          <Navbar setShowLoader={setShowLoader} />
+        </header>
+      )}
 
-        <Route
-          path="/order-success"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <OrderSuccessPage />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/best-seller"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <BestSeller />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* 🏠 Home */}
+          <Route
+            path="/"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <Home />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* 🧷 Product listing pages */}
+          {/* New Landing Page */}
+          <Route
+            path="/landing"
+            element={
+              <PageTransition>
+                <LandingPage />
+              </PageTransition>
+            }
+          />
 
-        {/* All Products */}
-        <Route
-          path="/womenwear"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <ProductLayout products={products} />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          <Route
+            path="/our-story"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <OurStory />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* Category-specific pages */}
-        <Route
-          path="/women/:category"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <CategoryPage products={products} />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          <Route
+            path="/usertype=b2b"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <Home />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* 🧷 Product details page */}
-        <Route
-          path="/products/:id"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <ProductDetailsPageIndividual />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          <Route
+            path="/order-success"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <OrderSuccessPage />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/best-seller"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <BestSeller />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* 🛒 Cart & Checkout (Protected if needed later) */}
-        <Route
-          path="/cart"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <CartPage />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/checkout"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <CheckoutPage />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          {/* 🧷 Product listing pages */}
 
-        {/* 📰 Blog pages */}
-        <Route
-          path="/blog"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <BlogPage />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/mainblog"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <MainBlog />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/singleBlogMain"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <SingleMainBlog />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/SingleBlog"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <SingleBlog />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          {/* All Products */}
+          <Route
+            path="/womenwear"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <ProductLayout products={products} />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* 📄 Static pages */}
-        <Route
-          path="/faq"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <FaqPage />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/privacy"
-          element={
-            <PageTransition>
-              {/* <MainLayout> */}
-              <PrivacyPolicy />
-              {/* </MainLayout> */}
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/Returns"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <ReturnExchangePolicy />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/terms"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <TermsAndConditions />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          {/* Category-specific pages */}
+          <Route
+            path="/women/:category"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <CategoryPage products={products} />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        <Route
-          path="/upload-mobile"
-          element={
-            <PageTransition>
-              <MainLayout>
-                <UploadSelfieModalMobile />
-              </MainLayout>
-            </PageTransition>
-          }
-        />
+          {/* 🧷 Product details page */}
+          <Route
+            path="/products/:id"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <ProductDetailsPageIndividual />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <PageTransition>
-              <ProtectedRoute>
-                <Navbar />
-                <ProfilePage />
-              </ProtectedRoute>
-            </PageTransition>
-          }
-        />
+          {/* 🛒 Cart & Checkout (Protected if needed later) */}
+          <Route
+            path="/cart"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <CartPage />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <CheckoutPage />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* 🔒 Example protected routes (commented for now) */}
+          {/* 📰 Blog pages */}
+          <Route
+            path="/blog"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <BlogPage />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/mainblog"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <MainBlog />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/singleBlogMain"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <SingleMainBlog />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/SingleBlog"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <SingleBlog />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        <Route
-          path="/wishlist"
-          element={
-            <PageTransition>
-              {/* <ProtectedRoute> */}
-              <MainLayout>
-                <WishlistPage />
-                {/* <EmptyWishlist/> */}
-              </MainLayout>
-              {/* </ProtectedRoute> */}
-            </PageTransition>
-          }
-        />
+          {/* 📄 Static pages */}
+          <Route
+            path="/faq"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <FaqPage />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <PageTransition>
+                {/* <MainLayout> */}
+                <PrivacyPolicy />
+                {/* </MainLayout> */}
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/Returns"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <ReturnExchangePolicy />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/terms"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <TermsAndConditions />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        {/* Mobile tryon pages - KEPT AS IS (Usually separate flow) */}
+          <Route
+            path="/upload-mobile"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <UploadSelfieModalMobile />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
 
-        <Route path="/tryon/start/:productId" element={<TryOnStartPage />} />
-        <Route path="/tryon/upload" element={<TryOnUploadPage />} />
-        <Route path="/tryon/processing" element={<TryOnProcessingPage />} />
-        <Route path="/tryon/preview" element={<TryOnPreviewPage />} />
-      </Routes>
-    </AnimatePresence>
+          <Route
+            path="/profile"
+            element={
+              <PageTransition>
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ProfilePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              </PageTransition>
+            }
+          />
+
+          {/* 🔒 Example protected routes (commented for now) */}
+
+          <Route
+            path="/wishlist"
+            element={
+              <PageTransition>
+                {/* <ProtectedRoute> */}
+                <MainLayout>
+                  <WishlistPage />
+                  {/* <EmptyWishlist/> */}
+                </MainLayout>
+                {/* </ProtectedRoute> */}
+              </PageTransition>
+            }
+          />
+
+          {/* Mobile tryon pages - KEPT AS IS (Usually separate flow) */}
+
+          <Route path="/tryon/start/:productId" element={<TryOnStartPage />} />
+          <Route path="/tryon/upload" element={<TryOnUploadPage />} />
+          <Route path="/tryon/processing" element={<TryOnProcessingPage />} />
+          <Route path="/tryon/preview" element={<TryOnPreviewPage />} />
+        </Routes>
+      </AnimatePresence>
+    </>
   );
 }
+

@@ -1,20 +1,15 @@
 import { useParams, Navigate } from "react-router-dom";
-import { useEffect } from "react";
 import ProductLayout from "../../layout/ProductLayout";
-import { useFilter } from "../../context/FilterContext";
 
 /**
  * CategoryPage - Dedicated page for each product category
  * Routes: /women/saree, /women/lehenga, etc.
+ * 
+ * Note: Filter management is handled by ProductLayout.
+ * ProductLayout syncs the category from URL params to FilterContext automatically.
  */
 const CategoryPage = ({ products }) => {
     const { category } = useParams();
-    const { clearAllFilters } = useFilter();
-
-    // Reset filters when category changes
-    useEffect(() => {
-        clearAllFilters();
-    }, [category, clearAllFilters]);
 
     // Validate category exists
     if (!category) {

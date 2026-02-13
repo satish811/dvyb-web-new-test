@@ -1,28 +1,57 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import OrderDetails from "./OrderDetails";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, ArrowRight } from "lucide-react";
 import empty_ordersIc from "../../../assets/ProfileImages/empty_ordersIc.svg";
 import orderService from "../../../services/orderService";
 import InvoiceView from "./InvoiceView";
 
+// Portal Component for Filter Modal
+const FilterModalPortal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      {/* Modal Content - relative to ensure it sits on top of overlay */}
+      <div className="relative z-[10000] w-full max-w-lg">
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("Active");
+  const [activeTab, setActiveTab] = useState("ALL ORDERS"); // Default to ALL
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Last Week");
+
+  // Filter States
+  const [filters, setFilters] = useState({
+    paymentMethod: "All",
+    priceRange: "All",
+    dateRange: "All"
+  });
+
+  const [tempFilters, setTempFilters] = useState({ ...filters });
+
   const [showInvoice, setShowInvoice] = useState(false);
 
-  const tabs = ["Active", "Delivered", "Cancelled", "Returned"];
-  const filterOptions = [
-    "Last Week",
-    "Last Month",
-    "Last 3 Months",
-    "Last 6 Months",
-    "2025",
-    "2024",
-  ];
+  // Tabs based on mockup
+  const tabs = ["ALL ORDERS", "ACTIVE", "DELIVERED", "CANCELLED", "RETURNED"];
+
+  const filterOptions = {
+    payment: ["Credit Card", "Debit Card", "Net Banking", "UPI", "Cash on Delivery"],
+    price: ["All", "Under ₹50,000", "₹50,000 - ₹100,000", "Above ₹100,000"],
+    date: ["All", "Last 30 Days", "Last 90 Days", "Last 180 Days"]
+  };
 
   // Subscribe to real-time orders
   useEffect(() => {
@@ -47,39 +76,65 @@ const MyOrders = () => {
     };
   }, []);
 
-  // Filter by date
-  const filterOrdersByDate = (ordersList, filter) => {
-    if (!filter || filter === "All Time") return ordersList;
-    const now = new Date();
-
-    return ordersList.filter((order) => {
-      const orderDate = order.date?.toDate?.() || new Date(order.date || order.createdAt);
-      if (isNaN(orderDate)) return false;
-
-      switch (filter) {
-        case "Last Week":
-          return orderDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        case "Last Month":
-          return orderDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        case "Last 3 Months":
-          return orderDate >= new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-        case "Last 6 Months":
-          return orderDate >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-        case "2025":
-          return orderDate.getFullYear() === 2025;
-        case "2024":
-          return orderDate.getFullYear() === 2024;
-        default:
-          return true;
-      }
-    });
-  };
-
-  // Final filtered orders
+  // Filter Logic
   const getFilteredOrders = () => {
-    let filtered = orders.filter((order) => order.status === activeTab);
-    filtered = filterOrdersByDate(filtered, selectedFilter);
-    return filtered;
+    let filtered = orders;
+
+    // 1. Tab Filter (Status)
+    if (activeTab !== "ALL ORDERS") {
+      const statusMap = {
+        "ACTIVE": "Active",
+        "DELIVERED": "Delivered",
+        "CANCELLED": "Cancelled",
+        "RETURNED": "Returned"
+      };
+      const targetStatus = statusMap[activeTab];
+      filtered = filtered.filter((order) => order.status === targetStatus);
+    }
+
+    // 2. Payment Method Filter
+    // Note: Ensure your order object has 'paymentMethod' field. If not, this might need adjustment.
+    if (filters.paymentMethod !== "All" && filters.paymentMethod) {
+      // This is a placeholder check. Adjust property name based on your actual data structure (e.g., order.paymentDetails?.method)
+      filtered = filtered.filter(order =>
+        order.paymentMethod === filters.paymentMethod ||
+        order.paymentType === filters.paymentMethod
+      );
+    }
+
+    // 3. Price Range Filter
+    if (filters.priceRange !== "All") {
+      filtered = filtered.filter(order => {
+        const total = order.total || order.amount || 0;
+        switch (filters.priceRange) {
+          case "Under ₹50,000": return total < 50000;
+          case "₹50,000 - ₹100,000": return total >= 50000 && total <= 100000;
+          case "Above ₹100,000": return total > 100000;
+          default: return true;
+        }
+      });
+    }
+
+    // 4. Date Range Filter
+    if (filters.dateRange !== "All") {
+      const now = new Date();
+      filtered = filtered.filter(order => {
+        const orderDate = order.date?.toDate?.() || new Date(order.date || order.createdAt);
+        if (isNaN(orderDate)) return false;
+
+        const diffTime = Math.abs(now - orderDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        switch (filters.dateRange) {
+          case "Last 30 Days": return diffDays <= 30;
+          case "Last 90 Days": return diffDays <= 90;
+          case "Last 180 Days": return diffDays <= 180;
+          default: return true;
+        }
+      });
+    }
+
+    return filtered || [];
   };
 
   const displayOrders = getFilteredOrders();
@@ -101,19 +156,31 @@ const MyOrders = () => {
     setSelectedOrder(null);
   };
 
-  const handleApplyFilter = () => {
+  const openFilterModal = () => {
+    setTempFilters({ ...filters }); // Reset temp to current applied
+    setShowFilter(true);
+  };
+
+  const applyFilters = () => {
+    setFilters({ ...tempFilters });
     setShowFilter(false);
   };
 
-  const getStatusColor = (status) => {
+  const clearFilters = () => {
+    const reset = { paymentMethod: "All", priceRange: "All", dateRange: "All" };
+    setFilters(reset);
+    setTempFilters(reset);
+    setShowFilter(false); // Optional: close or keep open
+  };
+
+  // Helper for Status Badge Styling
+  const getStatusBadgeStyle = (status) => {
     switch (status) {
-      case "Delivered":
-        return "text-green-600";
-      case "Cancelled":
-      case "Returned":
-        return "text-red-600";
-      default:
-        return "text-orange-600";
+      case 'Active': return "border-yellow-400 text-yellow-600";
+      case 'Delivered': return "border-green-500 text-green-600";
+      case 'Cancelled': return "border-red-400 text-red-500";
+      case 'Returned': return "border-orange-400 text-orange-500";
+      default: return "border-gray-300 text-gray-500";
     }
   };
 
@@ -122,7 +189,7 @@ const MyOrders = () => {
     const d = date.toDate?.() || new Date(date);
     return d.toLocaleDateString("en-IN", {
       day: "numeric",
-      month: "short",
+      month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -146,89 +213,96 @@ const MyOrders = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-[Outfit]">
         <p className="text-gray-600">Loading your orders...</p>
       </div>
     );
   }
 
-  // Order Card Component
-  const OrderCard = ({ order }) => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
-      {/* Desktop Header */}
-      <div className="hidden md:flex bg-gray-50 p-6 justify-between items-start">
-        <div>
-          <h3 className={`text-lg font-bold ${getStatusColor(order.status)}`}>
-            Order #{order.orderId || order.id}
-          </h3>
-          <p className="text-sm text-gray-600 mt-2">Placed on {formatDate(order.date)}</p>
-          {order.estimatedDelivery && (
-            <p className="text-sm text-gray-600">Est. Delivery: {order.estimatedDelivery}</p>
-          )}
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-medium">{order.status}</p>
-          <p className="text-sm text-gray-600">{order.paymentMethod || "COD"}</p>
-        </div>
-      </div>
+  // --- ORDER CARD COMPONENT ---
+  const OrderCard = ({ order }) => {
+    const totalAmount = order.total || order.amount || 0;
 
-      {/* Products List */}
-      <div className="p-6">
-        {order.products?.map((prod, i) => (
-          <div key={i} className="flex gap-6 mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-0">
-            <img
-              src={prod.image || prod.imageUrls?.[0] || "https://via.placeholder.com/120"}
-              alt={prod.name}
-              className="w-28 h-36 object-cover rounded-md"
-            />
-            <div className="flex-1">
-              <h4 className="font-semibold text-gray-900 uppercase text-sm mb-1">{prod.name}</h4>
-              <p className="text-sm text-gray-600 mb-3">₹{(prod.price || 0).toLocaleString()}</p>
-              <div className="flex gap-8 text-sm text-gray-600">
-                {prod.size && (
-                  <span>
-                    Size: <strong>{prod.size}</strong>
-                  </span>
-                )}
-                <span>
-                  Qty: <strong>{prod.quantity || 1}</strong>
-                </span>
-              </div>
+    return (
+      <div className="bg-white border border-gray-200 mb-6 font-[Outfit] shadow-sm hover:shadow-md transition-all">
+        {/* 1. Header Section */}
+        <div className="bg-gray-50 p-4 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-bold text-[#33022F] text-base">Order no: #{order.orderId || order.id}</span>
+              <span className={`px-2 py-0.5 text-[10px] font-bold uppercase border ${getStatusBadgeStyle(order.status)} rounded tracking-wider`}>
+                {order.status}
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 space-y-0.5">
+              <p>Placed on {formatDate(order.date)}</p>
+              <p>Estimated Delivery Date: {formatDate(order.estimatedDelivery || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000))}</p>
             </div>
           </div>
-        ))}
 
-        {/* Mobile Header */}
-        <div className="md:hidden mb-4 pt-2 border-t border-gray-200">
-          <h3 className={`text-lg font-bold ${getStatusColor(order.status)}`}>
-            Order #{order.orderId || order.id}
-          </h3>
-          <p className="text-sm text-gray-600">Placed on {formatDate(order.date)}</p>
+          <div className="text-right">
+            <p className="text-xs text-gray-500">Total:</p>
+            <p className="text-xl font-bold text-[#33022F]">₹{totalAmount.toLocaleString()}</p>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 mt-6">
-          {order.status === "Active" && (
-            <button
-              onClick={() => handleCancelOrder(order)}
-              className="flex-1 md:flex-initial bg-gray-100 hover:bg-gray-200 px-6 py-3 text-sm font-medium uppercase rounded-md transition"
-            >
-              Cancel Order
-            </button>
-          )}
-          <button
-            onClick={() => setSelectedOrder(order)}
-            className="flex-1 md:flex-initial bg-[#800000] hover:bg-[#660000] text-white px-6 py-3 text-sm font-medium uppercase rounded-md transition"
-          >
-            View Details
-          </button>
+        {/* 2. Body Section (Product List) */}
+        <div className="p-4 sm:p-6">
+          {order.products?.map((prod, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row gap-6 mb-6 last:mb-0 items-start">
+              {/* Product Image */}
+              <div className="w-24 h-32 bg-gray-100 shrink-0 overflow-hidden">
+                <img
+                  src={prod.image || prod.imageUrls?.[0] || "https://via.placeholder.com/150"}
+                  alt={prod.name}
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+
+              {/* Product Details & Actions */}
+              <div className="flex-1 w-full flex flex-col sm:flex-row justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-[#33022F] uppercase text-sm mb-1">{prod.brand || "VILLY FASHION"}</h3>
+                  <p className="text-sm text-gray-800 font-medium mb-1">{prod.name}</p>
+                  <p className="text-base font-bold text-[#33022F] mb-3">₹{(prod.price || 0).toLocaleString()}</p>
+
+                  <div className="flex items-center gap-6 text-xs text-black font-medium uppercase tracking-wide">
+                    {prod.size && <span>Size : {prod.size}</span>}
+                    <span>Qty : {prod.quantity || 1}</span>
+                  </div>
+
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mt-4 tracking-widest">
+                    ESTIMATED SHIPPING DATE : {formatDate(new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)).toUpperCase()}
+                  </p>
+                </div>
+
+                {/* Action Buttons (Right Aligned in Desktop) */}
+                <div className="flex flex-row sm:flex-col gap-3 sm:items-end mt-2 sm:mt-0">
+                  {order.status === 'Active' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCancelOrder(order); }}
+                      className="px-6 py-2.5 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition w-full sm:w-auto"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedOrder(order)}
+                    className="px-6 py-2.5 bg-[#33022F] text-white text-sm font-medium hover:bg-[#5a0452] transition w-full sm:w-auto"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const EmptyState = ({ message }) => (
-    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border-2 border-dashed border-gray-300">
+    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border-2 border-dashed border-gray-300 font-[Outfit]">
       <img src={empty_ordersIc} alt="No orders" className="w-64 h-64 object-contain mb-8" />
       <p className="text-xl font-medium text-gray-800">{message}</p>
       <p className="text-gray-600 mt-2">Your orders will appear here once placed.</p>
@@ -236,42 +310,39 @@ const MyOrders = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-4 lg:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <p className="text-gray-600 mt-1">
-            {displayOrders.length} order{displayOrders.length !== 1 ? "s" : ""}
-          </p>
+    <div className="min-h-screen bg-white md:bg-gray-50/50 font-[Outfit]">
+      <div className="max-w-6xl mx-auto p-4 lg:p-0">
+
+        {/* Header & Filter */}
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-[#33022F]">My Orders</h1>
+            <p className="text-gray-500 mt-1">{displayOrders.length} orders</p>
+          </div>
+
+          <button
+            onClick={openFilterModal}
+            className="flex items-center gap-2 px-6 py-2.5 bg-white border border-[#33022F] text-[#33022F] hover:bg-[#33022F] hover:text-white transition rounded font-medium text-sm"
+          >
+            <SlidersHorizontal size={16} />
+            <span>Filter Orders</span>
+          </button>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
-          <div className="flex border-b border-gray-200">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
-                className={`flex-1 py-4 px-6 text-sm font-medium transition-colors relative ${
-                  activeTab === tab
-                    ? "text-gray-900 font-semibold"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#800000]" />
-                )}
-              </button>
-            ))}
+        {/* Tabs Navigation */}
+        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar gap-8">
+          {tabs.map(tab => (
             <button
-              onClick={() => setShowFilter(true)}
-              className="px-6 flex items-center gap-2 border-l border-gray-200 hover:bg-gray-50 transition"
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`pb-4 text-xs font-bold tracking-widest uppercase whitespace-nowrap transition-all border-b-2 ${activeTab === tab
+                ? "text-[#33022F] border-[#33022F]"
+                : "text-gray-400 border-transparent hover:text-gray-600"
+                }`}
             >
-              <SlidersHorizontal size={18} />
-              <span className="text-sm font-medium">Filter</span>
+              {tab}
             </button>
-          </div>
+          ))}
         </div>
 
         {/* Orders List */}
@@ -280,57 +351,123 @@ const MyOrders = () => {
         ) : (
           <EmptyState
             message={
-              activeTab === "Active"
+              activeTab === "ACTIVE"
                 ? "No active orders"
-                : activeTab === "Delivered"
+                : activeTab === "DELIVERED"
                   ? "No delivered orders yet"
-                  : activeTab === "Cancelled"
+                  : activeTab === "CANCELLED"
                     ? "No cancelled orders"
-                    : "No returned orders"
+                    : activeTab === "RETURNED"
+                      ? "No returned orders"
+                      : "No orders found"
             }
           />
         )}
 
-        {/* Filter Modal */}
-        {showFilter && (
-          <>
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
-              onClick={() => setShowFilter(false)}
-            />
-            <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-              <div className="bg-white rounded-lg shadow-xl p-6 w-80 pointer-events-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Filter by Date</h3>
-                  <button onClick={() => setShowFilter(false)}>
-                    <X size={20} />
-                  </button>
-                </div>
+        {/* --- FILTER MODAL PORTAL --- */}
+        <FilterModalPortal isOpen={showFilter} onClose={() => setShowFilter(false)}>
+          <div className="bg-white rounded-lg shadow-2xl w-full flex flex-col max-h-[90vh]">
+
+            {/* Modal Header */}
+            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-[#33022F]">Filter Orders</h3>
+              <button onClick={() => setShowFilter(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="p-6 overflow-y-auto space-y-8">
+
+              {/* Payment Method */}
+              <div>
+                <h4 className="text-[#33022F] font-bold text-sm mb-4">Payment Method</h4>
                 <div className="space-y-3">
-                  {filterOptions.map((option) => (
-                    <label key={option} className="flex items-center gap-3 cursor-pointer">
+                  {filterOptions.payment.map(option => (
+                    <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${tempFilters.paymentMethod === option ? "border-[#33022F]" : "border-gray-300"}`}>
+                        {tempFilters.paymentMethod === option && <div className="w-3 h-3 rounded-full bg-[#33022F]" />}
+                      </div>
                       <input
                         type="radio"
-                        name="filter"
+                        name="paymentMethod"
                         value={option}
-                        checked={selectedFilter === option}
-                        onChange={(e) => setSelectedFilter(e.target.value)}
-                        className="w-4 h-4 text-[#800000]"
+                        checked={tempFilters.paymentMethod === option}
+                        onChange={() => setTempFilters({ ...tempFilters, paymentMethod: option })}
+                        className="hidden"
                       />
-                      <span className="text-sm">{option}</span>
+                      <span className="text-gray-600 text-sm font-medium">{option}</span>
                     </label>
                   ))}
                 </div>
-                <button
-                  onClick={handleApplyFilter}
-                  className="mt-6 w-full bg-[#800000] hover:bg-[#660000] text-white py-3 rounded-md font-medium"
-                >
-                  Apply Filter
-                </button>
               </div>
+
+              {/* Price Range */}
+              <div>
+                <h4 className="text-[#33022F] font-bold text-sm mb-4">Price Range</h4>
+                <div className="space-y-3">
+                  {filterOptions.price.map(option => (
+                    <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${tempFilters.priceRange === option ? "border-[#33022F]" : "border-gray-300"}`}>
+                        {tempFilters.priceRange === option && <div className="w-3 h-3 rounded-full bg-[#33022F]" />}
+                      </div>
+                      <input
+                        type="radio"
+                        name="priceRange"
+                        value={option}
+                        checked={tempFilters.priceRange === option}
+                        onChange={() => setTempFilters({ ...tempFilters, priceRange: option })}
+                        className="hidden"
+                      />
+                      <span className="text-gray-600 text-sm font-medium">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <h4 className="text-[#33022F] font-bold text-sm mb-4">Date Range</h4>
+                <div className="space-y-3">
+                  {filterOptions.date.map(option => (
+                    <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${tempFilters.dateRange === option ? "border-[#33022F]" : "border-gray-300"}`}>
+                        {tempFilters.dateRange === option && <div className="w-3 h-3 rounded-full bg-[#33022F]" />}
+                      </div>
+                      <input
+                        type="radio"
+                        name="dateRange"
+                        value={option}
+                        checked={tempFilters.dateRange === option}
+                        onChange={() => setTempFilters({ ...tempFilters, dateRange: option })}
+                        className="hidden"
+                      />
+                      <span className="text-gray-600 text-sm font-medium">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
             </div>
-          </>
-        )}
+
+            {/* Modal Footer */}
+            <div className="border-t border-gray-100 p-6 flex gap-4">
+              <button
+                onClick={clearFilters}
+                className="flex-1 border border-[#33022F] text-[#33022F] py-3 rounded font-bold text-sm uppercase tracking-wide hover:bg-gray-50 transition"
+              >
+                Clear Filters
+              </button>
+              <button
+                onClick={applyFilters}
+                className="flex-1 bg-[#33022F] text-white py-3 rounded font-bold text-sm uppercase tracking-wide hover:bg-[#5a0452] transition shadow-lg"
+              >
+                Apply Filters
+              </button>
+            </div>
+
+          </div>
+        </FilterModalPortal>
       </div>
     </div>
   );

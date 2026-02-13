@@ -32,11 +32,12 @@ export default function ProductLayout({ children, products, categoryFromRoute })
 
   /**
    * Get category from route param (priority) or URL query params (fallback)
-   * Also get subcategory from query params
+   * Also get subcategory from query params and search query
    */
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const category = categoryFromRoute || queryParams.get("category");
   const subcategory = queryParams.get("sub");
+  const searchQueryParam = queryParams.get("query");
 
   /**
    * Get available subcategories dynamically from product data
@@ -55,12 +56,19 @@ export default function ProductLayout({ children, products, categoryFromRoute })
    */
   useEffect(() => {
     console.log(`[ProductLayout] Category from URL: "${category}"`);
+    console.log(`[ProductLayout] Query from URL: "${searchQueryParam}"`);
     console.log(`[ProductLayout] Current selectedFilters:`, selectedFilters);
 
-    if (!category) {
+    if (!category && !searchQueryParam) {
       // On "All Products" page - clear filters
-      console.log("[ProductLayout] No category, clearing filters");
+      console.log("[ProductLayout] No category or query, clearing filters");
       clearAllFilters();
+      return;
+    }
+
+    // If there's a search query, don't update category filter
+    if (searchQueryParam) {
+      console.log(`[ProductLayout] Search query present: "${searchQueryParam}", skipping category filter`);
       return;
     }
 
@@ -86,17 +94,37 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     // Only update category when it changes
     updateFilter("categories", filterValue);
 
-  }, [category, subcategory]); // REMOVED selectedFilters dependency to prevent infinite loop
+  }, [category, subcategory, searchQueryParam]); // REMOVED selectedFilters dependency to prevent infinite loop
 
   /**
-   * Filter products locally ONLY for special cases like "Boutique"
+   * Filter products locally for special cases like "Boutique" and search queries
    */
   const visibleProducts = useMemo(() => {
+    let filtered = products;
+
+    // Filter by boutique
     if (category?.toLowerCase() === "boutique") {
-      return products.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
+      filtered = filtered.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
     }
-    return products;
-  }, [category, products]);
+
+    // Filter by search query if present
+    if (searchQueryParam) {
+      const query = searchQueryParam.toLowerCase();
+      filtered = filtered.filter((p) => {
+        const searchableText = [
+          p.name,
+          p.category,
+          p.subcategory,
+          p.description,
+          p.tags?.join(' ')
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        return searchableText.includes(query);
+      });
+    }
+
+    return filtered;
+  }, [category, searchQueryParam, products]);
 
   /**
    * Load recent & popular searches from localStorage

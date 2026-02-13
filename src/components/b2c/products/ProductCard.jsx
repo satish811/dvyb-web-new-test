@@ -99,13 +99,42 @@ const ProductCard = ({ product, onClose }) => {
       {/* Product Info */}
       <div className="p-4 flex flex-col items-start w-full gap-2">
         {/* Product Name - Bold Serif as per Image 2 */}
-        <h3 className="w-full text-left truncate font-serif font-bold text-base text-gray-900 tracking-wide capitalize">
+        {/* Product Name - Bold Serif as per Image 2 */}
+        <h3
+          className="w-full text-left truncate text-gray-900 capitalize"
+          style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontWeight: 400,
+            fontStyle: 'normal',
+            fontSize: '11.08px',
+            lineHeight: '14.77px',
+            letterSpacing: '0px',
+          }}
+        >
           {product.name || product.title || "Product Name"}
         </h3>
 
         {/* Price Section */}
         <div className="flex items-center gap-2.5 w-full">
-          <span className="text-black font-bold text-base sm:text-lg">
+          <span
+            className="text-black"
+            style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontWeight: 400, // Matching the requested weight
+              fontSize: '11.08px', // Matching the requested size for consistency, or should I scale? Let's try to match the title's style or keep it slightly larger if it's price? 
+              // The user said "this is the font and the design". I will apply it to the price too or just the title?
+              // Usually price is distinct. But if I use the same style it might look uniform.
+              // Let's stick to the requested font family for price at least.
+              // Actually, looking at the crop 4/6, the price "₹ 1,200.00" looks large.
+              // The text "Classic Cotton Dress" in crop 4/6 also looks large.
+              // BUT the user gave specific 11.08px. This is very specific. 11px is small. 
+              // Maybe the user is referring to the *grid item* details?
+              // The first image shows a grid. The titles there are small.
+              // I will apply the 11.08px to the title in the card.
+              // For the price, I will use Outfit but maybe let it inherit or pick a size? 
+              // I will update the price to use Outfit font-family to be safe.
+            }}
+          >
             ₹{price.toLocaleString()}
           </span>
           {hasDiscount && (

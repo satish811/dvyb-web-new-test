@@ -14,14 +14,14 @@ import indoWestern2Img from "../../../assets/b2c/landing/Landing-villy/indoweste
 import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
 
 const categories = [
-    { id: 1, title: "SAREES", img: sareeImg, link: "/womenwear?category=saree" },
-    { id: 2, title: "LEHENGA CHOLI", img: lehengaImg, link: "/womenwear?category=lehenga" },
-    { id: 3, title: "SALWAR SUIT", img: salwarImg, link: "/womenwear?category=salwar-suit" },
-    { id: 4, title: "INDO-WESTERN", img: indoWesternImg, link: "/womenwear?category=indo-western" },
-    { id: 5, title: "KURTAS", img: kurtasImg, link: "/womenwear?category=kurtas" },
-    { id: 6, title: "SHRARAS", img: shararasImg, link: "/womenwear?category=shararas" },
-    { id: 7, title: "INDO-WESTERN", img: indoWestern2Img, link: "/womenwear?category=indo-western" },
-    { id: 8, title: "BRIDAL", img: bridalImg, link: "/womenwear?category=bridal" },
+    { id: 1, title: "SAREES", img: sareeImg, link: "/women/saree" },
+    { id: 2, title: "LEHENGA CHOLI", img: lehengaImg, link: "/women/lehenga" },
+    { id: 3, title: "SALWAR SUIT", img: salwarImg, link: "/women/salwar-suit" },
+    { id: 4, title: "INDO-WESTERN", img: indoWesternImg, link: "/women/indo-western" },
+    { id: 5, title: "KURTAS", img: kurtasImg, link: "/women/kurta-sets" },
+    { id: 6, title: "SHRARAS", img: shararasImg, link: "/women/shararas" },
+    { id: 7, title: "INDO-WESTERN", img: indoWestern2Img, link: "/women/indo-western" },
+    { id: 8, title: "BRIDAL", img: bridalImg, link: "/women/bridal" },
 ];
 
 const CategoryCard = ({ item, onClick }) => {
@@ -37,7 +37,7 @@ const CategoryCard = ({ item, onClick }) => {
                 <motion.img
                     src={item.img}
                     alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-700"
+                    className="w-full h-full object-cover object-top transition-transform duration-700"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
                 />
