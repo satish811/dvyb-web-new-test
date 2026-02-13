@@ -472,8 +472,8 @@ const MyProfile = () => {
             {/* Start Button */}
             <button
               onClick={handleNext}
-              style={{ background: "var(--villy-primary, #33022F)" }}
               className="w-full max-w-md h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all duration-200 mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4"
+              style={{ background: 'var(--villy-primary, #33022F)' }}
             >
               START CREATING
             </button>
@@ -481,7 +481,7 @@ const MyProfile = () => {
             {/* Maybe Later */}
             <button
               onClick={() => navigate('/')}
-              className="text-gray-500 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base cursor-pointer font-medium hover:text-gray-700 mb-8 xs:mb-10 sm:mb-12 md:mb-6 lg:mb-0"
+              className="text-[#62748E] text-sm xs:text-sm sm:text-base md:text-sm lg:text-base cursor-pointer font-medium hover:text-gray-700 mb-8 xs:mb-10 sm:mb-12 md:mb-6 lg:mb-0"
             >
               MAYBE LATER
             </button>
@@ -521,9 +521,10 @@ const MyProfile = () => {
               <button
                 onClick={() => setProfileData({ ...profileData, unit: 'cm' })}
                 className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'cm'
-                  ? 'bg-gray-900 text-white'
+                  ? 'text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
+                style={profileData.unit === 'cm' ? { background: 'var(--DVYB-P-900, #200000)' } : undefined}
               >
                 cm
               </button>
@@ -583,8 +584,8 @@ const MyProfile = () => {
                   (currentStep === 3 && !profileData.skinTone) ||
                   (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
                 }
-                style={{ background: "var(--villy-primary, #33022F)" }}
                 className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
@@ -633,8 +634,8 @@ const MyProfile = () => {
                   (currentStep === 3 && !profileData.skinTone) ||
                   (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
                 }
-                style={{ background: "var(--villy-primary, #33022F)" }}
                 className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
@@ -689,8 +690,8 @@ const MyProfile = () => {
                   (currentStep === 3 && !profileData.skinTone) ||
                   (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
                 }
-                style={{ background: "var(--villy-primary, #33022F)" }}
                 className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
@@ -797,7 +798,8 @@ const MyProfile = () => {
                   (currentStep === 3 && !profileData.skinTone) ||
                   (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
                 }
-                className="w-4xl h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
@@ -1229,16 +1231,12 @@ const MyProfile = () => {
               <div className="flex flex-col gap-2.5 xs:gap-3 px-2">
                 <button
                   onClick={async () => {
-                    console.log("🖱️ Mobile Save & Continue Clicked");
-                    console.log("📸 capturedImage:", !!capturedImage);
-                    console.log("📂 generatedResults keys:", Object.keys(generatedResults));
                     try {
                       // 1. Save profile data
                       const dataToSave = {
                         ...profileData,
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
-                      console.log("💾 Saving profile data...", dataToSave);
                       await profileService.saveProfile(dataToSave);
 
                       // 2. Save try-on results (uploads to Cloudinary + saves URLs to Firestore)
@@ -1254,8 +1252,8 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  style={{ background: "var(--villy-primary, #33022F)" }}
-                  className="w-full h-11 xs:h-12 text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
+                  className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
+    text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
     disabled:opacity-50 transition-all"
                 >
                   <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
@@ -1263,8 +1261,8 @@ const MyProfile = () => {
                 </button>
                 <button
                   onClick={() => setCurrentStep(5)}
-                  style={{ borderColor: "var(--villy-primary, #33022F)", color: "var(--villy-primary, #33022F)" }}
-                  className="w-full h-10 xs:h-12 border-2 text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2"
+                  className="w-full h-10 xs:h-12 border-2 border-[#FF6B4A] text-[#FF6B4A] 
+              text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2"
                 >
                   <Edit2 size={16} className="xs:w-[18px] xs:h-[18px]" />
                   EDIT PROFILE
@@ -1399,15 +1397,11 @@ const MyProfile = () => {
               <div className="flex justify-center items-center gap-6 md:gap-8 mt-10 md:mt-14">
                 <button
                   onClick={async () => {
-                    console.log("🖱️ Desktop Save & Continue Clicked");
-                    console.log("📸 capturedImage:", !!capturedImage);
-                    console.log("📂 generatedResults keys:", Object.keys(generatedResults));
                     try {
                       const dataToSave = {
                         ...profileData,
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
-                      console.log("💾 Saving profile data...", dataToSave);
                       await profileService.saveProfile(dataToSave);
                       const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults);
                       console.log("✅ All data saved successfully");
@@ -1418,8 +1412,8 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  style={{ background: "var(--villy-primary, #33022F)" }}
-                  className="w-[180px] md:w-[210px] h-12 md:h-14 text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
+    text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   SAVE & CONTINUE
                 </button>
@@ -1468,8 +1462,8 @@ const MyProfile = () => {
                 {/* Start Button */}
                 <button
                   onClick={handleComplete}
-                  style={{ background: "var(--villy-primary, #33022F)" }}
                   className="h-12 xs:h-13 sm:h-14 md:h-12 lg:h-14 px-10 xs:px-11 sm:px-12 md:px-10 lg:px-12 text-white font-bold text-sm xs:text-base sm:text-lg md:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  style={{ background: 'var(--villy-primary, #33022F)' }}
                 >
                   START TRYING ON
                 </button>
