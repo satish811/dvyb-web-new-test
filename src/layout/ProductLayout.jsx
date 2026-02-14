@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
 import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown, Minus, Plus } from "lucide-react";
+import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown, Minus, Plus } from "lucide-react";
 import { mainlogo } from "../assets";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
