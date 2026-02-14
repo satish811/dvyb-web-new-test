@@ -61,15 +61,26 @@ class B2BAuthService {
   // Register B2B User
   // -----------------------------
   async registerB2B(userData) {
+    let firebaseUser = null;
     try {
       const { email, password } = userData;
 
       if (!email || !password) throw new Error("Email & Password required");
 
-      await this.validateUniqueFields(userData);
-
+      // 1. Create Auth User FIRST (to get "isAuthenticated" permission)
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+      firebaseUser = userCredential.user;
+
+      // 2. NOW Validate Unique Fields (since we are authenticated)
+      // 2. NOW Validate Unique Fields (since we are authenticated)
+      try {
+        await this.validateUniqueFields(userData);
+      } catch (validationError) {
+        // If validation fails, delete the created auth user
+        console.error("Validation failed, deleting user:", validationError);
+        if (firebaseUser) await firebaseUser.delete();
+        throw validationError; // Re-throw to be caught by outer catch
+      }
 
       const userModel = new B2BUserModel({
         ...userData,
@@ -78,6 +89,7 @@ class B2BAuthService {
 
       const userObject = JSON.parse(JSON.stringify(userModel));
 
+      // 3. Save to Firestore
       await setDoc(doc(db, "B2BBulkOrders_users", firebaseUser.uid), userObject);
 
       return {

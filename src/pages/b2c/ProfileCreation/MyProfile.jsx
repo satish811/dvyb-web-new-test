@@ -63,12 +63,12 @@ const MyProfile = () => {
     { id: 'medium-light', label: 'Medium Light', color: '#D6A27C' },
     { id: 'medium', label: 'Medium', color: '#C68C5B' },
     { id: 'tan', label: 'Tan', color: '#9E6B4D' },
-    { id: 'olive', label: 'Olive', color: '#8B6F47' },
+    { id: 'warm-brown', label: 'Warm Brown', color: '#826144' }, ,
     { id: 'brown', label: 'Brown', color: '#6F4E37' },
     { id: 'deep', label: 'Deep', color: '#4A3728' }
   ];
 
-  const hairTypes = [{ id: 'straight', label: 'Straight' }, { id: 'wavy', label: 'Wavy' }, { id: 'curly', label: 'Curly' }, { id: 'coily', label: 'Coily' }];
+  const hairTypes = [{ id: 'straight', label: 'Straight' }, { id: 'wavy', label: 'Wavy' }, { id: 'curly', label: 'Curly' }];
   const hairLengths = [{ id: 'short', label: 'Short' }, { id: 'medium', label: 'Medium' }, { id: 'long', label: 'Long' }];
   const hairColors = [
     { id: 'black', label: 'Black', color: '#1A1A1A' },
@@ -822,11 +822,11 @@ const MyProfile = () => {
             </p>
 
             {/* Tips Card */}
-            <div className="mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 bg-[#F6F4F1]">
+            <div className="mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 bg-[#E3C9E1]">
               <div className="font-medium text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#400000] mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
                 For best results:
               </div>
-              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600">
+              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-[#4A2D47] font-semibold">
                 <li>• Face the camera directly</li>
                 <li>• Ensure good lighting</li>
                 <li>• Keep a neutral expression</li>
@@ -1029,7 +1029,10 @@ const MyProfile = () => {
                 </p>
 
                 {/* Tips Card */}
-                <div className="bg-[#F6F4F1] p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 shadow-sm border border-gray-100 mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6">
+                <div
+                  className="p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 shadow-sm border border-gray-100 mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6"
+                  style={{ backgroundColor: '#BA8DB7' }}
+                >
                   <p className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-primary mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
                     For best results:
                   </p>
@@ -1054,11 +1057,11 @@ const MyProfile = () => {
                   {/* Continue Button */}
                   <button
                     onClick={() => setCurrentStep(8)}
-                    className="w-full h-11 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm xs:text-sm sm:text-lg md:text-sm lg:text-lg font-bold shadow-md flex items-center justify-center"
+                    className="w-full h-11 xs:h-12 sm:h-14 md:h-11 lg:h-14 text-white text-sm xs:text-sm sm:text-lg md:text-sm lg:text-lg font-bold shadow-md flex items-center justify-center"
+                    style={{ backgroundColor: '#33022F' }}
                   >
                     CONTINUE →
                   </button>
-
                   {/* Retake Button */}
                   <button
                     onClick={() => {
@@ -1252,9 +1255,9 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  className="w-full h-11 xs:h-12 bg-gradient-to-r from-[#FF6B4A] to-[#FF9068] 
-    text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
-    disabled:opacity-50 transition-all"
+                  className="w-full h-11 xs:h-12 bg-[#33022F] 
+text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
+disabled:opacity-50 transition-all"
                 >
                   <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
                   SAVE & CONTINUE
@@ -1412,8 +1415,8 @@ const MyProfile = () => {
                     }
                   }}
                   disabled={Object.keys(generatedResults).length === 0}
-                  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-gradient-to-r from-red-500 to-orange-400 
-    text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-[180px] md:w-[210px] h-12 md:h-14 bg-[#33022F] 
+text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   SAVE & CONTINUE
                 </button>
