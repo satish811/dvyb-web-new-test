@@ -197,7 +197,7 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
         </div>
       )}
 
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[200] p-4 overflow-auto">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-start z-[200] p-4 pt-64 overflow-auto">
         <div className="bg-white w-full max-w-6xl shadow-xl flex flex-col md:flex-row relative">
           <button
             className="absolute top-3 right-3 text-gray-600 hover:text-black cursor-pointer z-10"
