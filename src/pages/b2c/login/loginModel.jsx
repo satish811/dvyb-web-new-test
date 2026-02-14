@@ -15,6 +15,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [mobile, setMobile] = useState("");
   const [userType, setUserType] = useState("b2c"); // b2c, b2b
   const [b2bLoading, setB2bLoading] = useState(false);
+  const [formError, setFormError] = useState(""); // Error message to display in form
   const navigate = useNavigate();
 
   // Scroll lock effect
@@ -70,6 +71,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleB2BLogin = async (credentials) => {
     setB2bLoading(true);
+    setFormError(""); // Clear previous errors
     try {
       const result = await B2BAuthService.login(credentials.email, credentials.password);
       if (result.success) {
@@ -83,7 +85,10 @@ const LoginModal = ({ isOpen, onClose }) => {
       }
     } catch (error) {
       console.error("B2B Login error:", error);
-      alert(error.message);
+      // Show error inline instead of alert
+      const errorMessage = error.message || "Login failed. Please check your credentials.";
+      setFormError(errorMessage);
+      // Don't close modal or navigate - let user try again
     } finally {
       setB2bLoading(false);
     }
@@ -91,15 +96,20 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleB2BRegister = async (userData) => {
     setB2bLoading(true);
+    setFormError(""); // Clear previous errors
     try {
       const result = await B2BAuthService.registerB2B(userData);
       if (result.success) {
-        alert("Registration successful! Please login with your credentials.");
+        setFormError("");
+        alert("✅ Registration successful! Please login with your credentials.");
         setStep("b2bLogin");
       }
     } catch (error) {
       console.error("B2B Registration error:", error);
-      alert(error.message);
+      // Show error inline instead of alert
+      const errorMessage = typeof error === 'string' ? error : (error.message || "Registration failed. Please try again.");
+      setFormError(errorMessage);
+      // Don't navigate away - let user fix the error
     } finally {
       setB2bLoading(false);
     }
@@ -156,22 +166,36 @@ const LoginModal = ({ isOpen, onClose }) => {
 
     if (step === "b2bLogin") {
       return (
-        <B2BLoginForm
-          onSubmit={handleB2BLogin}
-          onGoogleLogin={handleGoogleLogin}
-          onSwitchToRegister={switchToB2BRegister}
-          loading={b2bLoading}
-        />
+        <>
+          {formError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+              <span className="font-semibold">Error: </span>{formError}
+            </div>
+          )}
+          <B2BLoginForm
+            onSubmit={handleB2BLogin}
+            onGoogleLogin={handleGoogleLogin}
+            onSwitchToRegister={switchToB2BRegister}
+            loading={b2bLoading}
+          />
+        </>
       );
     }
 
     if (step === "b2bRegister") {
       return (
-        <B2BRegisterForm
-          onSubmit={handleB2BRegister}
-          loading={b2bLoading}
-          onSwitchToLogin={switchToB2BLogin}
-        />
+        <>
+          {formError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+              <span className="font-semibold">⚠️ </span>{formError}
+            </div>
+          )}
+          <B2BRegisterForm
+            onSubmit={handleB2BRegister}
+            loading={b2bLoading}
+            onSwitchToLogin={switchToB2BLogin}
+          />
+        </>
       );
     }
 

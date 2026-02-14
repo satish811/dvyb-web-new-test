@@ -37,14 +37,24 @@ for (const key of requiredKeys) {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize App Check for phone authentication
-if (typeof window !== 'undefined' && import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY) {
+// Initialize App Check
+if (typeof window !== 'undefined') {
   try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true
-    });
-    console.log("✅ Firebase App Check initialized");
+    // Use debug token in development (localhost)
+    if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN) {
+      // Enable debug mode for local testing
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
+      console.log("🔧 App Check Debug Mode enabled for localhost");
+    }
+    
+    // Initialize App Check with ReCAPTCHA (works in both debug and production)
+    if (import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY) {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY),
+        isTokenAutoRefreshEnabled: true
+      });
+      console.log("✅ Firebase App Check initialized");
+    }
   } catch (error) {
     console.warn("⚠️ App Check initialization failed:", error);
   }
