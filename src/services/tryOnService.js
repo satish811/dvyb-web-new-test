@@ -55,7 +55,8 @@ export const getUserTryOns = async () => {
     }
 
     const tryOnsRef = collection(db, "user_tryons");
-    const q = query(tryOnsRef, where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+    // dbg: removing orderBy to check if it fixes permission/index error
+    const q = query(tryOnsRef, where("userId", "==", user.uid));
 
     const querySnapshot = await getDocs(q);
     const tryOns = [];

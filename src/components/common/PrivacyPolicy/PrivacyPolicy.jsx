@@ -1,6 +1,4 @@
 import React from "react";
-import Navbar from "../navbar/navbar";
-import Footer from "../footer/footer";
 
 // import logo from '@/assets/b2c/images/FAQ/Logo.svg';
 // import logoName from '@/assets/b2c/images/FAQ/LogoName.svg';
@@ -8,7 +6,6 @@ import Footer from "../footer/footer";
 export default function PrivacyPolicy() {
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-white mx-10 mt-0">
         {/* Header */}
 
@@ -168,7 +165,6 @@ export default function PrivacyPolicy() {
           </section>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

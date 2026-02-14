@@ -4,16 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../config/firebaseConfig";
 import { getAuth, signOut } from "firebase/auth";
 import { Navigate, useNavigate } from "react-router-dom";
-import {
-  FaUser,
-  FaShoppingBag,
-  FaImages,
-  FaHeart,
-  FaSignOutAlt,
-  FaChevronRight,
-  FaUserPlus,
-} from "react-icons/fa";
-import { LogOut } from "lucide-react";
+import { LogOut, ChevronRight } from "lucide-react";
 import B2BAuthService from "../../../services/b2bAuthService";
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
@@ -26,29 +17,25 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const auth = getAuth();
 
-  // Base menu items - common for all users
+  // Base menu items - Uppercase labels, no icons
   const baseMenu = [
-    { id: "my-info", label: "MY INFO", icon: <FaUser /> },
-    { id: "my-orders", label: "MY ORDERS", icon: <FaShoppingBag /> },
-    { id: "my-tryon-gallery", label: "MY TRY-ON GALLERY", icon: <FaImages /> },
-    { id: "wishlist", label: "WISHLIST", icon: <FaHeart /> },
+    { id: "my-info", label: "MY INFO" },
+    { id: "my-orders", label: "MY ORDERS" },
+    { id: "profile-creation", label: "MY MODEL" }, // Updated to match UserDropdown link
+    { id: "my-tryon-gallery", label: "MY TRY-ON GALLERY" },
+    { id: "wishlist", label: "MY WISHLIST" },
   ];
 
   // Profile creation item - only for B2C users
   const profileCreationItem = {
     id: "profile-creation",
     label: "PROFILE CREATION",
-    icon: <FaUserPlus />,
   };
 
   // Safe URL creation helper
   const safeGetUserCompleteProfile = async (uid) => {
     try {
-      // Ensure uid is valid
-      if (!uid || typeof uid !== "string") {
-        throw new Error("Invalid user ID");
-      }
-
+      if (!uid || typeof uid !== "string") throw new Error("Invalid user ID");
       return await B2BAuthService.getUserCompleteProfile(uid);
     } catch (error) {
       console.error("❌ [Sidebar] Error in getUserCompleteProfile:", error);
@@ -65,9 +52,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       }
 
       try {
-        console.log("🔄 [Sidebar] Fetching user role for UID:", user.uid);
-
-        // First try to get B2B user complete profile
         const completeProfile = await safeGetUserCompleteProfile(user.uid);
 
         if (completeProfile && completeProfile.success && completeProfile.data) {
@@ -75,22 +59,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           const hasB2BData = userData.pan || userData.aadhaar;
 
           if (hasB2BData) {
-            console.log("✅ [Sidebar] User is B2B with complete profile");
             setUserRole("B2B");
             setData(userData);
           } else {
-            console.log("ℹ️ [Sidebar] User doesn't have B2B data, defaulting to B2C");
             setUserRole("B2C");
             await fetchB2CData();
           }
         } else {
-          console.log("ℹ️ [Sidebar] No B2B profile found, defaulting to B2C");
           setUserRole("B2C");
           await fetchB2CData();
         }
       } catch (error) {
         console.error("❌ [Sidebar] Error getting user role and data:", error);
-        setUserRole("B2C"); // Default fallback
+        setUserRole("B2C");
         await fetchB2CData();
       } finally {
         setLoading(false);
@@ -103,12 +84,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         let snap = await getDoc(ref);
 
         if (snap.exists()) {
-          const userData = snap.data();
-          console.log("✅ [Sidebar] Found B2C user data");
-          setData(userData);
+          setData(snap.data());
         } else {
-          console.log("ℹ️ [Sidebar] No B2C user data found");
-          // Try to get basic user info from auth
           setData({
             name: user.displayName || user.email?.split("@")[0] || "User",
             email: user.email || "",
@@ -116,7 +93,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         }
       } catch (error) {
         console.error("❌ [Sidebar] Error fetching B2C data:", error);
-        // Fallback to basic auth info
         setData({
           name: user.displayName || user.email?.split("@")[0] || "User",
           email: user.email || "",
@@ -129,37 +105,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   // Create menu based on user role
   const getMenuItems = () => {
-    // Start with base menu
     let menuItems = [...baseMenu];
-
-    console.log("📋 [Sidebar] Building menu for role:", userRole);
-
-    // Add profile creation only for B2C users
-    if (userRole === "B2C") {
-      console.log("➕ [Sidebar] Adding Profile Creation for B2C user");
-      menuItems.push(profileCreationItem);
-    } else if (userRole === "B2B") {
-      console.log("➖ [Sidebar] Skipping Profile Creation for B2B user");
-    }
-
-    console.log(
-      "📋 [Sidebar] Final menu items:",
-      menuItems.map((item) => item.label)
-    );
+    // if (userRole === "B2C") {
+    //   menuItems.push(profileCreationItem);
+    // }
     return menuItems;
   };
 
-  // Handle logout
   const handleLogout = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
-
-      // Use navigate instead of window.location for better routing
       navigate("/");
-
-      // Force a small delay before reload to ensure navigation happens
       setTimeout(() => {
         window.location.reload();
       }, 100);
@@ -168,17 +126,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     }
   };
 
-  // Get menu items based on role
   const menu = getMenuItems();
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="hidden md:block w-64 h-[calc(100vh-40px)] mt-12 bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-300 rounded mb-6"></div>
+      <div className="hidden md:block w-64 h-screen mt-20 bg-white p-4 fixed left-0 top-0 z-40">
+        <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-10 bg-gray-300 rounded mb-2"></div>
+            <div key={i} className="h-10 bg-gray-100 rounded"></div>
           ))}
         </div>
       </div>
@@ -187,117 +142,76 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   return (
     <>
-      {/* DESKTOP SIDEBAR - Fixed position below navbar */}
-      <div className="hidden md:block w-64 h-[calc(100vh-40px)] mt-20   bg-gray-50 p-4 fixed left-0 top-[40px] overflow-y-auto z-40">
-        {/* Welcome Message with Role Badge */}
-        {/* <div className="mb-6 pb-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-800">
-            Hello {data?.name || data?.username || "User"}
-          </h2>
-          {userRole && (
-            <div
-              className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
-            >
-              {userRole === "B2B" ? "Business Account" : "Personal Account"}
-            </div>
-          )}
-        </div> */}
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden md:flex flex-col w-64 h-screen pt-32 pb-10 bg-white fixed left-0 top-0 z-40 border-r border-gray-100 overflow-y-auto font-[Outfit]">
 
-        {/* Menu Items */}
-        <ul className="space-y-1">
+        <ul className="flex flex-col w-full">
           {menu.map((item) => (
             <li
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`cursor-pointer flex items-center gap-3 p-3 rounded-md transition-all duration-200 ${
-                activeTab === item.id ? "text-primary font-semibold" : "text-gray-700"
-              }`}
+              className={`cursor-pointer px-8 py-5 text-sm font-semibold tracking-wide transition-all duration-200 border-l-[5px]
+                ${activeTab === item.id
+                  ? "bg-[#FFF5F5] text-[#800000] border-[#800000]"
+                  : "text-[#1C1B1F] border-transparent hover:bg-gray-50 hover:text-gray-900"
+                }`}
             >
-              {/* {item.icon && <span className="text-lg ">{item.icon}</span>} */}
-              <span className="font-semibold ">{item.label}</span>
+              {item.label}
             </li>
           ))}
 
           {/* Logout Button */}
           <li
             onClick={() => setShowLogoutModal(true)}
-            className="cursor-pointer flex items-center gap-3 p-3 rounded-md mt-4 text-red-600 hover:bg-red-50 transition-all duration-200 border-t border-gray-200 pt-4"
+            className="cursor-pointer px-8 py-5 text-sm font-semibold tracking-wide text-[#1C1B1F] border-l-[5px] border-transparent hover:bg-gray-50 hover:text-red-700 transition-all duration-200 mt-8"
           >
-            <FaSignOutAlt className="text-lg" />
-            <span>Logout</span>
+            LOGOUT
           </li>
         </ul>
       </div>
 
-      {/* MOBILE SIDEBAR - Full page overlay */}
-      <div className="md:hidden bg-white min-h-screen">
-        {/* Header with Role Badge */}
-        <div className="bg-white  border-gray-200 px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-              MY ACCOUNT
-            </h2>
-            {/* {userRole && (
-              <div
-                className={`px-2 py-1 rounded text-xs font-medium ${userRole === "B2C" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
-              >
-                {userRole}
-              </div>
-            )} */}
-          </div>
+      {/* MOBILE SIDEBAR (Drawer Style) */}
+      <div className="md:hidden bg-white min-h-screen font-[Outfit]">
+        <div className="bg-white px-4 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-[#33022F] uppercase tracking-wider">MY ACCOUNT</h2>
         </div>
 
-        {/* Menu Items */}
         <ul className="bg-white">
           {menu.map((item) => (
             <li
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className="border-b border-gray-100 px-4 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+              className={`border-b border-gray-50 px-5 py-4 flex items-center justify-between cursor-pointer transition-colors
+                 ${activeTab === item.id ? "bg-[#FFF5F5] text-[#800000]" : "text-gray-900 hover:bg-gray-50"}
+               `}
             >
-              <div className="flex items-center gap-3">
-                {/* {item.icon && <span className="text-gray-500">{item.icon}</span>} */}
-                <span className="text-sm font-medium text-gray-900 uppercase tracking-wide">
-                  {item.label}
-                </span>
-              </div>
-              <FaChevronRight className="text-gray-400 text-xs" />
+              <span className="text-sm font-semibold uppercase tracking-wide">{item.label}</span>
+              <ChevronRight size={16} className={activeTab === item.id ? "text-[#800000]" : "text-gray-400"} />
             </li>
           ))}
         </ul>
 
-        {/* Logout Button */}
-        <div className="px-4 mt-auto pt-8 pb-6">
+        <div className="px-5 mt-8">
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full bg-[#8B0000] text-white py-3 flex items-center justify-center gap-2 font-medium text-sm uppercase tracking-wide hover:bg-[#6d0000] transition-colors"
+            className="w-full bg-[#800000] text-white py-3.5 flex items-center justify-center gap-2 font-bold text-sm uppercase tracking-wide rounded hover:bg-[#660000] transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            Log out
+            <LogOut size={16} />
+            LOGOUT
           </button>
         </div>
       </div>
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[9999]">
-          <div className="bg-white rounded-lg shadow-2xl p-6 w-80 text-center mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-[9999] font-[Outfit]">
+          <div className="bg-white rounded-lg shadow-xl p-8 w-80 text-center mx-4">
+            <h3 className="text-lg font-bold mb-6 text-[#33022F]">
               Are you sure you want to Log Out?
             </h3>
             <div className="flex justify-center gap-4">
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
-              >
-                Yes
-              </button>
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200"
-              >
-                No
-              </button>
+              <button onClick={handleLogout} className="bg-[#800000] text-white px-8 py-2.5 rounded hover:bg-[#660000] transition font-medium">Yes</button>
+              <button onClick={() => setShowLogoutModal(false)} className="bg-gray-200 text-gray-800 px-8 py-2.5 rounded hover:bg-gray-300 transition font-medium">No</button>
             </div>
           </div>
         </div>

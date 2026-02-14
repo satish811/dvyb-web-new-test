@@ -32,36 +32,60 @@ export default function PromotionalCarousel() {
     };
 
     return (
-        <section className="w-full relative overflow-hidden bg-gray-50 mt-10 my-12 py-16">
-            {/* Slider Container */}
+        <section className="w-full mt-0 pt-0 pb-4 bg-white">
             <div
-                className="flex transition-transform duration-700 ease-in-out w-full"
-                style={{ transform: `translateX(-${current * 100}%)` }}
+                className="relative flex flex-col w-full max-w-[1920px] mx-auto"
             >
-                {slides.map((slide) => (
-                    <div key={slide.id} className="min-w-full relative h-[250px] sm:h-[400px] md:h-[700px]">
-                        <img
-                            src={slide.img}
-                            alt={slide.alt}
-                            className="w-full h-full object-cover sm:object-fill"
-                        />
+                {/* Slider Image Area */}
+                <div className="relative overflow-hidden w-full group h-[220px] sm:h-[300px] md:h-[592px] xl:h-[700px] 2xl:h-[850px]">
+                    <div
+                        className="flex transition-transform duration-700 ease-in-out w-full h-full"
+                        style={{ transform: `translateX(-${current * 100}%)` }}
+                    >
+                        {slides.map((slide) => (
+                            <div key={slide.id} className="min-w-full relative h-full">
+                                <img
+                                    src={slide.img}
+                                    alt={slide.alt}
+                                    className="w-full h-full object-cover object-center"
+                                />
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-10">
-                {slides.map((_, index) => (
+                    {/* Navigation Arrows */}
                     <button
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${current === index
-                            ? "bg-[#9F5F9F] w-6" // Active pill shape/color
-                            : "bg-gray-300 hover:bg-gray-400"
-                            }`}
-                        aria-label={`Go to slide ${index + 1}`}
-                    />
-                ))}
+                        onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 2xl:p-3 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 2xl:w-7 2xl:h-7">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 2xl:p-3 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 2xl:w-7 2xl:h-7">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Pagination Dots Bar - Below Image */}
+                <div className="w-full bg-[#EAE0E4] h-[30px] 2xl:h-[40px] flex items-center justify-center space-x-2 2xl:space-x-3">
+                    {slides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => goToSlide(index)}
+                            className={`rounded-full transition-all duration-300 ${current === index
+                                ? "bg-[#5F0F40] w-2 h-2 2xl:w-3 2xl:h-3" // Active dot
+                                : "bg-[#D1D1D1] w-2 h-2 2xl:w-3 2xl:h-3 opacity-60"
+                                }`}
+                            aria-label={`Go to slide ${index + 1}`}
+                        />
+                    ))}
+                </div>
             </div>
         </section>
     );

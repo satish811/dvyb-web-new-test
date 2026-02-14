@@ -1,5 +1,5 @@
 /* Google Fonts must come FIRST */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit+Display:wght@100,200,300,400;500;600;700&family=Old+Standard+TT:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Old+Standard+TT:wght@400;700&display=swap");
 
 
 /* src/styles/index.css */
@@ -9,9 +9,26 @@
 
 /* Tailwind CSS */
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Catchye Demo';
+  src: url('/fonts/catchye.otf') format('opentype');
+  /* Adjust path as needed */
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Antiga';
+  src: url('/fonts/Antiga Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
 @import "tailwindcss" important;
 
 /* Base Styles */
+@import "./base/reset.css";
 @import "./base/variables.css";
 @import "./base/typography.css";
 

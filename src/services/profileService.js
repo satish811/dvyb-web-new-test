@@ -71,46 +71,45 @@ class ProfileService {
       if (!user) throw new Error("User must be authenticated");
 
       console.log("📤 Uploading images to Cloudinary one by one...");
-      
+
       const cloudinaryUrls = {};
       const entries = Object.entries(tryOnResults).filter(([_, url]) => url !== null);
-      
+
       // Upload images ONE BY ONE to avoid payload size issues
       for (let i = 0; i < entries.length; i++) {
         const [outfitType, dataUrl] = entries[i];
-        
+
         console.log(`📤 Uploading ${i + 1}/${entries.length}: ${outfitType}...`);
-        
+
         try {
-          // Remove data URL prefix if present
-          const base64Image = dataUrl.replace(/^data:image\/\w+;base64,/, '');
-          
-          // Upload single image to Cloudinary
-          const uploadResponse = await fetch('/api/upload-to-cloudinary', {
+          // Convert base64 data URL to Blob
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+
+          // Create FormData
+          const formData = new FormData();
+          formData.append('file', blob, `${outfitType}.jpg`);
+          formData.append('folder', 'warehouse_uploads'); // Optional, if server supports it
+
+          // Upload to server (proxied to localhost:3010/upload)
+          const uploadResponse = await fetch('/api/upload', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-              images: [{
-                outfitType,
-                base64Image
-              }]
-            })
+            body: formData,
+            // Do NOT set Content-Type header for FormData, browser sets it with boundary
           });
 
           if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json();
+            const errorData = await uploadResponse.json().catch(() => ({}));
             console.error(`❌ Upload failed for ${outfitType}:`, errorData);
             throw new Error(errorData.error || `Failed to upload ${outfitType}`);
           }
 
-          const { results } = await uploadResponse.json();
-          
-          // ✅ Store Cloudinary URL (NOT base64)
-          cloudinaryUrls[outfitType] = results[outfitType];
+          const result = await uploadResponse.json();
+
+          // Server returns { url: "..." }
+          cloudinaryUrls[outfitType] = result.url;
           console.log(`✅ ${outfitType} uploaded: ${cloudinaryUrls[outfitType]}`);
-          
+
         } catch (error) {
           console.error(`❌ Error uploading ${outfitType}:`, error);
           // Continue with other images even if one fails
@@ -131,7 +130,7 @@ class ProfileService {
 
       console.log("✅ Try-on results saved to Firestore with Cloudinary URLs");
       return cloudinaryUrls;
-      
+
     } catch (error) {
       console.error("❌ Error saving try-on results:", error);
       throw error;
@@ -169,7 +168,7 @@ class ProfileService {
 
       // Normalize dress type to lowercase for matching
       const normalizedType = dressType?.toLowerCase().trim();
-      
+
       console.log(`🔍 Fetching try-on for dress type: ${normalizedType}`);
 
       const userCollection = await this.getCurrentUserCollection();
@@ -198,7 +197,7 @@ class ProfileService {
         'kurti': ['kurti', 'kurta', 'kurtis',],
         'anarkali': ['anarkali', 'anarkalis'],
         'sharara': ['sharara', 'shararas'],
-        'kurta set': ['kurta set', 'kurta sets', 'kurta-sets', 'kurtaset','kurti', 'kurta', 'kurtis'],
+        'kurta set': ['kurta set', 'kurta sets', 'kurta-sets', 'kurtaset', 'kurti', 'kurta', 'kurtis'],
       };
 
       // Find matching variation

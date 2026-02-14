@@ -1,7 +1,8 @@
-import React from "react";
-import { Scan } from "lucide-react";
+import React, { useRef } from "react";
 import { useUI } from "../../../context/UIContext";
+import { motion } from "framer-motion";
 
+// Background Pattern
 import bgPattern from "../../../assets/b2c/landing/Landing-villy/tryitbuyitframe.png";
 
 // Product Images
@@ -10,6 +11,9 @@ import imgLehenga from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
 import imgKurta from "../../../assets/b2c/landing/Landing-villy/Kurtas.jpg";
 import imgSharara from "../../../assets/b2c/landing/Landing-villy/Shararas.jpg";
 
+// Correct Try-On Icon
+import TryOnIcon from "../../../assets/b2c/landing/Landing-villy/tryonrotate.png";
+
 const products = [
     {
         id: 1,
@@ -17,7 +21,7 @@ const products = [
         oldPrice: "₹6,500.00",
         newPrice: "₹3,200.00",
         image: imgSaree,
-        avatars: [imgSaree, imgLehenga, imgKurta, imgSharara]
+        avatars: [imgSaree, imgLehenga, imgKurta, imgSharara],
     },
     {
         id: 2,
@@ -25,7 +29,7 @@ const products = [
         oldPrice: "₹9,000.00",
         newPrice: "₹5,200.00",
         image: imgLehenga,
-        avatars: [imgLehenga, imgKurta, imgSharara, imgSaree]
+        avatars: [imgLehenga, imgKurta, imgSharara, imgSaree],
     },
     {
         id: 3,
@@ -33,7 +37,7 @@ const products = [
         oldPrice: "₹7,500.00",
         newPrice: "₹4,000.00",
         image: imgKurta,
-        avatars: [imgKurta, imgSharara, imgSaree, imgLehenga]
+        avatars: [imgKurta, imgSharara, imgSaree, imgLehenga],
     },
     {
         id: 4,
@@ -41,91 +45,105 @@ const products = [
         oldPrice: "₹12,000.00",
         newPrice: "₹7,500.00",
         image: imgSharara,
-        avatars: [imgSharara, imgSaree, imgLehenga, imgKurta]
-    }
+        avatars: [imgSharara, imgSaree, imgLehenga, imgKurta],
+    },
 ];
 
 export default function TryItBuyItSection() {
     const { setTryOnModalOpen } = useUI();
+    const scrollContainerRef = useRef(null);
 
     return (
-        <section className="relative w-full bg-[#E8E1E6] pt-32 pb-40 mt-16 overflow-visible">
+        <section className="relative w-full bg-[#fcfcfc] py-10 md:py-16 overflow-hidden">
 
-            {/* Main Container */}
-            <div className="max-w-[1500px] mx-auto px-6 md:px-10 relative z-10">
+            {/* Background Texture - Mobile & Desktop */}
+            <div
+                className="absolute inset-x-0 bottom-0 h-[200px] md:h-[320px] 2xl:h-[450px] pointer-events-none z-0 opacity-50 md:opacity-100"
+                style={{
+                    backgroundImage: `url(${bgPattern})`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "bottom",
+                }}
+            />
+
+            {/* Main Content */}
+            <div className="relative z-10 w-full max-w-[1440px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16">
 
                 {/* Heading */}
-                <h2 className="text-3xl md:text-5xl font-serif text-black mb-16 tracking-wide">
+                <h2 className="text-3xl md:text-5xl 2xl:text-7xl font-serif text-[#2F2F2F] mb-8 md:mb-12 2xl:mb-20 text-center tracking-wide">
                     TRY IT & BUY IT
                 </h2>
 
-                {/* Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-
+                {/* Mobile: Horizontal Draggable Scroll | Desktop: Grid */}
+                <div
+                    ref={scrollContainerRef}
+                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 2xl:gap-10 overflow-x-auto md:overflow-visible pb-8 md:pb-0 snap-x snap-mandatory hide-scrollbar justify-items-center"
+                >
                     {products.map((product) => (
-                        <div key={product.id} className="relative group">
-
-                            {/* Main Image */}
-                            <div className="w-full h-[460px] md:h-[520px] overflow-hidden">
+                        <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5 }}
+                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[320px] md:w-auto md:min-w-[300px] 2xl:min-w-[400px] h-[60vh] md:h-[485px] 2xl:h-[650px] snap-center group"
+                        >
+                            {/* Full Height Image */}
+                            <div className="w-full h-full relative">
                                 <img
                                     src={product.image}
                                     alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-full object-cover object-top transition-transform duration-700 md:group-hover:scale-105"
                                 />
+                                {/* Overlay Gradient for readability if needed, mostly handled by card below */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent md:hidden" />
                             </div>
 
-                            {/* Floating Card */}
-                            <div className="absolute left-1/2 -translate-x-1/2 -bottom-20 bg-white w-[88%] rounded-xl shadow-xl p-4 transition-all duration-300 group-hover:-translate-y-1">
+                            {/* Floating Details Box */}
+                            <div className="absolute bottom-4 left-4 right-4 md:left-6 md:right-auto md:w-[274px] 2xl:w-[350px] bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-4 2xl:p-6 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
 
-                                {/* Top row: Name + Avatars */}
-                                <div className="flex justify-between items-start mb-3">
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                                <div className="flex justify-between items-start mb-3 2xl:mb-5">
+                                    <div className="flex-1 mr-2">
+                                        <h3 className="text-sm 2xl:text-lg font-semibold text-gray-900 mb-1 truncate">
                                             {product.name}
                                         </h3>
-                                        <div className="flex items-center gap-2 text-[11px]">
-                                            <span className="line-through text-gray-400">{product.oldPrice}</span>
-                                            <span className="font-bold text-gray-900">{product.newPrice}</span>
+                                        <div className="flex items-center gap-2 text-xs 2xl:text-sm">
+                                            <span className="line-through text-gray-400">
+                                                {product.oldPrice}
+                                            </span>
+                                            <span className="font-bold text-gray-900">
+                                                {product.newPrice}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    {/* Avatar group */}
-                                    <div className="flex -space-x-1">
+                                    {/* Avatar/Thumbnail Stack */}
+                                    <div className="flex -space-x-2">
                                         {product.avatars.map((src, i) => (
                                             <img
                                                 key={i}
                                                 src={src}
-                                                className="w-6 h-6 rounded-full border border-white"
+                                                alt="variant"
+                                                className="w-6 h-6 2xl:w-8 2xl:h-8 rounded-full border-2 border-white object-cover"
                                             />
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Button */}
+                                {/* Try-On Button */}
                                 <button
                                     onClick={() => setTryOnModalOpen(true)}
-                                    className="w-full bg-[#8B4789] hover:bg-[#753775] text-white py-2.5 rounded-lg text-xs font-semibold flex justify-center items-center gap-2"
+                                    className="w-full bg-[#8B4789] hover:bg-[#753775] text-white py-2.5 2xl:py-3.5 rounded-lg text-xs 2xl:text-sm font-medium flex justify-center items-center gap-2 transition-colors shadow-md"
                                 >
-                                    <Scan className="w-4 h-4" />
+                                    <img src={TryOnIcon} alt="try on" className="w-5 h-5 2xl:w-6 2xl:h-6 bg-white/20 rounded-full p-0.5" />
                                     Virtual try on
                                 </button>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
-
                 </div>
             </div>
-
-            {/* Decorative Frame */}
-            <div
-                className="absolute left-0 right-0 bottom-0 h-[330px] pointer-events-none"
-                style={{
-                    backgroundImage: `url(${bgPattern})`,
-                    backgroundSize: "100% 100%",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "bottom"
-                }}
-            />
         </section>
     );
 }

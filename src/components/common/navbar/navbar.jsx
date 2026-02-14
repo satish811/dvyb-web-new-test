@@ -1,36 +1,40 @@
 // components/navbar/Navbar.jsx
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import SearchDropdown from "./SearchDropdown";
-import NavIcons from "./NavIcons";
-import { mainlogo } from "../../../assets";
+import SearchBarWithDropdown from "./SearchBarWithDropdown";
 import navItems from "../../../static/navbar/navItems";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoginModal from "../../../pages/b2c/login/loginModel";
 import { useAuth } from "../../../context/AuthContext";
-import { MdOutlineArrowDropDown } from "react-icons/md";
+import UserDropdown from "./UserDropdown";
+import { MdOutlineArrowDropDown, MdOutlineSearch } from "react-icons/md";
+import { HiOutlineUser, HiOutlineHeart, HiOutlineShoppingBag, HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import { HiOutlineMenu } from "react-icons/hi";
 import MobileMenu from "./MobileMenu";
 import { useFilter } from "../../../context/FilterContext";
 import AuthContainer from "../../../pages/b2b/AuthContainer/AuthContainer";
 import { useUI } from "../../../context/UIContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { fadeIn, staggerContainer, slideUp, hoverScale, tapScale } from "../../../utils/animations";
+import { fadeIn, tapScale, hoverScale } from "../../../utils/animations";
 
 import twodpopup from "../../../assets/Navbar/twodpopup.svg";
-import navbarLogo from "../../../assets/b2c/landing/Landing-villy/navbar-logo.png";
+// Correct logo import based on asset search
+import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png";
 
 import { searchService } from "../../../services/searchService";
 import useDebounce from "../../../hooks/useDebounce";
+import { useCart } from "../../../context/CartContext";
+import { useWishlist } from "../../../context/WishlistContext";
 
 export default function Navbar({ setShowLoader }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const { user, loading } = useAuth();
+    const { user, loading, signOutUser } = useAuth();
     const [showLogin, setShowLogin] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const [logoLoading, setLogoLoading] = useState(false);
 
     const { isTryOnModalOpen, setTryOnModalOpen } = useUI();
     const showModal = isTryOnModalOpen;
@@ -38,6 +42,8 @@ export default function Navbar({ setShowLoader }) {
     const [selectedProduct, setSelectedProduct] = useState("");
 
     const { updateFilter } = useFilter();
+    const { cartCount, loading: cartLoading } = useCart();
+    const { wishlistCount, loading: wishlistLoading } = useWishlist();
 
     const [searchResults, setSearchResults] = useState([]);
     const [recentSearches, setRecentSearches] = useState([]);
@@ -59,24 +65,6 @@ export default function Navbar({ setShowLoader }) {
         } else {
             navigate(path);
         }
-    };
-
-    const isActive = (item) => {
-        if (item.path === "/virtual-tryon") return false;
-        const param = new URLSearchParams(window.location.search).get("category");
-        const map = {
-            saree: "SAREE",
-            "kurta-sets": "KURTA SETS",
-            anarkalis: "ANARKALIS",
-            shararas: "SHARARAS",
-            pret: "PRET",
-            fusion: "FUSION",
-            wedding: "WEDDING",
-            sale: "SALE",
-            lehenga: "LEHENGA",
-            boutique: "DESIGNER",
-        };
-        return map[param] === item.label;
     };
 
     useEffect(() => {
@@ -188,9 +176,6 @@ export default function Navbar({ setShowLoader }) {
         [navigate]
     );
 
-    const wishlistCount = 0;
-    const cartCount = 0;
-
     // Scroll lock effect for Try-On Modal
     useEffect(() => {
         if (showModal) {
@@ -208,143 +193,116 @@ export default function Navbar({ setShowLoader }) {
             <motion.div
                 initial="hidden"
                 animate="visible"
-                className="sticky top-0 z-50 font-sans shadow-md"
+                className="font-sans shadow-sm bg-white"
             >
-                <AnimatePresence>
-                    {searchOpen ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <SearchDropdown
-                                searchResults={searchResults}
-                                suggestions={searchSuggestions}
-                                popularSearches={popularSearches}
-                                recentSearches={recentSearches}
-                                isLoading={isSearching}
-                                noResults={noResults}
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                onClose={() => {
-                                    setSearchOpen(false);
-                                    setSearchQuery("");
-                                }}
-                                onSuggestionClick={handleSuggestionClick}
-                                onResultClick={handleResultClick}
-                                onSaveRecent={saveRecentSearch}
-                                onRemoveRecent={removeRecentSearch}
-                            />
-                        </motion.div>
-                    ) : (
-                        <>
-                            {/* Top Bar */}
-                            <motion.div
-                                variants={fadeIn}
-                                className="bg-gray-100 text-center py-2 text-lg text-gray-600 relative z-50"
+                {/* Main Navbar */}
+                <header
+                    className={`w-full relative z-40 h-[72px] 2xl:h-[88px] flex items-center border-b border-gray-100 transition-colors duration-300
+                    ${location.pathname === "/" ? "bg-[#B59DB0] text-white md:bg-white md:text-black" : "bg-white text-black"}
+                    `}
+                >
+                    <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-12 lg:px-16 xl:px-20 2xl:px-24 flex items-center justify-between h-full">
+
+                        {/* Mobile Menu Toggle */}
+                        <div className="lg:hidden flex items-center">
+                            <motion.button
+                                whileTap={tapScale}
+                                onClick={() => setMobileMenuOpen(true)}
+                                className={`p-2 rounded-full transition ${location.pathname === "/" ? "text-white hover:bg-white/10" : "text-black hover:bg-gray-100"}`}
                             >
-                                Get early access for <span className="font-semibold text-purple-900 uppercase">Virtual Try On</span>{" "}
-                                <a href="#" className="underline text-gray-500 hover:text-gray-800 ml-1">
-                                    Sign Up
-                                </a>
-                            </motion.div>
+                                <HiOutlineMenu className="text-3xl" />
+                            </motion.button>
+                        </div>
 
-                            {/* Main Navbar */}
-                            <header className="bg-[#B794B9] text-white w-full relative z-40 transition-colors duration-300">
-                                <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+                        {/* LEFT: Logo */}
+                        <div
+                            className={`flex-shrink-0 cursor-pointer lg:mr-10 xl:mr-16 2xl:mr-24 absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none`}
+                            onClick={() => {
+                                if (setShowLoader) setShowLoader(true);
+                                setTimeout(() => {
+                                    navigate("/");
+                                    setShowLoader(false);
+                                }, 1200);
+                            }}
+                        >
+                            <img
+                                src={villyLogo}
+                                alt="Villy"
+                                className={`h-10 md:h-12 2xl:h-14 w-auto object-contain ${location.pathname === "/" ? "brightness-0 invert md:filter-none" : ""}`}
+                            />
+                        </div>
 
-                                    {/* Mobile Menu Toggle (Left on Mobile) */}
-                                    <div className="lg:hidden flex items-center">
-                                        <motion.button
-                                            whileTap={tapScale}
-                                            onClick={() => setMobileMenuOpen(true)}
-                                            className="p-2 text-white hover:bg-white/10 rounded-full transition"
-                                        >
-                                            <MdOutlineArrowDropDown className="text-2xl transform rotate-90" />
-                                        </motion.button>
-                                    </div>
+                        {/* CENTER-LEFT: Nav Links */}
+                        <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 mr-auto">
+                            <button
+                                onClick={() => navigate("/womenwear")}
+                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
+                            >
+                                WOMEN
+                            </button>
+                            <button
+                                onClick={() => navigate("/menwear")}
+                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
+                            >
+                                MEN
+                            </button>
+                        </div>
 
-                                    {/* Left: Desktop Nav Links */}
-                                    <motion.div
-                                        variants={staggerContainer}
-                                        initial="hidden"
-                                        animate="visible"
-                                        className="hidden lg:flex items-center space-x-8 pl-6"
-                                    >
-                                        <motion.button
-                                            variants={slideUp}
-                                            whileHover={hoverScale}
-                                            onClick={() => navigate("/womenwear")}
-                                            className="text-lg font-medium tracking-wide hover:text-gray-100 transition uppercase border-b-2 border-transparent hover:border-white pb-1"
-                                        >
-                                            Women
-                                        </motion.button>
-                                        <motion.button
-                                            variants={slideUp}
-                                            whileHover={hoverScale}
-                                            onClick={() => navigate("/menwear")}
-                                            className="text-lg font-medium tracking-wide hover:text-gray-100 transition uppercase border-b-2 border-transparent hover:border-white pb-1"
-                                        >
-                                            Men
-                                        </motion.button>
-                                    </motion.div>
+                        {/* CENTER-RIGHT: Search Bar */}
+                        <div className="hidden md:flex flex-1 max-w-md xl:max-w-lg 2xl:max-w-2xl mx-6 xl:mx-10 2xl:mx-16">
+                            <SearchBarWithDropdown onNavigate={navigate} />
+                        </div>
 
-                                    {/* Center: Logo */}
-                                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-                                            className="cursor-pointer"
-                                            onClick={() => {
-                                                if (setShowLoader) setShowLoader(true);
-                                                setTimeout(() => {
-                                                    navigate("/");
-                                                    setShowLoader(false);
-                                                }, 1200);
-                                            }}
-                                        >
-                                            <img
-                                                src={navbarLogo}
-                                                alt="Villy Logo"
-                                                className="h-12 md:h-14 w-auto object-contain"
-                                            />
-                                        </motion.div>
-                                    </div>
+                        {/* RIGHT: Icons */}
+                        <div className="flex items-center space-x-4 md:space-x-6 2xl:space-x-8">
+                            {/* Mobile Search Icon */}
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className={`md:hidden transition relative ${location.pathname === "/" ? "text-white" : "text-black"}`}
+                            >
+                                <HiOutlineMagnifyingGlass className="text-3xl" />
+                            </button>
 
-                                    {/* Right: Icons */}
-                                    <motion.div
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="flex items-center"
-                                    >
-                                        <NavIcons
-                                            className="text-white"
-                                            wishlistCount={wishlistCount}
-                                            cartCount={cartCount}
-                                            onSearch={() => setSearchOpen(true)}
-                                            onWishlist={() => navigate("/wishlist")}
-                                            onCart={() => navigate("/cart")}
-                                            onProfile={() => guard("/profile")}
-                                        />
-                                    </motion.div>
+                            <div className="hidden md:flex relative group h-full items-center">
+                                <button
+                                    onClick={() => guard("/profile")}
+                                    className={`transition py-4 ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}
+                                >
+                                    <HiOutlineUser className="text-2xl 2xl:text-3xl" />
+                                </button>
+                                <UserDropdown user={user} onLogout={signOutUser} />
+                            </div>
 
-                                </div>
-                            </header>
+                            <button onClick={() => navigate("/wishlist")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                <HiOutlineHeart className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
+                                        {wishlistCount}
+                                    </span>
+                                )}
+                            </button>
 
-                            {/* Login Modal */}
-                            <AnimatePresence>
-                                {showLogin &&
-                                    (isB2BUserType() ? (
-                                        <AuthContainer isOpen={true} onClose={() => setShowLogin(false)} />
-                                    ) : (
-                                        <LoginModal isOpen={true} onClose={() => setShowLogin(false)} />
-                                    ))}
-                            </AnimatePresence>
-                        </>
-                    )}
+                            <button onClick={() => navigate("/cart")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                <HiOutlineShoppingBag className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+
+                    </div>
+                </header>
+
+                {/* Login Modal */}
+                <AnimatePresence>
+                    {showLogin &&
+                        (isB2BUserType() ? (
+                            <AuthContainer isOpen={true} onClose={() => setShowLogin(false)} />
+                        ) : (
+                            <LoginModal isOpen={true} onClose={() => setShowLogin(false)} />
+                        ))}
                 </AnimatePresence>
 
                 {/* Mobile Menu */}
@@ -367,6 +325,7 @@ export default function Navbar({ setShowLoader }) {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </motion.div>
 
             {/* Virtual Try-On Modal */}

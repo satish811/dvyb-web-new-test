@@ -102,11 +102,13 @@ const ProductTitleSection = ({
           {displayTitle && (
             <h1
               style={{
-                fontFamily: "'Playfair Display', serif",
-                fontWeight: 600,
-                fontSize: "36px",
-                lineHeight: "1.3",
-                letterSpacing: "0.5px",
+                fontFamily: "Outfit, sans-serif",
+                fontWeight: 700,
+                fontStyle: "normal", // 'Bold' is usually handled by weight 700. CSS font-style is normal/italic/oblique.
+                fontSize: "26.24px",
+                lineHeight: "1", // 100%
+                letterSpacing: "0px", // 0%
+                verticalAlign: "middle",
                 color: "#000000",
                 margin: 0,
                 padding: 0,

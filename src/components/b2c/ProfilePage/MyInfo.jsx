@@ -50,6 +50,7 @@ const MyInfo = () => {
     stateProvince: "",
     zipPostalCode: "",
     country: "",
+    phone: "", // Added phone field
   });
 
   // Fetch user data on mount
@@ -170,14 +171,19 @@ const MyInfo = () => {
   };
 
   const addAddress = async () => {
+    // Validate only required fields for address
     const errors = [
       b2cValidator.validateName(newAddress.firstName),
       b2cValidator.validateAddress(newAddress.address),
-      b2cValidator.validateEmail(newAddress.email),
       b2cValidator.validateCity(newAddress.city),
       b2cValidator.validateState(newAddress.stateProvince),
       b2cValidator.validateZip(newAddress.zipPostalCode),
     ].filter(Boolean);
+
+    // Only validate email if it's provided (optional field)
+    if (newAddress.email && b2cValidator.validateEmail(newAddress.email)) {
+      errors.push(b2cValidator.validateEmail(newAddress.email));
+    }
 
     if (errors.length > 0) {
       alert(errors[0]);
@@ -185,21 +191,35 @@ const MyInfo = () => {
     }
 
     try {
+      // Prepare address data without empty optional fields
+      const addressData = {
+        firstName: newAddress.firstName,
+        lastName: newAddress.lastName || "",
+        address: newAddress.address,
+        city: newAddress.city,
+        stateProvince: newAddress.stateProvince,
+        zipPostalCode: newAddress.zipPostalCode,
+        country: newAddress.country,
+        email: newAddress.email || null, // Send null if empty
+        phone: newAddress.phone || null, // Send null if empty
+      };
+
       if (userRole === "B2B") {
         if (editingAddress) {
-          await B2BAddressService.updateAddress(user.uid, "B2B", editingAddress.id, newAddress);
+          await B2BAddressService.updateAddress(user.uid, "B2B", editingAddress.id, addressData);
         } else {
-          await B2BAddressService.addAddress(user.uid, "B2B", newAddress);
+          await B2BAddressService.addAddress(user.uid, "B2B", addressData);
         }
       } else {
         if (editingAddress) {
-          await userService.updateAddress(user.uid, editingAddress.id, newAddress);
+          await userService.updateAddress(user.uid, editingAddress.id, addressData);
         } else {
-          await userService.addAddress(user.uid, newAddress);
+          await userService.addAddress(user.uid, addressData);
         }
       }
       await refreshUserData();
       cancelAddressForm();
+      alert(`Address ${editingAddress ? "updated" : "added"} successfully!`);
     } catch (error) {
       console.error("Address save failed:", error);
       alert(error.message || "Failed to save address");
@@ -298,6 +318,7 @@ const MyInfo = () => {
       stateProvince: address.stateProvince || "",
       zipPostalCode: address.zipPostalCode || "",
       country: address.country || "",
+      phone: address.phone || "",
     });
     setShowAddAddress(true);
   };
@@ -314,6 +335,7 @@ const MyInfo = () => {
       stateProvince: "",
       zipPostalCode: "",
       country: "",
+      phone: "",
     });
     setSelectedCountryCode("");
     setSelectedStateCode("");
@@ -321,220 +343,167 @@ const MyInfo = () => {
 
   if (loading || roleLoading) {
     return (
-      <div className="flex  mt-44 items-center justify-center h-64">
+      <div className="flex mt-44 items-center justify-center h-64">
         <LazyImageLoader isProcessing={true} />
-        {/* <div className="animate-spin h-8 w-8 border-b-2 border-amber-400"></div> */}
       </div>
     );
   }
 
-  // User Details Edit Modal - Same design for both B2B and B2C
-  if (editUserMode) {
+  // User Details Section - Unified View/Edit Mode
+  const renderUserDetails = () => {
     return (
-      <div className="min-h-screen  md:p-4">
-        <div className="max-w-md mx-auto ">
-          <div className="border-b border-gray-200 p-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {userRole === "B2B" ? "Business Details (B2B)" : "User Details"}
-            </h2>
+      <div className="mb-12">
+        <h2 className="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wide">User Details</h2>
+
+        <div className="w-full max-w-md space-y-4">
+          {/* Name Input */}
+          <div>
+            <input
+              name="name"
+              value={userRole === "B2B" ? b2bData.username : b2cData.name}
+              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              disabled={!editUserMode}
+              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
+              placeholder="Name"
+            />
           </div>
 
-          <div className="p-6 space-y-4">
-            {userRole === "B2B" ? (
-              // B2B Edit Form - Same design as B2C
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                  <input
-                    name="username"
-                    value={b2bData.username}
-                    onChange={handleB2bChange}
-                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile Number
-                  </label>
-                  <input
-                    value={b2bData.mobile || "Not provided"}
-                    disabled
-                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Mobile number cannot be changed</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    value={b2bData.email || "Not provided"}
-                    disabled
-                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
-                  <input
-                    value={b2bData.pan || "Not provided"}
-                    disabled
-                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">PAN number cannot be changed</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Aadhaar Number
-                  </label>
-                  <input
-                    value={b2bData.aadhaar || "Not provided"}
-                    disabled
-                    className="w-full px-3 py-2.5 border border-gray-300 bg-gray-50 text-gray-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Aadhaar number cannot be changed</p>
-                </div>
-              </>
-            ) : (
-              // B2C Edit Form - Original design
-              <>
-                <div className="pt-16">
-                  {/* <label className="block text-sm font-medium text-gray-700 mb-1">Name</label> */}
-                  <input
-                    name="name"
-                    value={b2cData.name}
-                    onChange={handleB2cChange}
-                    className="w-full px-3 py-2.5 border border-dotted border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your name"
-                  />
-                </div>
-                <div>
-                  {/* <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number
-                  </label> */}
-                  <input
-                    name="phoneNumber"
-                    value={b2cData.phoneNumber}
-                    disabled
-                    className="w-full px-3 py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-500"
-                    placeholder="Phone Number"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Phone number cannot be changed</p>
-                </div>
-              </>
-            )}
+          {/* Email Input - Added for completeness */}
+          <div>
+            <input
+              name="email"
+              value={userRole === "B2B" ? b2bData.email : b2cData.email}
+              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              disabled={!editUserMode}
+              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
+              placeholder="Email"
+            />
+          </div>
 
-            <div className="flex gap-3 pt-4">
+          {/* Phone/Mobile Input */}
+          <div>
+            <input
+              name={userRole === "B2B" ? "mobile" : "phoneNumber"}
+              value={userRole === "B2B" ? b2bData.mobile : b2cData.phoneNumber}
+              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              disabled={!editUserMode}
+              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
+              placeholder="Phone Number"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-2">
+            {!editUserMode ? (
               <button
-                onClick={saveUserData}
-                className="flex-1 bg-primary text-white py-2.5 hover:bg-red-800 font-medium"
+                onClick={() => setEditUserMode(true)}
+                className="inline-flex items-center gap-2 px-6 py-2 border border-[#33022F] text-[#33022F] text-sm font-bold hover:bg-[#33022F] hover:text-white transition"
               >
-                Save
+                Edit
+                <Edit2 size={16} />
               </button>
-              <button
-                onClick={() => setEditUserMode(false)}
-                className="flex-1 bg-white text-gray-700 py-2.5 border border-gray-300 hover:bg-gray-50 font-medium"
-              >
-                Cancel
-              </button>
-            </div>
+            ) : (
+              <div className="flex gap-4">
+                <button
+                  onClick={saveUserData}
+                  className="px-8 py-2 bg-[#33022F] text-white text-sm font-bold hover:bg-[#5a0452] transition"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setEditUserMode(false);
+                    // Reset data logic if needed
+                  }}
+                  className="px-8 py-2 bg-[#F5F5F5] text-gray-600 text-sm font-bold hover:bg-gray-200 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
-  }
+  };
 
-  // Add/Edit Address Modal - Same design as the working version
+  // Add/Edit Address Modal
   if (showAddAddress) {
     return (
-      <div className="min-h-screen md:p-4  md:pt-10 bg-white">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-white">
+        <div className="max-w-4xl mx-auto">
           {/* HEADER */}
-          <div className="p-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="py-6 border-b border-gray-100 mb-8">
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
               {editingAddress ? "Edit Shipping Address" : "Add Your Shipping Address"}
-              {userRole === "B2B" && " (B2B)"}
             </h2>
           </div>
 
           {/* FORM */}
-          <div className="md:p-6 flex flex-col md:grid md:grid-cols-2 gap-7">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* First Name */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                First Name *
-              </label>
+            <div className="relative border border-dashed border-gray-400 p-3">
               <input
                 type="text"
                 name="firstName"
                 value={newAddress.firstName}
                 onChange={handleNewAddressChange}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
+                placeholder="First Name *"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 required
               />
             </div>
 
             {/* Last Name */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                Last Name
-              </label>
+            <div className="relative border border-dashed border-gray-400 p-3">
               <input
                 type="text"
                 name="lastName"
                 value={newAddress.lastName}
                 onChange={handleNewAddressChange}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
+                placeholder="Last Name"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
               />
             </div>
 
-            {/* Email */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                Email Address
-              </label>
+            {/* Email (Optional) */}
+            <div className="relative border border-dashed border-gray-400 p-3">
               <input
                 type="email"
                 name="email"
                 value={newAddress.email}
                 onChange={handleNewAddressChange}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
+                placeholder="Email (Optional)"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
               />
             </div>
 
-            {/* Zip Code */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                Zip / Postal Code
-              </label>
+            {/* Phone (Optional) */}
+            <div className="relative border border-dashed border-gray-400 p-3">
               <input
-                type="text"
-                name="zipPostalCode"
-                value={newAddress.zipPostalCode}
+                type="tel"
+                name="phone"
+                value={newAddress.phone}
                 onChange={handleNewAddressChange}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900"
+                placeholder="Phone (Optional)"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
               />
             </div>
 
             {/* Address */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                Address / Landmark *
-              </label>
-              <textarea
+            <div className="relative border border-dashed border-gray-400 p-3 col-span-1 md:col-span-2">
+              <input
                 name="address"
                 value={newAddress.address}
                 onChange={handleNewAddressChange}
-                rows="2"
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 resize-none"
+                placeholder="Address (House No, Building, Street, Area) *"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 required
               />
             </div>
 
             {/* Country */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                Country *
-              </label>
+            <div className="relative border border-dashed border-gray-400 p-3">
               <select
                 value={selectedCountryCode}
                 onChange={(e) => {
@@ -549,10 +518,10 @@ const MyInfo = () => {
                   }));
                   setSelectedStateCode("");
                 }}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
                 required
               >
-                <option value="">Select Country</option>
+                <option value="">Country *</option>
                 {Country.getAllCountries().map((country) => (
                   <option key={country.isoCode} value={country.isoCode}>
                     {country.name}
@@ -562,10 +531,7 @@ const MyInfo = () => {
             </div>
 
             {/* State */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                State / Province *
-              </label>
+            <div className="relative border border-dashed border-gray-400 p-3">
               <select
                 value={selectedStateCode}
                 onChange={(e) => {
@@ -579,10 +545,10 @@ const MyInfo = () => {
                   }));
                 }}
                 disabled={!selectedCountryCode}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
                 required
               >
-                <option value="">Select State</option>
+                <option value="">State *</option>
                 {selectedCountryCode &&
                   State.getStatesOfCountry(selectedCountryCode).map((state) => (
                     <option key={state.isoCode} value={state.isoCode}>
@@ -593,19 +559,16 @@ const MyInfo = () => {
             </div>
 
             {/* City */}
-            <div className="relative border border-dotted border-gray-400 px-3 pt-3 pb-1">
-              <label className="absolute -top-2 left-3 bg-white text-gray-500 text-xs px-1">
-                City *
-              </label>
+            <div className="relative border border-dashed border-gray-400 p-3">
               <select
                 name="city"
                 value={newAddress.city}
                 onChange={handleNewAddressChange}
                 disabled={!selectedStateCode}
-                className="w-full border-none focus:outline-none focus:ring-0 text-sm text-gray-900 bg-transparent"
+                className="w-full text-sm text-gray-700 bg-transparent focus:outline-none"
                 required
               >
-                <option value="">Select City</option>
+                <option value="">City/District/Town *</option>
                 {selectedStateCode &&
                   City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((city) => (
                     <option key={city.name} value={city.name}>
@@ -615,17 +578,30 @@ const MyInfo = () => {
               </select>
             </div>
 
+            {/* Zip Code */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <input
+                type="text"
+                name="zipPostalCode"
+                value={newAddress.zipPostalCode}
+                onChange={handleNewAddressChange}
+                placeholder="Zip Code *"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                required
+              />
+            </div>
+
             {/* BUTTONS */}
-            <div className="flex gap-3 pt-6 col-span-2">
+            <div className="flex gap-4 pt-6 col-span-1 md:col-span-2">
               <button
                 onClick={addAddress}
-                className="flex-1 bg-red-700 text-white py-2.5 hover:bg-red-800 font-medium"
+                className="px-8 py-2.5 bg-[#33022F] text-white font-bold text-sm tracking-wide hover:bg-[#5a0452] transition"
               >
                 {editingAddress ? "Update" : "Save"}
               </button>
               <button
                 onClick={cancelAddressForm}
-                className="flex-1 bg-white text-gray-700 py-2.5 border border-gray-300 hover:bg-gray-50 font-medium"
+                className="px-8 py-2.5 bg-[#F5F5F5] text-gray-700 font-bold text-sm tracking-wide hover:bg-gray-200 transition"
               >
                 Cancel
               </button>
@@ -637,207 +613,81 @@ const MyInfo = () => {
   }
 
   // Main View - Same design for both B2B and B2C
-return (
+  return (
     <div className="min-h-screen bg-white">
-      {/* Role Toggle for Demo */}
-      {/* <div className="fixed top-4 right-4 z-50 flex gap-2">
-        <button
-          onClick={() => setUserRole("B2C")}
-          className={`px-4 py-2 text-sm ${userRole === "B2C" ? "bg-primary text-white" : "bg-gray-200"}`}
-        >
-          B2C
-        </button>
-        <button
-          onClick={() => setUserRole("B2B")}
-          className={`px-4 py-2 text-sm ${userRole === "B2B" ? "bg-primary text-white" : "bg-gray-200"}`}
-        >
-          B2B
-        </button>
-      </div> */}
-
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
         <div className="max-w-7xl mx-auto">
-          {/* User Details Section */}
-          <div className="mb-6 lg:mb-8">
-            <div className="mb-3 lg:mb-4 flex justify-between ">
-              <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
-                {userRole === "B2B" ? "Business Information (B2B)" : "User Details"}
-              </h2>
-
-              
-
-                 <button
-              onClick={() => setEditUserMode(true)}
-              className="md:hidden inline-flex   items-center gap-2 sm:gap-3 border border-primary px-3 sm:px-4 py-2 text-primary hover:text-gray-900 text-sm sm:text-base font-medium"
-            >
-              Edit
-              <div className="flex items-center font-bold text-primary">
-                <Edit2 size={16} className="sm:w-4 sm:h-4" />
-                <span className="ml-0.5">__</span>
-              </div>
-            </button>
-            </div>
-
-            <div className="space-y-3 sm:space-y-4 mb-4 lg:mb-6">
-              {userRole === "B2B" ? (
-                // B2B Display
-                <>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Username</label>
-                    <input
-                      value={b2bData.username || "Not provided"}
-                      disabled
-                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Mobile Number</label>
-                    <input
-                      value={b2bData.mobile || "Not provided"}
-                      disabled
-                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Email</label>
-                    <input
-                      value={b2bData.email || "Not provided"}
-                      disabled
-                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">PAN Number</label>
-                    <input
-                      value={b2bData.pan || "Not provided"}
-                      disabled
-                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Aadhaar Number</label>
-                    <input
-                      value={b2bData.aadhaar || "Not provided"}
-                      disabled
-                      className="w-full px-3 py-2 sm:py-2.5 border border-gray-200 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                </>
-              ) : (
-                // B2C Display - Mobile first approach
-                <>
-                  <div>
-                    <input
-                      value={b2cData.name || "Not provided"}
-                      disabled
-                      className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 px-3 py-2 sm:py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      value={b2cData.phoneNumber || "Not provided"}
-                      disabled
-                      className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 px-3 py-2 sm:py-2.5 border border-dotted border-gray-400 bg-gray-50 text-gray-700 text-sm"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <button
-              onClick={() => setEditUserMode(true)}
-              className=" hidden md:block md:inline-flex   items-center gap-2 sm:gap-3 border border-primary px-3 sm:px-4 py-2 text-primary hover:text-gray-900 text-sm sm:text-base font-medium"
-            >
-              Edit
-              <div className="flex items-center font-bold text-primary">
-                <Edit2 size={16} className="sm:w-4 sm:h-4" />
-                <span className="ml-0.5">__</span>
-              </div>
-            </button>
-          </div>
+          {renderUserDetails()}
 
           {/* Address Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3 lg:mb-4">
-              <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">Addresses</h2>
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Address</h2>
               <button
                 onClick={() => setShowAddAddress(true)}
-                className="inline-flex items-center gap-1 sm:gap-1.5 text-primary border border-primary px-3 sm:px-4 py-1.5 sm:py-2 hover:text-gray-900 text-xs sm:text-sm font-medium"
+                className="inline-flex items-center gap-2 px-6 py-2 border border-[#33022F] text-[#33022F] text-sm font-bold hover:bg-[#33022F] hover:text-white transition"
               >
-                <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <Plus size={16} />
                 Add New
               </button>
             </div>
 
-            <div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-                {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
-                  (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
-                    <div key={address.id} className="bg-[#F6F6F6] p-5 sm:p-6 lg:p-8 relative">
-                      {address.isDefault && (
-                        <span className="absolute top-4 right-4 sm:top-5 sm:right-5 lg:top-6 lg:right-6 border border-primary text-primary text-xs px-2 py-1">
-                          Default
-                        </span>
-                      )}
-
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-medium text-gray-900 text-sm mb-1">
-                            {address.firstName} {address.lastName}
-                          </h3>
-                          {address.email && (
-                            <p className="text-sm pt-3 sm:pt-4 lg:pt-5 text-gray-600">{address.email}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-gray-700 pt-3 sm:pt-4 leading-relaxed mb-2">
-                        {address.address}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(userRole === "B2B" ? b2bData.addresses : b2cData.addresses).length > 0 ? (
+                (userRole === "B2B" ? b2bData.addresses : b2cData.addresses).map((address) => (
+                  <div key={address.id} className="bg-[#F9F9F9] p-8 flex flex-col justify-between h-full min-h-[220px]">
+                    {/* Address Details */}
+                    <div className="mb-6">
+                      <h3 className="text-sm font-bold text-gray-900 mb-2">
+                        {address.firstName} {address.lastName || ""}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-4 font-medium">
+                        {address.phone || "Phone not provided"}
                       </p>
 
-                      {(address.city || address.stateProvince || address.zipPostalCode) && (
-                        <p className="text-sm text-gray-600 mb-3 sm:mb-4">
-                          {[address.city, address.stateProvince, address.zipPostalCode]
-                            .filter(Boolean)
-                            .join(", ")}
-                          {address.country && ` - ${address.country}`}
-                        </p>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {address.address}, {address.city}, {address.stateProvince}, {address.zipPostalCode}
+                        {address.country && `, ${address.country}`}
+                      </p>
+                      {address.email && (
+                        <p className="text-sm text-gray-500 mt-2">{address.email}</p>
                       )}
+                    </div>
 
-                      <div className="flex gap-2 pt-3 sm:pt-4 lg:pt-5 mb-3">
-                        {!address.isDefault && (
-                          <button
-                            onClick={() => setDefaultAddress(address)}
-                            className="px-3 sm:px-4 py-1.5 bg-white border border-[#807D7E] text-xs sm:text-sm text-[#807D7E] hover:bg-gray-100 font-medium"
-                          >
-                            Set as Default Address
-                          </button>
-                        )}
+                    {/* Actions */}
+                    <div>
+                      <div className="flex gap-3 mb-6">
+                        <span className="px-4 py-1.5 border border-gray-300 text-xs font-medium text-gray-600">Home</span>
+                        <button
+                          onClick={() => setDefaultAddress(address)}
+                          className={`px-4 py-1.5 border text-xs font-medium transition ${address.isDefault ? "bg-[#33022F] text-white border-[#33022F]" : "border-gray-300 text-gray-600 hover:border-gray-400"}`}
+                        >
+                          {address.isDefault ? "Default Address" : "Set Default Address"}
+                        </button>
                       </div>
 
-                      <div className="flex pt-3 sm:pt-4 lg:pt-5 gap-3 sm:gap-4">
-                        <button 
-                          onClick={() => removeAddress(address)} 
-                          className="text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900"
+                      <div className="flex gap-4 border-t border-gray-200 pt-4">
+                        <button
+                          onClick={() => removeAddress(address)}
+                          className="text-sm font-bold text-gray-700 hover:text-red-600 transition"
                         >
                           Remove
                         </button>
                         <button
                           onClick={() => startEditAddress(address)}
-                          className="text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900"
+                          className="text-sm font-bold text-gray-700 hover:text-[#33022F] transition"
                         >
                           Edit
                         </button>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-1 lg:col-span-2 text-center py-8 sm:py-10 lg:py-12 text-gray-500">
-                    <p className="text-sm">No addresses added yet</p>
-                    <p className="text-xs mt-1">Click "Add New" to add your first address</p>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-10 bg-gray-50 border border-dashed border-gray-300 rounded">
+                  <p className="text-gray-500">No addresses added yet.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
