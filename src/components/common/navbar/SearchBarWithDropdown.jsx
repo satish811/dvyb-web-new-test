@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { MdOutlineSearch } from "react-icons/md";
+import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import { IoCloseOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import subCategories from "../../../static/navbar/subCategories";
 
@@ -75,23 +76,48 @@ const SearchBarWithDropdown = ({ onNavigate }) => {
     };
 
     return (
-        <div className="relative w-full" ref={dropdownRef}>
-            {/* Search Input */}
-            <div
-                className="w-full flex items-center bg-[#EDEDED] rounded-sm px-4 py-2 hover:bg-gray-200 transition-colors"
-            >
-                <MdOutlineSearch className="text-gray-500 text-xl mr-3 flex-shrink-0" />
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={handleInputFocus}
-                    placeholder="Search for a product"
-                    className="w-full bg-transparent text-sm font-medium text-gray-900 placeholder-gray-500 outline-none"
-                />
-            </div>
+        <div className="relative w-full z-50" ref={dropdownRef}>
+            {/* Search Bar Container */}
+            <div className="relative w-full">
+                <div className="relative flex items-center w-full">
+                    {/* Search Icon */}
+                    <div className="absolute left-4 z-10 text-gray-400 pointer-events-none">
+                        <HiOutlineMagnifyingGlass className="text-xl 2xl:text-2xl" />
+                    </div>
 
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => {
+                            setIsInputFocused(true);
+                            handleInputFocus(); // Re-use existing logic for dropdown
+                        }}
+                        placeholder="Search for clothes, accessories..."
+                        className="w-full py-2.5 2xl:py-3.5 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-lg text-sm 2xl:text-base focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all shadow-sm placeholder:text-gray-400"
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSearch(searchQuery);
+                                setIsInputFocused(false);
+                            }
+                        }}
+                    />
+
+                    {/* Close Icon (only when query exists) */}
+                    {searchQuery && (
+                        <button
+                            onClick={() => {
+                                setSearchQuery("");
+                                inputRef.current?.focus();
+                            }}
+                            className="absolute right-4 text-gray-400 hover:text-black transition p-1"
+                        >
+                            <IoCloseOutline className="text-lg 2xl:text-xl" />
+                        </button>
+                    )}
+                </div>
+            </div>
             {/* Dropdown */}
             <AnimatePresence>
                 {isDropdownOpen && filteredCategories.length > 0 && (

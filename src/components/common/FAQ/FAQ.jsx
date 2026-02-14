@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Phone, MessageCircle, ChevronDown } from "lucide-react";
 
 import brdialImage from "@/assets/b2c/images/FAQ/birdal.svg";
-import logoImage from "@/assets/b2c/images/FAQ/Logo.svg";
-import LogoName from "@/assets/b2c/images/FAQ/LogoName.svg";
+import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png";
 
 const FaqPage = () => {
   const faqs = [
@@ -70,8 +69,7 @@ const FaqPage = () => {
         {/* Right: Content */}
         <div className="text-center space-y-6">
           <div className="flex flex-col items-center">
-            <img src={logoImage} alt="Villy Logo" className="w-24 mb-3" />
-            <img src={LogoName} alt="Villy" className="w-32" />
+            <img src={villyLogo} alt="Villy Logo" className="h-16 mb-3 object-contain" />
           </div>
 
           <p className="text-lg md:text-xl leading-relaxed text-gray-800 max-w-2xl mx-auto">

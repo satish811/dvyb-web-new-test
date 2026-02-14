@@ -179,6 +179,15 @@ service cloud.firestore {
     match /tryon_gallery/{userId}/items/{itemId} {
       allow read, write: if isOwner(userId);
     }
+
+    /* ============================================
+       USER TRY-ONS (New Collection)
+       ============================================ */
+    match /user_tryons/{tryOnId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
     
     /* ============================================
        CATEGORIES & VENDOR

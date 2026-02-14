@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import wishlistImage from "@/assets/b2c/images/wishlist/wishlist.png";
 
 const EmptyWishlistState = () => {
@@ -11,12 +12,15 @@ const EmptyWishlistState = () => {
           </div>
         </div>
 
-        <h1 className="text-4xl font-medium text-gray-900 mb-4">Your shopping cart is empty</h1>
-        <p className="text-xl text-gray-600 mb-8">You have no items in your cart</p>
+        <h1 className="text-4xl font-medium text-gray-900 mb-4">Your wishlist is empty</h1>
+        <p className="text-xl text-gray-600 mb-8">You have no items in your wishlist</p>
       </div>
-      <button className="bg-black text-white px-8 py-4 rounded-lg font-medium text-lg hover:bg-gray-800 transition duration-200">
+      <Link
+        to="/womenwear"
+        className="inline-block bg-black text-white px-8 py-4 rounded-lg font-medium text-lg hover:bg-gray-800 transition duration-200"
+      >
         CONTINUE SHOPPING
-      </button>
+      </Link>
     </div>
   );
 };
