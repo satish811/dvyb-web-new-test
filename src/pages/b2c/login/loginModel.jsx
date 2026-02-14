@@ -5,11 +5,16 @@ import LoginForm from "./compononts/loginForm";
 import { useNavigate } from "react-router-dom";
 import OtpVerification from "../../../components/common/login/otpVerification";
 import cross from "@/assets/common/icons/cross.svg";
+import B2BLoginForm from "./b2bLoginForm";
+import B2BRegisterForm from "./b2bRegisterForm";
+import B2BAuthService from "../../../../src/services/b2bAuthService";
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [step, setStep] = useState("login");
+  const [step, setStep] = useState("login"); // login, otp, b2bLogin, b2bRegister
   const [confirmation, setConfirmation] = useState(null);
   const [mobile, setMobile] = useState("");
+  const [userType, setUserType] = useState("b2c"); // b2c, b2b
+  const [b2bLoading, setB2bLoading] = useState(false);
   const navigate = useNavigate();
 
   // Scroll lock effect
@@ -63,6 +68,150 @@ const LoginModal = ({ isOpen, onClose }) => {
     navigate("/checkout", { state: { guest: true } });
   };
 
+  const handleB2BLogin = async (credentials) => {
+    setB2bLoading(true);
+    try {
+      const result = await B2BAuthService.login(credentials.email, credentials.password);
+      if (result.success) {
+        const userData = await B2BAuthService.getUserCompleteProfile(result.user.uid);
+        onClose();
+        if (userData.data.route) {
+          navigate(userData.data.route, { replace: true });
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("B2B Login error:", error);
+      alert(error.message);
+    } finally {
+      setB2bLoading(false);
+    }
+  };
+
+  const handleB2BRegister = async (userData) => {
+    setB2bLoading(true);
+    try {
+      const result = await B2BAuthService.registerB2B(userData);
+      if (result.success) {
+        alert("Registration successful! Please login with your credentials.");
+        setStep("b2bLogin");
+      }
+    } catch (error) {
+      console.error("B2B Registration error:", error);
+      alert(error.message);
+    } finally {
+      setB2bLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setB2bLoading(true);
+    try {
+      const result = await B2BAuthService.loginWithGoogle();
+      if (result.success) {
+        const userData = await B2BAuthService.getUserCompleteProfile(result.user.uid);
+        onClose();
+        if (userData.data.route) {
+          navigate(userData.data.route, { replace: true });
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert(error.message);
+    } finally {
+      setB2bLoading(false);
+    }
+  };
+
+  const switchToB2C = () => {
+    setUserType("b2c");
+    setStep("login");
+  };
+
+  const switchToB2BLogin = () => {
+    setUserType("b2b");
+    setStep("b2bLogin");
+  };
+
+  const switchToB2BRegister = () => {
+    setUserType("b2b");
+    setStep("b2bRegister");
+  };
+
+  const renderContent = () => {
+    if (step === "otp") {
+      return (
+        <OtpVerification
+          confirmation={confirmation}
+          mobile={mobile}
+          onSuccess={handleOtpSuccess}
+          onError={handleOtpError}
+          onResend={() => setStep("login")}
+        />
+      );
+    }
+
+    if (step === "b2bLogin") {
+      return (
+        <B2BLoginForm
+          onSubmit={handleB2BLogin}
+          onGoogleLogin={handleGoogleLogin}
+          onSwitchToRegister={switchToB2BRegister}
+          loading={b2bLoading}
+        />
+      );
+    }
+
+    if (step === "b2bRegister") {
+      return (
+        <B2BRegisterForm
+          onSubmit={handleB2BRegister}
+          loading={b2bLoading}
+          onSwitchToLogin={switchToB2BLogin}
+        />
+      );
+    }
+
+    // Default B2C Login
+    return (
+      <>
+        <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
+        
+        {/* Divider */}
+        <div className="flex items-center justify-center text-gray-500 my-2">
+          <span className="mx-2 text-sm">OR</span>
+        </div>
+
+        {/* B2B Login Option */}
+        <div className="text-center text-sm text-gray-500">
+          Want to buy in bulk?{" "}
+          <button
+            type="button"
+            onClick={switchToB2BLogin}
+            className="text-primary underline hover:text-primary/80 font-medium"
+          >
+            Login for B2B
+          </button>
+        </div>
+
+        {/* B2B Registration Option */}
+        <div className="text-center text-sm text-gray-500 mt-1">
+          New to B2B?{" "}
+          <button
+            type="button"
+            onClick={switchToB2BRegister}
+            className="text-primary underline hover:text-primary/80 font-medium"
+          >
+            Register as B2B
+          </button>
+        </div>
+      </>
+    );
+  };
+
   return ReactDOM.createPortal(
     <AnimatePresence>
       <motion.div
@@ -88,18 +237,21 @@ const LoginModal = ({ isOpen, onClose }) => {
             <img src={cross} alt="cross" />
           </button>
 
-          {/* Content */}
-          {step === "login" ? (
-            <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
-          ) : (
-            <OtpVerification
-              confirmation={confirmation}
-              mobile={mobile}
-              onSuccess={handleOtpSuccess}
-              onError={handleOtpError}
-              onResend={() => setStep("login")}
-            />
+          {/* Back Button (for B2B screens) */}
+          {(step === "b2bLogin" || step === "b2bRegister") && (
+            <button
+              onClick={() => setStep("login")}
+              className="absolute top-3 left-3 text-gray-500 hover:text-gray-800 text-sm flex items-center gap-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
           )}
+
+          {/* Content */}
+          {renderContent()}
         </motion.div>
       </motion.div>
     </AnimatePresence>,
@@ -108,26 +260,3 @@ const LoginModal = ({ isOpen, onClose }) => {
 };
 
 export default LoginModal;
-
-// import React, { useState } from "react";
-// import LoginModal from "./pages/auth/login/LoginModal";
-
-// const App = () => {
-//   const [showLogin, setShowLogin] = useState(false);
-
-//   return (
-//     <div className="h-screen flex items-center justify-center bg-[var(--color-secondary)]">
-//       <button
-//         onClick={() => setShowLogin(true)}
-//         className="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg"
-//       >
-//         Open Login
-//       </button>
-
-//       {/* The Modal */}
-//       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
-//     </div>
-//   );
-// };
-
-// export default App;

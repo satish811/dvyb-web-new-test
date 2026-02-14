@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CountryCodeDropdown from "./countryCodeDropdown";
+import CountryCodeDropdown from "../../../components/common/login/countryCodeDropdown";
 
 const B2BRegisterForm = ({ onSubmit, loading, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({

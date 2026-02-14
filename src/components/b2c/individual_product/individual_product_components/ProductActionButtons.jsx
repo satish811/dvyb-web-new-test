@@ -23,10 +23,18 @@ const ProductActionButtons = ({
   const isVirtualTryOnDisabled = isGuest || isB2BUser;
   const [showBulkPopup, setShowBulkPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showGuestMessage, setShowGuestMessage] = useState(false);
+  const [guestMessage, setGuestMessage] = useState("");
 
   // Guest Alert
-  const handleLoginRequired = () => {
-    setShowLoginPopup(true);
+  const handleLoginRequired = (message) => {
+    setGuestMessage(message);
+    setShowGuestMessage(true);
+    
+    // Auto hide after 4 seconds
+    setTimeout(() => {
+      setShowGuestMessage(false);
+    }, 4000);
   };
 
   // B2C Buy Now handler (for regular users)
@@ -63,11 +71,13 @@ const ProductActionButtons = ({
   };
 
   // Main Buy Now handler
-  const handleBuyNowClick = () => {
+  const handleBuyNowClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Buy Now clicked!", { isGuest, isB2BUser, user, product });
 
     if (isGuest) {
-      handleLoginRequired();
+      handleLoginRequired("Please login to buy products.");
       return;
     }
 
@@ -77,10 +87,42 @@ const ProductActionButtons = ({
     } else {
       // For B2C users, either use parent's handler or default
       if (onBuyNow) {
-        onBuyNow();
+        onBuyNow(e);
       } else {
         handleB2CBuyNow();
       }
+    }
+  };
+
+  // Handle Add to Cart click
+  const handleAddToCartClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isGuest) {
+      handleLoginRequired("Please login to add products to cart.");
+      return;
+    }
+    
+    // Call the onAddToBag function passed from parent with the event
+    if (onAddToBag) {
+      onAddToBag(e);
+    }
+  };
+
+  // Handle Virtual Try On click
+  const handleVirtualTryOnClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isGuest) {
+      handleLoginRequired("Please login to use Virtual Try On.");
+      return;
+    }
+    
+    // Call the onVirtualTryOn function passed from parent with the event
+    if (onVirtualTryOn) {
+      onVirtualTryOn(e);
     }
   };
 
@@ -110,7 +152,7 @@ const ProductActionButtons = ({
         <div className="flex gap-4">
           {/* ADD TO CART */}
           <button
-            onClick={isGuest ? handleLoginRequired : onAddToBag}
+            onClick={handleAddToCartClick}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md
     ${addingToCart
@@ -134,11 +176,7 @@ const ProductActionButtons = ({
 
           {/* BUY NOW */}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleBuyNowClick();
-            }}
+            onClick={handleBuyNowClick}
             disabled={addingToCart}
             className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-md
     ${addingToCart
@@ -162,10 +200,17 @@ const ProductActionButtons = ({
           </button>
         </div>
 
+        {/* Guest Message - Display under the buttons */}
+        {showGuestMessage && (
+          <div className="text-sm text-red-600 font-medium mt-1 text-center bg-red-50 py-2 px-3 rounded-md border border-red-200">
+            {guestMessage}
+          </div>
+        )}
+
         {/* VIRTUAL TRY ON - Only show for non-B2B users */}
         {!isB2BUser && (
           <button
-            onClick={isGuest ? handleLoginRequired : onVirtualTryOn}
+            onClick={handleVirtualTryOnClick}
             className="flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md transition-all duration-200 bg-[#FFC400] text-white hover:bg-[#e6b200]"
           >
             <Eye size={18} />
@@ -184,7 +229,7 @@ const ProductActionButtons = ({
         />
       )}
 
-      {/* Login Required Popup */}
+      {/* Login Required Popup - Keep this if you still want the slide popup as well */}
       {showLoginPopup && (
         <RightSlidePopup
           keyProp="login-required"
