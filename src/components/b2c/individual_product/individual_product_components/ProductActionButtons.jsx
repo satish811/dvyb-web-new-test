@@ -30,7 +30,7 @@ const ProductActionButtons = ({
   const handleLoginRequired = (message) => {
     setGuestMessage(message);
     setShowGuestMessage(true);
-    
+
     // Auto hide after 4 seconds
     setTimeout(() => {
       setShowGuestMessage(false);
@@ -98,12 +98,12 @@ const ProductActionButtons = ({
   const handleAddToCartClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isGuest) {
       handleLoginRequired("Please login to add products to cart.");
       return;
     }
-    
+
     // Call the onAddToBag function passed from parent with the event
     if (onAddToBag) {
       onAddToBag(e);
@@ -114,12 +114,12 @@ const ProductActionButtons = ({
   const handleVirtualTryOnClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isGuest) {
       handleLoginRequired("Please login to use Virtual Try On.");
       return;
     }
-    
+
     // Call the onVirtualTryOn function passed from parent with the event
     if (onVirtualTryOn) {
       onVirtualTryOn(e);
@@ -221,12 +221,16 @@ const ProductActionButtons = ({
 
       {/* B2B Bulk Order Popup */}
       {showBulkPopup && (
-        <BuyNowColorsPopup
-          product={product}
-          onClose={() => setShowBulkPopup(false)}
-          userRole="B2B"
-          onConfirm={handleB2BPopupConfirm}
-        />
+        <div className="fixed inset-0 z-50 flex items-start justify-center pb-10">
+          <div className="relative">
+            <BuyNowColorsPopup
+              product={product}
+              onClose={() => setShowBulkPopup(false)}
+              userRole="B2B"
+              onConfirm={handleB2BPopupConfirm}
+            />
+          </div>
+        </div>
       )}
 
       {/* Login Required Popup - Keep this if you still want the slide popup as well */}
