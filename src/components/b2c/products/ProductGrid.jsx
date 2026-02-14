@@ -51,7 +51,7 @@ const ProductGrid = ({
 
   // Get all filtered products from hook
   const filteredProducts = useProductFilter(products || []);
-  
+
   const [internalSortBy, setInternalSortBy] = useState("");
   const sortBy = externalSortBy || internalSortBy;
 
