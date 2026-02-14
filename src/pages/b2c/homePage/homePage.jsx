@@ -19,9 +19,11 @@ import PopularProductsSection from "../../../components/b2c/home/PopularProducts
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 // import HomeFooter from "../../../components/b2c/home/HomeFooter";
 
+import React, { useState } from 'react';
 export default function Home() {
   const { products, loading, error } = useProducts();
   const navigate = useNavigate();
+  const [mobileTab, setMobileTab] = useState("women");
 
   if (loading) return <div className="text-center py-20 sm:py-2">Loading…</div>;
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
@@ -31,21 +33,90 @@ export default function Home() {
   return (
     <div className="">
 
-      <section className="relative w-full overflow-hidden h-auto min-h-[500px] md:h-[calc(100vh-64px)] flex flex-col md:flex-row">
+      {/* MOBILE HERO SECTION */}
+      <section className="relative w-full h-[calc(100vh-112px)] md:hidden flex flex-col">
+        {/* Tabs */}
+        <div className="flex w-full bg-[#FAFAFA]">
+          <button
+            onClick={() => setMobileTab("women")}
+            className={`flex-1 py-3 text-sm font-medium tracking-wide uppercase transition-colors relative ${mobileTab === 'women' ? 'text-[#33022F] font-bold' : 'text-gray-500'}`}
+          >
+            Women
+            {mobileTab === 'women' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#33022F]"></div>}
+          </button>
+          <button
+            onClick={() => setMobileTab("men")}
+            className={`flex-1 py-3 text-sm font-medium tracking-wide uppercase transition-colors relative ${mobileTab === 'men' ? 'text-[#33022F] font-bold' : 'text-gray-500'}`}
+          >
+            Men
+            {mobileTab === 'men' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#33022F]"></div>}
+          </button>
+        </div>
+
+        {/* Hero Image & Overlay */}
+        <div className="relative flex-1 w-full overflow-hidden">
+          <img
+            src={mobileTab === "women" ? homeBannerWomen : homeBannerMen}
+            alt={mobileTab === "women" ? "Women's Fashion" : "Men's Fashion"}
+            className="w-full h-full object-cover object-top"
+          />
+          {/* Gradient Overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#33022F]/40 via-transparent to-[#33022F]/80"></div>
+
+          {/* Content Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pt-16">
+            <h1
+              className="text-white drop-shadow-xl mb-3"
+              style={{
+                fontFamily: 'Antiga, serif',
+                fontSize: '56px',
+                fontWeight: 400,
+                lineHeight: '1',
+                letterSpacing: '0.02em',
+                textTransform: 'uppercase'
+              }}
+            >
+              THIS IS VILLY
+            </h1>
+            <p
+              className="text-white mb-8 max-w-[300px]"
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '13px',
+                fontWeight: 500,
+                lineHeight: '1.4',
+                letterSpacing: '0.01em'
+              }}
+            >
+              “Try before you buy — experience fashion through your virtual mirror.”
+            </p>
+
+            <button
+              onClick={() => navigate(mobileTab === "women" ? "/womenwear" : "/menwear")}
+              className="bg-white text-black w-[220px] h-[50px] text-sm font-bold tracking-[0.12em] uppercase shadow-xl hover:bg-gray-100 transition rounded-none flex items-center justify-center"
+            >
+              SHOP {mobileTab === "women" ? "WOMENS" : "MENS"}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* DESKTOP HERO SECTION (Hidden on Mobile) */}
+      <section className="hidden md:flex relative w-full overflow-hidden h-[calc(100vh-64px)] flex-row">
 
         {/* Left Side - Women */}
-        <div className="relative w-full md:w-1/2 h-[50vh] md:h-full">
+        <div className="relative w-1/2 h-full">
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
             className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black/10"></div> {/* Subtle tint for text contrast if needed */}
+          <div className="absolute inset-0 bg-black/10"></div>
 
-          <div className="absolute bottom-10 md:bottom-20 w-full flex justify-center pointer-events-auto">
+          <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/womenwear")}
-              className="bg-white text-black px-8 py-3 md:px-10 md:py-3 text-xs md:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-white text-black px-10 py-3 text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
               Shop Women
             </button>
@@ -53,7 +124,7 @@ export default function Home() {
         </div>
 
         {/* Right Side - Men */}
-        <div className="relative w-full md:w-1/2 h-[50vh] md:h-full">
+        <div className="relative w-1/2 h-full">
           <img
             src={homeBannerMen}
             alt="Men's Fashion"
@@ -61,18 +132,18 @@ export default function Home() {
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
-          <div className="absolute bottom-10 md:bottom-20 w-full flex justify-center pointer-events-auto">
+          <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/menwear")}
-              className="bg-white text-black px-8 py-3 md:px-10 md:py-3 text-xs md:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-white text-black px-10 py-3 text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
               Shop Men
             </button>
           </div>
         </div>
 
-        {/* Centered Text Overlay - Absolute over the entire section */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none md:-mt-32 pb-10">
+        {/* Centered Text Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-32 pb-10">
           <h1
             className="text-white drop-shadow-xl z-20 text-center mx-4"
             style={{

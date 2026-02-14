@@ -1,54 +1,35 @@
+import React from "react";
 import { motion } from "framer-motion";
 
 const MarqueeStrip = () => {
-    const textUnit = "VIRTUAL TRY-ON • CONFIDENT SHOPPING •";
-
-    // Create an array of text items to ensure we fill the screen width multiple times
-    const items = Array(12).fill(textUnit);
+    // Array of repeated items for seamless loop
+    const items = new Array(10).fill("VIRTUAL TRY-ON • CONFIDENT SHOPPING • ");
 
     return (
-        <div className="w-full bg-gray-100 overflow-hidden py-3 relative z-30 flex items-center border-t border-gray-200">
-            <div className="flex whitespace-nowrap min-w-full">
-                <motion.div
-                    className="flex shrink-0 items-center"
-                    animate={{ x: "-100%" }}
-                    transition={{
-                        duration: 40,
-                        ease: "linear",
-                        repeat: Infinity,
-                    }}
-                >
-                    {items.map((text, index) => (
-                        <span
-                            key={`marquee-1-${index}`}
-                            className="text-xs md:text-sm font-medium tracking-[0.2em] text-gray-900 uppercase inline-block"
-                            style={{ paddingRight: '4rem' }}
-                        >
-                            {text}
-                        </span>
-                    ))}
-                </motion.div>
-                {/* Duplicate for seamless loop */}
-                <motion.div
-                    className="flex shrink-0 items-center"
-                    animate={{ x: "-100%" }}
-                    transition={{
-                        duration: 40,
-                        ease: "linear",
-                        repeat: Infinity,
-                    }}
-                >
-                    {items.map((text, index) => (
-                        <span
-                            key={`marquee-2-${index}`}
-                            className="text-xs md:text-sm font-medium tracking-[0.2em] text-gray-900 uppercase inline-block"
-                            style={{ paddingRight: '4rem' }}
-                        >
-                            {text}
-                        </span>
-                    ))}
-                </motion.div>
-            </div>
+        <div className="w-full bg-[#FAFAFA] py-3 2xl:py-5 relative z-30 overflow-hidden flex items-center border-b border-gray-100">
+            {/* Smooth Infinite Marquee - Right to Left */}
+            <motion.div
+                className="whitespace-nowrap flex items-center"
+                initial={{ x: "0" }}
+                animate={{ x: "-50%" }}
+                transition={{
+                    repeat: Infinity,
+                    duration: 30, // Standard speed
+                    ease: "linear"
+                }}
+                style={{ width: "fit-content" }}
+            >
+                {/* Duplicate the content inside so we have enough width for the loop */}
+                {[...items, ...items].map((text, index) => (
+                    <span
+                        key={index}
+                        // Increased font size as requested ("some big")
+                        className="text-xs md:text-sm 2xl:text-lg font-semibold tracking-[0.2em] 2xl:tracking-[0.25em] text-gray-800 uppercase px-4 2xl:px-8 inline-block opacity-80"
+                    >
+                        {text}
+                    </span>
+                ))}
+            </motion.div>
         </div>
     );
 };
