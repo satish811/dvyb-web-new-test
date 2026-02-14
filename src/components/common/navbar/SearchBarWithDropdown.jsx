@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 import { IoCloseOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
+import { MdOutlineArrowDropDown, MdOutlineSearch } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import subCategories from "../../../static/navbar/subCategories";
 
