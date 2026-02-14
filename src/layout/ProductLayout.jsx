@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
 import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown, Minus, Plus } from "lucide-react";
 import { mainlogo } from "../assets";
@@ -221,7 +221,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   }, [zoomLevel]);
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white">
       {/* Full Screen Search Dropdown */}
       {searchOpen && (
         <div className="fixed inset-0 bg-white z-[60]">
@@ -259,10 +259,23 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       {/* Horizontal Category Bar */}
       {/* -------------------------------------------------------------- */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 py-4">
+        <div className="max-w-[1600px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16 py-4">
 
-          <div className="text-xs md:text-sm font-medium text-gray-500 uppercase tracking-widest mb-6">
-            HOME / WOMEN / {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
+          <div className="flex items-center gap-2 mb-6 text-xs md:text-sm font-medium text-gray-500 uppercase tracking-widest">
+            <button
+              onClick={() => navigate(-1)}
+              className="mr-2 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
+              aria-label="Go Back"
+            >
+              <ArrowLeft size={16} className="text-gray-700" />
+            </button>
+            <Link to="/" className="hover:text-black transition-colors">HOME</Link>
+            <span className="mx-1">/</span>
+            <Link to="/womenwear" className="hover:text-black transition-colors">WOMEN</Link>
+            <span className="mx-1">/</span>
+            <span className="text-black font-semibold">
+              {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
+            </span>
           </div>
 
           {/* Fixed height container to prevent layout shift */}
@@ -405,7 +418,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       {/* -------------------------------------------------------------- */}
       {/* Main Content Area */}
       {/* -------------------------------------------------------------- */}
-      <div className="max-w-[1600px] mx-auto px-4 pb-20">
+      <div className="max-w-[1600px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16 pb-10 2xl:pb-16">
         <ProductGrid
           products={visibleProducts}
           category={category}

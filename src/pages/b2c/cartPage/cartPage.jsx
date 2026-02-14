@@ -360,7 +360,7 @@ export default function CartPage() {
         {cartItems.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
             <p className="text-xl text-gray-500 mb-4">Your cart is empty.</p>
-            <Link to="/products" className="inline-block px-8 py-3 bg-[#33022F] text-white font-bold rounded-lg hover:bg-[#5a0452] transition">Start Shopping</Link>
+            <Link to="/womenwear" className="inline-block px-8 py-3 bg-[#33022F] text-white font-bold rounded-lg hover:bg-[#5a0452] transition">Start Shopping</Link>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">

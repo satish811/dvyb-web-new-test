@@ -13,16 +13,14 @@ export default function MainLayout({ children }) {
       <div className="flex flex-col min-h-screen">
         {/* Main content - top padding for fixed header */}
         <main
-          className={`flex-grow overflow-x-hidden ${hideHeaderOnMobile ? "md:mt-[73px]" : "mt-[73px]"}`}
+          className={`flex-grow overflow-x-hidden relative z-10 ${hideHeaderOnMobile ? "md:mt-[73px]" : "mt-[73px]"}`}
         >
           {/* Marquee Strip - Scrolls with content */}
           {(location.pathname === "/" || location.pathname.includes("/usertype=b2b")) && <MarqueeStrip />}
           {children}
         </main>
 
-        <footer>
-          <HomeFooter />
-        </footer>
+        <HomeFooter />
       </div >
     </>
   );

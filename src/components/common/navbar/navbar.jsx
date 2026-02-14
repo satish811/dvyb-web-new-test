@@ -9,13 +9,14 @@ import LoginModal from "../../../pages/b2c/login/loginModel";
 import { useAuth } from "../../../context/AuthContext";
 import UserDropdown from "./UserDropdown";
 import { MdOutlineArrowDropDown, MdOutlineSearch } from "react-icons/md";
-import { HiOutlineUser, HiOutlineHeart, HiOutlineShoppingBag } from "react-icons/hi2";
+import { HiOutlineUser, HiOutlineHeart, HiOutlineShoppingBag, HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import { HiOutlineMenu } from "react-icons/hi";
 import MobileMenu from "./MobileMenu";
 import { useFilter } from "../../../context/FilterContext";
 import AuthContainer from "../../../pages/b2b/AuthContainer/AuthContainer";
 import { useUI } from "../../../context/UIContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { fadeIn, tapScale } from "../../../utils/animations";
+import { fadeIn, tapScale, hoverScale } from "../../../utils/animations";
 
 import twodpopup from "../../../assets/Navbar/twodpopup.svg";
 // Correct logo import based on asset search
@@ -195,23 +196,27 @@ export default function Navbar({ setShowLoader }) {
                 className="font-sans shadow-sm bg-white"
             >
                 {/* Main Navbar */}
-                <header className="bg-white text-black w-full relative z-40 h-[72px] flex items-center border-b border-gray-100">
-                    <div className="w-full max-w-[1540px] mx-auto px-4 sm:px-8 flex items-center justify-between h-full">
+                <header
+                    className={`w-full relative z-40 h-[72px] 2xl:h-[88px] flex items-center border-b border-gray-100 transition-colors duration-300
+                    ${location.pathname === "/" ? "bg-[#B59DB0] text-white md:bg-white md:text-black" : "bg-white text-black"}
+                    `}
+                >
+                    <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-12 lg:px-16 xl:px-20 2xl:px-24 flex items-center justify-between h-full">
 
                         {/* Mobile Menu Toggle */}
                         <div className="lg:hidden flex items-center">
                             <motion.button
                                 whileTap={tapScale}
                                 onClick={() => setMobileMenuOpen(true)}
-                                className="p-2 text-black hover:bg-gray-100 rounded-full transition"
+                                className={`p-2 rounded-full transition ${location.pathname === "/" ? "text-white hover:bg-white/10" : "text-black hover:bg-gray-100"}`}
                             >
-                                <MdOutlineArrowDropDown className="text-2xl transform rotate-90" />
+                                <HiOutlineMenu className="text-3xl" />
                             </motion.button>
                         </div>
 
                         {/* LEFT: Logo */}
                         <div
-                            className="flex-shrink-0 cursor-pointer mr-8"
+                            className={`flex-shrink-0 cursor-pointer lg:mr-10 xl:mr-16 2xl:mr-24 absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none`}
                             onClick={() => {
                                 if (setShowLoader) setShowLoader(true);
                                 setTimeout(() => {
@@ -223,56 +228,64 @@ export default function Navbar({ setShowLoader }) {
                             <img
                                 src={villyLogo}
                                 alt="Villy"
-                                className="h-14 md:h-14 w-auto object-contain"
+                                className={`h-10 md:h-12 2xl:h-14 w-auto object-contain ${location.pathname === "/" ? "brightness-0 invert md:filter-none" : ""}`}
                             />
                         </div>
 
                         {/* CENTER-LEFT: Nav Links */}
-                        <div className="hidden lg:flex items-center space-x-8 mr-auto">
+                        <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 mr-auto">
                             <button
                                 onClick={() => navigate("/womenwear")}
-                                className="text-sm font-semibold tracking-wide hover:text-gray-600 transition uppercase"
+                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
                             >
                                 WOMEN
                             </button>
                             <button
                                 onClick={() => navigate("/menwear")}
-                                className="text-sm font-semibold tracking-wide hover:text-gray-600 transition uppercase"
+                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
                             >
                                 MEN
                             </button>
                         </div>
 
                         {/* CENTER-RIGHT: Search Bar */}
-                        <div className="hidden md:flex flex-1 max-w-md mx-4">
+                        <div className="hidden md:flex flex-1 max-w-md xl:max-w-lg 2xl:max-w-2xl mx-6 xl:mx-10 2xl:mx-16">
                             <SearchBarWithDropdown onNavigate={navigate} />
                         </div>
 
                         {/* RIGHT: Icons */}
-                        <div className="flex items-center space-x-6">
-                            <div className="relative group h-full flex items-center">
+                        <div className="flex items-center space-x-4 md:space-x-6 2xl:space-x-8">
+                            {/* Mobile Search Icon */}
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className={`md:hidden transition relative ${location.pathname === "/" ? "text-white" : "text-black"}`}
+                            >
+                                <HiOutlineMagnifyingGlass className="text-3xl" />
+                            </button>
+
+                            <div className="hidden md:flex relative group h-full items-center">
                                 <button
                                     onClick={() => guard("/profile")}
-                                    className="text-black hover:text-gray-600 transition py-4"
+                                    className={`transition py-4 ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}
                                 >
-                                    <HiOutlineUser className="text-2xl" />
+                                    <HiOutlineUser className="text-2xl 2xl:text-3xl" />
                                 </button>
                                 <UserDropdown user={user} onLogout={signOutUser} />
                             </div>
 
-                            <button onClick={() => navigate("/wishlist")} className="text-black hover:text-gray-600 transition relative">
-                                <HiOutlineHeart className="text-2xl" />
+                            <button onClick={() => navigate("/wishlist")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                <HiOutlineHeart className="text-3xl md:text-2xl 2xl:text-3xl" />
                                 {wishlistCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
                                         {wishlistCount}
                                     </span>
                                 )}
                             </button>
 
-                            <button onClick={() => navigate("/cart")} className="text-black hover:text-gray-600 transition relative">
-                                <HiOutlineShoppingBag className="text-2xl" />
+                            <button onClick={() => navigate("/cart")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                <HiOutlineShoppingBag className="text-3xl md:text-2xl 2xl:text-3xl" />
                                 {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
                                         {cartCount}
                                     </span>
                                 )}

@@ -19,7 +19,7 @@ export default function TermsAndConditions() {
 
         {/* Intro */}
         <p className="text-lg font-light text-gray-700 mb-6">
-          Welcome to DYVB Bulk Ordering. These Terms & Conditions govern your use of our mobile
+          Welcome to VILLY Bulk Ordering. These Terms & Conditions govern your use of our mobile
           application and services related to bulk ordering purchases. By accessing or using our
           App, you agree to be bound by these Terms. If you do not agree, please do not use the App.
         </p>

@@ -14,6 +14,7 @@ import CartPage from "../pages/b2c/cartPage/cartPage";
 import CheckoutPage from "../pages/b2c/cartPage/CheckoutPage";
 import ProductDetailsPageIndividual from "../pages/b2c/ProductDetailsPageIndividual";
 import CategoryPage from "../pages/b2c/CategoryPage";
+import VirtualTryOn from "../virtualtryon";
 
 // 📰 Common Pages
 import BlogPage from "../components/common/BlogPage/BlogPage";
@@ -242,6 +243,16 @@ export default function AppRoutes() {
 
           {/* 📄 Static pages */}
           <Route
+            path="/virtual-try-on"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <VirtualTryOn />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
             path="/faq"
             element={
               <PageTransition>
@@ -255,9 +266,9 @@ export default function AppRoutes() {
             path="/privacy"
             element={
               <PageTransition>
-                {/* <MainLayout> */}
-                <PrivacyPolicy />
-                {/* </MainLayout> */}
+                <MainLayout>
+                  <PrivacyPolicy />
+                </MainLayout>
               </PageTransition>
             }
           />

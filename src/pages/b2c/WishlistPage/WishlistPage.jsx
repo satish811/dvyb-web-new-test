@@ -355,7 +355,7 @@ const WishlistPage = () => {
           <p className="text-sm font-medium text-gray-500 mt-2 mb-8">Items added to your wishlist will appear here</p>
 
           <Link
-            to={userRole === "B2B" ? "/b2b-products" : "/products"}
+            to={userRole === "B2B" ? "/womenwear" : "/womenwear"}
             className="px-8 py-3 bg-[#33022F] text-white text-sm font-bold uppercase tracking-wide hover:bg-[#5a0452] transition shadow-lg"
           >
             Continue Shopping
@@ -383,7 +383,7 @@ const WishlistPage = () => {
       {/* Footer Navigation (as per mockup) */}
       {wishlistItems.length > 0 && (
         <div className="mt-12 text-center">
-          <Link to="/products" className="text-[#2B7CEC] font-medium text-sm hover:underline">
+          <Link to="/womenwear" className="text-[#2B7CEC] font-medium text-sm hover:underline">
             ← Continue Shopping
           </Link>
         </div>
