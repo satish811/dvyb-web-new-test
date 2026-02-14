@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserTryons } from "../../../hooks/useUserTryons";
 import { cartService } from "../../../services/cartService";
 import { deleteTryOn } from "../../../services/tryOnService";
+import { tryOnProductService } from "../../../services/tryOnProductService";
 import { usePopup } from "../../../context/ToastPopupContext";
 import { useAuth } from "../../../context/AuthContext";
 import toast from "react-hot-toast";
@@ -33,10 +34,20 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
     })
     : "Unknown date";
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (window.confirm("Are you sure you want to delete this try-on?")) {
       setIsDeleting(true);
-      await onDelete(item.id);
+      try {
+        await onDelete(item.id);
+        // Success toast will be shown in parent
+      } catch (error) {
+        console.error("Delete failed:", error);
+        toast.error("Failed to delete try-on");
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -46,18 +57,21 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1.5 rounded-full hover:bg-red-50 text-red-500"
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1.5 rounded-full hover:bg-red-50 text-red-500 disabled:opacity-50"
         title="Delete try-on"
       >
-        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+        {isDeleting ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Trash2 className="w-4 h-4" />
+        )}
       </button>
 
-      {/* Image Container */}
+      {/* Rest of your card component... */}
       <div className="relative bg-[#D4B89C] aspect-[3/4] overflow-hidden">
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-            <p className="text-xs text-gray-500 mt-2">Loading...</p>
           </div>
         )}
 
@@ -68,11 +82,7 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         )}
 
         <img
-          src={
-            item.tryOnImage ||
-            item.garmentImage ||
-            "https://via.placeholder.com/400x600?text=No+Image"
-          }
+          src={item.tryOnImage || item.garmentImage || "https://via.placeholder.com/400x600?text=No+Image"}
           alt={item.productName}
           className={`md:w-full md:h-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"
             }`}
@@ -83,7 +93,6 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
           onError={(e) => {
             setImageError(true);
             setImageLoaded(true);
-            // Fallback logic
             if (item.garmentImage && e.target.src !== item.garmentImage) {
               e.target.src = item.garmentImage;
             } else {
@@ -285,7 +294,7 @@ const ShareModal = ({ isOpen, onClose, item }) => {
 
 export default function TryOnGallery() {
   const navigate = useNavigate();
-  const { tryons, loading, error } = useUserTryons();
+  const { tryons, loading, error, setTryons } = useUserTryons();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const { user } = useAuth();
@@ -352,13 +361,13 @@ export default function TryOnGallery() {
 
   const handleDelete = async (tryOnId) => {
     try {
-      await deleteTryOn(tryOnId);
+      await tryOnProductService.deleteTryOnEntry(user.uid, tryOnId);
+      setTryons(prevTryons => prevTryons.filter(item => item.id !== tryOnId));
+
       toast.success("Try-on deleted successfully!");
-      // Ideally update local state here instead of full reload, but reload works for now
-      window.location.reload();
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete try-on");
+      toast.error(error.message || "Failed to delete try-on");
     }
   };
 
