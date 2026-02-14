@@ -1,6 +1,7 @@
 import { useAuth } from "../../../context/AuthContext";
 import { FaTimes } from "react-icons/fa";
-import { mainlogo } from "../../../assets";
+// import { mainlogo } from "../../../assets";
+import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png";
 import { LuHeart } from "react-icons/lu";
 import { GoPerson } from "react-icons/go";
 import { MdOutlineShoppingBag } from "react-icons/md";
@@ -33,7 +34,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <img src={mainlogo} alt="Logo" className="h-7 sm:h-8" />
+          <img src={villyLogo} alt="Villy Logo" className="h-10 w-auto object-contain" />
           <button onClick={onClose} aria-label="Close menu">
             <FaTimes className="text-2xl text-gray-600" />
           </button>

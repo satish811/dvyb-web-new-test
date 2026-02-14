@@ -32,17 +32,12 @@ export default function PromotionalCarousel() {
     };
 
     return (
-        <section className="w-full mt-0 pt-0 pb-0 md:pb-0 bg-white">
+        <section className="w-full mt-0 pt-0 pb-4 bg-white">
             <div
-                className="relative flex flex-col w-full"
+                className="relative flex flex-col w-full max-w-[1920px] mx-auto"
             >
                 {/* Slider Image Area */}
-                <div className="relative overflow-hidden w-full group"
-                    style={{
-                        height: '592px', // Keep requested height or make responsive? Usually full width implies responsive height, but let's stick to the explicit height for now unless it breaks. 592px is quite tall. Let's keep it but maybe allow min-height.
-                        // Actually, let's keep the explicit height for now as per previous strict request, but let it be w-full.
-                    }}
-                >
+                <div className="relative overflow-hidden w-full group h-[220px] sm:h-[300px] md:h-[592px] xl:h-[700px] 2xl:h-[850px]">
                     <div
                         className="flex transition-transform duration-700 ease-in-out w-full h-full"
                         style={{ transform: `translateX(-${current * 100}%)` }}
@@ -61,31 +56,31 @@ export default function PromotionalCarousel() {
                     {/* Navigation Arrows */}
                     <button
                         onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 2xl:p-3 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 2xl:w-7 2xl:h-7">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                         </svg>
                     </button>
                     <button
                         onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 2xl:p-3 rounded-full shadow-md text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white hidden md:block"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 2xl:w-7 2xl:h-7">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Pagination Dots Bar - Below Image */}
-                <div className="w-full bg-[#EAE0E4] h-[40px] flex items-center justify-center space-x-2">
+                <div className="w-full bg-[#EAE0E4] h-[30px] 2xl:h-[40px] flex items-center justify-center space-x-2 2xl:space-x-3">
                     {slides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => goToSlide(index)}
                             className={`rounded-full transition-all duration-300 ${current === index
-                                ? "bg-[#5F0F40] w-2.5 h-2.5" // Active dot (Dark purple from image)
-                                : "bg-[#D1D1D1] w-2.5 h-2.5 hover:bg-gray-400"
+                                ? "bg-[#5F0F40] w-2 h-2 2xl:w-3 2xl:h-3" // Active dot
+                                : "bg-[#D1D1D1] w-2 h-2 2xl:w-3 2xl:h-3 opacity-60"
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />

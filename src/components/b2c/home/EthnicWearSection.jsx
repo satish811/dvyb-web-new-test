@@ -26,7 +26,7 @@ const EthnicWearSection = () => {
     ];
 
     return (
-        <section className="w-full flex flex-col lg:flex-row h-auto lg:h-[600px]">
+        <section className="w-full flex flex-col lg:flex-row h-auto lg:h-[600px] 2xl:h-[800px] max-w-[1920px] mx-auto">
             {/* LEFT SIDE: 3x3 Image Grid */}
             <div className="w-full lg:w-1/2 grid grid-cols-3 grid-rows-3 h-[400px] lg:h-full">
                 {gridImages.map((img, index) => (
@@ -48,26 +48,26 @@ const EthnicWearSection = () => {
             </div>
 
             {/* RIGHT SIDE: Content Card */}
-            <div className="w-full lg:w-1/2 relative flex items-center justify-center p-8 lg:p-16 h-[500px] lg:h-full bg-cover bg-center"
+            <div className="w-full lg:w-1/2 relative flex items-center justify-center p-8 lg:p-16 2xl:p-24 h-[500px] lg:h-full bg-cover bg-center"
                 style={{ backgroundImage: `url(${ethnicBgPattern})` }}
             >
                 {/* White Card Overlay */}
-                <div className="bg-[#FAF7F2] p-8 md:p-12 max-w-lg w-full text-center relative shadow-xl">
+                <div className="bg-[#FAF7F2] p-8 md:p-12 2xl:p-16 max-w-lg 2xl:max-w-xl w-full text-center relative shadow-xl">
                     {/* Double Border Effect */}
-                    <div className="border border-gray-800 p-6 md:p-10 h-full w-full relative">
+                    <div className="border border-gray-800 p-6 md:p-10 2xl:p-12 h-full w-full relative">
 
                         {/* Top Label */}
-                        <h4 className="text-gray-600 text-xs md:text-sm font-bold tracking-[0.2em] uppercase mb-4">
+                        <h4 className="text-gray-600 text-xs md:text-sm 2xl:text-base font-bold tracking-[0.2em] uppercase mb-4 2xl:mb-6">
                             NEW IN:
                         </h4>
 
                         {/* Main Title */}
-                        <h2 className="text-4xl md:text-6xl font-serif text-[#4A002C] mb-6 leading-tight">
+                        <h2 className="text-4xl md:text-6xl 2xl:text-7xl font-serif text-[#4A002C] mb-6 2xl:mb-8 leading-tight">
                             Ethnic<br />Wear
                         </h2>
 
                         {/* Description */}
-                        <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-8 font-light">
+                        <p className="text-gray-600 text-sm md:text-base 2xl:text-lg leading-relaxed mb-8 2xl:mb-10 font-light">
                             From Sun-Drenched Deserts To Cool Mountain Mornings, Discover Where To Go And What To Wear Out This Summer
                         </p>
 
@@ -76,7 +76,7 @@ const EthnicWearSection = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/womenwear?category=saree')}
-                            className="bg-[#6A0DAD] text-white px-8 py-3 text-sm font-bold tracking-widest uppercase hover:bg-[#580b91] transition-colors"
+                            className="bg-[#6A0DAD] text-white px-8 py-3 2xl:px-10 2xl:py-4 text-sm 2xl:text-base font-bold tracking-widest uppercase hover:bg-[#580b91] transition-colors"
                         >
                             SHOP NOW
                         </motion.button>

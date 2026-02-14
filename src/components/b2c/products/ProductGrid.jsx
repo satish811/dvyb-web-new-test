@@ -24,11 +24,11 @@ const CATEGORY_MAPPINGS = {
   "blouse": "Blouses"
 };
 
-const ProductGrid = ({ 
-  products, 
-  category, 
-  sortBy: externalSortBy, 
-  hideHeader = false, 
+const ProductGrid = ({
+  products,
+  category,
+  sortBy: externalSortBy,
+  hideHeader = false,
   columns = 4,
   responsiveClasses,
   zoomLevel = 100,
@@ -39,7 +39,7 @@ const ProductGrid = ({
 
   // Get all filtered products from hook
   const filteredProducts = useProductFilter(products || []);
-  
+
   const [internalSortBy, setInternalSortBy] = useState("");
   const sortBy = externalSortBy || internalSortBy;
 
@@ -63,22 +63,22 @@ const ProductGrid = ({
     }
 
     // Map the URL category to the actual dressType value in products
-    const targetCategory = CATEGORY_MAPPINGS[category] || 
-      category.split('-').map(word => 
+    const targetCategory = CATEGORY_MAPPINGS[category] ||
+      category.split('-').map(word =>
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(' ');
-    
+
     console.log(`Filtering by category: URL="${category}" → Looking for dressType="${targetCategory}"`);
-    
+
     // Filter products where dressType matches the target category
     const filtered = filteredProducts.filter(product => {
       const productDressType = product.dressType?.trim();
       if (!productDressType) return false;
-      
+
       // Case-insensitive comparison
       return productDressType.toLowerCase() === targetCategory.toLowerCase();
     });
-    
+
     console.log(`Found ${filtered.length} products for category "${targetCategory}"`);
     return filtered;
   }, [filteredProducts, category]);
@@ -129,7 +129,7 @@ const ProductGrid = ({
   const endIndex = shouldPaginate ? startIndex + productsPerPage : productsToDisplay.length;
   const paginatedProducts = productsToDisplay.slice(startIndex, endIndex);
 
-  console.log("^^^^^^^^^^^^^^^^^^^",paginatedProducts);
+  console.log("^^^^^^^^^^^^^^^^^^^", paginatedProducts);
 
   console.log("Products to display:", paginatedProducts.length, "products");
   console.log("First product dressType:", paginatedProducts[0]?.dressType);
@@ -154,9 +154,9 @@ const ProductGrid = ({
     if (zoomLevel <= 90) {
       return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
     } else if (zoomLevel <= 110) {
-      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
     } else {
-      return "grid-cols-1 sm:grid-cols-2";
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
     }
   }, [columns, responsiveClasses, zoomLevel]);
 
@@ -184,7 +184,7 @@ const ProductGrid = ({
       return "gap-6 sm:gap-7 md:gap-8";
     }
     if (zoomLevel >= 91) {
-      return "gap-4 sm:gap-5 md:gap-6";
+      return "gap-4 sm:gap-5 md:gap-6 2xl:gap-8";
     }
     return "gap-3 sm:gap-3 md:gap-4 lg:gap-5";
   }, [zoomLevel]);
@@ -298,7 +298,7 @@ const ProductGrid = ({
       {!hideHeader && <div className="hidden sm:block border-t border-black mb-6"></div>}
 
       {/* Product Grid */}
-      <div 
+      <div
         className={`
           grid 
           ${getGridClasses} 
@@ -308,16 +308,16 @@ const ProductGrid = ({
         `}
       >
         {paginatedProducts.map((product) => (
-          <div 
-            key={product.id} 
+          <div
+            key={product.id}
             className={`
               ${getCardSizeClasses} 
               w-full mx-auto
               transform transition-all duration-300 ease-in-out
             `}
           >
-            <ProductCard 
-              product={product} 
+            <ProductCard
+              product={product}
               zoomLevel={zoomLevel}
               cardSize={cardSize}
             />
