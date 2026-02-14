@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
+import { tryOnProductService } from "../../../services/tryOnProductService.js";import { useAuth } from "../../../context/AuthContext";
 
 import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle, Camera, RefreshCcw } from "lucide-react";
 import step1img from "../../../assets/TryOn/step1img.svg";
@@ -9,7 +9,7 @@ import black_warnIc from "../../../assets/TryOn/black_warnIc.svg";
 import red_warnIc from "../../../assets/TryOn/red_warnIc.svg";
 import right_ic from "../../../assets/TryOn/right_ic.svg";
 import rightHoverArrow from "../../../assets/TryOn/rightHoverArrow.svg";
-
+import { auth } from "../../../config";
 import { profileService } from "../../../services/profileService.js";
 // models
 
@@ -82,6 +82,7 @@ const UploadSelfieModal = ({
   const [selectedModel, setSelectedModel] = useState(null);
   const [showModelPreview, setShowModelPreview] = useState(false);
   const [makeDefault, setMakeDefault] = useState(false);
+  const [isStoringData, setIsStoringData] = useState(false);
 
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
@@ -550,11 +551,35 @@ const UploadSelfieModal = ({
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     console.log("🔘 Upload Continue clicked");
+
+    if (!currentUser) {
+      alert("Please log in to continue");
+      return;
+    }
 
     if (selectedImage && garmentImage) {
       console.log("✅ Passing uploaded image to parent");
+
+      setIsStoringData(true);
+      try {
+
+        await tryOnProductService.storeTryOnData({
+          userId: currentUser.uid,
+          tryOnData: tryOnData,
+          productId: tryOnData?.productId,
+          modelImage: selectedImage,
+          garmentImage: garmentImage,
+          is3D: is3D,
+          modelName: "Uploaded Selfie"
+        });
+        console.log("✅ Try-on data stored successfully");
+      } catch (error) {
+        console.error("❌ Failed to store try-on data:", error);
+      } finally {
+        setIsStoringData(false);
+      }
       onNext({
         modelImage: selectedImage,
         garmentImage,
@@ -562,6 +587,7 @@ const UploadSelfieModal = ({
       });
     }
   };
+
   const handleReupload = () => {
     setStep(2);
     setSelectedImage(null);
@@ -1311,7 +1337,7 @@ const UploadSelfieModal = ({
           {/* ---------- Continue button (bottom-right) ---------- */}
           <div className="flex justify-end mt-8">
             <button
-              onClick={() => {
+              onClick={async () => {
                 console.log("🔘 Model Preview Continue clicked");
 
                 if (!selectedModel) {
@@ -1321,6 +1347,27 @@ const UploadSelfieModal = ({
 
                 console.log("✅ Passing model to parent:", selectedModel.name);
 
+                // Store try-on data in Firestore
+                if (currentUser?.uid) {
+                  setIsStoringData(true);
+                  try {
+                    await tryOnProductService.storeTryOnData({
+                      userId: currentUser.uid,
+                      tryOnData: tryOnData,
+                      productId: tryOnData?.productId,
+                      modelImage: selectedModel.image,
+                      garmentImage: garmentImage,
+                      is3D: is3D,
+                      modelName: selectedModel.name
+                    });
+                    console.log("✅ Try-on data stored successfully");
+                  } catch (error) {
+                    console.error("❌ Failed to store try-on data:", error);
+                  } finally {
+                    setIsStoringData(false);
+                  }
+                }
+
                 // ✅ Call onNext ONCE
                 onNext({
                   modelImage: selectedModel.image,
@@ -1329,13 +1376,33 @@ const UploadSelfieModal = ({
                   modelName: selectedModel.name,
                 });
               }}
-              className="group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all"
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--villy-primary, #33022F)'; e.currentTarget.style.borderColor = 'var(--villy-primary, #33022F)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#374151'; }}
+              disabled={isStoringData}
+              className={`group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all ${isStoringData ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onMouseEnter={(e) => {
+                if (!isStoringData) {
+                  e.currentTarget.style.background = 'var(--villy-primary, #33022F)';
+                  e.currentTarget.style.borderColor = 'var(--villy-primary, #33022F)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isStoringData) {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = '#374151';
+                }
+              }}
             >
-              Continue
-              <img src={right_ic} alt="" className="h-4 w-4 group-hover:hidden" />
-              <img src={rightHoverArrow} alt="" className="h-4 w-4 hidden group-hover:inline" />
+              {isStoringData ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+                  Storing...
+                </>
+              ) : (
+                <>
+                  Continue
+                  <img src={right_ic} alt="" className="h-4 w-4 group-hover:hidden" />
+                  <img src={rightHoverArrow} alt="" className="h-4 w-4 hidden group-hover:inline" />
+                </>
+              )}
             </button>
           </div>
         </div>
