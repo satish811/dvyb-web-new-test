@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { tryOnProductService } from "../../../services/tryOnProductService.js";
+import { tryOnProductService } from "../../../services/tryOnProductService.js";import { useAuth } from "../../../context/AuthContext";
+
 import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle, Camera, RefreshCcw } from "lucide-react";
 import step1img from "../../../assets/TryOn/step1img.svg";
 import Tickic from "../../../assets/TryOn/tick_ic.svg";
@@ -69,13 +70,7 @@ const UploadSelfieModal = ({
   is3D = false,
   tryOnData,
 }) => {
-  const currentUser = auth.currentUser;
-  console.log("######### User details:", currentUser);
-  console.log("############ User ID:", currentUser?.uid);
-
-  console.log("Product ID:", tryOnData?.productId);
-  console.log("Full tryOnData:", tryOnData);
-
+  const { userCollection } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
