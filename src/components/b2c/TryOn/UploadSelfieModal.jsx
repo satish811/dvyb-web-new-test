@@ -94,40 +94,58 @@ const UploadSelfieModal = ({
   const [userTryOnImage, setUserTryOnImage] = useState(null);
   const [userProfilePhoto, setUserProfilePhoto] = useState(null); // ⭐ NEW: Raw profile photo
   const [useUserModel, setUseUserModel] = useState(false); // Toggle state
+  const [availableUserModels, setAvailableUserModels] = useState([]); // Store all available user models
 
   useEffect(() => {
     const checkUserData = async () => {
       if (!isOpen) return;
 
       try {
+        const modelsList = [];
+
         // 1. Fetch User Profile (Raw Selfie)
         const profile = await profileService.getProfile(userCollection);
         if (profile?.photoUrl) {
           console.log("✅ User profile photo found:", profile.photoUrl);
           setUserProfilePhoto(profile.photoUrl);
+          modelsList.push({
+            name: "Your Photo",
+            image: profile.photoUrl,
+            type: "original"
+          });
           setUseUserModel(true); // Default to user model
         }
 
-        // 2. Fetch Previous Try-On (Optional, keep for backward compatibility if needed)
-        if (tryOnData?.dressType) {
-          const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType, userCollection);
-          if (savedImage) {
+        // 2. Fetch All Past Try-On Results
+        const tryOnResults = await profileService.getTryOnResults(userCollection);
+        if (tryOnResults && Object.keys(tryOnResults).length > 0) {
+          Object.entries(tryOnResults).forEach(([type, url]) => {
+            if (url) {
+              // Capitalize first letter
+              const name = type.charAt(0).toUpperCase() + type.slice(1);
+              modelsList.push({
+                name: name,
+                image: url,
+                type: "generated"
+              });
+            }
+          });
+
+          if (modelsList.length > 0) {
+            setUseUserModel(true);
             setUserHasTryOn(true);
-            setUserTryOnImage(savedImage);
-            // If no profile photo, maybe default to this? But profile photo is preferred.
-            if (!profile?.photoUrl) setUseUserModel(true);
-          } else {
-            setUserHasTryOn(false);
-            setUserTryOnImage(null);
           }
         }
+
+        setAvailableUserModels(modelsList);
+
       } catch (error) {
         console.error("Error checking user data:", error);
       }
     };
 
     checkUserData();
-  }, [isOpen, tryOnData]);
+  }, [isOpen]);
 
   const getModelsForDressType = (dressType) => {
     // Normalize dress type to lowercase and remove extra spaces
@@ -1037,48 +1055,67 @@ const UploadSelfieModal = ({
                 
                 So we want to show this section when useUserModel is TRUE.
             */}
+            {/* USER'S MODEL - Display ONLY when toggle is TRUE (Your Model) */}
             {useUserModel && (
               <div className="mb-6">
-                <div
-                  onClick={() => {
-                    // Prefer profile photo, fallback to try-on image
-                    const imageToUse = userProfilePhoto || userTryOnImage;
-                    if (imageToUse) {
-                      setSelectedModel({
-                        image: imageToUse,
-                        name: "Your Model",
-                      });
-                    }
-                  }}
-                  className="cursor-pointer inline-block relative"
-                >
-                  <img
-                    src={userProfilePhoto || userTryOnImage}
-                    alt="Your Model"
-                    className="w-[160px] h-[240px] object-cover rounded"
-                  />
-                  <p className="text-left mt-2 text-sm font-medium text-gray-700">Your Model</p>
+                {availableUserModels.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                    {availableUserModels.map((model, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          console.log("Selected model:", model.name);
+                          setSelectedModel({
+                            image: model.image,
+                            name: model.name,
+                          });
+                        }}
+                        className={`cursor-pointer relative p-2 border rounded-lg transition-all ${selectedModel?.image === model.image
+                            ? 'border-[var(--villy-primary)] bg-red-50'
+                            : 'border-transparent hover:bg-gray-50'
+                          }`}
+                      >
+                        <div className="relative w-full aspect-[2/3] overflow-hidden rounded-md bg-gray-100">
+                          <img
+                            src={model.image}
+                            alt={model.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <p className="text-center mt-2 text-xs font-medium text-gray-700 truncate px-1">
+                          {model.name}
+                        </p>
 
-                  {selectedModel?.name === "Your Model" && (
-                    <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
-                      <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="var(--villy-primary, #33022F)"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
+                        {selectedModel?.image === model.image && (
+                          <div className="absolute top-2 left-2 bg-white px-1.5 py-0.5 flex items-center gap-1 rounded shadow-sm border border-gray-100">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--villy-primary, #33022F)"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <p className="text-gray-500 mb-2">No models found in your profile.</p>
+                    <button
+                      onClick={() => setStep(2)}
+                      className="text-primary font-medium hover:underline"
+                    >
+                      Upload a photo to get started
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
