@@ -216,7 +216,7 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
       )}
 
       {/* Modal Container: Adjusted for mobile */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[200] p-0 md:p-4 overflow-auto">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-start z-[200] p-0 md:p-4 pt-32 md:pt-36 overflow-auto">
         {/* Modal Content Box */}
         <div className="bg-white w-full h-full max-w-full md:max-w-6xl md:h-auto shadow-xl flex flex-col relative">
           <button

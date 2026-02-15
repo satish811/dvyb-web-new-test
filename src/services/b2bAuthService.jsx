@@ -61,15 +61,26 @@ class B2BAuthService {
   // Register B2B User
   // -----------------------------
   async registerB2B(userData) {
+    let firebaseUser = null;
     try {
       const { email, password } = userData;
 
       if (!email || !password) throw new Error("Email & Password required");
 
-      await this.validateUniqueFields(userData);
-
+      // 1. Create Auth User FIRST (to get "isAuthenticated" permission)
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+      firebaseUser = userCredential.user;
+
+      // 2. NOW Validate Unique Fields (since we are authenticated)
+      // 2. NOW Validate Unique Fields (since we are authenticated)
+      try {
+        await this.validateUniqueFields(userData);
+      } catch (validationError) {
+        // If validation fails, delete the created auth user
+        console.error("Validation failed, deleting user:", validationError);
+        if (firebaseUser) await firebaseUser.delete();
+        throw validationError; // Re-throw to be caught by outer catch
+      }
 
       const userModel = new B2BUserModel({
         ...userData,
@@ -78,6 +89,7 @@ class B2BAuthService {
 
       const userObject = JSON.parse(JSON.stringify(userModel));
 
+      // 3. Save to Firestore
       await setDoc(doc(db, "B2BBulkOrders_users", firebaseUser.uid), userObject);
 
       return {
@@ -153,18 +165,29 @@ class B2BAuthService {
   // ---------------------------------------------------
   getErrorMessage(code, fallback) {
     const errors = {
-      "auth/email-already-in-use": "Email is already registered",
-      "auth/invalid-email": "Invalid email address",
-      "auth/weak-password": "Weak password, must be stronger",
+      // Firebase Auth errors
+      "auth/email-already-in-use": "This email is already registered. Please login instead.",
+      "auth/invalid-email": "Invalid email address format",
+      "auth/weak-password": "Password is too weak. Please use a stronger password (at least 6 characters)",
+      "auth/wrong-password": "Incorrect password. Please try again.",
+      "auth/user-not-found": "No account found with this email",
+      "auth/too-many-requests": "Too many attempts. Please try again later.",
+      "auth/network-request-failed": "Network error. Please check your connection.",
 
-      // Custom uniqueness errors
-      USERNAME_EXISTS: "Username already exists",
-      MOBILE_EXISTS: "Mobile number already exists",
-      PAN_EXISTS: "PAN already exists",
-      AADHAAR_EXISTS: "Aadhaar already exists",
+      // Custom validation errors (exact matches from validateUniqueFields)
+      "Username already exists": "This username is already taken. Please choose a different username.",
+      "Mobile number already exists": "This mobile number is already registered. Please use a different number or login.",
+      "PAN already exists": "This PAN is already registered in our system. Please contact support if you believe this is an error.",
+      "Aadhaar already exists": "This Aadhaar number is already registered. Please use a different number or login.",
+      
+      // Fallback custom errors
+      USERNAME_EXISTS: "This username is already taken",
+      MOBILE_EXISTS: "Mobile number already registered",
+      PAN_EXISTS: "PAN already registered",
+      AADHAAR_EXISTS: "Aadhaar already registered",
     };
 
-    return errors[code] || fallback || "Registration failed";
+    return errors[code] || errors[fallback] || fallback || "Registration failed. Please try again.";
   }
 
   // --------------------------------------------------
