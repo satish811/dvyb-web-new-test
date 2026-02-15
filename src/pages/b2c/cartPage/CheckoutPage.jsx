@@ -21,8 +21,16 @@ const loadRazorpayScript = () => {
   });
 };
 
+const parsePrice = (price) => {
+  if (!price) return 0;
+  const numericString = String(price).replace(/[^0-9.]/g, "");
+  return parseFloat(numericString) || 0;
+};
+
 const transformCartData = (cartItems) => {
   const transformed = [];
+  if (!Array.isArray(cartItems)) return [];
+
   cartItems.forEach((item) => {
     if (item.variants && Array.isArray(item.variants) && item.variants.length > 0) {
       item.variants.forEach((variant) => {
@@ -30,7 +38,7 @@ const transformCartData = (cartItems) => {
           id: item.productId || item.id,
           productId: item.productId || item.id,
           name: item.name,
-          price: item.price || 0,
+          price: parsePrice(item.price), // Sanitized price
           image: item.imageUrls?.[0] || item.image || "/placeholder.jpg",
           color: variant.color || "Default",
           size: variant.size || "M",
@@ -44,7 +52,7 @@ const transformCartData = (cartItems) => {
         id: item.productId || item.id,
         productId: item.productId || item.id,
         name: item.name,
-        price: item.price || 0,
+        price: parsePrice(item.price), // Sanitized price
         image: item.imageUrls?.[0] || item.image || "/placeholder.jpg",
         color: item.color || "Default",
         size: item.size || "M",
@@ -73,6 +81,7 @@ export default function CheckoutPage() {
     role: null,
     isLoggedIn: false,
     addresses: [],
+    loading: true // Added loading state
   });
 
   const [cartItems, setCartItems] = useState([]);
@@ -130,6 +139,7 @@ export default function CheckoutPage() {
               role: userData.data.role || "B2C",
               isLoggedIn: true,
               addresses: addressesResponse.success ? addressesResponse.data : [],
+              loading: false
             });
           } else {
             setUserDetails({
@@ -138,6 +148,7 @@ export default function CheckoutPage() {
               role: "B2C",
               isLoggedIn: true,
               addresses: [],
+              loading: false
             });
           }
         } catch (error) {
@@ -148,12 +159,18 @@ export default function CheckoutPage() {
             role: "B2C",
             isLoggedIn: true,
             addresses: [],
+            loading: false
           });
         }
+      } else {
+        setUserDetails(prev => ({ ...prev, loading: false }));
       }
     };
     fetchUserDetails();
-    const unsub = auth.onAuthStateChanged(fetchUserDetails);
+    const unsub = auth.onAuthStateChanged((user) => {
+      if (!user) setUserDetails(prev => ({ ...prev, isLoggedIn: false, loading: false }));
+      else fetchUserDetails();
+    });
     return () => unsub();
   }, []);
 
@@ -181,11 +198,35 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const loadCart = async () => {
+      if (userDetails.loading) return;
+
+      console.log("🛒 Loading Cart...", {
+        hasLocationState: !!location.state?.cartItems,
+        isLoggedIn: userDetails.isLoggedIn
+      });
+
       if (location.state?.cartItems?.length > 0) {
+        // Priority 1: Data passed via navigation (e.g. Buy Now)
+        console.log("🛒 Using location source");
         setCartItems(location.state.cartItems);
         setTransformedCartItems(transformCartData(location.state.cartItems));
         setIsLoading(false);
+      } else if (userDetails.isLoggedIn) {
+        // Priority 2: Fetch from Firestore (Logged In)
+        console.log("🛒 Fetching from Firestore");
+        try {
+          const items = await cartService.getCart();
+          console.log("🛒 Fetched items:", items.length);
+          setCartItems(items);
+          setTransformedCartItems(transformCartData(items));
+        } catch (err) {
+          console.error("❌ Failed to load cart:", err);
+        } finally {
+          setIsLoading(false);
+        }
       } else {
+        // Priority 3: Guest Cart
+        console.log("🛒 Loading guest cart");
         const guest = JSON.parse(sessionStorage.getItem("guest_cart") || "[]");
         setCartItems(guest);
         setTransformedCartItems(transformCartData(guest));
@@ -193,7 +234,7 @@ export default function CheckoutPage() {
       }
     };
     loadCart();
-  }, [location.state]);
+  }, [location.state, userDetails.isLoggedIn, userDetails.loading]);
 
 
   const handleShippingChange = (e) => {
