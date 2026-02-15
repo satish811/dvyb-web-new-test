@@ -11,7 +11,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getFunctions } from "firebase/functions";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import envConfig from "./envConfig";
 
@@ -64,6 +64,30 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
 
+// Connect to emulator if on localhost
+// Connect to emulator if on localhost AND VITE_USE_EMULATOR is set
+if (location.hostname === "localhost" && import.meta.env.VITE_USE_EMULATOR === 'true') {
+  // Add debug token for App Check to avoid "ReCAPTCHA error" locally
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+  connectFunctionsEmulator(functions, "localhost", 5001);
+  console.log("🔥 Connected to Functions Emulator");
+} else if (location.hostname === "localhost") {
+  // If we're NOT using the emulator but are on localhost, 
+  // we still might want the debug token so we can hit production
+  // without reCAPTCHA errors.
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  console.log("🌍 Connected to Production Functions (Localhost)");
+}
+
 export { app };
 
 export default app;
+
+
+
+
+
+
+
+

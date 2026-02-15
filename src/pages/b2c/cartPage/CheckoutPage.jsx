@@ -218,20 +218,18 @@ export default function CheckoutPage() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      window.scrollTo(0, 0); // Scroll to top to see errors
+      window.scrollTo(0, 0);
       return;
     }
 
-    // Split Name if needed for backend compatibility
+    // Split Name BEFORE proceeding
     if (shippingForm.fullName && (!shippingForm.firstName || !shippingForm.lastName)) {
       const names = shippingForm.fullName.trim().split(" ");
       const firstName = names[0];
-      const lastName = names.slice(1).join(" ") || "."; // Fallback to dot if single name
+      const lastName = names.slice(1).join(" ") || ".";
       setShippingForm(prev => ({ ...prev, firstName, lastName }));
     }
 
-    setOpenStep(2);
-    window.scrollTo(0, 0);
     setOpenStep(2);
     window.scrollTo(0, 0);
   };
@@ -244,7 +242,7 @@ export default function CheckoutPage() {
   const handlePayNow = async () => {
     setIsProcessingPayment(true);
     const finalEmail = userDetails.email || email;
-    const totalPayable = total; // Calculated below
+    const totalPayable = total;
 
     if (!finalEmail) {
       alert("Email is required.");
@@ -252,14 +250,21 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Logic adapted from previous implementation
+    // Ensure firstName/lastName are set
+    let finalShippingForm = { ...shippingForm };
+    if (!finalShippingForm.firstName || !finalShippingForm.lastName) {
+      const names = finalShippingForm.fullName.trim().split(" ");
+      finalShippingForm.firstName = names[0];
+      finalShippingForm.lastName = names.slice(1).join(" ") || ".";
+    }
+
     if (paymentMethod === "cod") {
       try {
         const orderResult = userDetails.isLoggedIn
           ? await orderService.moveCartToOrder({
             products: transformedCartItems,
             paymentMethod: "cod",
-            shipping: shippingForm,
+            shipping: finalShippingForm, // Use finalShippingForm
             amount: totalPayable,
             status: "Active",
             email: finalEmail,
@@ -269,7 +274,7 @@ export default function CheckoutPage() {
           : await orderService.createOrder({
             products: transformedCartItems,
             paymentMethod: "cod",
-            shipping: shippingForm,
+            shipping: finalShippingForm, // Use finalShippingForm
             amount: totalPayable,
             status: "Active",
             email: finalEmail,
@@ -277,16 +282,16 @@ export default function CheckoutPage() {
             userRole: userDetails.role || "B2C",
           });
 
-        // Shiprocket Logic (Simplified for static shipping method)
-        // In real implementation, you'd integrate the Shiprocket API here passing selectedShippingMethod details
-
         // Clear cart after successful order
-        if (userDetails.isLoggedIn) {
-          // Clear Firebase cart for logged-in users
-          await cartService.clearCart();
-        } else {
-          // Clear session storage for guest users
-          sessionStorage.removeItem("guest_cart");
+        try {
+          if (userDetails.isLoggedIn) {
+            await cartService.clearCart();
+          } else {
+            sessionStorage.removeItem("guest_cart");
+          }
+        } catch (clearError) {
+          console.warn("Failed to clear cart:", clearError);
+          // Don't fail the order if cart clearing fails
         }
 
         navigate("/order-success", {
@@ -294,14 +299,14 @@ export default function CheckoutPage() {
             orderId: orderResult.orderId,
             paymentMethod: "COD",
             items: transformedCartItems,
-            shipping: shippingForm,
+            shipping: finalShippingForm,
             total: totalPayable,
             email: finalEmail
           }
         });
       } catch (err) {
-        console.error(err);
-        alert("Order failed. Please try again.");
+        console.error("COD Order Error:", err);
+        alert(`Order failed: ${err.message || 'Please try again.'}`);
       } finally {
         setIsProcessingPayment(false);
       }
@@ -317,6 +322,11 @@ export default function CheckoutPage() {
       try {
         const createOrder = httpsCallable(functions, "createRazorpayOrder");
         const { data } = await createOrder({ amount: Math.round(totalPayable) });
+
+        if (!data || !data.order) {
+          throw new Error("Failed to create Razorpay order");
+        }
+
         const order = data.order;
 
         const options = {
@@ -335,7 +345,7 @@ export default function CheckoutPage() {
                 razorpay_signature: response.razorpay_signature,
                 orderData: {
                   products: transformedCartItems,
-                  shipping: shippingForm,
+                  shipping: finalShippingForm,
                   amount: totalPayable,
                   email: finalEmail,
                   paymentMethod,
@@ -349,7 +359,7 @@ export default function CheckoutPage() {
                   ? await orderService.moveCartToOrder({
                     products: transformedCartItems,
                     paymentMethod,
-                    shipping: shippingForm,
+                    shipping: finalShippingForm,
                     amount: totalPayable,
                     status: "Active",
                     razorpayOrderId: response.razorpay_order_id,
@@ -361,7 +371,7 @@ export default function CheckoutPage() {
                   : await orderService.createOrder({
                     products: transformedCartItems,
                     paymentMethod,
-                    shipping: shippingForm,
+                    shipping: finalShippingForm,
                     amount: totalPayable,
                     status: "Active",
                     razorpayOrderId: response.razorpay_order_id,
@@ -371,13 +381,15 @@ export default function CheckoutPage() {
                     userRole: userDetails.role || "B2C",
                   });
 
-                // Clear cart after successful order
-                if (userDetails.isLoggedIn) {
-                  // Clear Firebase cart for logged-in users
-                  await cartService.clearCart();
-                } else {
-                  // Clear session storage for guest users
-                  sessionStorage.removeItem("guest_cart");
+                // Clear cart
+                try {
+                  if (userDetails.isLoggedIn) {
+                    await cartService.clearCart();
+                  } else {
+                    sessionStorage.removeItem("guest_cart");
+                  }
+                } catch (clearError) {
+                  console.warn("Failed to clear cart:", clearError);
                 }
 
                 navigate("/order-success", {
@@ -385,32 +397,38 @@ export default function CheckoutPage() {
                     orderId: orderResult.orderId,
                     paymentMethod: "ONLINE",
                     items: transformedCartItems,
-                    shipping: shippingForm,
+                    shipping: finalShippingForm,
                     total: totalPayable,
                     email: finalEmail
                   }
                 });
               } else {
                 alert("Payment verification failed.");
+                setIsProcessingPayment(false);
               }
             } catch (err) {
-              console.error(err);
-              alert("Payment verification error.");
+              console.error("Payment Verification Error:", err);
+              alert(`Payment verification error: ${err.message}`);
+              setIsProcessingPayment(false);
             }
           },
           prefill: {
-            name: shippingForm.fullName || "Customer",
+            name: finalShippingForm.fullName || "Customer",
             email: finalEmail,
-            contact: shippingForm.phone || "",
+            contact: finalShippingForm.phone || "",
           },
           theme: { color: THEME_PURPLE },
-          modal: { ondismiss: () => setIsProcessingPayment(false) },
+          modal: {
+            ondismiss: () => {
+              setIsProcessingPayment(false);
+            }
+          },
         };
         const rzp = new window.Razorpay(options);
         rzp.open();
       } catch (err) {
-        console.error(err);
-        alert("Payment initiation failed.");
+        console.error("Payment Initiation Error:", err);
+        alert(`Payment initiation failed: ${err.message || 'Please try again.'}`);
         setIsProcessingPayment(false);
       }
     }

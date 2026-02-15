@@ -352,7 +352,7 @@ export default function CartPage() {
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Link to="/" className="hover:text-[#33022F]">Home</Link> <span>&gt;</span> <span className="font-semibold text-[#33022F]">Cart</span>
           </div>
-          <Link to="/products" className="text-blue-500 font-medium text-sm hover:underline">← Continue Shopping</Link>
+          <Link to="/womenwear" className="text-blue-500 font-medium text-sm hover:underline">← Continue Shopping</Link>
         </div>
 
         <h1 className="text-3xl font-extrabold text-[#33022F] mb-8">Shopping Cart ({cartItems.length} items)</h1>
@@ -360,7 +360,7 @@ export default function CartPage() {
         {cartItems.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
             <p className="text-xl text-gray-500 mb-4">Your cart is empty.</p>
-            <Link to="/products" className="inline-block px-8 py-3 bg-[#33022F] text-white font-bold rounded-lg hover:bg-[#5a0452] transition">Start Shopping</Link>
+            <Link to="/womenwear" className="inline-block px-8 py-3 bg-[#33022F] text-white font-bold rounded-lg hover:bg-[#5a0452] transition">Start Shopping</Link>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">

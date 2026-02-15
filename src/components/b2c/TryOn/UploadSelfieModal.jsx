@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 import { ArrowLeft, User, Upload, X, CheckCircle, AlertCircle, Camera, RefreshCcw } from "lucide-react";
 import step1img from "../../../assets/TryOn/step1img.svg";
@@ -69,6 +70,7 @@ const UploadSelfieModal = ({
   is3D = false,
   tryOnData,
 }) => {
+  const { userCollection } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -90,29 +92,41 @@ const UploadSelfieModal = ({
 
   const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [userTryOnImage, setUserTryOnImage] = useState(null);
+  const [userProfilePhoto, setUserProfilePhoto] = useState(null); // ⭐ NEW: Raw profile photo
   const [useUserModel, setUseUserModel] = useState(false); // Toggle state
 
   useEffect(() => {
-    const checkUserTryOn = async () => {
-      if (!isOpen || !tryOnData?.dressType) return;
+    const checkUserData = async () => {
+      if (!isOpen) return;
 
       try {
-        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
-        if (savedImage) {
-          setUserHasTryOn(true);
-          setUserTryOnImage(savedImage);
-          setUseUserModel(true); // Default to user model if available
-        } else {
-          setUserHasTryOn(false);
-          setUserTryOnImage(null);
-          setUseUserModel(false);
+        // 1. Fetch User Profile (Raw Selfie)
+        const profile = await profileService.getProfile(userCollection);
+        if (profile?.photoUrl) {
+          console.log("✅ User profile photo found:", profile.photoUrl);
+          setUserProfilePhoto(profile.photoUrl);
+          setUseUserModel(true); // Default to user model
+        }
+
+        // 2. Fetch Previous Try-On (Optional, keep for backward compatibility if needed)
+        if (tryOnData?.dressType) {
+          const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType, userCollection);
+          if (savedImage) {
+            setUserHasTryOn(true);
+            setUserTryOnImage(savedImage);
+            // If no profile photo, maybe default to this? But profile photo is preferred.
+            if (!profile?.photoUrl) setUseUserModel(true);
+          } else {
+            setUserHasTryOn(false);
+            setUserTryOnImage(null);
+          }
         }
       } catch (error) {
-        console.error("Error checking user try-on:", error);
+        console.error("Error checking user data:", error);
       }
     };
 
-    checkUserTryOn();
+    checkUserData();
   }, [isOpen, tryOnData]);
 
   const getModelsForDressType = (dressType) => {
@@ -982,7 +996,7 @@ const UploadSelfieModal = ({
           </button>
 
           {/* Toggle Section at Top */}
-          {userHasTryOn && (
+          {(userProfilePhoto || userHasTryOn) && (
             <div className="bg-[#f5e6e6] border-b border-gray-200 px-6 py-3">
               <div className="flex items-center justify-between max-w-md">
                 <span className="text-sm font-medium text-gray-700">Your model</span>
@@ -1016,20 +1030,30 @@ const UploadSelfieModal = ({
               <p className="text-sm text-gray-600">You can only choose one model</p>
             </div>
 
-            {/* USER'S TRY-ON MODEL - Display ONLY when toggle is OFF */}
-            {userHasTryOn && !useUserModel && (
+            {/* USER'S MODEL - Display ONLY when toggle is OFF (wait, logic seems inverted in original code? "checked={!useUserModel}" means checked is "Villy Models"?) 
+                Let's check the toggle logic in lines 995-996: checked={!useUserModel}. 
+                So if useUserModel is true, checkbox is UNCHECKED (Your Model). 
+                If useUserModel is false, checkbox is CHECKED (Villy Models).
+                
+                So we want to show this section when useUserModel is TRUE.
+            */}
+            {useUserModel && (
               <div className="mb-6">
                 <div
                   onClick={() => {
-                    setSelectedModel({
-                      image: userTryOnImage,
-                      name: "Your Model",
-                    });
+                    // Prefer profile photo, fallback to try-on image
+                    const imageToUse = userProfilePhoto || userTryOnImage;
+                    if (imageToUse) {
+                      setSelectedModel({
+                        image: imageToUse,
+                        name: "Your Model",
+                      });
+                    }
                   }}
                   className="cursor-pointer inline-block relative"
                 >
                   <img
-                    src={userTryOnImage}
+                    src={userProfilePhoto || userTryOnImage}
                     alt="Your Model"
                     className="w-[160px] h-[240px] object-cover rounded"
                   />
@@ -1058,8 +1082,8 @@ const UploadSelfieModal = ({
               </div>
             )}
 
-            {/* DVYB STATIC MODELS - Display ONLY when toggle is ON OR user has no try-on */}
-            {(useUserModel || !userHasTryOn) && (
+            {/* DVYB STATIC MODELS - Display ONLY when toggle is FALSE (Villy Models) OR if user has no data */}
+            {(!useUserModel) && (
               <div className="mb-6">
                 <div className="grid grid-cols-4 gap-4">
                   {models.map((model, index) => (

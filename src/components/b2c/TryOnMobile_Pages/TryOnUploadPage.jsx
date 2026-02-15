@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { X, ArrowLeft, Check, Camera, RefreshCcw } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
+import { profileService } from "../../../services/profileService";
 
 const TryOnUploadPage = () => {
   const navigate = useNavigate();
@@ -11,10 +13,31 @@ const TryOnUploadPage = () => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [showComparison, setShowComparison] = useState(false); // ⭐ NEW
-  
+
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
+
+  // ⭐ NEW: User Profile Logic
+  const { userCollection } = useAuth();
+  const [userProfilePhoto, setUserProfilePhoto] = useState(null);
+  const [useUserModel, setUseUserModel] = useState(false);
+
+  useEffect(() => {
+    const fetchProfilePhoto = async () => {
+      try {
+        const profile = await profileService.getProfile(userCollection);
+        if (profile?.photoUrl) {
+          console.log("✅ Mobile: User profile photo found:", profile.photoUrl);
+          setUserProfilePhoto(profile.photoUrl);
+          setUseUserModel(true); // Default to user model
+        }
+      } catch (error) {
+        console.error("Error fetching profile for mobile:", error);
+      }
+    };
+    fetchProfilePhoto();
+  }, []);
 
   const isModelSelection = tryOnData?.selectModel;
 
@@ -144,11 +167,11 @@ const TryOnUploadPage = () => {
 
   const startCamera = async () => {
     setUploadError("");
-    
+
     // Check if browser supports mediaDevices
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      const errorMsg = window.isSecureContext 
-        ? "Your browser does not support camera access." 
+      const errorMsg = window.isSecureContext
+        ? "Your browser does not support camera access."
         : "Camera access requires a secure connection (HTTPS). Please try using HTTPS or localhost.";
       setUploadError(errorMsg);
       console.error("Camera access not supported:", errorMsg);
@@ -158,14 +181,14 @@ const TryOnUploadPage = () => {
     try {
       // Try with ideal constraints first
       const constraints = {
-        video: { 
-          facingMode: "user", 
-          width: { ideal: 1024 }, 
+        video: {
+          facingMode: "user",
+          width: { ideal: 1024 },
           height: { ideal: 1024 },
-          aspectRatio: { ideal: 0.75 } 
+          aspectRatio: { ideal: 0.75 }
         }
       };
-      
+
       let mediaStream;
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -176,7 +199,7 @@ const TryOnUploadPage = () => {
 
       setStream(mediaStream);
       setShowCamera(true);
-      
+
       // Use onLoadedMetadata to ensure stream is ready
       setTimeout(() => {
         if (videoRef.current) {
@@ -344,22 +367,71 @@ const TryOnUploadPage = () => {
           <h2 className="text-lg font-semibold mb-1">Select a model:</h2>
           <p className="text-xs text-gray-600 mb-6">You can only choose one model</p>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {models.map((model, index) => (
+          {/* Toggle Section */}
+          {userProfilePhoto && (
+            <div className="bg-[#f5e6e6] border-b border-gray-200 px-4 py-3 -mx-4 mb-6">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Your model</span>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!useUserModel}
+                    onChange={(e) => {
+                      setUseUserModel(!e.target.checked);
+                      setSelectedModel(null);
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--villy-primary, #33022F)' }}></div>
+                </label>
+
+                <span className="text-sm font-medium text-gray-700">Villy Models</span>
+              </div>
+            </div>
+          )}
+
+          {/* USER'S MODEL - Display ONLY when toggle is OFF (useUserModel is TRUE) */}
+          {useUserModel && userProfilePhoto && (
+            <div className="mb-6 grid grid-cols-2 gap-4">
               <div
-                key={index}
-                onClick={() => handleModelSelect(model)} // ⭐ CHANGED
+                onClick={() => {
+                  setSelectedModel({
+                    image: userProfilePhoto,
+                    name: "Your Model",
+                  });
+                }}
                 className="cursor-pointer relative p-2.5 overflow-hidden ring-1 ring-gray-200 hover:ring-2 hover:ring-[#8B0000] transition-all"
               >
                 <img
-                  src={model.modelimg}
-                  alt={model.modelName}
+                  src={userProfilePhoto}
+                  alt="Your Model"
                   className="w-full aspect-[3/4] object-cover"
                 />
-                <p className="text-center mt-2 text-sm font-medium">{model.modelName}</p>
+                <p className="text-center mt-2 text-sm font-medium">Your Model</p>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* DVYB STATIC MODELS */}
+          {!useUserModel && (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {models.map((model, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleModelSelect(model)}
+                  className="cursor-pointer relative p-2.5 overflow-hidden ring-1 ring-gray-200 hover:ring-2 hover:ring-[#8B0000] transition-all"
+                >
+                  <img
+                    src={model.modelimg}
+                    alt={model.modelName}
+                    className="w-full aspect-[3/4] object-cover"
+                  />
+                  <p className="text-center mt-2 text-sm font-medium">{model.modelName}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-center mt-9">
             <button
@@ -435,9 +507,8 @@ const TryOnUploadPage = () => {
 
               <label
                 htmlFor="uploadInput"
-                className={`block w-full bg-[#8B0000] hover:bg-[#A30000] text-white py-3.5 text-center font-semibold cursor-pointer transition-all  ${
-                  isUploading ? "opacity-60 cursor-not-allowed" : ""
-                }`}
+                className={`block w-full bg-[#8B0000] hover:bg-[#A30000] text-white py-3.5 text-center font-semibold cursor-pointer transition-all  ${isUploading ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
               >
                 {isUploading ? "Uploading..." : "CLICK TO UPLOAD"}
               </label>
@@ -496,7 +567,7 @@ const TryOnUploadPage = () => {
                 CAPTURE
               </button>
             </div>
-            
+
             <p className="text-xs text-gray-500 mt-6 text-center px-4">
               Position your face clearly for the best try-on accuracy.
             </p>

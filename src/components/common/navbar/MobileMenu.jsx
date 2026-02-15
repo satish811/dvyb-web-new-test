@@ -1,6 +1,6 @@
 import { useAuth } from "../../../context/AuthContext";
+import { useUI } from "../../../context/UIContext";
 import { FaTimes } from "react-icons/fa";
-// import { mainlogo } from "../../../assets";
 import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png";
 import { LuHeart } from "react-icons/lu";
 import { GoPerson } from "react-icons/go";
@@ -9,6 +9,7 @@ import { MdOutlineShoppingBag } from "react-icons/md";
 export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onProtectedClick }) {
   if (!isOpen) return null;
   const { signOutUser } = useAuth();
+  const { setTryOnModalOpen } = useUI();
 
   return (
     <div className="fixed inset-0 z-[9999] lg:hidden" onClick={onClose}>
@@ -42,17 +43,23 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
 
         <div className="px-4 py-3 space-y-1.5 sm:space-y-2">
           <button
-            onClick={() => onProtectedClick("/categories")}
+            onClick={() => {
+              onNavClick("/womenwear");
+              onClose();
+            }}
             className="w-full text-left text-gray-800 py-1.5 sm:py-2"
           >
             CATEGORIES
           </button>
 
           <button
-            onClick={() => onProtectedClick("/virtual-tryon")}
+            onClick={() => {
+              setTryOnModalOpen(true);
+              onClose();
+            }}
             className="w-full text-left text-gray-800 py-1.5 sm:py-2"
           >
-            VIRTUAL TRYON
+            VIRTUAL TRY ON
           </button>
 
           <button
@@ -64,7 +71,10 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
           </button>
 
           <button
-            onClick={() => onProtectedClick("/mycart")}
+            onClick={() => {
+              onNavClick("/cart");
+              onClose();
+            }}
             className="w-full text-left text-gray-800 py-1.5 sm:py-2 flex items-center gap-3"
           >
             <MdOutlineShoppingBag size={18} />
@@ -72,7 +82,10 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
           </button>
 
           <button
-            onClick={() => onProtectedClick("/profile")}
+            onClick={() => {
+              onProtectedClick("/profile");
+              onClose();
+            }}
             className="w-full text-left text-gray-800 py-1.5 sm:py-2 flex items-center gap-3"
           >
             <GoPerson size={18} />

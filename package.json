@@ -7,6 +7,7 @@
     "dev": "vite --port 5173",
     "build": "vite build",
     "start": "vite --port 3002",
+    "server": "node server.js",
     "preview": "vite preview",
     "clean": "rimraf node_modules dist .vite",
     "clean:hard": "rimraf node_modules dist .vite && npm cache clean --force",

@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createTryOnFormData } from "../utils/tryOnHelpers";
 import { saveTryOnResult } from "../services/tryOnService";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 /**
  * Main try-on logic hook
@@ -101,8 +102,10 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
             tryOnImage: resultUrl,
             is3D: false
           });
+          toast.success("Saved to your Try-On Gallery!");
         } catch (saveErr) {
           console.error("Failed to auto-save try-on:", saveErr);
+          toast.error("Failed to save to gallery");
           // Don't block the UI if save fails
         }
       }

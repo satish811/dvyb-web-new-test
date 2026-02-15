@@ -228,7 +228,7 @@ export default function Navbar({ setShowLoader }) {
                             <img
                                 src={villyLogo}
                                 alt="Villy"
-                                className={`h-10 md:h-12 2xl:h-14 w-auto object-contain ${location.pathname === "/" ? "brightness-0 invert md:filter-none" : ""}`}
+                                className="h-10 xs:h-12 md:h-12 2xl:h-14 w-auto object-contain"
                             />
                         </div>
 
@@ -321,6 +321,34 @@ export default function Navbar({ setShowLoader }) {
                                 navItems={navItems}
                                 onNavClick={navigate}
                                 onProtectedClick={guard}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Mobile Search Overlay */}
+                <AnimatePresence>
+                    {searchOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed inset-0 z-50 bg-white"
+                        >
+                            <SearchDropdown
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                suggestions={searchSuggestions}
+                                searchResults={searchResults}
+                                popularSearches={popularSearches}
+                                recentSearches={recentSearches}
+                                onSaveRecent={saveRecentSearch}
+                                onRemoveRecent={removeRecentSearch}
+                                onClose={() => setSearchOpen(false)}
+                                onSuggestionClick={handleSuggestionClick}
+                                onResultClick={handleResultClick}
+                                isLoading={isSearching}
+                                noResults={noResults}
                             />
                         </motion.div>
                     )}
