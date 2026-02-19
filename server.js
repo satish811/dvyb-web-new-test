@@ -3,7 +3,7 @@ import multer from "multer";
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
-import FormData from 'form-data'; 
+import FormData from 'form-data';
 import cloudinary from 'cloudinary';
 
 
@@ -227,28 +227,69 @@ app.get("/api/video/download/:fileId", async (req, res) => {
 
 
 // ============================================================
+// ENDPOINT: Upload Single File to Cloudinary (Used by ProfileService)
+// ============================================================
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  console.log('\n☁️ === SINGLE FILE CLOUDINARY UPLOAD ===');
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No file uploaded" });
+    }
+
+    const folder = req.body.folder || 'warehouse_uploads';
+    console.log(`📤 Uploading file: ${req.file.originalname} to folder: ${folder}...`);
+
+    // Convert buffer to base64
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    // Upload to Cloudinary
+    const result = await cloudinary.v2.uploader.upload(base64Image, {
+      folder: folder,
+      resource_type: 'auto'
+    });
+
+    console.log(`✅ Upload success: ${result.secure_url}`);
+
+    res.json({
+      success: true,
+      url: result.secure_url
+    });
+
+  } catch (err) {
+    console.error("❌ CLOUDINARY UPLOAD ERROR:", err.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload image",
+      details: err.message
+    });
+  }
+});
+
+
+// ============================================================
 // ENDPOINT: Upload Base64 to Cloudinary
 // ============================================================
 app.post('/api/upload-to-cloudinary', async (req, res) => {
   console.log('\n☁️ === CLOUDINARY UPLOAD REQUEST ===');
-  
+
   try {
     const { images } = req.body; // Array of { outfitType, base64Image }
-    
+
     if (!images || !Array.isArray(images)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Images array required" 
+        error: "Images array required"
       });
     }
 
     console.log(`📤 Uploading ${images.length} images to Cloudinary...`);
-    
+
     const uploadPromises = images.map(async ({ outfitType, base64Image }) => {
       try {
         // Remove data URL prefix if present
         const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-        
+
         // Upload to Cloudinary
         const result = await cloudinary.v2.uploader.upload(
           `data:image/png;base64,${base64Data}`,
@@ -260,7 +301,7 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
         );
 
         console.log(`✅ ${outfitType} uploaded: ${result.secure_url}`);
-        
+
         return {
           outfitType,
           url: result.secure_url,
@@ -277,10 +318,10 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
     });
 
     const results = await Promise.all(uploadPromises);
-    
+
     const successCount = results.filter(r => r.success).length;
     console.log(`\n✨ Upload complete: ${successCount}/${images.length} successful`);
-    
+
     res.json({
       success: true,
       results: results.reduce((acc, r) => {
@@ -430,8 +471,8 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   // const isSaree = garmentName.toLowerCase() === 'saree';
   // const islehenga = garmentName.toLowerCase()=== 'lehenga'
 
-   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
-const lowerName = garmentName?.toLowerCase() || "";
+  const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+  const lowerName = garmentName?.toLowerCase() || "";
 
   // const isBackgroundSwap = lowerName.includes("background");
   const isSaree = lowerName === "saree";
@@ -534,9 +575,8 @@ Image 2 is the ABSOLUTE SOURCE OF TRUTH for garment design.
 - No floating or broken fabric
 
 ━━━━━━━━━━ GARMENT STRUCTURE RULES ━━━━━━━━━━
-${
-  isSaree
-    ? `
+${isSaree
+      ? `
 SAREE (CRITICAL)
 - ONE continuous fabric (not skirt + dupatta)
 - Natural Nivi drape ONLY
@@ -544,52 +584,48 @@ SAREE (CRITICAL)
 - Pallu over LEFT shoulder
 - Blouse must match Image 2 EXACTLY
 `
-    : ``
-}
+      : ``
+    }
 
-${
-  isLehenga
-    ? `
+${isLehenga
+      ? `
 LEHENGA
 - Choli + Lehenga skirt + Dupatta are DISTINCT
 - Preserve panel count, flare, hem embroidery
 - No silhouette conversion
 `
-    : ``
-}
+      : ``
+    }
 
-${
-  isAnarkali
-    ? `
+${isAnarkali
+      ? `
 ANARKALI
 - Bodice + panelled flare + dupatta
 - Preserve seam positions and flare volume
 - No gown or skirt conversion
 `
-    : ``
-}
+      : ``
+    }
 
-${
-  isSharara
-    ? `
+${isSharara
+      ? `
 SHARARA
 - Kurta + upper flare + lower wide panels + dupatta
 - No palazzo/churidar/lehenga conversion
 - Preserve flare rate and panel width
 `
-    : ``
-}
+      : ``
+    }
 
-${
-  isKurtaSet
-    ? `
+${isKurtaSet
+      ? `
 KURTA SET
 - Kurta + bottom + dupatta are DISTINCT
 - Bottom type must match Image 2 exactly
 - No silhouette changes
 `
-    : ``
-}
+      : ``
+    }
 
 ━━━━━━━━━━ LIGHTING & REALISM ━━━━━━━━━━
 - Match Image 1 lighting direction and intensity
@@ -1033,10 +1069,10 @@ app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
     }
 
     const { neckType } = req.body;
-   const resolvedNeckType =
-  neckType === "collar"
-    ? "boat neck neckline"
-    : "regular round neckline";
+    const resolvedNeckType =
+      neckType === "collar"
+        ? "boat neck neckline"
+        : "regular round neckline";
 
     const base64 = req.file.buffer.toString("base64");
     const result = await generateNeckChange(base64, resolvedNeckType);

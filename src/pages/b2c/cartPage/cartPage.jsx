@@ -352,7 +352,7 @@ export default function CartPage() {
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Link to="/" className="hover:text-[#33022F]">Home</Link> <span>&gt;</span> <span className="font-semibold text-[#33022F]">Cart</span>
           </div>
-          <Link to="/products" className="text-blue-500 font-medium text-sm hover:underline">← Continue Shopping</Link>
+          <Link to="/womenwear" className="text-blue-500 font-medium text-sm hover:underline">← Continue Shopping</Link>
         </div>
 
         <h1 className="text-3xl font-extrabold text-[#33022F] mb-8">Shopping Cart ({cartItems.length} items)</h1>

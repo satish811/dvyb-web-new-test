@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { ShoppingBag, Zap, Eye } from "lucide-react";
+import { ShoppingBag, Zap, Eye, ShoppingCart, CheckCircle } from "lucide-react";
 import BuyNowColorsPopup from "../../../b2b/common/BuyNowColorPopup";
 import { useNavigate } from "react-router-dom";
 import RightSlidePopup from "../../../common/PopUps/RightSlidePopup";
+import { useCart } from "../../../../context/CartContext";
 
 const ProductActionButtons = ({
   user,
@@ -19,12 +20,16 @@ const ProductActionButtons = ({
   selectedColor,
 }) => {
   const navigate = useNavigate();
+  const { isInCart } = useCart();
   const isGuest = !user;
   const isVirtualTryOnDisabled = isGuest || isB2BUser;
   const [showBulkPopup, setShowBulkPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showGuestMessage, setShowGuestMessage] = useState(false);
   const [guestMessage, setGuestMessage] = useState("");
+
+  // Check if this product is already in the cart
+  const isProductInCart = isInCart(product?.id);
 
   // Guest Alert
   const handleLoginRequired = (message) => {
@@ -150,29 +155,51 @@ const ProductActionButtons = ({
         {/* Row for Add to cart and Buy Now */}
 
         <div className="flex gap-4">
-          {/* ADD TO CART */}
-          <button
-            onClick={handleAddToCartClick}
-            disabled={addingToCart}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md
+          {/* ADD TO CART / PRODUCT IN CART */}
+          {isProductInCart ? (
+            <div className="flex-1 flex flex-col gap-2">
+              {/* In-cart state: disabled button */}
+              <button
+                disabled
+                className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md bg-green-600 text-white cursor-not-allowed opacity-90"
+              >
+                <CheckCircle size={18} />
+                Product in Cart
+              </button>
+              {/* Go to Cart link */}
+              <button
+                onClick={() => navigate("/cart")}
+                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-md border border-[#33022F] text-[#33022F] hover:bg-[#33022F] hover:text-white transition-all duration-200"
+              >
+                <ShoppingCart size={16} />
+                Go to Cart
+              </button>
+            </div>
+          ) : (
+            /* Normal Add to Cart button */
+            <button
+              onClick={handleAddToCartClick}
+              disabled={addingToCart}
+              className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md
     ${addingToCart
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-[#33022F] text-white"
-              }
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-[#33022F] text-white"
+                }
     transition-all duration-200 disabled:opacity-50`}
-          >
-            {addingToCart ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Adding...
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={18} />
-                Add to cart
-              </>
-            )}
-          </button>
+            >
+              {addingToCart ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={18} />
+                  Add to cart
+                </>
+              )}
+            </button>
+          )}
 
           {/* BUY NOW */}
           <button

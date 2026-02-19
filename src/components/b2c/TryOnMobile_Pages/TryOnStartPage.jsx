@@ -4,11 +4,13 @@ import { X } from "lucide-react";
 import Tickic from "../../../assets/TryOn/tick_ic.svg";
 import step1img from "../../../assets/TryOn/step1img.svg";
 import { profileService } from "../../../services/profileService";
+import { useAuth } from "../../../context/AuthContext";
 
 const TryOnStartPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { productId } = useParams();
+  const { userCollection } = useAuth();
 
   const tryOnData = location.state;
   const [userHasTryOn, setUserHasTryOn] = useState(false);
@@ -19,7 +21,7 @@ const TryOnStartPage = () => {
       if (!tryOnData?.dressType) return;
 
       try {
-        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
+        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType, userCollection);
         if (savedImage) {
           setUserHasTryOn(true);
           setUserTryOnImage(savedImage);

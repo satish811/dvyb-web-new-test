@@ -1,4 +1,5 @@
 import { db, auth } from "../config/firebaseConfig";
+import envConfig from "../config/envConfig";
 import {
   collection,
   addDoc,
@@ -11,6 +12,8 @@ import {
   doc,
 } from "firebase/firestore";
 
+const COLLECTION_NAME = "user_tryons";
+
 // Save try-on result to Firebase
 export const saveTryOnResult = async (tryOnData) => {
   try {
@@ -19,7 +22,7 @@ export const saveTryOnResult = async (tryOnData) => {
       throw new Error("User not authenticated");
     }
 
-    const tryOnRef = collection(db, "user_tryons");
+    const tryOnRef = collection(db, COLLECTION_NAME);
     const docRef = await addDoc(tryOnRef, {
       userId: user.uid,
       productId: tryOnData.productId,
@@ -54,8 +57,10 @@ export const getUserTryOns = async () => {
       throw new Error("User not authenticated");
     }
 
-    const tryOnsRef = collection(db, "user_tryons");
-    // dbg: removing orderBy to check if it fixes permission/index error
+    const tryOnsRef = collection(db, COLLECTION_NAME);
+    console.log(`🔍 Fetching try-ons from: ${COLLECTION_NAME} for user: ${user.uid}`);
+
+    // dbg: removing orderBy to fix permission/index error - sorting in memory instead
     const q = query(tryOnsRef, where("userId", "==", user.uid));
 
     const querySnapshot = await getDocs(q);
@@ -66,6 +71,13 @@ export const getUserTryOns = async () => {
         id: doc.id,
         ...doc.data(),
       });
+    });
+
+    // Sort in memory: Newest first
+    tryOns.sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA;
     });
 
     console.log("✅ Fetched try-ons:", tryOns.length);
@@ -84,7 +96,7 @@ export const deleteTryOn = async (tryOnId) => {
       throw new Error("User not authenticated");
     }
 
-    await deleteDoc(doc(db, "user_tryons", tryOnId));
+    await deleteDoc(doc(db, COLLECTION_NAME, tryOnId));
     console.log("✅ Try-on deleted:", tryOnId);
   } catch (error) {
     console.error("❌ Error deleting try-on:", error);

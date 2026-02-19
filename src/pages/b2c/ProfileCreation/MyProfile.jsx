@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Camera, Upload, Check, ChevronRight, ChevronLeft, Edit2, Loader2, Save } from 'lucide-react';
+import { Camera, Upload, Check, ChevronRight, ChevronLeft, Edit2, Loader2, Save, RefreshCw } from 'lucide-react';
 import women_ic from '../../../assets/ProfileCreation/women_ic.svg';
 import pink_star from '../../../assets/ProfileCreation/pink_star.svg';
 import yellow_star from '../../../assets/ProfileCreation/yellow_star.svg';
@@ -8,11 +8,11 @@ import cornerLogo from '../../../assets/ProfileCreation/cornerLogo.svg'
 import tick from '../../../assets/ProfileCreation/tick.svg'
 import success_mark from '../../../assets/ProfileCreation/success_mark.svg'
 
-
-
+import { useAuth } from '../../../context/AuthContext';
 import { profileService } from '../../../services/profileService';
 
 const MyProfile = () => {
+  const { user, userCollection, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [profileData, setProfileData] = useState({
     height: 178,
@@ -22,13 +22,21 @@ const MyProfile = () => {
     hairType: '',
     hairLength: '',
     hairColor: '',
-    photoUrl: '', // base64 of user photo
+    photoUrl: '',
   });
 
   const [capturedImage, setCapturedImage] = useState(null);
   const [cameraError, setCameraError] = useState(false);
   const [loadingTryOn, setLoadingTryOn] = useState(false);
   const [tryOnResults, setTryOnResults] = useState({});
+
+  // States for saved models persistence
+  const [hasSavedModels, setHasSavedModels] = useState(false);
+  const [savedResults, setSavedResults] = useState({});
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  // State for gallery modal
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -37,15 +45,12 @@ const MyProfile = () => {
 
   const navigate = useNavigate();
 
-  const [selectedOutfit, setSelectedOutfit] = useState(null); // Which outfit is clicked
-  const [generatingOutfit, setGeneratingOutfit] = useState(null); // Which is loading
-  const [generatedResults, setGeneratedResults] = useState({}); // Store all results
-  const [centerImage, setCenterImage] = useState(null); // What shows in center
+  const [selectedOutfit, setSelectedOutfit] = useState(null);
+  const [generatingOutfit, setGeneratingOutfit] = useState(null);
+  const [generatedResults, setGeneratedResults] = useState({});
+  const [centerImage, setCenterImage] = useState(null);
 
-  // Remove old tryOnResults state, use generatedResults instead
-
-
-  const totalSteps = 10; // now 10 because we added AI try-on step
+  const totalSteps = 10;
 
   // Body shapes, skin tones, hair configs (same as yours) - kept exactly
   const bodyShapes = [
@@ -271,6 +276,49 @@ const MyProfile = () => {
 
   useEffect(() => () => stopCamera(), []);
 
+  // Load existing saved models on mount
+  useEffect(() => {
+    const loadExistingModels = async () => {
+      // ⏳ Wait for AuthContext to finish loading & determine user role
+      if (loading || !user) {
+        if (!loading && !user) setLoadingProfile(false);
+        return;
+      }
+
+      try {
+        setLoadingProfile(true);
+        console.log(`🔍 Checking for existing models in ${userCollection}...`);
+
+        const [existingResults, userProfile] = await Promise.all([
+          profileService.getTryOnResults(userCollection),
+          profileService.getProfile(userCollection)
+        ]);
+
+        const hasResults = existingResults && Object.keys(existingResults).length > 0;
+        const hasProfilePhoto = userProfile && userProfile.photoUrl;
+
+        if (hasResults || hasProfilePhoto) {
+          if (existingResults) setSavedResults(existingResults);
+
+          if (hasProfilePhoto) {
+            console.log("✅ Found existing profile photo");
+            setProfileData(prev => ({ ...prev, ...userProfile }));
+            setCapturedImage(userProfile.photoUrl);
+          }
+
+          setHasSavedModels(true);
+          console.log('✅ Found existing saved models/profile');
+        }
+      } catch (error) {
+        console.error('❌ Error loading existing models:', error);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    loadExistingModels();
+  }, [user]);
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -435,6 +483,87 @@ const MyProfile = () => {
       garmentUrl: 'https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png'  // ← REAL URL
     },
   ];
+
+
+  const ModelGalleryModal = () => {
+    if (!showGalleryModal) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 sm:pt-20 p-4 bg-black/80 backdrop-blur-sm">
+        <div className="bg-white rounded-xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col relative shadow-2xl">
+
+          {/* Header */}
+          <div className="p-4 border-b flex items-center justify-between shrink-0">
+            <h3 className="text-xl font-semibold text-gray-900">Your Model</h3>
+            <button
+              onClick={() => setShowGalleryModal(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <div className="w-6 h-6 flex items-center justify-center text-gray-500 text-2xl">×</div>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto flex-1">
+            {Object.keys(savedResults).length === 0 && !profileData.photoUrl ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No profile photo or try-on models found.</p>
+                <button
+                  onClick={() => {
+                    setShowGalleryModal(false);
+                    // Reset to step 1 to create profile/models
+                    setHasSavedModels(false);
+                    setCurrentStep(1);
+                  }}
+                  className="mt-4 text-[#33022F] font-medium hover:underline"
+                >
+                  Create your profile
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Original Photo */}
+                {profileData.photoUrl && (
+                  <div className="space-y-2">
+                    <div className="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden relative">
+                      <img
+                        src={profileData.photoUrl}
+                        alt="Original"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
+                        ORIGINAL
+                      </div>
+                    </div>
+                    <p className="text-center font-medium text-sm">Your Photo</p>
+                  </div>
+                )}
+
+                {/* Generated Results */}
+                {Object.entries(savedResults).map(([outfitType, imageUrl]) => {
+                  if (!imageUrl) return null;
+                  return (
+                    <div key={outfitType} className="space-y-2">
+                      <div className="aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={imageUrl}
+                          alt={outfitType}
+                          className="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                      <p className="text-center font-medium text-sm capitalize">
+                        {outfitType}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
 
   const renderStep = () => {
@@ -1240,13 +1369,17 @@ const MyProfile = () => {
                         ...profileData,
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
-                      await profileService.saveProfile(dataToSave);
+                      await profileService.saveProfile(dataToSave, userCollection);
 
                       // 2. Save try-on results (uploads to Cloudinary + saves URLs to Firestore)
-                      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults);
+                      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults, userCollection);
 
                       console.log("✅ All data saved successfully");
                       console.log("Cloudinary URLs:", cloudinaryUrls);
+
+                      // Update local saved state so models show on re-visit
+                      setSavedResults(cloudinaryUrls);
+                      setHasSavedModels(true);
 
                       setCurrentStep(9);
                     } catch (error) {
@@ -1405,9 +1538,14 @@ disabled:opacity-50 transition-all"
                         ...profileData,
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
-                      await profileService.saveProfile(dataToSave);
-                      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults);
+                      await profileService.saveProfile(dataToSave, userCollection);
+                      const cloudinaryUrls = await profileService.saveTryOnResults(generatedResults, userCollection);
                       console.log("✅ All data saved successfully");
+
+                      // Update local saved state so models show on re-visit
+                      setSavedResults(cloudinaryUrls);
+                      setHasSavedModels(true);
+
                       setCurrentStep(9);
                     } catch (error) {
                       console.error("❌ Save error:", error);
@@ -1482,8 +1620,103 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
     }
   };
 
+  // Loading state while checking for existing models
+  if (loadingProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-[#33022F] mx-auto mb-4" />
+          <p className="text-gray-600 text-sm">Loading your models...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Saved Models View — show when user already has generated models
+  if (hasSavedModels && currentStep === 0) {
+    const outfitLabels = {
+      saree: 'Saree',
+      kurti: 'Kurti',
+      lehenga: 'Lehenga',
+      anarkali: 'Anarkali',
+    };
+
+    return (
+      <div className="bg-[#FAF8F5] min-h-screen flex flex-col justify-start pb-20">
+        <ModelGalleryModal />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#BE4949] flex items-center justify-center mx-auto mb-4">
+              <img src={women_ic} alt="" className="w-8 h-8 sm:w-10 sm:h-10" />
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">
+              My Models
+            </h1>
+            <p className="text-sm sm:text-base text-[#45556C]">
+              Your virtual try-on models are ready. Browse products to see how they look on you!
+            </p>
+          </div>
+
+          {/* Models Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+
+            {/* 1. Original Photo Card */}
+            {profileData.photoUrl && (
+              <div
+                onClick={() => setShowGalleryModal(true)}
+                className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer group"
+              >
+                <div className="relative bg-[#F6F4F1] aspect-[3/4] overflow-hidden">
+                  <img
+                    src={profileData.photoUrl}
+                    alt="Original Profile"
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
+                    ORIGINAL
+                  </div>
+                </div>
+                <div className="p-3 sm:p-4 text-center">
+                  <p className="text-sm sm:text-base font-semibold text-gray-900">
+                    Your Photo
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Saved Try-On Results (HIDDEN - moved to gallery popup) */}
+            {/* User requested to only show Original Photo here, clicking it opens the gallery */}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <button
+              onClick={() => navigate('/womenwear')}
+              className="w-full sm:w-auto px-8 h-12 sm:h-14 text-white text-sm sm:text-base font-semibold hover:shadow-lg transition-all duration-200"
+              style={{ background: 'var(--villy-primary, #33022F)' }}
+            >
+              START SHOPPING
+            </button>
+            <button
+              onClick={() => {
+                setHasSavedModels(false);
+                setCurrentStep(0);
+              }}
+              className="w-full sm:w-auto px-8 h-12 sm:h-14 border-2 border-[#33022F] text-[#33022F] text-sm sm:text-base font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              RE-CREATE MODELS
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-hidden  bg-[#FAF8F5] flex flex-col min-h-screen h-auto ">
+    <div className="overflow-hidden  bg-[#FAF8F5] flex flex-col min-h-screen h-auto pb-20">
       {/* Progress Bar */}
 
 
@@ -1510,31 +1743,14 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
 
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center  -translate-y-9 mb-10">
-        <div className="w-full mb-20">{renderStep()}</div>
+      <div className="flex-1 flex items-start justify-center pt-10 sm:pt-20">
+        <div className="w-full">{renderStep()}</div>
       </div>
 
       {/* Hidden refs */}
       <video ref={videoRef} autoPlay playsInline className="hidden" />
       <canvas ref={canvasRef} className="hidden" />
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-
-      {/* {currentStep > 0 && currentStep < 5 && (
-      <div className={`max-w-4xl mx-auto  w-full items-center ${currentStep==4 ? 'md:bottom-12' : 'md:bottom-20'} justify-center md:relative   flex px-6 pb-8 `}>
-        <button
-          onClick={handleNext}
-          disabled={
-            (currentStep === 2 && !profileData.bodyShape) ||
-            (currentStep === 3 && !profileData.skinTone) ||
-            (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
-          }
-          className="w-3/4 h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          CONTINUE
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
-    )} */}
     </div>
   );
 };

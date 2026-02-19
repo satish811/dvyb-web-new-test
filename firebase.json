@@ -13,5 +13,16 @@
                 "firebase-debug.*.log"
             ]
         }
-    ]
+    ],
+    "emulators": {
+        "functions": {
+            "port": 5001
+        },
+        "firestore": {
+            "port": 8080
+        },
+        "ui": {
+            "enabled": true
+        }
+    }
 }

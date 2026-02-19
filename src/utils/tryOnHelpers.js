@@ -1,5 +1,5 @@
 
-import colorUtils  from "../components/utils/colorUtils.jsx";
+import colorUtils from "../components/utils/colorUtils.jsx";
 import { DEFAULT_FABRIC_TYPES } from "./tryOnConstants";
 
 /**
@@ -143,7 +143,7 @@ export const createTryOnFormData = async (modelImage, garmentImage, outfitType) 
  */
 export const createBackgroundFormData = async (tryOnImage, backgroundType) => {
   const blob = await urlToBlob(tryOnImage);
-  
+
   const formData = new FormData();
   formData.append('tryOnImage', blob, 'tryon-result.png');
   formData.append('background', backgroundType);
@@ -156,7 +156,7 @@ export const createBackgroundFormData = async (tryOnImage, backgroundType) => {
  */
 export const createBlouseFormData = async (tryOnImage, blouseType) => {
   const blob = await urlToBlob(tryOnImage);
-  
+
   const formData = new FormData();
   formData.append('tryOnImage', blob, 'tryon-result.png');
   formData.append('blouseType', blouseType);
@@ -169,7 +169,7 @@ export const createBlouseFormData = async (tryOnImage, blouseType) => {
  */
 export const createNeckFormData = async (tryOnImage, neckType) => {
   const blob = await urlToBlob(tryOnImage);
-  
+
   const formData = new FormData();
   formData.append("tryOnImage", blob, "tryon.png");
   formData.append("neckType", neckType);
@@ -182,7 +182,7 @@ export const createNeckFormData = async (tryOnImage, neckType) => {
  */
 export const createVideoFormData = async (tryOnImage) => {
   const blob = await urlToBlob(tryOnImage);
-  
+
   const formData = new FormData();
   formData.append('tryOnImage', blob, 'tryon-bg-changed.jpg');
   formData.append('prompt', 'Professional fashion model standing elegantly, gentle camera movement, cinematic lighting, high quality');

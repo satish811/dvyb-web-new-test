@@ -14,13 +14,13 @@ import { extractSubcategories } from "../utils/categoryExtractor";
 export default function ProductLayout({ children, products, categoryFromRoute }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateFilter, selectedFilters, clearAllFilters } = useFilter();
+  const { updateFilter, selectedFilters, clearAllFilters, searchQuery } = useFilter();
 
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState(""); // Removed in favor of context
   const [searchResults, setSearchResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -43,7 +43,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const category = categoryFromRoute || queryParams.get("category");
   const subcategory = queryParams.get("sub");
-  const searchQueryParam = queryParams.get("query");
+
 
   /**
    * Get available subcategories dynamically from product data
@@ -62,10 +62,9 @@ export default function ProductLayout({ children, products, categoryFromRoute })
    */
   useEffect(() => {
     console.log(`[ProductLayout] Category from URL: "${category}"`);
-    console.log(`[ProductLayout] Query from URL: "${searchQueryParam}"`);
     console.log(`[ProductLayout] Current selectedFilters:`, selectedFilters);
 
-    if (!category && !searchQueryParam) {
+    if (!category && !searchQuery) {
       // On "All Products" page - clear filters
       console.log("[ProductLayout] No category or query, clearing filters");
       clearAllFilters();
@@ -73,8 +72,8 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     }
 
     // If there's a search query, don't update category filter
-    if (searchQueryParam) {
-      console.log(`[ProductLayout] Search query present: "${searchQueryParam}", skipping category filter`);
+    if (searchQuery) {
+      console.log(`[ProductLayout] Search query present: "${searchQuery}", skipping category filter`);
       return;
     }
 
@@ -100,7 +99,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     // Only update category when it changes
     updateFilter("categories", filterValue);
 
-  }, [category, subcategory, searchQueryParam]); // REMOVED selectedFilters dependency to prevent infinite loop
+  }, [category, subcategory, searchQuery]); // REMOVED selectedFilters dependency to prevent infinite loop
 
   /**
    * Filter products locally for special cases like "Boutique" and search queries
@@ -114,8 +113,8 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     }
 
     // Filter by search query if present
-    if (searchQueryParam) {
-      const query = searchQueryParam.toLowerCase();
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter((p) => {
         const searchableText = [
           p.name,
@@ -130,7 +129,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
     }
 
     return filtered;
-  }, [category, searchQueryParam, products]);
+  }, [category, searchQuery, products]);
 
   /**
    * Load recent & popular searches from localStorage

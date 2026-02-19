@@ -30,7 +30,7 @@ import { useWishlist } from "../../../context/WishlistContext";
 export default function Navbar({ setShowLoader }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
+    // const [searchQuery, setSearchQuery] = useState(""); // Removed local state
     const { user, loading, signOutUser } = useAuth();
     const [showLogin, setShowLogin] = useState(false);
     const navigate = useNavigate();
@@ -41,7 +41,7 @@ export default function Navbar({ setShowLoader }) {
     const setShowModal = setTryOnModalOpen;
     const [selectedProduct, setSelectedProduct] = useState("");
 
-    const { updateFilter } = useFilter();
+    const { updateFilter, searchQuery, setSearchQuery } = useFilter();
     const { cartCount, loading: cartLoading } = useCart();
     const { wishlistCount, loading: wishlistLoading } = useWishlist();
 
@@ -83,6 +83,8 @@ export default function Navbar({ setShowLoader }) {
         };
         fetchPopular();
     }, []);
+
+
 
     useEffect(() => {
         const performSearch = async () => {
@@ -158,7 +160,7 @@ export default function Navbar({ setShowLoader }) {
             if (categoryMap[queryLower]) {
                 navigate(`/womenwear?category=${categoryMap[queryLower]}`);
             } else {
-                navigate(`/womenwear?query=${encodeURIComponent(suggestion)}`);
+                navigate(`/womenwear`);
             }
 
             setSearchOpen(false);
@@ -228,7 +230,7 @@ export default function Navbar({ setShowLoader }) {
                             <img
                                 src={villyLogo}
                                 alt="Villy"
-                                className={`h-10 md:h-12 2xl:h-14 w-auto object-contain ${location.pathname === "/" ? "brightness-0 invert md:filter-none" : ""}`}
+                                className="h-10 xs:h-12 md:h-12 2xl:h-14 w-auto object-contain"
                             />
                         </div>
 
@@ -250,12 +252,16 @@ export default function Navbar({ setShowLoader }) {
 
                         {/* CENTER-RIGHT: Search Bar */}
                         <div className="hidden md:flex flex-1 max-w-md xl:max-w-lg 2xl:max-w-2xl mx-6 xl:mx-10 2xl:mx-16">
-                            <SearchBarWithDropdown onNavigate={navigate} />
+                            <SearchBarWithDropdown
+                                onNavigate={navigate}
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                            />
                         </div>
 
-                        {/* RIGHT: Icons */}
+                        {/* RIGHT: Icons or Login Button */}
                         <div className="flex items-center space-x-4 md:space-x-6 2xl:space-x-8">
-                            {/* Mobile Search Icon */}
+                            {/* Mobile Search Icon - Always visible */}
                             <button
                                 onClick={() => setSearchOpen(true)}
                                 className={`md:hidden transition relative ${location.pathname === "/" ? "text-white" : "text-black"}`}
@@ -263,33 +269,58 @@ export default function Navbar({ setShowLoader }) {
                                 <HiOutlineMagnifyingGlass className="text-3xl" />
                             </button>
 
-                            <div className="hidden md:flex relative group h-full items-center">
-                                <button
-                                    onClick={() => guard("/profile")}
-                                    className={`transition py-4 ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}
+
+                            {/* Show Login/Signup button when NOT logged in */}
+                            {!user && !loading && (
+                                <motion.button
+                                    whileHover={hoverScale}
+                                    whileTap={tapScale}
+                                    onClick={() => setShowLogin(true)}
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 font-semibold text-xs md:text-sm transition-colors uppercase tracking-wide  ${location.pathname === "/"
+                                        ? "bg-white text-black hover:bg-white hover:text-black md:bg-[#884383] md:text-white md:hover:bg-white md:hover:text-black"
+                                        : "bg-[#ebe8e8] text-black hover:bg-white hover:text-black"
+                                        }`}
                                 >
-                                    <HiOutlineUser className="text-2xl 2xl:text-3xl" />
-                                </button>
-                                <UserDropdown user={user} onLogout={signOutUser} />
-                            </div>
+                                    Login / Signup
+                                </motion.button>
+                            )}
 
-                            <button onClick={() => navigate("/wishlist")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
-                                <HiOutlineHeart className="text-3xl md:text-2xl 2xl:text-3xl" />
-                                {wishlistCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
-                                        {wishlistCount}
-                                    </span>
-                                )}
-                            </button>
 
-                            <button onClick={() => navigate("/cart")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
-                                <HiOutlineShoppingBag className="text-3xl md:text-2xl 2xl:text-3xl" />
-                                {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
-                                        {cartCount}
-                                    </span>
-                                )}
-                            </button>
+                            {/* Show icons when logged in */}
+                            {user && (
+                                <>
+                                    {/* Profile Icon with Dropdown - Desktop only */}
+                                    <div className="hidden md:flex relative group h-full items-center">
+                                        <button
+                                            onClick={() => guard("/profile")}
+                                            className={`transition py-4 ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}
+                                        >
+                                            <HiOutlineUser className="text-2xl 2xl:text-3xl" />
+                                        </button>
+                                        <UserDropdown user={user} onLogout={signOutUser} />
+                                    </div>
+
+                                    {/* Wishlist Icon */}
+                                    <button onClick={() => navigate("/wishlist")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                        <HiOutlineHeart className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                        {wishlistCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
+                                                {wishlistCount}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {/* Cart Icon */}
+                                    <button onClick={() => navigate("/cart")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
+                                        <HiOutlineShoppingBag className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                        {cartCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
+                                                {cartCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                     </div>
@@ -321,6 +352,34 @@ export default function Navbar({ setShowLoader }) {
                                 navItems={navItems}
                                 onNavClick={navigate}
                                 onProtectedClick={guard}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Mobile Search Overlay */}
+                <AnimatePresence>
+                    {searchOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed inset-0 z-50 bg-white"
+                        >
+                            <SearchDropdown
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                suggestions={searchSuggestions}
+                                searchResults={searchResults}
+                                popularSearches={popularSearches}
+                                recentSearches={recentSearches}
+                                onSaveRecent={saveRecentSearch}
+                                onRemoveRecent={removeRecentSearch}
+                                onClose={() => setSearchOpen(false)}
+                                onSuggestionClick={handleSuggestionClick}
+                                onResultClick={handleResultClick}
+                                isLoading={isSearching}
+                                noResults={noResults}
                             />
                         </motion.div>
                     )}

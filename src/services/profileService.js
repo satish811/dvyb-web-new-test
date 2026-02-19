@@ -18,20 +18,45 @@ class ProfileService {
     this.b2bCollection = envConfig.firebaseStorage.b2bCollection;
   }
 
-  /** Get current user collection based on route */
+  /** Get current user collection based on route or database check */
   async getCurrentUserCollection() {
+    // 1. Check URL parameters first (fastest)
     const urlParams = new URLSearchParams(window.location.search);
     const userType = urlParams.get("usertype");
-    return userType === "b2b" ? "B2BBulkOrders_users" : "b2c_users";
+    if (userType === "b2b") return "B2BBulkOrders_users";
+    if (userType === "b2c") return "b2c_users";
+
+    // 2. Fallback: Check the database if parameters are missing
+    const user = this.auth.currentUser;
+    if (!user) return "b2c_users";
+
+    try {
+      // Check for user document in both collections
+      const [b2cSnap, b2bSnap] = await Promise.all([
+        getDoc(doc(this.db, "b2c_users", user.uid)),
+        getDoc(doc(this.db, "B2BBulkOrders_users", user.uid))
+      ]);
+
+      if (b2bSnap.exists()) {
+        console.log("🔍 ProfileService: User identified as B2B from database.");
+        return "B2BBulkOrders_users";
+      }
+
+      console.log("🔍 ProfileService: User identified as B2C from database.");
+      return "b2c_users";
+    } catch (error) {
+      console.warn("⚠️ ProfileService: Error detecting user role, defaulting to B2C", error);
+      return "b2c_users";
+    }
   }
 
   /** Save user profile data */
-  async saveProfile(profileData) {
+  async saveProfile(profileData, overrideCollection = null) {
     try {
       const user = this.auth.currentUser;
       if (!user) throw new Error("User must be authenticated");
 
-      const userCollection = await this.getCurrentUserCollection();
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
 
       await setDoc(
@@ -65,7 +90,7 @@ class ProfileService {
   }
 
   /** Save AI try-on results with Cloudinary URLs */
-  async saveTryOnResults(tryOnResults) {
+  async saveTryOnResults(tryOnResults, overrideCollection = null) {
     try {
       const user = this.auth.currentUser;
       if (!user) throw new Error("User must be authenticated");
@@ -99,9 +124,26 @@ class ProfileService {
           });
 
           if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.json().catch(() => ({}));
+            let errorData;
+            try {
+              const contentType = uploadResponse.headers.get("content-type");
+              if (contentType && contentType.includes("application/json")) {
+                errorData = await uploadResponse.json();
+              } else {
+                // Handle HTML errors like 404 (Cannot POST /api/upload)
+                const text = await uploadResponse.text();
+                errorData = {
+                  message: text.includes("Cannot POST")
+                    ? "Backend endpoint /api/upload not found. PLEASE RESTART YOUR SERVER (node server.js)."
+                    : text.substring(0, 100)
+                };
+              }
+            } catch (e) {
+              errorData = { message: uploadResponse.statusText };
+            }
+
             console.error(`❌ Upload failed for ${outfitType}:`, errorData);
-            throw new Error(errorData.error || `Failed to upload ${outfitType}`);
+            throw new Error(errorData.message || `Failed to upload ${outfitType}`);
           }
 
           const result = await uploadResponse.json();
@@ -116,11 +158,16 @@ class ProfileService {
         }
       }
 
-      console.log("✅ All uploads complete. Saving URLs to Firestore...");
+      if (Object.keys(cloudinaryUrls).length === 0) {
+        console.error("❌ No images were successfully uploaded to Cloudinary. Aborting Firestore save.");
+        throw new Error("Failed to upload all models to Cloudinary. Please check if your server is running and restarted.");
+      }
+
+      console.log("✅ Some uploads successful. Saving URLs to Firestore...");
       console.log("📦 Cloudinary URLs:", cloudinaryUrls);
 
       // ✅ Save only Cloudinary URLs to Firestore (NOT base64)
-      const userCollection = await this.getCurrentUserCollection();
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
 
       await updateDoc(userDocRef, {
@@ -138,12 +185,12 @@ class ProfileService {
   }
 
   /** Get all try-on results */
-  async getTryOnResults() {
+  async getTryOnResults(overrideCollection = null) {
     try {
       const user = this.auth.currentUser;
       if (!user) throw new Error("User must be authenticated");
 
-      const userCollection = await this.getCurrentUserCollection();
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
       const docSnap = await getDoc(userDocRef);
 
@@ -158,7 +205,7 @@ class ProfileService {
   }
 
   /** ⭐ NEW: Get try-on image by dress type */
-  async getTryOnByDressType(dressType) {
+  async getTryOnByDressType(dressType, overrideCollection = null) {
     try {
       const user = this.auth.currentUser;
       if (!user) {
@@ -171,7 +218,7 @@ class ProfileService {
 
       console.log(`🔍 Fetching try-on for dress type: ${normalizedType}`);
 
-      const userCollection = await this.getCurrentUserCollection();
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
       const docSnap = await getDoc(userDocRef);
 
@@ -223,12 +270,12 @@ class ProfileService {
   }
 
   /** Get user profile */
-  async getProfile() {
+  async getProfile(overrideCollection = null) {
     try {
       const user = this.auth.currentUser;
       if (!user) throw new Error("User must be authenticated");
 
-      const userCollection = await this.getCurrentUserCollection();
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
       const docSnap = await getDoc(userDocRef);
 

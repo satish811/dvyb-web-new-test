@@ -180,7 +180,7 @@ export const AuthProvider = ({ children }) => {
   const signOutUser = async () => {
     try {
       await signOut(auth);
-    } finally {
+      // Clear all auth-related data
       sessionStorage.removeItem("authToken");
       localStorage.removeItem("authToken");
       setToken(null);
@@ -188,6 +188,22 @@ export const AuthProvider = ({ children }) => {
       setUserCollection(null);
       setUserProfile(null);
       setIntendedUserType(null);
+      setUser(null); // Explicitly set user to null for immediate UI update
+
+      // Redirect to home page
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still clear state and redirect even if there's an error
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      setToken(null);
+      setUserRole(null);
+      setUserCollection(null);
+      setUserProfile(null);
+      setIntendedUserType(null);
+      setUser(null);
+      navigate("/");
     }
   };
 

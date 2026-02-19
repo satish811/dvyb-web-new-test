@@ -418,6 +418,14 @@ const IndividualProductDetailsPage = () => {
       return;
     }
 
+    // Prevent duplicate cart additions
+    const existingGuestCart = JSON.parse(sessionStorage.getItem("guest_cart")) || [];
+    const alreadyInCart = existingGuestCart.some((item) => item.id === product.id);
+    if (alreadyInCart && !auth.currentUser) {
+      showBagPopup(); // Still show feedback – item is already there
+      return;
+    }
+
     setAddingToCart(true);
 
     try {

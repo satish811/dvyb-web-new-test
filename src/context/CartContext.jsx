@@ -279,6 +279,19 @@ export const CartProvider = ({ children }) => {
     }
   }, [user, authLoading]);
 
+  /**
+   * Check if a product is already in the cart by productId.
+   * Handles both authenticated (Firestore) and guest (sessionStorage) cart items.
+   */
+  const isInCart = (productId) => {
+    if (!productId) return false;
+    return cartItems.some(
+      (item) =>
+        String(item.id) === String(productId) ||
+        String(item.productId) === String(productId)
+    );
+  };
+
   const value = {
     cartCount,
     cartItems,
@@ -286,6 +299,7 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     clearCart,
     updateQuantity,
+    isInCart,
     loading,
     error,
     clearError: () => setError(null),
