@@ -3,114 +3,106 @@ import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 import { IoCloseOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineArrowDropDown, MdOutlineSearch } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import subCategories from "../../../static/navbar/subCategories";
+import { useNavigate, useLocation } from "react-router-dom";
 
-// Sample product data - in a real app, this would come from props or a context/API
-const SAMPLE_PRODUCTS = [
-  {
-    id: "NWtIfjt8c2CjrRJFu1Uz",
-    name: "tyuiop",
-    dressType: "Saree",
-    category: "WOMEN",
-    craft: "Mirror Work",
-    fabric: "modal",
-    occasion: ["wedding"],
-    price: 56,
-    boutique: true,
-    imageUrls: [
-      "https://res.cloudinary.com/doiezptnn/image/upload/v1770976804/generated-sarees/front-view/saree-front-view-1770976804518.jpg"
-    ],
-    slug: "tyuiop",
-    selectedColors: ["pink_#FF69B4"],
-    selectedSizes: ["XS"]
-  }
-  // Add more products as needed
-];
 
-const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
+import { searchService } from "../../../services/searchService";
+import useDebounce from "../../../hooks/useDebounce";
+
+const SearchBarWithDropdown = ({ onNavigate, searchQuery, onSearchChange }) => {
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
+    const location = useLocation();
+    // const [searchQuery, setSearchQuery] = useState(""); // Removed local state
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [filteredCategories, setFilteredCategories] = useState([]);
-    const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchResults, setSearchResults] = useState({
-        categories: [],
         products: []
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [noResults, setNoResults] = useState(false);
+
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
+    const abortControllerRef = useRef(null);
 
-    // Flatten all categories into a single searchable list
-    const allCategories = Object.entries(subCategories).flatMap(([parent, items]) =>
-        items.map(item => ({
-            name: item,
-            parent: parent,
-            slug: item.toLowerCase().replace(/\s+/g, '-'),
-            type: 'category'
-        }))
-    );
+    // Debounce the search query
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-    // Function to search through products
-    const searchProducts = (query) => {
-        if (!query.trim() || !products.length) return [];
-        
-        const lowercaseQuery = query.toLowerCase();
-        
-        return products.filter(product => {
-            // Search in multiple fields
-            const searchableFields = [
-                product.name,
-                product.dressType,
-                product.category,
-                product.craft,
-                product.fabric,
-                product.description,
-                ...(product.occasion || []),
-                ...(product.selectedColors || []).map(color => color.split('_')[0]), // Get color names without hex
-                ...(product.selectedSizes || [])
-            ].filter(Boolean); // Remove null/undefined values
-            
-            return searchableFields.some(field => 
-                field.toString().toLowerCase().includes(lowercaseQuery)
-            );
-        }).map(product => ({
-            ...product,
-            type: 'product',
-            displayName: product.name,
-            subtitle: `${product.dressType} • ${product.category}`,
-            imageUrl: product.imageUrls?.[0] || null,
-            price: product.price
-        }));
-    };
-
-    // Filter both categories and products based on search query
+    // Effect to trigger search when debounced query changes
     useEffect(() => {
-        if (searchQuery.trim().length > 0) {
-            const query = searchQuery.toLowerCase();
-            
-            // Filter categories
-            const filtered = allCategories.filter(cat =>
-                cat.name.toLowerCase().includes(query)
-            );
-            
-            // Filter products
-            const matchedProducts = searchProducts(query);
-            
-            setSearchResults({
-                categories: filtered,
-                products: matchedProducts
-            });
-            
-            setIsDropdownOpen(filtered.length > 0 || matchedProducts.length > 0);
-        } else {
-            setSearchResults({
-                categories: [],
-                products: []
-            });
-            setIsDropdownOpen(false);
-        }
-    }, [searchQuery, products]);
+        const performSearch = async () => {
+            // Cancel previous request if exists
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+
+            // Create new AbortController
+            abortControllerRef.current = new AbortController();
+            const signal = abortControllerRef.current.signal;
+
+            if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
+                setSearchResults({ products: [] });
+                setIsDropdownOpen(false);
+                setNoResults(false);
+                setIsLoading(false);
+                setError(null);
+                return;
+            }
+
+            setIsLoading(true);
+            setError(null);
+            setNoResults(false);
+            setIsDropdownOpen(true);
+
+            try {
+                // Fetch products from service
+                const products = await searchService.searchProducts(debouncedSearchQuery, {
+                    limit: 8,
+                    signal
+                });
+
+                // Format products for display
+                const formattedProducts = products.map(product => ({
+                    ...product,
+                    type: 'product',
+                    displayName: product.name || product.title,
+                    subtitle: `${product.dressType || ''} • ${product.category || ''}`,
+                    imageUrl: product.imageUrls?.[0] || product.images?.[0] || null,
+                    price: product.price
+                }));
+
+                setSearchResults({
+                    products: formattedProducts
+                });
+
+                if (formattedProducts.length === 0) {
+                    setNoResults(true);
+                }
+
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('Request aborted');
+                    return;
+                }
+                console.error("Search failed:", err);
+                setError("Failed to fetch results. Please try again.");
+                setSearchResults({ products: [] });
+            } finally {
+                if (!signal.aborted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        performSearch();
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, [debouncedSearchQuery]);
+
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -123,7 +115,7 @@ const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
         const handleEscape = (event) => {
             if (event.key === 'Escape') {
                 setIsDropdownOpen(false);
-                setSearchQuery("");
+                onSearchChange("");
             }
         };
 
@@ -136,40 +128,46 @@ const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
         };
     }, []);
 
-    const handleCategoryClick = (category) => {
-        if (onNavigate) {
-            onNavigate(`/womenwear?query=${encodeURIComponent(category.name)}`);
-        } else {
-            navigate(`/womenwear?query=${encodeURIComponent(category.name)}`);
+
+
+
+    const handleExecuteSearch = () => {
+        if (searchQuery.trim().length > 0) {
+            if (onNavigate) {
+                // Navigate without query param - state is in context
+                onNavigate(`/womenwear`);
+            } else {
+                navigate(`/womenwear`);
+            }
+            setIsDropdownOpen(false);
         }
-        setSearchQuery("");
-        setIsDropdownOpen(false);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleExecuteSearch();
+        }
     };
 
     const handleProductClick = (product) => {
-        // Navigate to product detail page using the product ID (not slug)
-        // Your IndividualProductDetailsPage uses :id from useParams()
-        const productId = product.id; // Use the ID directly
-        
-        console.log("Navigating to product:", productId); // For debugging
-        
+        const productId = product.id;
+
         if (onNavigate) {
             onNavigate(`/products/${productId}`);
         } else {
             navigate(`/products/${productId}`);
         }
-        setSearchQuery("");
+        // setSearchQuery(""); // Do not clear on navigation as requested
         setIsDropdownOpen(false);
     };
 
     const handleInputFocus = () => {
-        if (searchQuery.trim().length > 0 && 
-            (searchResults.categories.length > 0 || searchResults.products.length > 0)) {
+        if (searchQuery.trim().length > 0) {
             setIsDropdownOpen(true);
         }
     };
 
-    const hasResults = searchResults.categories.length > 0 || searchResults.products.length > 0;
+    const hasResults = searchResults.products.length > 0;
 
     return (
         <div className="relative w-full" ref={dropdownRef}>
@@ -182,14 +180,16 @@ const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
                     ref={inputRef}
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     onFocus={handleInputFocus}
+                    autoComplete="off"
                     placeholder="Search for products or categories..."
                     className="w-full bg-transparent text-sm font-medium text-gray-900 placeholder-gray-500 outline-none"
                 />
                 {searchQuery && (
                     <button
-                        onClick={() => setSearchQuery("")}
+                        onClick={() => onSearchChange("")}
                         className="text-gray-400 hover:text-gray-600 text-xl ml-2"
                     >
                         ×
@@ -198,7 +198,7 @@ const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
             </div>
             {/* Dropdown */}
             <AnimatePresence>
-                {isDropdownOpen && hasResults && (
+                {isDropdownOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -214,156 +214,86 @@ const SearchBarWithDropdown = ({ onNavigate, products = SAMPLE_PRODUCTS }) => {
                             overflowY: 'auto'
                         }}
                     >
-                        {/* Categories Section */}
-                        {searchResults.categories.length > 0 && (
-                            <>
-                                <div
-                                    className="px-6 py-3 sticky top-0"
-                                    style={{
-                                        backgroundColor: '#E5E5E5',
-                                        zIndex: 1
-                                    }}
-                                >
-                                    <h3
-                                        className="font-bold uppercase tracking-wide"
-                                        style={{
-                                            color: '#555',
-                                            fontSize: '14px',
-                                            letterSpacing: '0.5px'
-                                        }}
-                                    >
-                                        Categories ({searchResults.categories.length})
-                                    </h3>
-                                </div>
-
-                                {/* Category List */}
-                                <div className="border-b border-gray-200">
-                                    {searchResults.categories.map((category, index) => (
-                                        <motion.div
-                                            key={`cat-${category.parent}-${category.name}-${index}`}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{
-                                                delay: index * 0.02,
-                                                duration: 0.2
-                                            }}
-                                            onClick={() => handleCategoryClick(category)}
-                                            className="px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150"
-                                            style={{
-                                                borderBottom: index < searchResults.categories.length - 1 ? '1px solid #f0f0f0' : 'none'
-                                            }}
-                                        >
-                                            <p
-                                                className="font-normal"
-                                                style={{
-                                                    color: '#555',
-                                                    fontSize: '16px',
-                                                    lineHeight: '1.4',
-                                                    fontFamily: '"Outfit", sans-serif'
-                                                }}
-                                            >
-                                                {category.name}
-                                            </p>
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                Category • {category.parent}
-                                            </p>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-
-                        {/* Products Section */}
-                        {searchResults.products.length > 0 && (
-                            <>
-                                <div
-                                    className="px-6 py-3 sticky top-0"
-                                    style={{
-                                        backgroundColor: '#E5E5E5',
-                                        zIndex: 1
-                                    }}
-                                >
-                                    <h3
-                                        className="font-bold uppercase tracking-wide"
-                                        style={{
-                                            color: '#555',
-                                            fontSize: '14px',
-                                            letterSpacing: '0.5px'
-                                        }}
-                                    >
-                                        Products ({searchResults.products.length})
-                                    </h3>
-                                </div>
-
-                                {/* Product List */}
-                                <div>
-                                    {searchResults.products.map((product, index) => (
-                                        <motion.div
-                                            key={`prod-${product.id}-${index}`}
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{
-                                                delay: index * 0.02,
-                                                duration: 0.2
-                                            }}
-                                            onClick={() => handleProductClick(product)}
-                                            className="px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150 flex items-start gap-3"
-                                            style={{
-                                                borderBottom: index < searchResults.products.length - 1 ? '1px solid #f0f0f0' : 'none'
-                                            }}
-                                        >
-                                            {product.imageUrl && (
-                                                <img 
-                                                    src={product.imageUrl} 
-                                                    alt={product.name}
-                                                    className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
-                                                    onError={(e) => {
-                                                        e.target.style.display = 'none';
-                                                    }}
-                                                />
-                                            )}
-                                            <div className="flex-1">
-                                                <p
-                                                    className="font-normal"
-                                                    style={{
-                                                        color: '#333',
-                                                        fontSize: '16px',
-                                                        lineHeight: '1.4',
-                                                        fontFamily: '"Outfit", sans-serif'
-                                                    }}
-                                                >
-                                                    {product.name}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {product.subtitle}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-sm font-semibold text-[#9C0000]">
-                                                        ₹{product.price}
-                                                    </span>
-                                                    {product.craft && (
-                                                        <span className="text-xs text-gray-400">
-                                                            {product.craft}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-
-                        {/* No Results Message */}
-                        {!hasResults && searchQuery.trim().length > 0 && (
-                            <div className="px-6 py-8 text-center">
-                                <p className="text-gray-500">
-                                    No results found for "{searchQuery}"
-                                </p>
-                                <p className="text-sm text-gray-400 mt-2">
-                                    Try searching with different keywords
-                                </p>
+                        {/* Loading State */}
+                        {isLoading && (
+                            <div className="px-6 py-8 flex justify-center items-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             </div>
+                        )}
+
+                        {/* Error State */}
+                        {!isLoading && error && (
+                            <div className="px-6 py-8 text-center text-red-500">
+                                <p>{error}</p>
+                            </div>
+                        )}
+
+                        {/* Content */}
+                        {!isLoading && !error && (
+                            <>
+                                {/* Products Section */}
+                                {searchResults.products.length > 0 && (
+                                    <>
+                                        <div
+                                            className="px-6 py-3 sticky top-0"
+                                            style={{
+                                                backgroundColor: '#E5E5E5',
+                                                zIndex: 1
+                                            }}
+                                        >
+                                            <h3 className="font-bold uppercase tracking-wide text-xs text-gray-500">
+                                                Products ({searchResults.products.length})
+                                            </h3>
+                                        </div>
+
+                                        <div>
+                                            {searchResults.products.map((product, index) => (
+                                                <motion.div
+                                                    key={`prod-${product.id}-${index}`}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: index * 0.02 }}
+                                                    onClick={() => handleProductClick(product)}
+                                                    className="px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-100 last:border-0"
+                                                >
+                                                    {product.imageUrl && (
+                                                        <img
+                                                            src={product.imageUrl}
+                                                            alt={product.displayName}
+                                                            className="w-12 h-12 object-cover rounded-sm flex-shrink-0 bg-gray-100"
+                                                        />
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <p className="font-normal text-base text-gray-800 font-sans line-clamp-1">
+                                                            {product.displayName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                            {product.subtitle}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-sm font-semibold text-[#9C0000]">
+                                                                ₹{product.price}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* No Results Message */}
+                                {noResults && (
+                                    <div className="px-6 py-8 text-center">
+                                        <p className="text-gray-500 font-medium">
+                                            No results found for "{searchQuery}"
+                                        </p>
+                                        <p className="text-sm text-gray-400 mt-2">
+                                            Try searching with different keywords
+                                        </p>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </motion.div>
                 )}

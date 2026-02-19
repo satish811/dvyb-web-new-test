@@ -22,12 +22,24 @@ class SearchOperationalService {
    */
   async searchProducts(searchQuery, options = {}) {
     try {
-      const { limit = 20, category = null, minPrice = null, maxPrice = null } = options;
+      const { limit = 20, category = null, minPrice = null, maxPrice = null, signal } = options;
 
       console.log("🔍 Searching products with query:", searchQuery);
 
+      if (signal?.aborted) {
+        const error = new Error("Aborted");
+        error.name = "AbortError";
+        throw error;
+      }
+
       const q = collectionGroup(db, "products");
       const querySnapshot = await getDocs(q);
+
+      if (signal?.aborted) {
+        const error = new Error("Aborted");
+        error.name = "AbortError";
+        throw error;
+      }
 
       const searchLower = searchQuery?.toLowerCase().trim();
 

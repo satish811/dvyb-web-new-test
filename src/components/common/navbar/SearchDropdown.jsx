@@ -105,7 +105,7 @@ export default function SearchDropdown({
       if (categoryMap[queryLower]) {
         navigate(`/womenwear?category=${categoryMap[queryLower]}`);
       } else {
-        navigate(`/womenwear?query=${encodeURIComponent(searchQuery)}`);
+        navigate(`/womenwear`);
       }
 
       onClose(); // Close dropdown after search

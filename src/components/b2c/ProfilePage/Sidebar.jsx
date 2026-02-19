@@ -8,7 +8,7 @@ import { LogOut, ChevronRight } from "lucide-react";
 import B2BAuthService from "../../../services/b2bAuthService";
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
-  const { user } = useAuth();
+  const { user, signOutUser } = useAuth();
   const [data, setData] = useState({});
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,13 +114,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-      navigate("/");
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      setShowLogoutModal(false);
+      await signOutUser(); // This will handle redirect to home page
     } catch (error) {
       console.error("Logout error:", error);
     }

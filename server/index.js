@@ -4,23 +4,113 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 import cloudinary from "./cloudinaryConfig.js";
-import crypto from "crypto";
+import { createRequire } from "module";
 
-/**
- * Simple Express server to handle file uploads to Cloudinary
- * Uses multer for handling multipart/form-data
- * Exposes a single POST /upload endpoint
- * Expects a 'file' field in the form data
- */
+const require = createRequire(import.meta.url);
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ─── Lazy Firebase Admin initialization ──────────────────────────────────────
+let adminDb = null;
+
+const getAdminDb = () => {
+  if (adminDb) return adminDb;
+  try {
+    const admin = require("firebase-admin");
+    if (!admin.apps.length) {
+      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+        : null;
+
+      admin.initializeApp({
+        credential: serviceAccount
+          ? admin.credential.cert(serviceAccount)
+          : admin.credential.applicationDefault(),
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+      });
+    }
+    adminDb = admin.firestore();
+    return adminDb;
+  } catch (err) {
+    console.warn("[Firebase Admin] Not configured:", err.message);
+    return null;
+  }
+};
+
+// ── Auth middleware: verify Firebase ID token ─────────────────────────────────
+const verifyToken = async (req, res, next) => {
+  try {
+    const admin = require("firebase-admin");
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ success: false, error: "Invalid token" });
+  }
+};
+
+// ─── GET /api/cart ────────────────────────────────────────────────────────────
+/**
+ * Returns cart items for the authenticated user.
+ * Requires Authorization: Bearer <Firebase ID token> header.
+ *
+ * Response:
+ * {
+ *   success: true,
+ *   cartItems: [{ productId: "123", quantity: 1, ... }]
+ * }
+ */
+app.get("/api/cart", verifyToken, async (req, res) => {
+  try {
+    const db = getAdminDb();
+    if (!db) {
+      return res.status(503).json({
+        success: false,
+        error: "Firebase Admin not configured on this server.",
+      });
+    }
+
+    const uid = req.user.uid;
+
+    // Try B2C collection first, then B2B
+    const collections = [
+      process.env.VITE_FIREBASE_B2C_COLLECTION || "b2c_users",
+      process.env.VITE_FIREBASE_B2B_COLLECTION || "B2BBulkOrders_users",
+    ];
+
+    let cartItems = [];
+    for (const col of collections) {
+      const cartRef = db.collection(col).doc(uid).collection("cart");
+      const snapshot = await cartRef.get();
+      if (!snapshot.empty) {
+        cartItems = snapshot.docs.map((doc) => ({
+          productId: doc.id,
+          ...doc.data(),
+        }));
+        break;
+      }
+    }
+
+    return res.status(200).json({ success: true, cartItems });
+  } catch (err) {
+    console.error("[GET /api/cart] Error:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 /**
  * POST /upload
- * Expects a file in the 'file' field of the form data
- * Uploads the file to Cloudinary and returns the secure URL
+ * Expects a file in the 'file' field of the form data.
+ * Uploads the file to Cloudinary and returns the secure URL.
  */
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {

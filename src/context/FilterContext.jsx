@@ -47,6 +47,7 @@ export const FilterProvider = ({ children }) => {
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const updateFilter = useCallback(
     (filterType, value) => {
@@ -179,8 +180,10 @@ export const FilterProvider = ({ children }) => {
       updateFilter,
       clearAllFilters,
       navbarCategory,
+      searchQuery,
+      setSearchQuery,
     }),
-    [filters, selectedFilters, updateFilter, clearAllFilters, navbarCategory]
+    [filters, selectedFilters, updateFilter, clearAllFilters, navbarCategory, searchQuery]
   );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;

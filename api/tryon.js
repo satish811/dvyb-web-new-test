@@ -112,14 +112,14 @@ async function downloadAsBase64(url) {
   console.log(`✅ Image downloaded successfully (${res.data.length} bytes)`);
   return Buffer.from(res.data).toString("base64");
 }
-async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType) {
-    console.log(`🎨 Generating AI try-on for: ${outfitType}`);
+async function generateTryOn(modelBase64, garmentBase64, garmentName, outfitType) {
+  console.log(`🎨 Generating AI try-on for: ${outfitType}`);
 
-    // const lowerType = (outfitType || "").toLowerCase();
-    // const isSaree = lowerType === "saree";
-    // const isBackgroundSwap = lowerType === "background-swap";
+  // const lowerType = (outfitType || "").toLowerCase();
+  // const isSaree = lowerType === "saree";
+  // const isBackgroundSwap = lowerType === "background-swap";
 
-     const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+  const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
   const lowerName = garmentName?.toLowerCase() || "";
 
   // const isBackgroundSwap = lowerName.includes("background");
@@ -130,7 +130,7 @@ async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType)
   const isKurtaSet = lowerName === "kurta set" || lowerName === "kurta sets";
 
   const prompt = isBackgroundSwap
-  ? `
+    ? `
   ROLE
   You are a professional photo editor performing a REALISTIC background replacement.
 
@@ -161,8 +161,8 @@ async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType)
   OUTPUT
   Return ONE high-resolution inline_data image only.
   `
-  :
-  `
+    :
+    `
   ROLE
   Expert fashion AI specializing in STRICT photorealistic Indian ethnic wear virtual try-on.
 
@@ -291,7 +291,7 @@ async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType)
 
 
 
-  
+
   // async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType) {
   //   console.log(`🎨 Generating AI try-on for: ${outfitType}`);
 

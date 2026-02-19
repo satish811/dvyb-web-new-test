@@ -14,6 +14,7 @@ import CartPage from "../pages/b2c/cartPage/cartPage";
 import CheckoutPage from "../pages/b2c/cartPage/CheckoutPage";
 import ProductDetailsPageIndividual from "../pages/b2c/ProductDetailsPageIndividual";
 import CategoryPage from "../pages/b2c/CategoryPage";
+import MenPage from "../pages/b2c/MenPage";
 import VirtualTryOn from "../virtualtryon";
 
 // 📰 Common Pages
@@ -148,6 +149,18 @@ export default function AppRoutes() {
               <PageTransition>
                 <MainLayout>
                   <ProductLayout products={products} />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+
+          {/* Men's Wear - Coming Soon */}
+          <Route
+            path="/menwear"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <MenPage />
                 </MainLayout>
               </PageTransition>
             }

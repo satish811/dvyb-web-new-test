@@ -15,15 +15,18 @@ service cloud.firestore {
     /* ============================================
        ADMINS
        ============================================ */
-    match /admins/super-admin {
-      allow read, write: if isAuthenticated();
+    match /admins/{adminId} {
+      // ✅ FIXED: Only admins can access admin collection
+      allow read: if isAuthenticated() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      allow write: if false; // Only via backend
     }
     
     /* ============================================
        B2C USERS COLLECTION
        ============================================ */
     match /users/{userId} {
-      allow read: if true;
+      // ✅ FIXED: Only owner can read their own data
+      allow read: if isOwner(userId);
       allow write: if isOwner(userId);
 
       // Sub-collections inside users
@@ -70,7 +73,8 @@ service cloud.firestore {
     }
     
     match /b2c_users/{userId} {
-      allow read: if isAuthenticated();
+      // ✅ FIXED: Only owner can read their own data
+      allow read: if isOwner(userId);
       // Allow authenticated users to create their own document during registration
       allow create: if isAuthenticated() && request.auth.uid == userId;
       // Allow users to update/delete only their own document
