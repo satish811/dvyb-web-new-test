@@ -1716,7 +1716,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
   }
 
   return (
-    <div className="overflow-hidden  bg-[#FAF8F5] flex flex-col min-h-screen h-auto pb-20">
+    <div className="overflow-hidden  bg-[#FAF8F5] flex flex-col min-h-screen h-auto ">
       {/* Progress Bar */}
 
 
@@ -1743,8 +1743,8 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
 
 
       {/* Main Content */}
-      <div className="flex-1 flex items-start justify-center pt-10 sm:pt-20">
-        <div className="w-full">{renderStep()}</div>
+      <div className="flex-1 flex items-center justify-center  -translate-y-9 mb-10">
+        <div className="w-full mb-20">{renderStep()}</div>
       </div>
 
       {/* Hidden refs */}

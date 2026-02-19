@@ -73,8 +73,7 @@ service cloud.firestore {
     }
     
     match /b2c_users/{userId} {
-      // ✅ FIXED: Only owner can read their own data
-      allow read: if isOwner(userId);
+      allow read: if isAuthenticated();
       // Allow authenticated users to create their own document during registration
       allow create: if isAuthenticated() && request.auth.uid == userId;
       // Allow users to update/delete only their own document
