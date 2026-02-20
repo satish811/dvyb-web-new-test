@@ -90,7 +90,7 @@ export const NECK_OPTIONS = [
 export const BLOUSE_SLEEVE_OPTIONS = [
   {
     id: "half-sleeve",
-    name: "Half Sleeve",
+    name: "Elbow",
     image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg",
   },
   {

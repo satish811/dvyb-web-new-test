@@ -5,6 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import FormData from 'form-data';
 import cloudinary from 'cloudinary';
+import { GoogleAuth } from "google-auth-library";
 
 
 
@@ -16,6 +17,75 @@ dotenv.config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+
+// Vertex AI Virtual Try-On (no prompting)
+const VERTEX_PROJECT_ID = process.env.GOOGLE_PROJECT_ID;
+const VERTEX_LOCATION = process.env.GOOGLE_LOCATION || "us-central1";
+const VERTEX_MODEL_ID = process.env.VERTEX_VIRTUAL_TRYON_MODEL_ID || "virtual-try-on-001";
+const VERTEX_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"];
+
+let _vertexClient;
+async function getVertexClient() {
+  if (_vertexClient) return _vertexClient;
+
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  let auth;
+  if (serviceAccountJson) {
+    let credentials;
+    try {
+      credentials = JSON.parse(serviceAccountJson);
+    } catch {
+      throw new Error("Invalid GOOGLE_SERVICE_ACCOUNT_JSON (must be valid JSON)");
+    }
+    auth = new GoogleAuth({ credentials, scopes: VERTEX_SCOPES });
+  } else {
+    auth = new GoogleAuth({ scopes: VERTEX_SCOPES });
+  }
+
+  _vertexClient = await auth.getClient();
+  return _vertexClient;
+}
+
+async function generateVertexVirtualTryOn(personBase64, garmentBase64, garmentType = "upper_and_lower_body") {
+  if (!VERTEX_PROJECT_ID) {
+    throw new Error("Missing GOOGLE_PROJECT_ID (required for Vertex Virtual Try-On)");
+  }
+
+  const url = `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${VERTEX_PROJECT_ID}/locations/${VERTEX_LOCATION}/publishers/google/models/${VERTEX_MODEL_ID}:predict`;
+
+  const requestBody = {
+    instances: [
+      {
+        personImage: { image: { bytesBase64Encoded: personBase64 } },
+        productImages: [{ image: { bytesBase64Encoded: garmentBase64 } }],
+        productType: "APPAREL",
+      },
+    ],
+    parameters: {
+      garmentType,
+      sampleCount: 1,
+      preserveGarmentShape: true,
+      poseAlignment: true,
+      outputStyle: "realistic",
+    },
+  };
+
+  const client = await getVertexClient();
+  const response = await client.request({
+    url,
+    method: "POST",
+    data: requestBody,
+    timeout: 120000,
+  });
+
+  const predictions = response?.data?.predictions || [];
+  const first = predictions[0] || {};
+  const bytes = first.bytesBase64Encoded || first.image?.bytesBase64Encoded;
+  if (!bytes) {
+    throw new Error("Vertex Virtual Try-On returned no image bytes");
+  }
+  return bytes;
+}
 
 const MINIMAX_BASE_URL = "https://api.minimax.io/v1";
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY; // Add to your .env file
@@ -422,15 +492,6 @@ app.post("/api/tryon-from-urls", async (req, res) => {
       });
     }
 
-    const apiKey = getApiKeyByOutfit(outfitType);
-    if (!apiKey) {
-      console.log("❌ API key not configured");
-      return res.status(500).json({
-        success: false,
-        error: "API key not configured",
-      });
-    }
-
     // Download both images from URLs
     console.log(`📥 Downloading model image...`);
     const modelBase64 = await downloadAsBase64(modelUrl);
@@ -481,8 +542,24 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   const isSharara = lowerName === "sharara";
   const isKurtaSet = lowerName === "kurta set" || lowerName === "kurta sets";
 
-  const prompt = isBackgroundSwap
-    ? `
+  // Apparel try-on uses Vertex Virtual Try-On.
+  // Background swap can optionally use Vertex too (guarded by env flag), otherwise Gemini.
+  if (!isBackgroundSwap) {
+    console.log("🧵 Using Vertex Virtual Try-On model...");
+    return await generateVertexVirtualTryOn(modelBase64, garmentBase64);
+  }
+
+  if (process.env.VERTEX_ENABLE_BACKGROUND_SWAP === "true") {
+    try {
+      console.log("🧵 Using Vertex Virtual Try-On for background swap (enabled by VERTEX_ENABLE_BACKGROUND_SWAP=true)...");
+      return await generateVertexVirtualTryOn(modelBase64, garmentBase64);
+    } catch (error) {
+      console.warn("⚠️ Vertex background swap failed; falling back to Gemini.");
+      console.warn(error?.response?.data || error?.message || error);
+    }
+  }
+
+  const prompt = `
 ROLE
 You are a professional photo editor performing a REALISTIC background replacement.
 
@@ -512,143 +589,6 @@ PROHIBITED
 
 OUTPUT
 Return ONE high-resolution inline_data image only.
-`
-    : `
-ROLE
-Expert fashion AI specializing in STRICT photorealistic Indian ethnic wear virtual try-on.
-
-INPUT IMAGES
-- Image 1: Person image (HUMAN OR AI-generated)
-- Image 2: Garment reference (HUMAN photo OR AI-generated design)
-
-CORE OBJECTIVE
-Create ONE realistic photograph where:
-- The SAME person from Image 1 wears the EXACT garment from Image 2
-- ONLY the clothing may change
-
-━━━━━━━━━━ INTELLIGENT IMAGE ANALYSIS ━━━━━━━━━━
-Analyze BOTH images before generation:
-
-PERSON IMAGE (Image 1)
-- If human → preserve natural anatomy and lighting
-- If AI-generated → preserve proportions, pose, and facial identity
-In ALL cases: Image 1 defines identity, pose, body shape, and background
-
-GARMENT IMAGE (Image 2)
-- If AI-generated (flat lighting, symmetry, clean background):
-  → Extract garment design as TEMPLATE
-  → Ignore model/background
-  → Reconstruct realistic fabric physics and drape
-- If real photograph:
-  → Copy garment appearance EXACTLY
-  → Preserve natural folds, texture, and imperfections
-
-Image 2 is the ABSOLUTE SOURCE OF TRUTH for garment design.
-
-━━━━━━━━━━ GLOBAL IDENTITY & SCENE LOCK ━━━━━━━━━━
-- Face, hair, skin tone, body shape, height, pose → UNCHANGED
-- Background, camera angle, framing → UNCHANGED
-- No beautification, stylisation, cleanup, or enhancement
-
-━━━━━━━━━━ UNIVERSAL GARMENT TRANSFER RULES ━━━━━━━━━━
-
-1. COLOR ACCURACY
-- Extract exact fabric colors from Image 2 only
-- Ignore background color bleeding
-- No hue, saturation, brightness, gamma shifts
-- Adapt shadows ONLY to Image 1 lighting
-
-2. PATTERN & EMBELLISHMENT
-- Transfer ALL embroidery, prints, zari, motifs, borders
-- Maintain exact scale, density, and placement
-- No simplification or regeneration
-
-3. FABRIC PROPERTIES
-- Preserve texture: silk shine, cotton matte, georgette flow
-- Maintain transparency and fabric weight
-- Retain weave and material realism
-
-4. DRAPING & PHYSICS
-- Apply natural gravity-based folds
-- If Image 2 is flat/ideal → add realistic draping
-- If Image 2 shows natural drape → preserve style
-- No floating or broken fabric
-
-━━━━━━━━━━ GARMENT STRUCTURE RULES ━━━━━━━━━━
-${isSaree
-      ? `
-SAREE (CRITICAL)
-- ONE continuous fabric (not skirt + dupatta)
-- Natural Nivi drape ONLY
-- 6–8 waist pleats
-- Pallu over LEFT shoulder
-- Blouse must match Image 2 EXACTLY
-`
-      : ``
-    }
-
-${isLehenga
-      ? `
-LEHENGA
-- Choli + Lehenga skirt + Dupatta are DISTINCT
-- Preserve panel count, flare, hem embroidery
-- No silhouette conversion
-`
-      : ``
-    }
-
-${isAnarkali
-      ? `
-ANARKALI
-- Bodice + panelled flare + dupatta
-- Preserve seam positions and flare volume
-- No gown or skirt conversion
-`
-      : ``
-    }
-
-${isSharara
-      ? `
-SHARARA
-- Kurta + upper flare + lower wide panels + dupatta
-- No palazzo/churidar/lehenga conversion
-- Preserve flare rate and panel width
-`
-      : ``
-    }
-
-${isKurtaSet
-      ? `
-KURTA SET
-- Kurta + bottom + dupatta are DISTINCT
-- Bottom type must match Image 2 exactly
-- No silhouette changes
-`
-      : ``
-    }
-
-━━━━━━━━━━ LIGHTING & REALISM ━━━━━━━━━━
-- Match Image 1 lighting direction and intensity
-- Add contact shadows at body–fabric intersections
-- Final output must look like a real camera photograph
-- No AI-rendered appearance
-
-━━━━━━━━━━ STRICT PROHIBITIONS ━━━━━━━━━━
-- No face/body/background edits
-- No accessories or props
-- No logos, text, borders, watermarks
-- Do NOT return Image 1 or Image 2 unchanged
-- Do NOT create collage or split views
-
-QUALITY CHECK BEFORE OUTPUT
-✓ Face matches Image 1 exactly  
-✓ Garment matches Image 2 exactly  
-✓ Natural draping and physics  
-✓ Accurate colors  
-✓ No artifacts or floating fabric  
-
-OUTPUT REQUIREMENT
-Return ONE high-resolution photorealistic inline_data image only.
 `;
 
   const payload = {
@@ -1119,15 +1059,6 @@ app.post("/api/single-tryon", upload.single("model"), async (req, res) => {
       });
     }
 
-    const apiKey = getApiKeyByOutfit(outfitType);
-    if (!apiKey) {
-      console.log("❌ API key not configured");
-      return res.status(500).json({
-        success: false,
-        error: "API key not configured",
-      });
-    }
-
     console.log(`📊 Model image size: ${req.file.size} bytes`);
 
     const modelBase64 = req.file.buffer.toString("base64");
@@ -1282,6 +1213,9 @@ const PORT = 3004;
 app.listen(PORT, () => {
   console.log(`\n✨ Try-On Server Started`);
   console.log(`🌐 Running at: http://localhost:${PORT}`);
-  console.log(`🔑 Gemini API Key: ${GEMINI_API_KEY ? "✅ Configured" : "❌ Missing"}`);
+  console.log(`🔑 Gemini API Key: ${GEMINI_API_KEY ? "✅ Configured" : "❌ Missing"} (used for edits/background swap)`);
+  console.log(
+    `🧵 Vertex Virtual Try-On: ${VERTEX_PROJECT_ID ? "✅ Configured" : "❌ Missing GOOGLE_PROJECT_ID"} (used for apparel try-on)`
+  );
   console.log(`📡 Ready to receive requests...\n`);
 });
