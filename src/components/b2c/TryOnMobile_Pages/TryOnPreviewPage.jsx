@@ -496,6 +496,16 @@ const getCurrentDisplayImage = () => {
             <h3 className="text-sm font-semibold mb-3">Quick Actions</h3>
 
             <button
+              onClick={() => performTryOn({ force: true })}
+              disabled={isProcessing}
+              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${
+                isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
+              }`}
+            >
+              Retry Try-On
+            </button>
+
+            <button
               onClick={handleViewProduct}
               className="w-full bg-[#8B0000] text-white py-3 font-medium hover:bg-[#A30000] flex items-center justify-center gap-2"
             >

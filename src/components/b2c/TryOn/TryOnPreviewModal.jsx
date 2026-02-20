@@ -292,6 +292,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         isChangingBackground={isChangingBackground}
         tryOnResult={tryOnResult}
         tryOnData={tryOnData}
+        isProcessing={isProcessing}
+        performTryOn={performTryOn}
         isInWishlistState={isInWishlistState}
         onClose={handleClose}
         wishlistLoading={wishlistLoading}

@@ -48,3 +48,8 @@ Thumbs.db
 coverage
 
 .vercel
+
+# Google service account keys (DO NOT COMMIT)
+dvyb-8b572-230d61d58793.json
+*service-account*.json
+*sa-key*.json

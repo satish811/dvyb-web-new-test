@@ -1,6 +1,20 @@
 import React, { useState } from "react";
 import { Upload, Loader2, RefreshCw, Download } from "lucide-react";
 
+function RetryTryOnButton({ onRetry, disabled, retryCount }) {
+  return (
+    <button
+      onClick={onRetry}
+      disabled={disabled}
+      className="bg-white text-purple-700 px-6 py-3 rounded-lg font-semibold border border-purple-200 hover:bg-purple-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+      type="button"
+    >
+      <RefreshCw size={18} />
+      Retry{retryCount > 0 ? ` (${retryCount})` : ""}
+    </button>
+  );
+}
+
 export default function VirtualTryOn() {
   const [modelImage, setModelImage] = useState(null);
   const [garmentImage, setGarmentImage] = useState(null);
@@ -10,6 +24,7 @@ export default function VirtualTryOn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [responseText, setResponseText] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   const [sareeTryOn, setSareeTryOn] = useState(null);
   const [kurthiTryOn, setKurthiTryOn] = useState(null);
   const [lehengaTryOn, setLehengaTryOn] = useState(null);
@@ -39,12 +54,13 @@ export default function VirtualTryOn() {
 
     setLoading(true);
     setError(null);
+    setRetryCount((c) => c + 1);
 
     try {
       const formData = new FormData();
       formData.append("model", modelImage);
 
-      const response = await fetch("http://localhost:3001/api/multi-tryon", {
+      const response = await fetch("/api/multi-tryon", {
         method: "POST",
         body: formData,
       });
@@ -85,6 +101,7 @@ export default function VirtualTryOn() {
     setGeneratedImage(null);
     setResponseText("");
     setError(null);
+    setRetryCount(0);
   };
 
   return (
@@ -158,7 +175,7 @@ export default function VirtualTryOn() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-4 mb-8 flex-wrap">
           <button
             onClick={generateTryOn}
             disabled={loading || !modelImage}
@@ -173,6 +190,15 @@ export default function VirtualTryOn() {
               "Generate Virtual Try-On"
             )}
           </button>
+
+          {error && (
+            <RetryTryOnButton
+              onRetry={generateTryOn}
+              disabled={loading || !modelImage}
+              retryCount={retryCount}
+            />
+          )}
+
           <button
             onClick={reset}
             className="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300 flex items-center gap-2 transition-colors"
