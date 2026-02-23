@@ -3,7 +3,7 @@ import multer from "multer";
 import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
-import FormData from 'form-data'; 
+import FormData from 'form-data';
 import cloudinary from 'cloudinary';
 import { GoogleAuth } from "google-auth-library";
 
@@ -189,7 +189,7 @@ app.post("/api/video/create", upload.single("tryOnImage"), async (req, res) => {
       prompt:
         "A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.",
       duration: 6,
-      resolution: "1080P",
+      resolution: "768P",
       prompt_optimizer: true,
       fast_pretreatment: true,
     };
@@ -301,24 +301,24 @@ app.get("/api/video/download/:fileId", async (req, res) => {
 // ============================================================
 app.post('/api/upload-to-cloudinary', async (req, res) => {
   console.log('\n☁️ === CLOUDINARY UPLOAD REQUEST ===');
-  
+
   try {
     const { images } = req.body; // Array of { outfitType, base64Image }
-    
+
     if (!images || !Array.isArray(images)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Images array required" 
+        error: "Images array required"
       });
     }
 
     console.log(`📤 Uploading ${images.length} images to Cloudinary...`);
-    
+
     const uploadPromises = images.map(async ({ outfitType, base64Image }) => {
       try {
         // Remove data URL prefix if present
         const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-        
+
         // Upload to Cloudinary
         const result = await cloudinary.v2.uploader.upload(
           `data:image/png;base64,${base64Data}`,
@@ -330,7 +330,7 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
         );
 
         console.log(`✅ ${outfitType} uploaded: ${result.secure_url}`);
-        
+
         return {
           outfitType,
           url: result.secure_url,
@@ -347,10 +347,10 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
     });
 
     const results = await Promise.all(uploadPromises);
-    
+
     const successCount = results.filter(r => r.success).length;
     console.log(`\n✨ Upload complete: ${successCount}/${images.length} successful`);
-    
+
     res.json({
       success: true,
       results: results.reduce((acc, r) => {
@@ -491,8 +491,8 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName) {
   // const isSaree = garmentName.toLowerCase() === 'saree';
   // const islehenga = garmentName.toLowerCase()=== 'lehenga'
 
-   const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
-const lowerName = garmentName?.toLowerCase() || "";
+  const isBackgroundSwap = garmentName?.toLowerCase()?.includes('background');
+  const lowerName = garmentName?.toLowerCase() || "";
 
   // const isBackgroundSwap = lowerName.includes("background");
   const isSaree = lowerName === "saree";
@@ -615,7 +615,7 @@ Return ONE high-resolution inline_data image only.
 }
 
 // ⭐ RETRY FUNCTION - FIXED NAME (no typo)
-async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, maxRetries = 3) {
+async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, maxRetries = 2) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`🔄 Attempt ${attempt}/${maxRetries} for ${garmentName}`);
@@ -962,21 +962,24 @@ app.post("/api/change-blouse", upload.single("tryOnImage"), async (req, res) => 
 });
 
 app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
+  console.log("\n👚 === neck CHANGE REQUEST ===");
   try {
     if (!req.file) {
       return res.status(400).json({ error: "Try-on image required" });
     }
 
     const { neckType } = req.body;
-   const resolvedNeckType =
-  neckType === "collar"
-    ? "boat neck neckline"
-    : "regular round neckline";
+    const resolvedNeckType =
+      neckType === "collar"
+        ? "boat neck neckline"
+        : "regular round neckline";
 
     const base64 = req.file.buffer.toString("base64");
     const result = await generateNeckChange(base64, resolvedNeckType);
 
     if (!result) throw new Error("No image returned");
+
+    console.log("✨ SUCCESS — neck Changed! 👚");
 
     res.json({
       success: true,

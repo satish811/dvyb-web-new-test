@@ -100,7 +100,7 @@ const TryOnStage = ({
       {/* 3D VIDEO VIEW */}
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "3D" && (
-        <div className="relative w-1/4 h-full flex items-center justify-center">
+        <div className="relative  h-full flex items-center justify-center">
           
           {/* Video Generating */}
           {isGeneratingVideo && (

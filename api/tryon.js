@@ -505,22 +505,26 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 async function generateBlouseChange(tryOnBase64, blouseType) {
   const prompt = `
 ROLE
-You are a professional fashion photo editor specializing in saree blouse modifications.
+You are an expert Indian ethnic wear photo editor specializing exclusively in realistic saree blouse sleeve modifications.
 
 TASK
-Modify ONLY the blouse in this saree image to a ${blouseType} design.
+Modify **ONLY the blouse sleeves** in the provided saree photo to match a **${blouseType}** sleeve style.  
+Do absolutely nothing else to the image.
 
-STRICT RULES
-- Keep the SAME person, face, pose, and body
-- Keep the SAME saree (fabric, color, design, draping)
-- ONLY change the blouse sleeve style to: ${blouseType}
-- AND if it is a sleeveless design then you should not remove the entire blouse in the image just change the existing sleeve to sleeveless and if it is already sleeveless then do not change anything 
-- Maintain realistic fit and proportions
-- NO other changes to the image
+STRICT RULES – MUST FOLLOW ALL
+• Preserve the exact same woman: face, facial expression, skin tone, makeup, hair, jewellery, body shape, posture, pose, angle, proportions, skin exposure on arms/shoulders/back
+• Keep the **exact same saree**: fabric texture, colour, border, pallu design, pleats, draping style, fall, pinning — unchanged
+• Change **ONLY the sleeve style** to: **${blouseType} sleeves**
+  - If the target is "sleeveless", convert to a clean, fitted sleeveless blouse with smooth armhole edges (do NOT remove the blouse completely or make it a bra-style crop — keep full coverage of the bust/ribcage area as in original)
+  - If the original is already sleeveless and target is sleeveless → make NO changes at all
+  - If target is "cap sleeves", "short sleeves", "elbow sleeves", etc., match the exact typical length and shape commonly understood for that name in Indian saree blouses
+• Match realistic Indian saree blouse tailoring: correct dart placement, natural fabric stretch & drape over bust/shoulder, believable stitching lines, shadow/highlight continuity
+• Maintain perfect photorealism: same lighting direction, skin texture, subtle pores & arm hair if visible, natural skin-armhole transition, no distortion, no extra limbs or anatomy errors
+• NO other modifications whatsoever: no neckline change, no back design change, no length change of blouse, no added embroidery/beads/lace unless that exact sleeve style normally includes it in classic form, no colour change, no contrast piping unless typical for that named style
 
-OUTPUT
-Return ONLY one high-resolution photorealistic inline_data image.
-NO text or explanations.
+OUTPUT REQUIREMENT
+Return ONLY one high-resolution, photorealistic image (inline_data / generated image).
+Absolutely NO text, NO explanations, NO markdown, NO additional images, NO visible UI elements.
 `;
 
   const payload = {
@@ -562,80 +566,135 @@ async function generateNeckChange(tryOnBase64, neckType) {
     : `${neckType.toLowerCase()} neck`;
 
   // Define neck type specifications
-  const neckTypeSpecs = {
-    'boat neck': `BOAT NECK DEFINITION (CRITICAL)
-- Wide horizontal neckline
-- Runs close to the collarbone
-- Straight or gently curved line
-- NO depth, NO plunge, NO collar stand
-- Elegant, classic Indian saree blouse style`,
+//   const neckTypeSpecs = {
+//     'boat neck': `BOAT NECK DEFINITION (CRITICAL)
+// - Wide horizontal neckline
+// - Runs close to the collarbone
+// - Straight or gently curved line
+// - NO depth, NO plunge, NO collar stand
+// - Elegant, classic Indian saree blouse style`,
 
-    'regular neck': `REGULAR NECK DEFINITION (CRITICAL)
-- Round neckline
-- Medium depth (2-3 inches below collarbone)
-- Natural, comfortable fit
-- Traditional saree blouse style
-- Not too high, not too low`,
+//     'regular neck': `REGULAR NECK DEFINITION (CRITICAL)
+// - Round neckline
+// - Medium depth (2-3 inches below collarbone)
+// - Natural, comfortable fit
+// - Traditional saree blouse style
+// - Not too high, not too low`,
 
-    'v neck': `V NECK DEFINITION (CRITICAL)
-- V-shaped neckline
-- Moderate depth pointing downward
-- Flattering and elegant
-- Traditional saree blouse proportions`,
+//     'v neck': `V NECK DEFINITION (CRITICAL)
+// - V-shaped neckline
+// - Moderate depth pointing downward
+// - Flattering and elegant
+// - Traditional saree blouse proportions`,
 
-    'square neck': `SQUARE NECK DEFINITION (CRITICAL)
-- Straight horizontal top edge
-- Straight vertical side edges forming 90° angles
-- Clean, modern look
-- Traditional saree blouse fit`,
+//     'square neck': `SQUARE NECK DEFINITION (CRITICAL)
+// - Straight horizontal top edge
+// - Straight vertical side edges forming 90° angles
+// - Clean, modern look
+// - Traditional saree blouse fit`,
 
-    'sweetheart neck': `SWEETHEART NECK DEFINITION (CRITICAL)
-- Curved neckline resembling top of a heart
-- Romantic and feminine
-- Moderate depth
-- Traditional saree blouse style`,
+//     'sweetheart neck': `SWEETHEART NECK DEFINITION (CRITICAL)
+// - Curved neckline resembling top of a heart
+// - Romantic and feminine
+// - Moderate depth
+// - Traditional saree blouse style`,
 
-    'collar neck': `COLLAR NECK DEFINITION (CRITICAL)
-- Stand collar or shirt-style collar
-- Professional and structured look
-- Covers collarbone area
-- Traditional yet modern saree blouse style`
-  };
+//     'collar neck': `COLLAR NECK DEFINITION (CRITICAL)
+// - Stand collar or shirt-style collar
+// - Professional and structured look
+// - Covers collarbone area
+// - Traditional yet modern saree blouse style`
+//   };
 
-  const neckSpec = neckTypeSpecs[normalizedType] || `NECKLINE MODIFICATION
-- Apply ${neckType} neckline style
-- Maintain appropriate coverage and fit
-- Keep traditional blouse proportions`;
+//   const neckSpec = neckTypeSpecs[normalizedType] || `NECKLINE MODIFICATION
+// - Apply ${neckType} neckline style
+// - Maintain appropriate coverage and fit
+// - Keep traditional blouse proportions`;
 
   const prompt = `
 ROLE
-You are a professional Indian fashion photo editor.
+You are an expert Indian ethnic wear photo retoucher specializing in precise saree blouse neckline edits only.
 
 TASK
-Modify ONLY the blouse NECKLINE to a ${normalizedType.toUpperCase()} design.
+Using the provided input image, surgically modify **ONLY the front neckline / décolletage area** of the blouse to a **${neckType} neck** style (normalized to: ${normalizedType.toUpperCase()}).
+Do NOT touch or regenerate anything else in the entire image.
 
-ABSOLUTE LOCKS (NON-NEGOTIABLE)
-- SAME person (face, hair, skin tone, expression)
-- SAME body shape, pose, proportions
-- SAME saree (fabric, color, design, draping)
-- SAME blouse (fabric, color, sleeves, length, fit)
-- SAME background, camera angle, lighting
+STRICT LOCKS – PRESERVE 100% UNCHANGED
+• Exact same woman: face identity, expression, eyes, lips, makeup, hair style/volume, earrings, necklace, bindi, skin tone/texture/pores
+• Exact same body: posture, shoulder angle, bust/waist/hip proportions, arm position, hand placement
+• Exact same saree: drape, pleats, pallu folds & placement, fabric sheen/texture, color, border patterns, pinning
+• Exact same blouse everywhere except neckline edge: fabric color & texture match, sleeve style/length/cuffs, blouse length at waist, darts, side seams, underarm fit, back (if visible)
+• Exact same lighting, shadows, highlights, background, depth of field, grain/noise
 
-${neckSpec}
+NECKLINE SPECIFICATIONS – MATCH THIS EXACT STYLE
+Use the most classic/traditional Indian saree blouse interpretation of the requested type:
 
-FORBIDDEN CHANGES
-- No sleeve modification
-- No blouse reshaping
-- No jewelry, makeup, or beautification
-- No color correction or enhancement
-- No background alteration
+${neckType.toLowerCase().includes('boat') ? 
+`BOAT NECK (BATEAU)
+- Wide, straight or softly curved horizontal neckline
+- Sits high, close to / along the collarbone
+- Exposes shoulders minimally to moderately
+- No plunge, no curve downward in center
+- Elegant, modest, timeless for silk/cotton sarees` :
 
-FAILURE CONDITIONS
-- If anything other than the neckline changes → REJECT internally and regenerate correctly
+neckType.toLowerCase().includes('regular') || neckType.toLowerCase().includes('round') ?
+`ROUND / REGULAR NECK
+- Classic circular/rounded neckline 
+- Medium depth: 4 inches below collarbone center
+- Balanced, comfortable coverage
+- Most versatile traditional style
+- Smooth curve, no sharp angles` :
+
+neckType.toLowerCase().includes('v') ?
+`V-NECK
+- Clean V-shape pointing downward
+- Moderate depth (not too deep/plunging)
+- Flattering elongation of neck & torso
+- Common elegant saree blouse style
+- Sharp or softly pointed apex` :
+
+neckType.toLowerCase().includes('square') ?
+`SQUARE NECK
+- Straight horizontal top line across collarbone
+- Vertical straight sides forming ~90° corners
+- Geometric, structured, modern-traditional look
+- Clean edges, good collarbone emphasis` :
+
+neckType.toLowerCase().includes('sweetheart') ?
+`SWEETHEART NECK
+- Curved top resembling upper half of a heart
+- Two soft upward curves meeting at gentle central dip
+- Romantic, feminine, flattering on bust
+- Moderate depth, elegant drape` :
+
+neckType.toLowerCase().includes('collar') ?
+`COLLAR NECK / SHIRT COLLAR
+- Structured stand-up or fold-over collar
+- Shirt-style or mandarin-inspired
+- Covers base of neck / collarbone area
+- Crisp, formal-modern fusion look` :
+
+`Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
+
+EDITING RULES
+• Change ONLY the fabric edge/contour at the neck opening
+• Re-draw the neckline fabric boundary precisely to new shape
+• Maintain exact fabric texture, weave, sheen, color gradient, subtle print continuity
+• Perfect stitching realism along new neck edge (subtle seam allowance if appropriate)
+• Natural skin-to-fabric transition, realistic shadows inside neckline
+• No added embellishments, piping, buttons, embroidery unless standard for this exact classic style
+• No change to blouse overall shape, tightness, or dart placement
+• No anatomy distortion, no extra skin exposure beyond the new neckline definition
+
+FORBIDDEN (IF ANY OCCURS → INTERNALLY REJECT & REGENERATE)
+• Sleeve, back, length, fit, color, texture change
+• Jewelry, makeup, hair, pose shift
+• Face or body reshaping
+• Lighting inconsistency or over-smoothing
 
 OUTPUT
-Return ONE high-resolution photorealistic image.
-NO text. NO explanation.
+Return ONLY one high-resolution photorealistic edited image.
+NO text, NO captions, NO explanations, NO UI overlays, NO multiple variants.
 `;
 
   const payload = {
@@ -839,7 +898,7 @@ export default async function handler(req, res) {
         first_frame_image: imageDataUrl,
         prompt: 'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
         duration: 6,
-        resolution: '1080P',
+        resolution: '768P',
         prompt_optimizer: true,
         fast_pretreatment: true
       };
