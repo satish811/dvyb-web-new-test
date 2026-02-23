@@ -49,7 +49,7 @@ const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY;
 
 // Vertex AI Virtual Try-On (no prompting)
-const VERTEX_PROJECT_ID = process.env.GOOGLE_PROJECT_ID;
+const VERTEX_PROJECT_ID = process.env.GOOGLE_PROJECT_ID || "dvyb-8b572";
 const VERTEX_LOCATION = process.env.GOOGLE_LOCATION || "us-central1";
 const VERTEX_MODEL_ID = process.env.VERTEX_VIRTUAL_TRYON_MODEL_ID || "virtual-try-on-001";
 const VERTEX_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"];

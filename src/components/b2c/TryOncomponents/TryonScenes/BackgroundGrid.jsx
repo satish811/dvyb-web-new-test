@@ -45,10 +45,6 @@ const BackgroundGrid = ({
             )}
           </button>
 
-          {/* Label below image */}
-          <p className="text-xs font-medium text-center pt-1 text-gray-600">
-            {bg.name}
-          </p>
         </div>
       ))}
     </div>
