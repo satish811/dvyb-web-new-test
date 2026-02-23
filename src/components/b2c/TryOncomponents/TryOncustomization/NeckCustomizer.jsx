@@ -16,12 +16,9 @@ const NeckCustomizer = ({
   return (
 <div className="
   bg-white
-  shadow-sm
-  border border-gray-200
   p-4
-  w-full md:max-w-[310px]
+  w-full
   grid grid-cols-2 gap-3
-  max-h-[calc(100vh-120px)]
 ">
 
       {NECK_OPTIONS.map((neck) => (
