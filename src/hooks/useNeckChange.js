@@ -7,9 +7,13 @@ import { createNeckFormData } from "../utils/tryOnHelpers";
 export const useNeckChange = (tryOnResult) => {
   const [selectedNeck, setSelectedNeck] = useState(null);
   const [isChangingNeck, setIsChangingNeck] = useState(false);
+  const [neckChangedImage, setNeckChangedImage] = useState(null);
 
   const changeNeck = async (neckType) => {
-    if (!tryOnResult) {
+    // Use the previously modified image if available, otherwise use the original
+    const baseImage = neckChangedImage || tryOnResult;
+
+    if (!baseImage) {
       toast.error("Please complete try-on first!");
       return;
     }
@@ -20,7 +24,7 @@ export const useNeckChange = (tryOnResult) => {
     try {
       console.log("👗 Starting neck change...");
 
-      const formData = await createNeckFormData(tryOnResult, neckType);
+      const formData = await createNeckFormData(baseImage, neckType);
 
       console.log(`📤 Sending to backend with neck: ${neckType}`);
 
@@ -36,6 +40,8 @@ export const useNeckChange = (tryOnResult) => {
       }
 
       console.log("✅ Neck change successful!");
+      // Update internal state with the modified image
+      setNeckChangedImage(data.result);
       toast.success(`Neck changed to ${neckType}! 👗`);
       return data.result;
     } catch (err) {
@@ -52,5 +58,6 @@ export const useNeckChange = (tryOnResult) => {
     isChangingNeck,
     changeNeck,
     setSelectedNeck,
+    neckChangedImage,
   };
 };

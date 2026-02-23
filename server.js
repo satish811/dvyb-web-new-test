@@ -189,7 +189,7 @@ app.post("/api/video/create", upload.single("tryOnImage"), async (req, res) => {
       prompt:
         "A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.",
       duration: 6,
-      resolution: "1080P",
+      resolution: "768P",
       prompt_optimizer: true,
       fast_pretreatment: true,
     };
@@ -656,7 +656,7 @@ Return ONE high-resolution inline_data image only.
 }
 
 // ⭐ RETRY FUNCTION - FIXED NAME (no typo)
-async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, maxRetries = 3) {
+async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, maxRetries = 2) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`🔄 Attempt ${attempt}/${maxRetries} for ${garmentName}`);
@@ -1003,6 +1003,7 @@ app.post("/api/change-blouse", upload.single("tryOnImage"), async (req, res) => 
 });
 
 app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
+  console.log("\n👚 === neck CHANGE REQUEST ===");
   try {
     if (!req.file) {
       return res.status(400).json({ error: "Try-on image required" });
@@ -1018,6 +1019,8 @@ app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
     const result = await generateNeckChange(base64, resolvedNeckType);
 
     if (!result) throw new Error("No image returned");
+
+    console.log("✨ SUCCESS — neck Changed! 👚");
 
     res.json({
       success: true,

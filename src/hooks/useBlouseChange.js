@@ -12,9 +12,13 @@ import { createBlouseFormData } from "../utils/tryOnHelpers";
 export const useBlouseChange = (tryOnResult) => {
   const [selectedBlouse, setSelectedBlouse] = useState("regular");
   const [isChangingBlouse, setIsChangingBlouse] = useState(false);
+  const [blouseChangedImage, setBlouseChangedImage] = useState(null);
 
   const changeBlouse = async (blouseType) => {
-    if (!tryOnResult) {
+    // Use the previously modified image if available, otherwise use the original
+    const baseImage = blouseChangedImage || tryOnResult;
+
+    if (!baseImage) {
       toast.error("Please complete try-on first!");
       return;
     }
@@ -25,7 +29,7 @@ export const useBlouseChange = (tryOnResult) => {
     try {
       console.log("👚 Starting blouse change...");
 
-      const formData = await createBlouseFormData(tryOnResult, blouseType);
+      const formData = await createBlouseFormData(baseImage, blouseType);
 
       console.log(`📤 Sending to backend with blouse: ${blouseType}`);
 
@@ -43,6 +47,8 @@ export const useBlouseChange = (tryOnResult) => {
 
       if (data.success && data.result) {
         console.log("✅ Blouse change successful!");
+        // Update internal state with the modified image
+        setBlouseChangedImage(data.result);
         toast.success(`Blouse changed to ${blouseType}! 👚`);
         return data.result; // Return the new image
       } else {
@@ -62,5 +68,6 @@ export const useBlouseChange = (tryOnResult) => {
     isChangingBlouse,
     changeBlouse,
     setSelectedBlouse,
+    blouseChangedImage,
   };
 };
