@@ -502,7 +502,7 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 }
 
 
-async function generateBlouseChange(tryOnBase64, blouseType) {
+async function generateBlouseChange(tryOnBase64, blouseType, mimeType = "image/jpeg") {
   const prompt = `
 ROLE
 You are a master Indian saree blouse photo retoucher. You ONLY edit sleeve regions — nothing else.
@@ -556,7 +556,7 @@ NO text whatsoever. NO explanations. NO markdown. NO extra images. NO UI element
         { text: prompt },
         {
           inline_data: {
-            mime_type: "image/jpeg",
+            mime_type: mimeType,
             data: tryOnBase64
           }
         }
@@ -582,7 +582,7 @@ NO text whatsoever. NO explanations. NO markdown. NO extra images. NO UI element
 
 //neck change function
 
-async function generateNeckChange(tryOnBase64, neckType) {
+async function generateNeckChange(tryOnBase64, neckType, mimeType = "image/jpeg") {
   // Normalize neck type input
   const normalizedType = neckType.toLowerCase().includes('neck')
     ? neckType.toLowerCase()
@@ -726,7 +726,7 @@ NO text, NO captions, NO explanations, NO UI overlays, NO multiple variants.
         { text: prompt },
         {
           inline_data: {
-            mime_type: "image/jpeg",
+            mime_type: mimeType,
             data: tryOnBase64
           }
         }
@@ -1033,9 +1033,10 @@ export default async function handler(req, res) {
 
       // Convert image to base64
       const tryOnBase64 = req.file.buffer.toString("base64");
+      const imageMimeType = req.file.mimetype || "image/jpeg";
 
       console.log("🎨 Calling Gemini for blouse modification...");
-      const result = await generateBlouseChange(tryOnBase64, blouseType);
+      const result = await generateBlouseChange(tryOnBase64, blouseType, imageMimeType);
 
       if (!result) {
         throw new Error("No image returned from AI");
@@ -1080,9 +1081,10 @@ export default async function handler(req, res) {
 
       // Convert image to base64
       const tryOnBase64 = req.file.buffer.toString("base64");
+      const imageMimeType = req.file.mimetype || "image/jpeg";
 
       console.log("🎨 Calling Gemini for neckline modification...");
-      const result = await generateNeckChange(tryOnBase64, neckType);
+      const result = await generateNeckChange(tryOnBase64, neckType, imageMimeType);
 
       if (!result) {
         throw new Error("No image returned from AI");

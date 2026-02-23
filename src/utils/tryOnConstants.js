@@ -215,7 +215,7 @@ export const UI_TEXT = {
   VIEW_IN_360: "View Virtual Video",
   VIDEO_GENERATING: "Generating 3D Video...",
   VIDEO_GENERATING_SUBTITLE: "Creating your 6-second video",
-  VIDEO_COMPLETE_TIME: "This usually takes 45–90 seconds",
+  VIDEO_COMPLETE_TIME: "Creating your virtual look!! This may take a few moments.",
   VIDEO_GENERATION_FAILED: "Video Generation Failed",
   BACKGROUND_REQUIRED_TITLE: "Background Required",
   BACKGROUND_REQUIRED_MSG: "Please select a background scene first before generating 3D video.",

@@ -20,13 +20,16 @@ export const loadImg = (src) => {
  */
 export const urlToBlob = async (url) => {
   if (url.startsWith("data:")) {
+    // Extract mime type from the data URL header (e.g. "data:image/png;base64,...")
+    const mimeMatch = url.match(/^data:([^;]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
     const base64 = url.split(",")[1];
     const byteCharacters = atob(base64);
     const byteArray = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteArray[i] = byteCharacters.charCodeAt(i);
     }
-    return new Blob([byteArray], { type: "image/jpeg" });
+    return new Blob([byteArray], { type: mimeType });
   }
   return await fetch(url).then(r => r.blob());
 };
@@ -36,7 +39,7 @@ export const urlToBlob = async (url) => {
  */
 export const parseColors = (selectedColors) => {
   if (!selectedColors || selectedColors.length === 0) {
-    return [{ name: "blue", color: "#2C5F7F", image: "..." }];
+    return [];
   }
 
   return selectedColors.map((colorString) => {
@@ -141,12 +144,19 @@ export const createTryOnFormData = async (modelImage, garmentImage, outfitType) 
 /**
  * Create FormData for background change
  */
-export const createBackgroundFormData = async (tryOnImage, backgroundType) => {
+export const createBackgroundFormData = async (tryOnImage, backgroundType, customBgImage = null) => {
   const blob = await urlToBlob(tryOnImage);
 
   const formData = new FormData();
   formData.append('tryOnImage', blob, 'tryon-result.png');
-  formData.append('background', backgroundType);
+
+  if (customBgImage) {
+    const bgBlob = await urlToBlob(customBgImage);
+    formData.append('backgroundImage', bgBlob, 'background.png');
+    formData.append('backgroundName', backgroundType);
+  } else {
+    formData.append('background', backgroundType);
+  }
 
   return formData;
 };

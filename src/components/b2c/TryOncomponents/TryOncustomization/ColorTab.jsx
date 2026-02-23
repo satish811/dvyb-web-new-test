@@ -7,10 +7,20 @@ import React from "react";
  * Displays color swatches for try-on customization
  */
 const ColorTab = ({ selectedColor, setSelectedColor, colors, viewMode }) => {
+  if (!colors || colors.length === 0) {
+    return (
+      <div className="py-4 text-center">
+        <p className="text-sm text-gray-400 italic">No colour variants available for this product.</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <p className="text-sm font-medium text-gray-500 mb-3">
-        Colour: <span className="uppercase text-gray-900">{selectedColor}</span>
+        Colour:{selectedColor && (
+          <span className="uppercase text-gray-900 ml-1">{selectedColor}</span>
+        )}
       </p>
       <div className="grid grid-cols-4 gap-2">
         {colors.map((color) => (
