@@ -378,24 +378,35 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
 // ============================================================
 // ENDPOINT: /api/change-tryon-background
 // ============================================================
-app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req, res) => {
+app.post('/api/change-tryon-background', upload.fields([
+  { name: 'tryOnImage', maxCount: 1 },
+  { name: 'backgroundImage', maxCount: 1 }
+]), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files?.tryOnImage?.[0]) {
       return res.status(400).json({ error: "Try-on image is required" });
     }
 
-    const { background } = req.body;
-    const selectedBg = backgrounds.find(bg => bg.id === background);
+    const tryOnBase64 = req.files.tryOnImage[0].buffer.toString("base64");
+    let bgBase64;
+    let bgName;
 
-    if (!background || !selectedBg) {
-      return res.status(400).json({
-        error: "Valid background selection required",
-        availableBackgrounds: backgrounds.map(b => b.id),
-      });
+    // Custom background uploaded directly as a file
+    if (req.files?.backgroundImage?.[0]) {
+      bgBase64 = req.files.backgroundImage[0].buffer.toString("base64");
+      bgName = req.body.backgroundName || "Custom";
+    } else {
+      const { background } = req.body;
+      const selectedBg = backgrounds.find(bg => bg.id === background);
+      if (!background || !selectedBg) {
+        return res.status(400).json({
+          error: "Valid background selection required",
+          availableBackgrounds: backgrounds.map(b => b.id),
+        });
+      }
+      bgBase64 = await downloadAsBase64(selectedBg.image);
+      bgName = selectedBg.name;
     }
-
-    const tryOnBase64 = req.file.buffer.toString("base64");
-    const bgBase64 = await downloadAsBase64(selectedBg.image);
 
     const result = await generateTryOnWithRetry(
       tryOnBase64,
@@ -406,7 +417,7 @@ app.post('/api/change-tryon-background', upload.single('tryOnImage'), async (req
     return res.json({
       success: true,
       result: `data:image/png;base64,${result}`,
-      background: selectedBg.name,
+      background: bgName,
     });
 
   } catch (err) {

@@ -56,7 +56,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   const [selectedTab, setSelectedTab] = useState("colours");
   const [activeCustomizer, setActiveCustomizer] = useState("blouse");
 
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] = useState(
+    () => parseColors(tryOnData?.selectedColors)[0]?.name ?? ""
+  );
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [viewMode, setViewMode] = useState("2D");
   const [showBgWarning, setShowBgWarning] = useState(false);

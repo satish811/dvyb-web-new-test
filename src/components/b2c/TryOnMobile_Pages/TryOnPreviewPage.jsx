@@ -51,7 +51,9 @@ const TryOnPreviewPage = () => {
   // UI STATE
   // ============================================
   const [selectedTab, setSelectedTab] = useState("colours");
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] = useState(
+    () => parseColors(tryOnData?.selectedColors)[0]?.name ?? ""
+  );
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [view360Enabled, setView360Enabled] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
@@ -344,23 +346,31 @@ const getCurrentDisplayImage = () => {
 
             {selectedTab === "colours" && (
               <div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Colour: <span className="uppercase font-semibold">{selectedColor}</span>
-                </p>
-                <div className="grid grid-cols-4 gap-3">
-                  {colors.map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`aspect-square transition-all h-12 mt-1.5 rounded ${
-                        selectedColor === color.name
-                          ? "ring-2 ring-gray-900 ring-offset-2"
-                          : "ring-1 ring-gray-200"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
+                {colors.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic py-2">No colour variants available for this product.</p>
+                ) : (
+                  <>
+                    {selectedColor && (
+                      <p className="text-sm text-gray-600 mb-3">
+                        Colour: <span className="uppercase font-semibold">{selectedColor}</span>
+                      </p>
+                    )}
+                    <div className="grid grid-cols-4 gap-3">
+                      {colors.map((color) => (
+                        <button
+                          key={color.name}
+                          onClick={() => setSelectedColor(color.name)}
+                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${
+                            selectedColor === color.name
+                              ? "ring-2 ring-gray-900 ring-offset-2"
+                              : "ring-1 ring-gray-200"
+                          }`}
+                          style={{ backgroundColor: color.color }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
