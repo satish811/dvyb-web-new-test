@@ -87,6 +87,16 @@ export const NECK_OPTIONS = [
     label: "Regular",
     image: "https://res.cloudinary.com/doiezptnn/image/upload/v1767595811/Gemini_Generated_Image_y8utf4y8utf4y8ut_d3ektd.png",
   },
+  {
+    id: "v-neck",
+    label: "V-Neck",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ECFDF5" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23059669" font-size="12"%3EV-Neck%3C/text%3E%3C/svg%3E',
+  },
+  {
+    id: "sweetheart",
+    label: "Sweetheart",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FFF1F2" width="100" height="100"/%3E%3Ctext x="50" y="45" text-anchor="middle" dy=".3em" fill="%23E11D48" font-size="9"%3ESweet%3C/text%3E%3Ctext x="50" y="62" text-anchor="middle" dy=".3em" fill="%23E11D48" font-size="9"%3Eheart%3C/text%3E%3C/svg%3E',
+  },
 ];
 
 // ============================================
@@ -94,19 +104,50 @@ export const NECK_OPTIONS = [
 // ============================================
 export const BLOUSE_SLEEVE_OPTIONS = [
   {
+    id: "sleeveless",
+    name: "Sleeveless",
+    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg",
+  },
+  {
+    id: "short-sleeve",
+    name: "Short Sleeve",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23F0FDF4" width="100" height="100"/%3E%3Ctext x="50" y="45" text-anchor="middle" dy=".3em" fill="%2316A34A" font-size="9"%3EShort%3C/text%3E%3Ctext x="50" y="62" text-anchor="middle" dy=".3em" fill="%2316A34A" font-size="9"%3ESleeve%3C/text%3E%3C/svg%3E',
+  },
+  {
+    id: "puff-sleeve",
+    name: "Puff",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23F3E8FF" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%238B5CF6" font-size="12"%3EPuff%3C/text%3E%3C/svg%3E',
+  },
+  {
     id: "half-sleeve",
     name: "Elbow",
     image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/halfsleeve_ldww1b.jpg",
   },
   {
-    id: "full-sleeve",
-    name: "Full Sleeve",
-    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg",
+    id: "three-quarter",
+    name: "3/4 Sleeve",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FFF7ED" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23EA580C" font-size="14" font-weight="bold"%3E3%2F4%3C/text%3E%3C/svg%3E',
   },
   {
-    id: "sleeveless",
-    name: "Sleeveless",
-    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/sleeveless_zdraop.jpg",
+    id: "full-sleeve",
+    name: "Full",
+    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1766411578/full_sleeve_harpuk.jpg",
+  },
+];
+
+// ============================================
+// SAREE STYLE OPTIONS
+// ============================================
+export const SAREE_STYLE_OPTIONS = [
+  {
+    id: "nivi",
+    name: "Nivi",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FDF4FF" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%239333EA" font-size="12"%3ENivi%3C/text%3E%3C/svg%3E',
+  },
+  {
+    id: "gujarati",
+    name: "Gujarati",
+    image: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FFF1F2" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23E11D48" font-size="10"%3EGujarati%3C/text%3E%3C/svg%3E',
   },
 ];
 
@@ -173,7 +214,7 @@ export const UI_TEXT = {
   SHARE_MY_LOOK: "Share my look",
   CUSTOMIZE_OUTFIT: "Outfit Details",
   CUSTOMIZE_SUBTITLE: "Try different colors, fabrics, and styles",
-  SCENES: "Scenes",
+  SCENES: "Background",
   BACKGROUNDS: "Backgrounds",
   QUICK_ACTIONS: "Quick Actions",
   VIEW_IN_360: "View Virtual Video",
