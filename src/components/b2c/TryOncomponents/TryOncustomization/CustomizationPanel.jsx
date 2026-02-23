@@ -6,6 +6,7 @@ import ColorTab from "./ColorTab";
 import FabricTab from "./FabricTab";
 import BlouseCustomizer from "../TryOncustomization/BlouseCustomizer";
 import NeckCustomizer from "../TryOncustomization/NeckCustomizer";
+import SareeStyleCustomizer from "../TryOncustomization/SareeStyleCustomizer";
 import ViewModeToggle from "../TryOnshared/ViewModeToggle";
 import CustomizerTabs from "../TryOnshared/CustomizerTabs";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
@@ -34,6 +35,8 @@ const CustomizationPanel = ({
   selectedNeck,
   isChangingNeck,
   changeNeck,
+  selectedSareeStyle,
+  onSelectSareeStyle,
 }) => {
   return (
     <>
@@ -44,7 +47,7 @@ const CustomizationPanel = ({
   absolute top-20
   left-6 xl:left-24 2xl:left-52
   z-20 hidden lg:block
-  w-[260px] xl:w-[294px]
+  w-[300px] xl:w-[320px]
   bg-white shadow-lg p-5
   max-h-[calc(100vh-120px)] overflow-y-auto
 ">
@@ -97,19 +100,19 @@ const CustomizationPanel = ({
         )}
 
         {/* View in 360 Toggle */}
-        <ViewModeToggle 
-          viewMode={viewMode} 
-          handleViewModeSwitch={handleViewModeSwitch} 
+        <ViewModeToggle
+          viewMode={viewMode}
+          handleViewModeSwitch={handleViewModeSwitch}
         />
       </div>
 
       {/* ============================================ */}
-      {/* BLOUSE & NECK CUSTOMIZER (Below main panel) */}
+      {/* BLOUSE, NECK & SAREE STYLE CUSTOMIZER (Below main panel) */}
       {/* ============================================ */}
     <div
   className="
     absolute
-    top-[440px] xl:top-[425px]
+    top-[460px] xl:top-[440px]
     left-4 md:left-6 xl:left-24 2xl:left-52
     z-20
     hidden lg:block
@@ -135,6 +138,14 @@ const CustomizationPanel = ({
             selectedNeck={selectedNeck}
             isChangingNeck={isChangingNeck}
             changeNeck={changeNeck}
+            tryOnResult={tryOnResult}
+          />
+        )}
+
+        {activeCustomizer === "saree-style" && (
+          <SareeStyleCustomizer
+            selectedStyle={selectedSareeStyle}
+            onSelectStyle={onSelectSareeStyle}
             tryOnResult={tryOnResult}
           />
         )}

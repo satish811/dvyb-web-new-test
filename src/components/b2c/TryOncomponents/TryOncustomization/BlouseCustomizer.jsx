@@ -19,14 +19,14 @@ const BlouseCustomizer = ({
   shadow-sm
   border border-gray-200
   p-4
-  w-full md:max-w-[300px]
-  grid grid-cols-2 gap-4
+  w-full md:max-w-[310px]
+  grid grid-cols-3 gap-3
   max-h-[calc(100vh-120px)]
 ">
 
       {BLOUSE_SLEEVE_OPTIONS.map((blouse) => (
         <div key={blouse.id} className="flex flex-col items-center">
-          <div className=" md:w-20 h-28  md:h-14 mb-2 shadow-sm overflow-hidden relative">
+          <div className="w-full h-20 mb-2 shadow-sm overflow-hidden relative">
             <img
               src={blouse.image}
               alt={blouse.name}
