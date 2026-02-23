@@ -86,19 +86,22 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     handleReset: resetBackground,
   } = useBackgroundChange(tryOnResult);
 
+  // Use background-changed image as base if available, so blouse/neck edits apply on top of it
+  const activeBaseImage = backgroundChangedImage || tryOnResult;
+
   // Blouse customization logic
   const {
     selectedBlouse,
     isChangingBlouse,
     changeBlouse,
-  } = useBlouseChange(tryOnResult);
+  } = useBlouseChange(activeBaseImage);
 
   // Neck customization logic
   const {
     selectedNeck,
     isChangingNeck,
     changeNeck,
-  } = useNeckChange(tryOnResult);
+  } = useNeckChange(activeBaseImage);
 
   // 3D video generation logic
   const {
@@ -118,12 +121,20 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
 
 
 
-  // CURRENT IMG SETTING
+  // Sync tryOnResult → currentImage when a new try-on is generated
   useEffect(() => {
     if (tryOnResult) {
       setCurrentImage(tryOnResult);
     }
   }, [tryOnResult]);
+
+  // Sync backgroundChangedImage → currentImage so downstream edits (blouse/neck)
+  // operate on and display the background-changed image
+  useEffect(() => {
+    if (backgroundChangedImage) {
+      setCurrentImage(backgroundChangedImage);
+    }
+  }, [backgroundChangedImage]);
 
 
 
@@ -153,8 +164,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     [tryOnData?.fabric]
   );
 
+  // currentImage is always the latest (try-on → background → blouse/neck edits)
   const getCurrentDisplayImage = () => {
-    return backgroundChangedImage || currentImage || tryOnResult;
+    return currentImage || tryOnResult;
   };
 
 
@@ -176,6 +188,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
 
   const handleReset = () => {
     resetBackground();
+    setCurrentImage(tryOnResult);
     setViewMode("2D");
   };
 

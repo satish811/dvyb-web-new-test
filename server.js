@@ -686,29 +686,49 @@ async function generateTryOnWithRetry(modelBase64, garmentBase64, garmentName, m
 async function generateBlouseChange(tryOnBase64, blouseType) {
   const prompt = `
 ROLE
-You are a professional Indian fashion photo editor.
+You are a master Indian saree blouse photo retoucher. You ONLY edit sleeve regions — nothing else.
 
 TASK
-Change ONLY the blouse sleeve style to: ${blouseType}.
+In the provided saree image, **surgically replace ONLY the existing sleeves** with **${blouseType} sleeves** (normalized to classic Indian saree style).  
+Leave every other pixel in the image completely untouched.
 
-ABSOLUTE LOCKS
-- SAME person, face, pose, body
-- SAME saree (fabric, color, drape)
-- SAME blouse body and neckline
-- SAME background and lighting
+ABSOLUTE PRESERVATION RULES
+• Identical woman: exact face, expression, eye direction, makeup intensity, hair strands/volumes, bindis, earrings, necklaces, skin tone/texture/pores/hair on arms if visible
+• Identical body & pose: shoulder slope, arm angle/position, bust/waist shape, hand placement, posture — zero anatomy shift
+• Identical saree: drape folds, pleat crispness, pallu placement, border motifs, fabric sheen/weave/color gradient, pinning points
+• Identical blouse except sleeves: fabric match (color, texture, subtle print continuity), exact blouse body length/waist fit, dart positions, side seams, underarm curve, back design (if visible)
+• Identical scene: lighting direction/intensity, cast shadows, highlights on skin & fabric, background, depth-of-field, noise/grain
 
-SLEEVE RULES (VERY IMPORTANT)
-- Sleeve style MUST visibly change
-- Half sleeve, full sleeve, sleeveless must be OBVIOUS
-- No neckline or fabric change
-- No color change
+SLEEVE MODIFICATION – MATCH THIS STYLE PRECISELY
+Use the most traditional/popular Indian saree blouse version of the requested ${blouseType}:
 
-FAILURE CONDITION
-- If sleeve style is unchanged → regenerate correctly
+- If "sleeveless" / "no sleeve" / "sleeveless blouse": clean fitted armholes with smooth rounded or slightly high-cut edges; keep full bust/ribcage coverage — never turn into crop-top or bra-style; if original already sleeveless → output original image unchanged
+- If "cap sleeves" / "cap sleeve": very short (~1–2 inches), slightly puffed or straight, barely covering shoulder top
+- If "short sleeves" / "elbow sleeves" / "elbow length": end exactly at or just above elbow; fitted or gently flared; common everyday/office style
+- If "three quarter" / "3/4 sleeves" / "three-quarter": end midway between elbow & wrist (forearm mid-point); elegant, versatile, modest
+- If "puff sleeves" / "puffed sleeves": gathered/volume at shoulder, then taper; cute, festive, classic South Indian wedding favourite
+- If "bell sleeves" / "flared sleeves": fitted upper arm, dramatically widen/flare toward hem; flowy, dramatic
+- If "full sleeves" / "long sleeves": wrist-length; fitted or loose; often with subtle cuff detail
+- If "flutter sleeves" / "ruffle sleeves": short to mid-length with wavy ruffle/layered edge; feminine, modern
+- If "bishop sleeves" / "balloon sleeves": voluminous throughout, gathered at cuff; regal, traditional
+- Otherwise: apply a clean, realistic, moderately fitted ${blouseType} sleeve that aligns with typical Indian saree tailoring aesthetics
+
+EDITING CONSTRAINTS
+• Regenerate ONLY sleeve fabric, seams & arm coverage area
+• Perfect fabric physics: natural drape over shoulder/bicep, realistic stretch & fold shadows
+• Believable tailoring: subtle stitching lines, no floating fabric, correct shoulder seam placement
+• Seamless skin transition: natural armhole edge, shadow inside armhole if sleeveless
+• No added lace, beads, embroidery, contrast piping, buttons unless standard/classic for that exact sleeve name
+• No change to sleeve attachment point, armhole height, or overall blouse silhouette
+
+STRICT FORBIDDEN CHANGES (IF ANY DETECTED → INTERNALLY REJECT & REGENERATE)
+• Any neckline, back, length, fit, colour, texture, embellishment change
+• Any face, hair, jewellery, pose, body reshaping
+• Lighting/shadow inconsistency, smoothing artifacts, anatomy errors
 
 OUTPUT
-Return ONE high-resolution photorealistic image only.
-NO text.
+Return ONLY one single high-resolution photorealistic edited image.
+NO text whatsoever. NO explanations. NO markdown. NO extra images. NO UI elements.
 `;
 
 
@@ -746,33 +766,95 @@ NO text.
 //neck change function
 
 async function generateNeckChange(tryOnBase64, neckType) {
+  // Normalize neck type input
+  const normalizedType = neckType.toLowerCase().includes('neck')
+    ? neckType.toLowerCase()
+    : `${neckType.toLowerCase()} neck`;
+
   const prompt = `
 ROLE
-You are a professional Indian fashion photo editor.
+You are an expert Indian ethnic wear photo retoucher specializing in precise saree blouse neckline edits only.
 
 TASK
-Modify ONLY the blouse NECKLINE to: ${neckType}.
+Using the provided input image, surgically modify **ONLY the front neckline / décolletage area** of the blouse to a **${neckType} neck** style (normalized to: ${normalizedType.toUpperCase()}).
+Do NOT touch or regenerate anything else in the entire image.
 
-ABSOLUTE LOCKS (NON-NEGOTIABLE)
-- SAME person (face, hair, skin tone, expression)
-- SAME body shape, pose, proportions
-- SAME saree (fabric, color, design, draping)
-- SAME blouse fabric, sleeves, length, fit
-- SAME background, camera angle, lighting
+STRICT LOCKS – PRESERVE 100% UNCHANGED
+• Exact same woman: face identity, expression, eyes, lips, makeup, hair style/volume, earrings, necklace, bindi, skin tone/texture/pores
+• Exact same body: posture, shoulder angle, bust/waist/hip proportions, arm position, hand placement
+• Exact same saree: drape, pleats, pallu folds & placement, fabric sheen/texture, color, border patterns, pinning
+• Exact same blouse everywhere except neckline edge: fabric color & texture match, sleeve style/length/cuffs, blouse length at waist, darts, side seams, underarm fit, back (if visible)
+• Exact same lighting, shadows, highlights, background, depth of field, grain/noise
 
-NECKLINE RULES (CRITICAL)
-- Change ONLY the neckline shape
-- Clearly visible neckline difference is REQUIRED
-- No sleeve or blouse body change
-- No jewelry or accessories added
-- No color or fabric change
+NECKLINE SPECIFICATIONS – MATCH THIS EXACT STYLE
+Use the most classic/traditional Indian saree blouse interpretation of the requested type:
 
-FAILURE CONDITION
-- If neckline does not visibly change → regenerate correctly
+${neckType.toLowerCase().includes('boat') ?
+`BOAT NECK (BATEAU)
+- Wide, straight or softly curved horizontal neckline
+- Sits high, close to / along the collarbone
+- Exposes shoulders minimally to moderately
+- No plunge, no curve downward in center
+- Elegant, modest, timeless for silk/cotton sarees` :
+
+neckType.toLowerCase().includes('regular') || neckType.toLowerCase().includes('round') ?
+`ROUND / REGULAR NECK
+- Classic circular/rounded neckline
+- Medium depth: 4 inches below collarbone center
+- Balanced, comfortable coverage
+- Most versatile traditional style
+- Smooth curve, no sharp angles` :
+
+neckType.toLowerCase().includes('v') ?
+`V-NECK
+- Clean V-shape pointing downward
+- Moderate depth (not too deep/plunging)
+- Flattering elongation of neck & torso
+- Common elegant saree blouse style
+- Sharp or softly pointed apex` :
+
+neckType.toLowerCase().includes('square') ?
+`SQUARE NECK
+- Straight horizontal top line across collarbone
+- Vertical straight sides forming ~90° corners
+- Geometric, structured, modern-traditional look
+- Clean edges, good collarbone emphasis` :
+
+neckType.toLowerCase().includes('sweetheart') ?
+`SWEETHEART NECK
+- Curved top resembling upper half of a heart
+- Two soft upward curves meeting at gentle central dip
+- Romantic, feminine, flattering on bust
+- Moderate depth, elegant drape` :
+
+neckType.toLowerCase().includes('collar') ?
+`COLLAR NECK / SHIRT COLLAR
+- Structured stand-up or fold-over collar
+- Shirt-style or mandarin-inspired
+- Covers base of neck / collarbone area
+- Crisp, formal-modern fusion look` :
+
+`Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
+
+EDITING RULES
+• Change ONLY the fabric edge/contour at the neck opening
+• Re-draw the neckline fabric boundary precisely to new shape
+• Maintain exact fabric texture, weave, sheen, color gradient, subtle print continuity
+• Perfect stitching realism along new neck edge (subtle seam allowance if appropriate)
+• Natural skin-to-fabric transition, realistic shadows inside neckline
+• No added embellishments, piping, buttons, embroidery unless standard for this exact classic style
+• No change to blouse overall shape, tightness, or dart placement
+• No anatomy distortion, no extra skin exposure beyond the new neckline definition
+
+FORBIDDEN (IF ANY OCCURS → INTERNALLY REJECT & REGENERATE)
+• Sleeve, back, length, fit, color, texture change
+• Jewelry, makeup, hair, pose shift
+• Face or body reshaping
+• Lighting inconsistency or over-smoothing
 
 OUTPUT
-Return ONE high-resolution photorealistic image only.
-NO text.
+Return ONLY one high-resolution photorealistic edited image.
+NO text, NO captions, NO explanations, NO UI overlays, NO multiple variants.
 `;
 
   const payload = {
@@ -1010,13 +1092,15 @@ app.post("/api/change-neck", upload.single("tryOnImage"), async (req, res) => {
     }
 
     const { neckType } = req.body;
-    const resolvedNeckType =
-      neckType === "collar"
-        ? "boat neck neckline"
-        : "regular round neckline";
+
+    if (!neckType) {
+      return res.status(400).json({ error: "neckType is required" });
+    }
+
+    console.log(`👗 Neck type: ${neckType}`);
 
     const base64 = req.file.buffer.toString("base64");
-    const result = await generateNeckChange(base64, resolvedNeckType);
+    const result = await generateNeckChange(base64, neckType);
 
     if (!result) throw new Error("No image returned");
 

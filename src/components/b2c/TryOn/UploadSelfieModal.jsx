@@ -159,26 +159,26 @@ const UploadSelfieModal = ({
 
     ]
     const sareeModels = [
-      // {
-      //   modelName: "Model 1",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
-      // },
+      {
+        modelName: "Model 1",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
+      },
       {
         modelName: "Model 2",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1765348065/model1_psruws.jpg",
       },
-      // {
-      //   modelName: "Model 3",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
-      // },
-      // {
-      //   modelName: "Model 4",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
-      // },
+      {
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
+      },
+      {
+        modelName: "Model 4",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
+      },
     ];
 
     const universalModels = [
