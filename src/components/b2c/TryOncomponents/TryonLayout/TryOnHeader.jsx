@@ -13,7 +13,7 @@ const TryOnHeader = () => {
 <div className="
   absolute 
   top-4 md:top-6
-  left-4 md:left-6 xl:left-24 2xl:left-52
+  left-2 md:left-4
   z-20
 ">
 
@@ -21,7 +21,7 @@ const TryOnHeader = () => {
         onClick={()=>{
           navigate(-1)
         }}
-        className="flex items-center gap-2 px-4 py-2 shadow-sm hover:shadow-md transition-all text-sm font-medium text-primary border border-primary"
+        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-hoverBg text-white transition-all text-sm font-medium"
       >
         <ArrowLeft size={18} />
         Back to Products
