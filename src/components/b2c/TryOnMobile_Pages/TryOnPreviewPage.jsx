@@ -80,19 +80,22 @@ const TryOnPreviewPage = () => {
     handleReset: resetBackground,
   } = useBackgroundChange(tryOnResult);
 
+  // Use background-changed image as base if available, so blouse/neck edits apply on top of it
+  const activeBaseImage = backgroundChangedImage || tryOnResult;
+
   // Blouse customization logic
   const {
     selectedBlouse,
     isChangingBlouse,
     changeBlouse,
-  } = useBlouseChange(tryOnResult);
+  } = useBlouseChange(activeBaseImage);
 
   // Neck customization logic
   const {
     selectedNeck,
     isChangingNeck,
     changeNeck,
-  } = useNeckChange(tryOnResult);
+  } = useNeckChange(activeBaseImage);
 
   // 3D video generation logic
   const {

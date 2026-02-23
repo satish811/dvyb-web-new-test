@@ -1,6 +1,6 @@
 // src/components/b2c/TryOn/hooks/useBlouseChange.js
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createBlouseFormData } from "../utils/tryOnHelpers";
@@ -13,6 +13,11 @@ export const useBlouseChange = (tryOnResult) => {
   const [selectedBlouse, setSelectedBlouse] = useState("regular");
   const [isChangingBlouse, setIsChangingBlouse] = useState(false);
   const [blouseChangedImage, setBlouseChangedImage] = useState(null);
+
+  // Reset when the base image changes (e.g. after a background change)
+  useEffect(() => {
+    setBlouseChangedImage(null);
+  }, [tryOnResult]);
 
   const changeBlouse = async (blouseType) => {
     // Use the previously modified image if available, otherwise use the original

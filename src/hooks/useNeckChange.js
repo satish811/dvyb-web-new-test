@@ -1,5 +1,5 @@
 // src/hooks/useNeckChange.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createNeckFormData } from "../utils/tryOnHelpers";
@@ -8,6 +8,11 @@ export const useNeckChange = (tryOnResult) => {
   const [selectedNeck, setSelectedNeck] = useState(null);
   const [isChangingNeck, setIsChangingNeck] = useState(false);
   const [neckChangedImage, setNeckChangedImage] = useState(null);
+
+  // Reset when the base image changes (e.g. after a background change)
+  useEffect(() => {
+    setNeckChangedImage(null);
+  }, [tryOnResult]);
 
   const changeNeck = async (neckType) => {
     // Use the previously modified image if available, otherwise use the original
