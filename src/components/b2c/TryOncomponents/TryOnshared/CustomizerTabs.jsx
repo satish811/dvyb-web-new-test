@@ -7,7 +7,7 @@ import React from "react";
  */
 const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
   return (
-<div className="flex mb-2 w-full max-w-[300px] border border-gray-200 overflow-hidden">
+<div className="flex w-full border-b border-gray-200 overflow-hidden">
 
       <button
         onClick={() => setActiveCustomizer("blouse")}
