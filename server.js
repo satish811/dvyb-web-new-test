@@ -189,7 +189,7 @@ app.post("/api/video/create", upload.single("tryOnImage"), async (req, res) => {
       prompt:
         "A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.",
       duration: 6,
-      resolution: "768P",
+      resolution: "1080P",
       prompt_optimizer: true,
       fast_pretreatment: true,
     };
@@ -666,22 +666,81 @@ ABSOLUTE PRESERVATION RULES
 • Identical woman: exact face, expression, eye direction, makeup intensity, hair strands/volumes, bindis, earrings, necklaces, skin tone/texture/pores/hair on arms if visible
 • Identical body & pose: shoulder slope, arm angle/position, bust/waist shape, hand placement, posture — zero anatomy shift
 • Identical saree: drape folds, pleat crispness, pallu placement, border motifs, fabric sheen/weave/color gradient, pinning points
+• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
 • Identical blouse except sleeves: fabric match (color, texture, subtle print continuity), exact blouse body length/waist fit, dart positions, side seams, underarm curve, back design (if visible)
 • Identical scene: lighting direction/intensity, cast shadows, highlights on skin & fabric, background, depth-of-field, noise/grain
 
 SLEEVE MODIFICATION – MATCH THIS STYLE PRECISELY
-Use the most traditional/popular Indian saree blouse version of the requested ${blouseType}:
+The requested sleeve type is: **${blouseType}**
 
-- If "sleeveless" / "no sleeve" / "sleeveless blouse": clean fitted armholes with smooth rounded or slightly high-cut edges; keep full bust/ribcage coverage — never turn into crop-top or bra-style; if original already sleeveless → output original image unchanged
-- If "cap sleeves" / "cap sleeve": very short (~1–2 inches), slightly puffed or straight, barely covering shoulder top
-- If "short sleeves" / "elbow sleeves" / "elbow length": end exactly at or just above elbow; fitted or gently flared; common everyday/office style
-- If "three quarter" / "3/4 sleeves" / "three-quarter": end midway between elbow & wrist (forearm mid-point); elegant, versatile, modest
-- If "puff sleeves" / "puffed sleeves": gathered/volume at shoulder, then taper; cute, festive, classic South Indian wedding favourite
-- If "bell sleeves" / "flared sleeves": fitted upper arm, dramatically widen/flare toward hem; flowy, dramatic
-- If "full sleeves" / "long sleeves": wrist-length; fitted or loose; often with subtle cuff detail
-- If "flutter sleeves" / "ruffle sleeves": short to mid-length with wavy ruffle/layered edge; feminine, modern
-- If "bishop sleeves" / "balloon sleeves": voluminous throughout, gathered at cuff; regal, traditional
-- Otherwise: apply a clean, realistic, moderately fitted ${blouseType} sleeve that aligns with typical Indian saree tailoring aesthetics
+${blouseType.toLowerCase().includes('sleeveless') || blouseType.toLowerCase().includes('no sleeve') ?
+`SLEEVELESS
+- ZERO fabric on arm — clean armhole edge only
+- Smooth rounded armhole edge at shoulder
+- Full bust/ribcage coverage MUST be kept — NEVER crop-top or bra-style
+- If original is already sleeveless → output image UNCHANGED` :
+
+blouseType.toLowerCase().includes('cap') ?
+`CAP SLEEVES
+- Ends 1–2 inches BELOW the shoulder seam
+- Covers the shoulder cap ONLY — NO arm coverage below the deltoid
+- Do NOT extend past the top of the upper arm` :
+
+blouseType.toLowerCase().includes('full') || blouseType.toLowerCase().includes('long') ?
+`⚠️ FULL / LONG SLEEVES — CRITICAL
+- THE SLEEVE FABRIC MUST COVER THE ENTIRE FOREARM FROM ELBOW ALL THE WAY TO THE WRIST BONE
+- Hem sits AT the wrist joint — the hands are visible BELOW the sleeve hem
+- ZERO exposed forearm skin between the elbow and the wrist
+- If ANY section of the forearm between elbow and wrist has exposed skin → length is WRONG → REGENERATE
+- Fitted or slightly loose with optional subtle cuff at wrist` :
+
+blouseType.toLowerCase().includes('3/4') || blouseType.toLowerCase().includes('three quarter') || blouseType.toLowerCase().includes('3-4') || blouseType.toLowerCase().includes('three-quarter') ?
+`THREE QUARTER / 3/4 SLEEVES
+- Ends at EXACTLY the midpoint of the forearm
+- Halfway between the elbow bend and the wrist bone
+- NOT at the elbow — NOT at the wrist — strictly at the mid-forearm point
+- Elegant, modest` :
+
+blouseType.toLowerCase().includes('short') || blouseType.toLowerCase().includes('half') ?
+`SHORT / HALF SLEEVES
+- Ends EXACTLY AT THE ELBOW JOINT — the visible bend/crease of the elbow
+- NOT above the elbow, NOT below the elbow
+- Fitted or gently flared` :
+
+blouseType.toLowerCase().includes('elbow') ?
+`ELBOW SLEEVES
+- Ends EXACTLY AT THE ELBOW JOINT
+- The elbow bend point is the hem termination — no further` :
+
+blouseType.toLowerCase().includes('puff') ?
+`PUFF / PUFFED SLEEVES
+- Volume and gathering concentrated at the shoulder cap
+- Tapers down from the shoulder puff
+- Length typically at or ABOVE the elbow
+- Festive, classic South Indian saree blouse style` :
+
+blouseType.toLowerCase().includes('bell') || blouseType.toLowerCase().includes('flared') ?
+`BELL / FLARED SLEEVES
+- Fitted at the upper arm from shoulder to elbow
+- Dramatically flares/widens from elbow downward
+- Hem reaches wrist level — flowy, dramatic silhouette` :
+
+blouseType.toLowerCase().includes('flutter') || blouseType.toLowerCase().includes('ruffle') ?
+`FLUTTER / RUFFLE SLEEVES
+- Short wavy ruffle extending 2–4 inches from the shoulder seam
+- Feminine, flowing — no full arm coverage` :
+
+blouseType.toLowerCase().includes('bishop') || blouseType.toLowerCase().includes('balloon') ?
+`BISHOP / BALLOON SLEEVES
+- Voluminous throughout the entire arm length from shoulder to wrist
+- Gathered tightly into a fitted cuff at the wrist
+- Reaches the wrist` :
+
+`${blouseType.toUpperCase()} SLEEVES
+- Apply a clean, realistic, moderately fitted ${blouseType} sleeve
+- Match traditional Indian saree blouse tailoring aesthetics`}
+
+CRITICAL LENGTH RULE: The sleeve hem MUST end at EXACTLY the anatomical point defined above — do NOT shorten, do NOT approximate — if the length is wrong → INTERNALLY REJECT and REGENERATE before returning output.
 
 EDITING CONSTRAINTS
 • Regenerate ONLY sleeve fabric, seams & arm coverage area
@@ -753,6 +812,7 @@ STRICT LOCKS – PRESERVE 100% UNCHANGED
 • Exact same woman: face identity, expression, eyes, lips, makeup, hair style/volume, earrings, necklace, bindi, skin tone/texture/pores
 • Exact same body: posture, shoulder angle, bust/waist/hip proportions, arm position, hand placement
 • Exact same saree: drape, pleats, pallu folds & placement, fabric sheen/texture, color, border patterns, pinning
+• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
 • Exact same blouse everywhere except neckline edge: fabric color & texture match, sleeve style/length/cuffs, blouse length at waist, darts, side seams, underarm fit, back (if visible)
 • Exact same lighting, shadows, highlights, background, depth of field, grain/noise
 
@@ -769,11 +829,11 @@ ${neckType.toLowerCase().includes('boat') ?
 
 neckType.toLowerCase().includes('regular') || neckType.toLowerCase().includes('round') ?
 `ROUND / REGULAR NECK
-- Classic circular/rounded neckline
-- Medium depth: 4 inches below collarbone center
-- Balanced, comfortable coverage
-- Most versatile traditional style
-- Smooth curve, no sharp angles` :
+- Rounded neckline with a slight front dip — deeper at center front (3-4 inches below collarbone), shallower at sides
+- Visible front hooks/buttons at center neckline opening
+- Traditional Indian blouse style with modest front depth
+- Smooth curve, no sharp angles
+- No back changes` :
 
 neckType.toLowerCase().includes('v') ?
 `V-NECK

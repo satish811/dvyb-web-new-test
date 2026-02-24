@@ -7,7 +7,7 @@ import React from "react";
  */
 const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
   return (
-<div className="flex mb-2 w-full max-w-[300px] border border-gray-200 overflow-hidden">
+<div className="flex w-full border-b border-gray-200 overflow-hidden">
 
       <button
         onClick={() => setActiveCustomizer("blouse")}
@@ -31,7 +31,7 @@ const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
         Neck
       </button>
 
-      <button
+      {/* <button
         onClick={() => setActiveCustomizer("saree-style")}
         className={`flex-1 py-1.5 px-1 text-xs font-medium border-l border-gray-200 whitespace-nowrap ${
           activeCustomizer === "saree-style"
@@ -40,7 +40,7 @@ const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
         }`}
       >
         Saree Style
-      </button>
+      </button> */}
     </div>
   );
 };

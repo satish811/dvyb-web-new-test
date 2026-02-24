@@ -100,7 +100,7 @@ const TryOnStage = ({
           <div
             className="mt-3 w-[360px] sm:w-[400px] xl:w-[440px] px-3 py-2 rounded-lg flex items-center gap-2"
             style={{
-              background: "linear-gradient(135deg, rgba(51,2,47,0.88) 0%, rgba(96,0,96,0.82) 100%)",
+              background: "#d09eca",
             }}
           >
             <span

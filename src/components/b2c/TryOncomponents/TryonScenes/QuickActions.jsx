@@ -22,7 +22,7 @@ const QuickActions = ({
 }) => {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-800 mb-3">
+      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-center">
         {UI_TEXT.QUICK_ACTIONS}
       </h3>
       <div className="space-y-2">
@@ -79,10 +79,10 @@ const QuickActions = ({
 
         <button
           onClick={() => toast.info("Share feature coming soon!")}
-          className="w-full bg-white text-primary py-2.5 transition-all font-medium flex items-center pl-3 gap-2 text-sm"
+          className="w-full bg-white text-primary py-2.5 transition-all font-medium flex items-center justify-center gap-2 text-sm"
         >
           <img src={share_ic} alt="Share" />
-          <span className="pl-3">{UI_TEXT.SHARE_MY_LOOK}</span>
+          <span>{UI_TEXT.SHARE_MY_LOOK}</span>
         </button>
       </div>
     </div>
