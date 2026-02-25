@@ -18,11 +18,9 @@ import empty_wishlistIc from "../../../assets/ProfileImages/empty_wishlistIc.png
 import LoginModal from "../login/loginModel";
 
 // --- New Wishlist Card Component ---
-const WishlistProductCard = ({ item, onAddToCart, onRemove, onEdit }) => {
+const WishlistProductCard = ({ item, onAddToCart, onRemove, isAddingToCart }) => {
   const navigate = useNavigate();
-  // Mock badges for visual match (In real app, use item.stockStatus)
-  // Randomly assign stock status if not present for demo visual fidelity
-  const stockStatus = item.stockStatus || (Math.random() > 0.7 ? "Low Stock" : Math.random() > 0.9 ? "Out of Stock" : "In Stock");
+  const stockStatus = item.stockStatus || "In Stock";
 
   const getBadgeColor = (status) => {
     switch (status) {
@@ -109,10 +107,15 @@ const WishlistProductCard = ({ item, onAddToCart, onRemove, onEdit }) => {
       {/* Add To Cart Button (Bottom) */}
       <button
         onClick={() => onAddToCart(item)}
-        disabled={isOutOfStock}
-        className={`mt-4 w-full py-2.5 border border-[#33022F] text-[#33022F] font-medium text-xs uppercase tracking-wider hover:bg-[#33022F] hover:text-white transition-colors duration-300 ${isOutOfStock ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-400 hover:bg-transparent hover:text-gray-400' : ''}`}
+        disabled={isOutOfStock || isAddingToCart}
+        className={`mt-4 w-full py-2.5 border border-[#33022F] text-[#33022F] font-medium text-xs uppercase tracking-wider hover:bg-[#33022F] hover:text-white transition-colors duration-300 flex items-center justify-center gap-2 ${isOutOfStock ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-400 hover:bg-transparent hover:text-gray-400' : ''} ${isAddingToCart ? 'opacity-70 cursor-wait' : ''}`}
       >
-        {isOutOfStock ? 'Out of Stock' : 'Add to cart'}
+        {isAddingToCart ? (
+          <>
+            <div className="w-3.5 h-3.5 border-2 border-[#33022F] border-t-transparent rounded-full animate-spin" />
+            Adding...
+          </>
+        ) : isOutOfStock ? 'Out of Stock' : 'Add to cart'}
       </button>
 
     </div>
@@ -127,6 +130,7 @@ const WishlistPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [sortBy, setSortBy] = useState("recently-added");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [addingToCartIds, setAddingToCartIds] = useState(new Set());
 
   // Safe popup access
   const popupContext = usePopup();
@@ -175,13 +179,17 @@ const WishlistPage = () => {
   };
 
   const handleAddToCart = async (item) => {
+    const itemId = item.productId || item.id;
+
+    // Per-item loading (don't block the whole page)
+    setAddingToCartIds(prev => new Set(prev).add(itemId));
+
     try {
       let result;
 
-      // Logic for B2B Items (with variants)
       if ((userRole === "B2B" || item.isB2B) && item.variants && item.variants.length > 0) {
         result = await cartService.addToCart(
-          item.productId || item.id,
+          itemId,
           {
             name: item.name || item.productName,
             price: item.price || 0,
@@ -191,10 +199,9 @@ const WishlistPage = () => {
           item.variants
         );
       } else {
-        // Logic for B2C Items
         const firstVariant = item.variants?.[0] || {};
         result = await cartService.addToCart(
-          item.productId || item.id,
+          itemId,
           {
             name: item.name || item.productName,
             price: item.price || 0,
@@ -208,39 +215,42 @@ const WishlistPage = () => {
       }
 
       if (result === true) {
-        await removeFromWishlist(item.productId || item.id);
+        // Remove from wishlist after successful cart add
+        await removeFromWishlist(itemId);
         if (showPopup) {
           showPopup("cart", {
-            id: item.productId || item.id,
+            id: itemId,
             name: item.name || item.productName,
             image: item.image || item.imageUrls?.[0],
             title: item.name || item.productName,
           });
         } else {
-          toast.success("Added to cart successfully!");
+          toast.success("Moved to cart!");
         }
       } else {
         toast.error("Failed to add to cart");
       }
     } catch (err) {
-      console.error("❌ Error adding to cart:", err);
+      console.error("Error adding to cart:", err);
       toast.error(`Failed to add to cart: ${err.message}`);
+    } finally {
+      setAddingToCartIds(prev => {
+        const next = new Set(prev);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
   const handleMoveAllToCart = async () => {
     if (wishlistItems.length === 0) return;
 
-    const confirm = window.confirm("Are you sure you want to move all items to cart?");
-    if (!confirm) return;
-
     let addedCount = 0;
     for (const item of wishlistItems) {
-      // Check stock logic if needed
-      await handleAddToCart(item); // Note: this removes from wishlist one by one inside handleAddToCart, might be slow but safe
+      await handleAddToCart(item);
       addedCount++;
     }
-    if (addedCount > 0) toast.success("Moved all available items to cart!");
+    if (addedCount > 0) toast.success(`Moved ${addedCount} items to cart!`);
   };
 
   // Loading State
@@ -376,6 +386,7 @@ const WishlistPage = () => {
                 item={item}
                 onAddToCart={handleAddToCart}
                 onRemove={handleRemoveItem}
+                isAddingToCart={addingToCartIds.has(item.productId || item.id)}
               />))}
         </div>
       )}

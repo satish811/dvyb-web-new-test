@@ -28,7 +28,7 @@ const EthnicWearSection = () => {
     return (
         <section className="w-full flex flex-col lg:flex-row h-auto lg:h-[600px] 2xl:h-[800px] max-w-[1920px] mx-auto">
             {/* LEFT SIDE: 3x3 Image Grid */}
-            <div className="w-full lg:w-1/2 grid grid-cols-3 grid-rows-3 h-[400px] lg:h-full">
+            <div className="w-full lg:w-1/2 grid grid-cols-3 grid-rows-3 aspect-square lg:aspect-auto lg:h-full">
                 {gridImages.map((img, index) => (
                     <motion.div
                         key={index}
@@ -48,7 +48,7 @@ const EthnicWearSection = () => {
             </div>
 
             {/* RIGHT SIDE: Content Card */}
-            <div className="w-full lg:w-1/2 relative flex items-center justify-center p-8 lg:p-16 2xl:p-24 h-[500px] lg:h-full bg-cover bg-center"
+            <div className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-8 lg:p-16 2xl:p-24 min-h-[400px] lg:min-h-0 lg:h-full bg-cover bg-center"
                 style={{ backgroundImage: `url(${ethnicBgPattern})` }}
             >
                 {/* White Card Overlay */}

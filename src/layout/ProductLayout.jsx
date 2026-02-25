@@ -83,6 +83,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       "saree": "SAREE",
       "lehenga": "LEHENGA",
       "kurta-sets": "KURTA SETS",
+      "kurta-set": "KURTA SETS",
       "anarkalis": "ANARKALIS",
       "shararas": "SHARARAS",
       "pret": "PRÊT",

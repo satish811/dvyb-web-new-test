@@ -31,7 +31,7 @@ export default function Navbar({ setShowLoader }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     // const [searchQuery, setSearchQuery] = useState(""); // Removed local state
-    const { user, loading, signOutUser } = useAuth();
+    const { user, loading, signOutUser, userRole, userProfile } = useAuth();
     const [showLogin, setShowLogin] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -55,8 +55,28 @@ export default function Navbar({ setShowLoader }) {
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
     const isB2BUserType = () => {
-        const currentPath = location.pathname + location.search;
-        return currentPath.includes("usertype=b2b");
+        const urlParams = new URLSearchParams(location.search);
+        const userType = urlParams.get("usertype");
+        const path = location.pathname.toLowerCase();
+
+        const isB2BPath = path.includes("b2b") || urlParams.get("b2b") === "true";
+        const isB2BRole = userRole?.toUpperCase() === "B2B" || userProfile?.role?.toUpperCase() === "B2B" || userProfile?.userType?.toUpperCase() === "B2B";
+        const isB2BSession = sessionStorage.getItem("villy_b2b_mode") === "true";
+
+        const currentlyB2B = userType?.toLowerCase() === "b2b" || isB2BPath || isB2BRole;
+
+        // If we explicitly see B2C, reset session storage
+        if (userType?.toLowerCase() === "b2c" || path.includes("b2c")) {
+            if (isB2BSession) sessionStorage.removeItem("villy_b2b_mode");
+            return false;
+        }
+
+        // If we detect B2B now, persist it
+        if (currentlyB2B && !isB2BSession) {
+            sessionStorage.setItem("villy_b2b_mode", "true");
+        }
+
+        return currentlyB2B || isB2BSession;
     };
 
     const guard = (path) => {
@@ -220,9 +240,15 @@ export default function Navbar({ setShowLoader }) {
                         <div
                             className={`flex-shrink-0 cursor-pointer lg:mr-10 xl:mr-16 2xl:mr-24 absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none`}
                             onClick={() => {
+                                // Force scroll to top immediately even if on same route
+                                window.scrollTo({ top: 0, behavior: "instant" });
+                                document.documentElement.scrollTop = 0;
+                                document.body.scrollTop = 0;
+
                                 if (setShowLoader) setShowLoader(true);
                                 setTimeout(() => {
                                     navigate("/");
+                                    window.scrollTo(0, 0); // Second attempt after navigation
                                     setShowLoader(false);
                                 }, 1200);
                             }}
@@ -237,17 +263,39 @@ export default function Navbar({ setShowLoader }) {
                         {/* CENTER-LEFT: Nav Links */}
                         <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 mr-auto">
                             <button
-                                onClick={() => navigate("/womenwear")}
+                                onClick={() => {
+                                    if (location.pathname === "/") {
+                                        const element = document.getElementById("categories-section");
+                                        if (element) {
+                                            element.scrollIntoView({ behavior: "smooth" });
+                                        }
+                                    } else {
+                                        navigate("/", { state: { scrollTo: "categories-section" } });
+                                    }
+                                }}
                                 className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
                             >
                                 WOMEN
                             </button>
-                            <button
-                                onClick={() => navigate("/menwear")}
-                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
-                            >
-                                MEN
-                            </button>
+                            <div className="relative flex flex-col items-center">
+                                <button
+                                    onClick={() => navigate("/menwear")}
+                                    className={`text-sm xl:text-base 2xl:text-lg font-bold tracking-widest transition uppercase ${location.pathname === "/menwear" ? "text-gray-600" : "hover:text-gray-600"}`}
+                                >
+                                    MEN
+                                </button>
+                                <span className="absolute top-[100%] left-1/2 -translate-x-1/2 text-[10px] xl:text-[11px] font-medium text-gray-400 uppercase tracking-wider pointer-events-none whitespace-nowrap pt-0.5">
+                                    Coming Soon
+                                </span>
+                            </div>
+                            {!isB2BUserType() && (
+                                <button
+                                    onClick={() => setTryOnModalOpen(true)}
+                                    className="text-sm xl:text-base 2xl:text-lg font-['Outfit'] font-bold tracking-widest transition uppercase animate-subtle-blink whitespace-nowrap text-black"
+                                >
+                                    Virtual Try On
+                                </button>
+                            )}
                         </div>
 
                         {/* CENTER-RIGHT: Search Bar */}

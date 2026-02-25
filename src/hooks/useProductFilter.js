@@ -32,6 +32,21 @@ export const useProductFilter = (products = []) => {
       if (selectedFilters.categories?.length > 0) {
         const selectedCat = selectedFilters.categories[0].trim().toUpperCase();
 
+        // Category groups: selected filter → matcher function (all comparisons are uppercase)
+        const CATEGORY_GROUPS = {
+          "KURTA SETS": (v) => v.includes("KURTA"),
+          "KURTA SET": (v) => v.includes("KURTA"),
+          "SAREE": (v) => v === "SAREE" || v === "SAREES",
+          "LEHENGA": (v) => v.includes("LEHENGA"),
+          "ANARKALIS": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
+          "SHARARAS": (v) => v === "SHARARA" || v === "SHARARAS" || v.includes("SHARARA"),
+          "BLOUSES": (v) => v.includes("BLOUS"),
+        };
+
+        // Get the matcher for this category (fall back to exact match)
+        const groupMatcher = CATEGORY_GROUPS[selectedCat] ||
+          ((v) => v === selectedCat || v === selectedCat + "S" || v + "S" === selectedCat);
+
         // Get all possible category-related fields from product
         const productCat = (product.category?.trim() || "").toUpperCase();
         const productDressType = (product.dressType?.trim() || "").toUpperCase();
@@ -39,42 +54,12 @@ export const useProductFilter = (products = []) => {
         const productSubcategory = (product.subcategory?.trim() || "").toUpperCase();
         const productType = (product.type?.trim() || "").toUpperCase();
 
-        // Helper: Check if a value matches or is related to the selected category
-        const belongsToCategory = (value, category) => {
-          if (!value || !category) return false;
-
-          // Exact match
-          if (value === category) return true;
-
-          // Plural variations (SAREE <-> SAREES, LEHENGA <-> LEHENGAS)
-          if (value === category + "S" || value + "S" === category) return true;
-
-          // The value contains the category as a major component
-          // e.g., "BANARASI SAREE" contains "SAREE"
-          if (value.includes(category)) {
-            // Only match if category is a significant part (not just coincidental)
-            const parts = value.split(/\s+/);
-            if (parts.some(part => part === category || part === category + "S")) {
-              return true;
-            }
-          }
-
-          // The category contains the value (for shorter subcategory names)
-          // e.g., category "SAREES" contains type "SAREE"
-          if (category.includes(value) && value.length >= 4) {
-            return true;
-          }
-
-          return false;
-        };
-
-        // Check if product belongs to the selected category through ANY field
         const matchesCategory =
-          belongsToCategory(productCat, selectedCat) ||
-          belongsToCategory(productDressType, selectedCat) ||
-          belongsToCategory(productSubDressType, selectedCat) ||
-          belongsToCategory(productSubcategory, selectedCat) ||
-          belongsToCategory(productType, selectedCat);
+          groupMatcher(productDressType) ||
+          groupMatcher(productCat) ||
+          groupMatcher(productSubDressType) ||
+          groupMatcher(productSubcategory) ||
+          groupMatcher(productType);
 
         if (!matchesCategory) return false;
       }

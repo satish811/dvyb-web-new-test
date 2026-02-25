@@ -23,7 +23,7 @@ export default function VirtualTryOnSection() {
                     </p>
 
                     {/* Collage Container */}
-                    <div className="relative w-full h-[400px] mb-8">
+                    <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] mb-8">
                         {/* 1. Street Image (Top Right) */}
                         <div className="absolute top-0 right-0 w-[55%] h-[45%] z-10">
                             <img src={rightSideImg} alt="Environment" className="w-full h-full object-cover shadow-lg" />
@@ -41,9 +41,9 @@ export default function VirtualTryOnSection() {
 
                         {/* 4. OVERLAY TEXT (Spanning across) */}
                         <div className="absolute top-[40%] left-0 w-full z-30 pointer-events-none">
-                            <h2 className="text-4xl font-bold uppercase tracking-wider text-center leading-none">
+                            <h2 className="text-[10vw] sm:text-4xl font-bold uppercase tracking-wider text-center leading-none">
                                 <span className="text-[#9F5F9F] block">VIRTU</span>
-                                <span className="text-white block">AL TRY</span>
+                                <span className="text-white block" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>AL TRY</span>
                                 <span className="text-[#9F5F9F] block">ON</span>
                             </h2>
                         </div>
@@ -70,7 +70,7 @@ export default function VirtualTryOnSection() {
                 {/* ================= DESKTOP LAYOUT (Original) ================= */}
                 <div className="hidden md:block w-full text-center pointer-events-none absolute top-10 md:top-20 2xl:top-28 z-10">
                     <h2
-                        className="text-5xl md:text-7xl lg:text-9xl 2xl:text-[160px] font-bold uppercase tracking-wider"
+                        className="text-[10vw] font-bold uppercase tracking-wider"
                         style={{
                             background: "linear-gradient(to right, #A060A0, #E0E0E0, #A060A0)",
                             WebkitBackgroundClip: "text",

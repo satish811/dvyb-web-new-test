@@ -15,6 +15,7 @@ export const FilterProvider = ({ children }) => {
       LEHENGA: "/womenwear?category=lehenga",
       SAREE: "/womenwear?category=saree",
       "KURTA SETS": "/womenwear?category=kurta-sets",
+      "KURTA SET": "/womenwear?category=kurta-sets",
       ANARKALIS: "/womenwear?category=anarkalis",
       SHARARAS: "/womenwear?category=shararas",
       PRÊT: "/womenwear?category=pret",

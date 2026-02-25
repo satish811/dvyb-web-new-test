@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 // Ad Assets
-import ad1 from "../../../assets/b2c/landing/Landing-villy/summersale.png";
-import ad2 from "../../../assets/b2c/ads/Ad_2.png";
-import banner2 from "../../../assets/b2c/ads/Banner_2.png";
-import ad5 from "../../../assets/b2c/ads/Ad_5.png";
-import banner3 from "../../../assets/b2c/ads/Banner_3.png";
+import ad1 from "../../../assets/b2c/landing/Landing-villy/Carousel1.png";
+import ad2 from "../../../assets/b2c/landing/Landing-villy/Carousel2.png"
+import banner2 from "../../../assets/b2c/landing/Landing-villy/Carousel3.png";
+import ad5 from "../../../assets/b2c/landing/Landing-villy/Carousel4.png";
+import banner3 from "../../../assets/b2c/landing/Landing-villy/Carousel5.png";
 
 const slides = [
     { id: 1, img: ad1, alt: "Promotional Banner 1" },
@@ -32,12 +32,10 @@ export default function PromotionalCarousel() {
     };
 
     return (
-        <section className="w-full mt-0 pt-0 pb-4 bg-white">
-            <div
-                className="relative flex flex-col w-full max-w-[1920px] mx-auto"
-            >
+        <section className="w-full mt-0 bg-white">
+            <div className="relative mx-auto bg-white w-full max-w-[1440px] aspect-[21/9] md:aspect-[3/1] md:min-h-[400px] flex flex-col">
                 {/* Slider Image Area */}
-                <div className="relative overflow-hidden w-full group h-[220px] sm:h-[300px] md:h-[592px] xl:h-[700px] 2xl:h-[850px]">
+                <div className="relative overflow-hidden w-full h-[calc(100%-30px)] group">
                     <div
                         className="flex transition-transform duration-700 ease-in-out w-full h-full"
                         style={{ transform: `translateX(-${current * 100}%)` }}
@@ -47,7 +45,7 @@ export default function PromotionalCarousel() {
                                 <img
                                     src={slide.img}
                                     alt={slide.alt}
-                                    className="w-full h-full object-cover object-center"
+                                    className="w-full h-full object-contain object-center md:object-cover"
                                 />
                             </div>
                         ))}
@@ -73,7 +71,7 @@ export default function PromotionalCarousel() {
                 </div>
 
                 {/* Pagination Dots Bar - Below Image */}
-                <div className="w-full bg-[#EAE0E4] h-[30px] 2xl:h-[40px] flex items-center justify-center space-x-2 2xl:space-x-3">
+                <div className="w-full bg-[#EAE0E4] h-[30px] flex items-center justify-center space-x-2 2xl:space-x-3">
                     {slides.map((_, index) => (
                         <button
                             key={index}

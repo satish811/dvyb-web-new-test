@@ -704,11 +704,48 @@ const IndividualProductDetailsPage = () => {
 
           <ProductPriceSection product={product} />
 
-          {!isB2BUser && product?.selectedColors?.length > 0 && (
-            <ProductColorSelector colors={product.selectedColors} />
-          )}
+          {/* Dynamic Color Variants (like Myntra/Ajio) */}
+          {(() => {
+            // Extract current product's color name
+            const currentColorRaw = product.selectedColors?.[0] || "";
+            const currentColorName = currentColorRaw.includes("_")
+              ? currentColorRaw.split("_")[0]
+              : currentColorRaw;
 
-          {requiresSizeSelection && !isB2BUser && (
+            // Find similar products: same name but different product IDs
+            // This mimics Myntra/Ajio's "more colors" feature
+            const similarProducts = products
+              .filter((p) => {
+                // Match by product name (same product in different colors)
+                const sameName = p.name && product.name &&
+                  p.name.toLowerCase().trim() === product.name.toLowerCase().trim();
+                return sameName;
+              })
+              .map((p) => {
+                const colorRaw = p.selectedColors?.[0] || "";
+                const colorName = colorRaw.includes("_")
+                  ? colorRaw.split("_")[0]
+                  : colorRaw;
+                return {
+                  id: p.id,
+                  imageUrls: p.imageUrls || [],
+                  colorName: colorName,
+                };
+              });
+
+            // Only show if there are similar products (at least the current one)
+            if (similarProducts.length <= 0) return null;
+
+            return (
+              <ProductColorSelector
+                similarProducts={similarProducts}
+                currentProductId={product.id}
+                currentColorName={currentColorName}
+              />
+            );
+          })()}
+
+          {requiresSizeSelection && (
             <ProductSizeSelector
               selectedSizes={product?.selectedSizes}
               units={product?.units}

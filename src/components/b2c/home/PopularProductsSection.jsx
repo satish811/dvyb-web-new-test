@@ -32,11 +32,11 @@ export default function PopularProductsSection({ products: firebaseProducts = []
 
             {/* Product Grid / Horizontal Scroll */}
             <div className="max-w-[1400px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16">
-                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 2xl:gap-10 overflow-x-auto md:overflow-visible pb-6 md:pb-0 snap-x snap-mandatory hide-scrollbar">
+                <div className="flex justify-start md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 2xl:gap-10 overflow-x-auto md:overflow-visible pb-6 md:pb-0 snap-x snap-mandatory hide-scrollbar">
                     {products.map((product) => (
                         <div
                             key={product.id}
-                            className="relative group flex flex-col gap-3 2xl:gap-5 cursor-pointer shrink-0 w-[45vw] sm:w-[280px] md:w-auto snap-center"
+                            className="relative group flex flex-col gap-3 2xl:gap-5 cursor-pointer shrink-0 w-[60vw] sm:w-[45vw] md:w-full snap-center"
                             onClick={() => navigate(`/products/${product.id}`)}
                         >
 

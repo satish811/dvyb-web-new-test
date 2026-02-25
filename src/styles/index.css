@@ -68,6 +68,23 @@ body::-webkit-scrollbar {
   animation: spin 1s linear infinite;
 }
 
+/* Subtle Blink Animation for special features */
+@keyframes subtle-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-subtle-blink {
+  animation: subtle-blink 0.8s ease-in-out infinite;
+}
+
 /* ====== GLOBAL RESET (Safe Fix) ====== */
 html,
 body {
@@ -76,6 +93,13 @@ body {
   -webkit-text-size-adjust: 100% !important;
   overflow-x: hidden !important;
   width: 100% !important;
+}
+
+/* Ensure #root is never an accidental scroll container */
+#root {
+  min-height: 100%;
+  overflow: visible;
+  position: relative;
 }
 
 /* Override purely to fix accidental scaling */

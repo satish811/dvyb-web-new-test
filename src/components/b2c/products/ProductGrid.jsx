@@ -13,6 +13,8 @@ const CATEGORY_MAPPINGS = {
   "lehenga": "Lehenga",
   "lehengas": "Lehenga",
   "kurta-sets": "Kurta Sets",
+  "kurta-set": "Kurta Set",
+  "kurtas": "Kurta Sets",
   "anarkalis": "Anarkalis",
   "shararas": "Shararas",
   "pret": "Pret",
@@ -22,6 +24,16 @@ const CATEGORY_MAPPINGS = {
   "boutique": "Boutique",
   "blouses": "Blouses",
   "blouse": "Blouses"
+};
+
+// Additional dressType aliases to handle Firestore field variations
+const DRESS_TYPE_ALIASES = {
+  "kurta sets": ["kurta sets", "kurtas", "kurta", "kurta set"],
+  "kurta set": ["kurta set", "kurta sets", "kurtas", "kurta"],
+  "saree": ["saree", "sarees"],
+  "lehenga": ["lehenga", "lehengas", "lehenga choli"],
+  "anarkalis": ["anarkalis", "anarkali"],
+  "shararas": ["shararas", "sharara"],
 };
 
 const ProductGrid = ({
@@ -53,33 +65,52 @@ const ProductGrid = ({
 
   /**
    * FILTER PRODUCTS BY CATEGORY FROM URL
-   * This is the key fix - filters products based on the dressType field
+   * Uses flexible group matching so 'kurta' dressType matches 'kurta-sets' URL category
    */
   const productsByCategory = useMemo(() => {
     // If no category selected (All Products page), return all filtered products
     if (!category) {
-      console.log("No category filter - showing all products");
       return filteredProducts;
     }
 
-    // Map the URL category to the actual dressType value in products
-    const targetCategory = CATEGORY_MAPPINGS[category] ||
-      category.split('-').map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ');
+    // Normalize category to a base keyword for group matching
+    const categoryLower = category.toLowerCase();
 
-    console.log(`Filtering by category: URL="${category}" → Looking for dressType="${targetCategory}"`);
+    // Group definitions: URL pattern → array of matching dressType keywords (all lowercase)
+    const CATEGORY_GROUPS = {
+      saree: (dt) => dt === "saree" || dt === "sarees",
+      sarees: (dt) => dt === "saree" || dt === "sarees",
+      lehenga: (dt) => dt.includes("lehenga"),
+      lehengas: (dt) => dt.includes("lehenga"),
+      "kurta-sets": (dt) => dt.includes("kurta"),
+      "kurta-set": (dt) => dt.includes("kurta"),
+      kurtas: (dt) => dt.includes("kurta"),
+      anarkalis: (dt) => dt === "anarkali" || dt === "anarkalis" || dt.includes("anarkali"),
+      shararas: (dt) => dt === "sharara" || dt === "shararas" || dt.includes("sharara"),
+      pret: (dt) => dt === "pret",
+      fusion: (dt) => dt === "fusion",
+      wedding: (dt) => dt === "wedding",
+      blouses: (dt) => dt.includes("blous"),
+      blouse: (dt) => dt.includes("blous"),
+      boutique: (dt) => dt === "boutique",
+    };
 
-    // Filter products where dressType matches the target category
+    const matcher = CATEGORY_GROUPS[categoryLower];
+
+    // DEBUG: log all unique dressTypes + which ones match
+    const allDressTypes = [...new Set(filteredProducts.map(p => p.dressType).filter(Boolean))];
+    console.log(`[DEBUG] URL category="${categoryLower}" | All dressTypes in products:`, allDressTypes);
+
     const filtered = filteredProducts.filter(product => {
-      const productDressType = product.dressType?.trim();
-      if (!productDressType) return false;
-
-      // Case-insensitive comparison
-      return productDressType.toLowerCase() === targetCategory.toLowerCase();
+      const dt = product.dressType?.trim()?.toLowerCase();
+      if (!dt) return false;
+      if (matcher) return matcher(dt);
+      // Fallback: check if dressType contains the first word of the category
+      const baseWord = categoryLower.split("-")[0];
+      return dt.includes(baseWord);
     });
 
-    console.log(`Found ${filtered.length} products for category "${targetCategory}"`);
+    console.log(`[DEBUG] Found ${filtered.length} products for category "${categoryLower}"`);
     return filtered;
   }, [filteredProducts, category]);
 

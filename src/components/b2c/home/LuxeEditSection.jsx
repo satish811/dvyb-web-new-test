@@ -243,9 +243,9 @@ const LuxeEditSection = () => {
         </div>
       </div>
 
-      {/* ================= DESKTOP (UNCHANGED) ================= */}
+      {/* ================= DESKTOP & TABLET ================= */}
       <div
-        className="hidden lg:flex items-center justify-center relative w-full min-h-[630px] 2xl:min-h-[850px] pb-10 2xl:pb-20"
+        className="hidden md:flex items-center justify-center relative w-full min-h-[500px] lg:min-h-[630px] 2xl:min-h-[850px] pb-10 2xl:pb-20"
         style={{
           backgroundImage: `url(${Luxeeditsectionframe})`,
           backgroundSize: "cover",
@@ -253,8 +253,8 @@ const LuxeEditSection = () => {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="relative z-10 w-full max-w-[1330px] 2xl:max-w-[1920px] mx-auto flex justify-end px-4 2xl:px-16">
-          <div className="w-[600px] 2xl:w-[800px] grid grid-cols-2 gap-[15px] 2xl:gap-[25px] relative z-20">
+        <div className="relative z-10 w-full max-w-[1330px] 2xl:max-w-[1920px] mx-auto flex justify-end px-4 md:px-8 xl:px-12 2xl:px-16">
+          <div className="w-full max-w-[500px] lg:max-w-[600px] 2xl:max-w-[800px] grid grid-cols-2 gap-[10px] lg:gap-[15px] 2xl:gap-[25px] relative z-20 mt-10 lg:mt-0">
             {gridItems.map((item, index) => (
               <motion.div
                 key={item.id}
@@ -263,12 +263,12 @@ const LuxeEditSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => navigate(item.link)}
-                className="cursor-pointer relative overflow-hidden rounded-[13px] shadow-lg group h-[271px] 2xl:h-[400px]"
+                className="cursor-pointer relative overflow-hidden rounded-[8px] lg:rounded-[13px] shadow-lg group aspect-[4/5] 2xl:h-[400px]"
                 style={{
                   background: "#3F083B",
                 }}
               >
-                <div className="h-full w-full relative pb-[34px] 2xl:pb-[44px]">
+                <div className="h-full w-full relative pb-[28px] lg:pb-[34px] 2xl:pb-[44px]">
                   <div className="w-full h-full bg-[#3F083B]">
                     <img
                       src={item.img}
@@ -278,12 +278,12 @@ const LuxeEditSection = () => {
                   </div>
 
                   <div
-                    className="absolute bottom-0 left-0 right-0 flex items-center justify-center transition-colors group-hover:bg-[#580040] h-[34px] 2xl:h-[44px]"
+                    className="absolute bottom-0 left-0 right-0 flex items-center justify-center transition-colors group-hover:bg-[#580040] h-[28px] lg:h-[34px] 2xl:h-[44px]"
                     style={{
                       background: "#3F083B",
                     }}
                   >
-                    <span className="text-white text-[10px] 2xl:text-sm font-bold uppercase tracking-[0.05em]">
+                    <span className="text-white text-[8px] lg:text-[10px] 2xl:text-sm font-bold uppercase tracking-[0.05em]">
                       {item.title}
                     </span>
                   </div>

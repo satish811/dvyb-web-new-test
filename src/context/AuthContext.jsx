@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [userCollection, setUserCollection] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [intendedUserType, setIntendedUserType] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,11 +64,56 @@ export const AuthProvider = ({ children }) => {
 
       let userCollection, userRole, userData;
 
-      if (b2cSnap.exists()) {
+      // Determine role based on HOW the user signed in
+      const providerId = firebaseUser.providerData?.[0]?.providerId;
+      const isPhoneLogin = providerId === "phone";
+      const isEmailLogin = providerId === "password";
+
+      console.log("AuthContext: sign-in provider:", providerId, "| isPhone:", isPhoneLogin, "| isEmail:", isEmailLogin);
+
+      if (isPhoneLogin) {
+        // Phone OTP login = ALWAYS B2C
+        if (b2cSnap.exists()) {
+          userCollection = "b2c_users";
+          userRole = "B2C";
+          userData = b2cSnap.data();
+        } else {
+          // Create B2C doc for phone user
+          userCollection = "b2c_users";
+          userRole = "B2C";
+          userData = {
+            uid: firebaseUser.uid,
+            phoneNumber: firebaseUser.phoneNumber || null,
+            email: firebaseUser.email || null,
+            name: firebaseUser.displayName || "",
+            address: "",
+            wishlist: [],
+            cart: [],
+            orders: [],
+            gender: "",
+            dob: "",
+            profilePic: "",
+            role: "B2C",
+            userType: "b2c",
+            extraData: {},
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          await setDoc(doc(db, userCollection, firebaseUser.uid), userData);
+          console.log("✅ Created new B2C user (phone login) in b2c_users");
+        }
+      } else if (isEmailLogin && b2bSnap.exists()) {
+        // Email/password login + exists in B2B collection = B2B
+        userCollection = "B2BBulkOrders_users";
+        userRole = "B2B";
+        userData = b2bSnap.data();
+      } else if (b2cSnap.exists()) {
+        // Fallback: check B2C collection
         userCollection = "b2c_users";
         userRole = "B2C";
         userData = b2cSnap.data();
       } else if (b2bSnap.exists()) {
+        // Fallback: check B2B collection (for non-phone, non-standard providers)
         userCollection = "B2BBulkOrders_users";
         userRole = "B2B";
         userData = b2bSnap.data();
@@ -109,6 +155,13 @@ export const AuthProvider = ({ children }) => {
       //   console.log("🔄 Auto-redirecting B2C user to B2C route");
       //   navigate("/", { replace: true });
       // }
+
+      // Persist B2B mode in sessionStorage so navbar can detect it immediately
+      if (userRole === "B2B") {
+        sessionStorage.setItem("villy_b2b_mode", "true");
+      } else {
+        sessionStorage.removeItem("villy_b2b_mode");
+      }
 
       setUserCollection(userCollection);
       setUserRole(userRole);
@@ -179,9 +232,14 @@ export const AuthProvider = ({ children }) => {
 
   const signOutUser = async () => {
     try {
+      setLoggingOut(true);
+      // Add 3 second delay
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       await signOut(auth);
       // Clear all auth-related data
       sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("villy_b2b_mode");
       localStorage.removeItem("authToken");
       setToken(null);
       setUserRole(null);
@@ -196,6 +254,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Logout error:", error);
       // Still clear state and redirect even if there's an error
       sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("villy_b2b_mode");
       localStorage.removeItem("authToken");
       setToken(null);
       setUserRole(null);
@@ -204,6 +263,8 @@ export const AuthProvider = ({ children }) => {
       setIntendedUserType(null);
       setUser(null);
       navigate("/");
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -250,8 +311,9 @@ export const AuthProvider = ({ children }) => {
       switchUserType,
       setIntendedType,
       intendedUserType,
+      loggingOut,
     }),
-    [user, userRole, userProfile, userCollection, token, loading, intendedUserType]
+    [user, userRole, userProfile, userCollection, token, loading, intendedUserType, loggingOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

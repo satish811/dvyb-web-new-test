@@ -1,109 +1,71 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const ProductColorSelector = ({ colors = [] }) => {
-  // Static fallback colors
-  const staticColors = ["#424647", "#E9D252", "#EC8CB7", "#A32033"];
+const ProductColorSelector = ({ similarProducts = [], currentProductId, currentColorName = "" }) => {
+  const navigate = useNavigate();
 
+  // If no similar products at all, don't render
+  if (similarProducts.length === 0) return null;
 
-  const backendColors = colors
-    .map((c) => {
-      if (typeof c === "string") {
-        if (c.includes("_")) {
-          return c.split("_")[1];
-        }
-        return c;
-      }
-      return c;
-    })
-    .filter(Boolean);
-
-  const displayColors = backendColors.length ? backendColors : staticColors;
-
-  const [selectedColor, setSelectedColor] = useState(displayColors[0]);
-
-  // Function to check if color is white or close to white
-  const isWhiteColor = (hex) => {
-    if (!hex || typeof hex !== "string") return false;
-
-    // Clean the hex code
-    const cleanHex = hex.replace("#", "").toLowerCase();
-
-
-    let rgbHex = cleanHex;
-    if (cleanHex.length === 8) {
-      rgbHex = cleanHex.slice(0, 6);
+  const handleProductClick = (productId) => {
+    if (String(productId) !== String(currentProductId)) {
+      navigate(`/product/${productId}`);
     }
-
-    // Convert to RGB
-    const r = parseInt(rgbHex.slice(0, 2), 16);
-    const g = parseInt(rgbHex.slice(2, 4), 16);
-    const b = parseInt(rgbHex.slice(4, 6), 16);
-
-
-    return r > 240 && g > 240 && b > 240;
   };
 
   return (
-    <div
-      className="flex flex-col w-full max-w-[159px]"
-      style={{
-        gap: "8px",
-      }}
-    >
-      {/* Title */}
+    <div className="flex flex-col w-full" style={{ gap: "10px" }}>
+      {/* Label: COLOUR: <current color name> */}
       <p
         style={{
-          height: "22px",
           fontFamily: "Outfit, sans-serif",
           fontWeight: 550,
-          fontSize: "16px",
+          fontSize: "14px",
           lineHeight: "21.33px",
-          letterSpacing: "1px",
-          textTransform: "capitalize",
-          color: "#000000",
+          letterSpacing: "0.5px",
+          color: "#333333",
           whiteSpace: "nowrap",
         }}
       >
-        Available Colors
+        COLOUR: &nbsp;
+        <span style={{ fontWeight: 400, color: "#555555" }}>
+          {currentColorName}
+        </span>
       </p>
 
-      {/* Color Row */}
+      {/* Similar Product Thumbnails */}
       <div
         className="flex items-center flex-wrap"
-        style={{
-          gap: "19px",
-          minHeight: "30px",
-        }}
+        style={{ gap: "8px" }}
       >
-        {displayColors.map((hex, index) => {
-          const isSelected = selectedColor === hex;
-          const isWhite = isWhiteColor(hex);
-
-          // Determine border color
-          let borderColor = hex;
-          if (isWhite) {
-            borderColor = "#374151"; // grey-700 color
-          }
+        {similarProducts.map((sp) => {
+          const isCurrentProduct = String(sp.id) === String(currentProductId);
+          const thumbImage = sp.imageUrls?.[0] || "/placeholder.jpg";
 
           return (
             <button
-              key={index}
-              onClick={() => setSelectedColor(hex)}
-              className="transition-all duration-200"
+              key={sp.id}
+              onClick={() => handleProductClick(sp.id)}
+              className="transition-all duration-200 overflow-hidden flex-shrink-0 cursor-pointer"
               style={{
-                width: "24px",
-                height: "24px",
-                border: isSelected ? `3px solid ${borderColor}` : `2px solid ${borderColor}`,
+                width: "72px",
+                height: "90px",
+                border: isCurrentProduct
+                  ? "2px solid #33022F"
+                  : "1px solid #E5E7EB",
                 padding: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: hex,
-                borderRadius: "50%",
-                cursor: "pointer",
-                boxShadow: isSelected ? "0 0 0 2px white, 0 0 0 4px " + borderColor : "none",
+                backgroundColor: "#F9FAFB",
+                borderRadius: "4px",
+                opacity: isCurrentProduct ? 1 : 0.85,
               }}
+              title={sp.colorName || ""}
             >
+              <img
+                src={thumbImage}
+                alt={sp.colorName || "Color variant"}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </button>
           );
         })}
@@ -113,3 +75,5 @@ const ProductColorSelector = ({ colors = [] }) => {
 };
 
 export default ProductColorSelector;
+
+

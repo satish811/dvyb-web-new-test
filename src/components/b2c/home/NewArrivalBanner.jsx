@@ -4,9 +4,9 @@ import { motion } from "framer-motion"; // ✨ Animation import
 import { slideUp, staggerContainer } from "../../../utils/animations"; // ✨ Global animations
 
 // Assets - Using existing tall images
-import img1 from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
-import img2 from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
-import img3 from "../../../assets/b2c/landing/Landing-villy/indowestern.png";
+import img1 from "../../../assets/b2c/landing/Landing-villy/newArrival1.png";
+import img2 from "../../../assets/b2c/landing/Landing-villy/newArrival2.png";
+import img3 from "../../../assets/b2c/landing/Landing-villy/newArrival3.png";
 
 export default function NewArrivalBanner() {
     const navigate = useNavigate();
@@ -21,19 +21,19 @@ export default function NewArrivalBanner() {
                 className="relative w-full max-w-[1218px] 2xl:max-w-[1600px] bg-gradient-to-r from-[rgba(255,251,254,0.8)] to-[rgba(232,215,228,0.8)] rounded-[10px] p-6 md:p-[18px] 2xl:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-9 2xl:gap-16 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
             >
                 {/* Left Side - 3 Images */}
-                <div className="flex gap-2 md:gap-[15px] 2xl:gap-8 items-center justify-center w-full md:w-auto overflow-hidden">
+                <div className="flex gap-2 md:gap-[15px] 2xl:gap-8 items-center justify-center w-full md:w-1/2 overflow-hidden">
                     {/* Image 1 */}
-                    <div className="w-[100px] h-[180px] sm:w-[140px] sm:h-[240px] md:w-[177px] md:h-[309px] 2xl:w-[240px] 2xl:h-[420px] overflow-hidden rounded-sm flex-shrink-0">
+                    <div className="w-1/3 aspect-[9/16] overflow-hidden rounded-sm flex-shrink-0">
                         <img src={img1} alt="New Arrival 1" className="w-full h-full object-cover" />
                     </div>
 
                     {/* Image 2 */}
-                    <div className="w-[100px] h-[180px] sm:w-[140px] sm:h-[240px] md:w-[177px] md:h-[309px] 2xl:w-[240px] 2xl:h-[420px] overflow-hidden rounded-sm flex-shrink-0">
+                    <div className="w-1/3 aspect-[9/16] overflow-hidden rounded-sm flex-shrink-0">
                         <img src={img2} alt="New Arrival 2" className="w-full h-full object-cover" />
                     </div>
 
                     {/* Image 3 */}
-                    <div className="w-[100px] h-[180px] sm:w-[140px] sm:h-[240px] md:w-[177px] md:h-[309px] 2xl:w-[240px] 2xl:h-[420px] overflow-hidden rounded-sm flex-shrink-0">
+                    <div className="w-1/3 aspect-[9/16] overflow-hidden rounded-sm flex-shrink-0">
                         <img src={img3} alt="New Arrival 3" className="w-full h-full object-cover" />
                     </div>
                 </div>

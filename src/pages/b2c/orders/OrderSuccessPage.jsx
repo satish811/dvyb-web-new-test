@@ -13,12 +13,29 @@ const OrderSuccessPage = () => {
   const { orderId, paymentMethod, items, shipping, total, email } = location.state || {};
   const { products, loading } = useProducts();
 
-  // Get 4 random products for recommendations
+  // Calculate dynamic delivery date range
+  const deliveryDateRange = React.useMemo(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() + 5);
+    const end = new Date(today);
+    end.setDate(today.getDate() + 7);
+    const fmt = (d) => d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${fmt(start)} - ${fmt(end)}`;
+  }, []);
+
+  // Get 4 random products for recommendations (stable per orderId)
   const recommendedProducts = React.useMemo(() => {
     if (!products || products.length === 0) return [];
-    const shuffled = [...products].sort(() => 0.5 - Math.random());
+    // Use orderId as seed for stable randomization
+    const seed = (orderId || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const shuffled = [...products].sort((a, b) => {
+      const ha = ((a.id || '').charCodeAt(0) + seed) % 100;
+      const hb = ((b.id || '').charCodeAt(0) + seed) % 100;
+      return ha - hb;
+    });
     return shuffled.slice(0, 4);
-  }, [products]);
+  }, [products, orderId]);
 
   const handleDownloadInvoice = () => {
     const doc = new jsPDF();
@@ -209,7 +226,7 @@ const OrderSuccessPage = () => {
                     <div>
                       <p className="text-xs font-bold text-gray-500 uppercase mb-1">Estimated Delivery</p>
                       <div className="bg-green-50 text-green-800 text-sm font-medium px-3 py-2 rounded-md inline-block">
-                        Feb 17 - Feb 19, 2026
+                        {deliveryDateRange}
                       </div>
                       <p className="text-[10px] text-gray-500 mt-1">Standard Shipping (5-7 business days)</p>
                     </div>
@@ -231,7 +248,7 @@ const OrderSuccessPage = () => {
                       {paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {paymentMethod === "COD" ? "Pay upon delivery" : "Visa ending in 4242"}
+                      {paymentMethod === "COD" ? "Pay upon delivery" : "Paid via Razorpay"}
                     </p>
                   </div>
                 </div>
