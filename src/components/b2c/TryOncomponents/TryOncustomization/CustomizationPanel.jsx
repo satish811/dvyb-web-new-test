@@ -3,11 +3,8 @@
 import React from "react";
 import ColorTab from "./ColorTab";
 import FabricTab from "./FabricTab";
-import BlouseCustomizer from "../TryOncustomization/BlouseCustomizer";
-import NeckCustomizer from "../TryOncustomization/NeckCustomizer";
-import SareeStyleCustomizer from "../TryOncustomization/SareeStyleCustomizer";
+import BlouseNeckCustomizer from "../TryOncustomization/BlouseNeckCustomizer";
 import ViewModeToggle from "../TryOnshared/ViewModeToggle";
-import CustomizerTabs from "../TryOnshared/CustomizerTabs";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
 
 // ─── SHARED TOKEN ────────────────────────────────────────────────────────────
@@ -19,8 +16,6 @@ const LEFT = "left-6 xl:left-24 2xl:left-52";
 const CustomizationPanel = ({
   selectedTab,
   setSelectedTab,
-  activeCustomizer,
-  setActiveCustomizer,
   selectedColor,
   setSelectedColor,
   selectedFabric,
@@ -29,16 +24,16 @@ const CustomizationPanel = ({
   fabricTypes,
   viewMode,
   handleViewModeSwitch,
-  selectedBlouse,
-  isChangingBlouse,
-  changeBlouse,
+  outfitType,
   tryOnResult,
-  selectedNeck,
-  isChangingNeck,
-  changeNeck,
-  selectedSareeStyle,
-  onSelectSareeStyle,
+  pendingBlouse,
+  setPendingBlouse,
+  pendingNeck,
+  setPendingNeck,
+  isApplying,
+  applyChanges,
 }) => {
+  const isSaree = outfitType?.toLowerCase() === 'saree';
   return (
     /* Single column — both boxes share the same anchor & width */
     <div
@@ -46,43 +41,24 @@ const CustomizationPanel = ({
         absolute top-20 ${LEFT}
         z-20 hidden lg:flex flex-col items-stretch gap-3
         ${W}
-        max-h-[calc(100vh-90px)] overflow-y-auto scrollbar-none
+        max-h-[calc(100vh-90px)] overflow-y-auto
       `}
     >
 
-      {/* ── BOX 1 · Blouse / Neck / Saree Style ─────────────────────── */}
-      <div className="w-full h-[490px] bg-white shadow-lg overflow-hidden">
-
-        {/* Tab bar — spans full box width */}
-        <CustomizerTabs
-          activeCustomizer={activeCustomizer}
-          setActiveCustomizer={setActiveCustomizer}
-        />
-
-        {activeCustomizer === "blouse" && (
-          <BlouseCustomizer
-            selectedBlouse={selectedBlouse}
-            isChangingBlouse={isChangingBlouse}
-            changeBlouse={changeBlouse}
+      {/* ── BOX 1 · Blouse + Neck combined (saree only) ─────────────────────── */}
+      {isSaree && (
+        <div className="w-full bg-white shadow-lg">
+          <BlouseNeckCustomizer
+            pendingBlouse={pendingBlouse}
+            setPendingBlouse={setPendingBlouse}
+            pendingNeck={pendingNeck}
+            setPendingNeck={setPendingNeck}
+            isApplying={isApplying}
+            applyChanges={applyChanges}
             tryOnResult={tryOnResult}
           />
-        )}
-        {activeCustomizer === "neck" && (
-          <NeckCustomizer
-            selectedNeck={selectedNeck}
-            isChangingNeck={isChangingNeck}
-            changeNeck={changeNeck}
-            tryOnResult={tryOnResult}
-          />
-        )}
-        {activeCustomizer === "saree-style" && (
-          <SareeStyleCustomizer
-            selectedStyle={selectedSareeStyle}
-            onSelectStyle={onSelectSareeStyle}
-            tryOnResult={tryOnResult}
-          />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── BOX 2 · Colour / View Mode ────────────────────────────────── */}
       <div className="w-full bg-white shadow-lg p-5">
