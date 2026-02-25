@@ -97,9 +97,8 @@ const B2bMyInfo = () => {
                   type="text"
                   value={userInfo.fullName}
                   onChange={(e) => handleInputChange("fullName", e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   readOnly={!isEditing}
                   required
                 />
@@ -113,9 +112,8 @@ const B2bMyInfo = () => {
                   type="email"
                   value={userInfo.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   readOnly={!isEditing}
                   required
                 />
@@ -129,9 +127,8 @@ const B2bMyInfo = () => {
                   type="tel"
                   value={userInfo.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   readOnly={!isEditing}
                   required
                 />
@@ -145,9 +142,8 @@ const B2bMyInfo = () => {
                   type="date"
                   value={userInfo.dateOfBirth}
                   onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   readOnly={!isEditing}
                 />
               </div>
@@ -157,9 +153,8 @@ const B2bMyInfo = () => {
                 <select
                   value={userInfo.gender}
                   onChange={(e) => handleInputChange("gender", e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   disabled={!isEditing}
                 >
                   <option value="Male">Male</option>
@@ -177,9 +172,8 @@ const B2bMyInfo = () => {
                   value={userInfo.address}
                   onChange={(e) => handleInputChange("address", e.target.value)}
                   rows="3"
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    !isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${!isEditing ? "bg-gray-50 cursor-not-allowed" : "bg-white"
+                    }`}
                   readOnly={!isEditing}
                   required
                 />

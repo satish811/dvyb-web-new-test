@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
 // Removed unused wishlistService import for cleaner code
 // import { wishlistService } from "../../../services/wishlistService";
@@ -198,8 +199,16 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
   /** Calculate total items in cart */
   const totalItems = addedItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  return (
-    <>
+  /** Prevent background scrolling when modal is open */
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  return createPortal(
+    <div className="b2b-modal-portal relative z-[9999]">
       {/* Loading Spinner - remains the same */}
       {loading && (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-[9999]">
@@ -215,54 +224,55 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
         </div>
       )}
 
-      {/* Modal Container: Adjusted for mobile */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-start z-[200] p-0 md:p-4 pt-32 md:pt-36 overflow-auto">
-        {/* Modal Content Box */}
-        <div className="bg-white w-full h-full max-w-full md:max-w-6xl md:h-auto shadow-xl flex flex-col relative">
-          <button
-            className="absolute top-3 right-3 text-gray-600 hover:text-black cursor-pointer z-10"
-            onClick={onClose}
-          >
-            <X size={22} />
-          </button>
+      {/* Background Overlay - Covers full viewport securely */}
+      <div className="fixed inset-0 bg-black/5 z-[9990]">
+        {/* Click-away overlay to close modal */}
+        <div className="absolute inset-0" onClick={onClose}></div>
 
-          {/* Main Selection Panel (Left on Desktop, Top on Mobile) */}
-          <div className="flex-1 p-6 order-2 md:order-1">
-            <h2 className="text-xl font-bold mb-4">Select Bulk Order Variants</h2>
+        {/* Modal Content Box - Fixed and Perfectly Centered */}
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white w-[850px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col md:flex-row z-[9995] border border-gray-100">
 
+          {/* Main Selection Panel (Left) */}
+          <div className="flex-[1.2] p-8 md:border-r border-gray-100">
             {/* Color Selection */}
             <div>
-              <p className="text-[12px] font-semibold text-gray-900 mb-2">AVAILABLE COLORS</p>
-
-              <div className="flex flex-wrap gap-3">
+              <p className="text-[11px] font-medium tracking-wider text-gray-800 mb-3">
+                AVAILABLE COLORS
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {colors.map((hex, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedColor(hex)}
-                    className={`w-7 h-7 border-2 ${selectedColor === hex ? "border-black" : "border-transparent"
+                    className={`w-10 h-10 border transition-all ${selectedColor === hex ? "border-black p-0.5" : "border-gray-200"
                       }`}
-                    style={{ backgroundColor: hex }}
-                  />
+                  >
+                    <div className="w-full h-full" style={{ backgroundColor: hex }}></div>
+                  </button>
                 ))}
               </div>
             </div>
 
             {/* Size Selection (Hidden for Saree) */}
             {!isSaree && (
-              <div className="mt-6">
-                <p className="text-[12px] font-semibold text-gray-900 mb-2">
-                  AVAILABLE SIZES
-                  <span className="text-[#d20000] ml-2 cursor-pointer">Size Guide</span>
-                </p>
+              <div className="mt-8">
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-[11px] font-medium tracking-wider text-gray-800">
+                    AVAILABLE SIZES
+                  </p>
+                  <p className="text-[11px] text-gray-500 font-medium">
+                    Select your size <span className="text-red-500 ml-1 cursor-pointer hover:underline">Size Guide</span>
+                  </p>
+                </div>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {availableSizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 text-[12px] border ${selectedSize === size
+                      className={`w-12 h-10 flex items-center justify-center text-[11px] font-medium border transition-colors ${selectedSize === size
                         ? "bg-[#33022F] text-white border-[#33022F]"
-                        : "border-gray-300 text-gray-700"
+                        : "border-gray-200 text-gray-700 hover:border-gray-300"
                         }`}
                     >
                       {size}
@@ -272,58 +282,59 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
 
                 {/* Available Quantity Display */}
                 {selectedSize && (
-                  <div className="mt-2 text-xs text-gray-600">
+                  <div className="mt-2 text-[10px] text-gray-500">
                     Available: {availableQuantity} units
                   </div>
                 )}
               </div>
             )}
 
-            <p className="text-[12px] font-semibold text-gray-900 mt-5">CURRENT SELECTION</p>
-            <div className="mt-3 flex flex-col sm:flex-row justify-between sm:items-center border-t pt-3">
-              <div className="flex items-center gap-5 text-sm mb-4 sm:mb-0">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border" style={{ backgroundColor: selectedColor }}></div>
-                  <span>Size: {isSaree ? "FREE" : selectedSize}</span>
-                </div>
-
-                <div>
-                  <span>Qty: {quantity < 10 ? `0${quantity}` : quantity}</span>
+            {/* Current Selection & Quantity Row */}
+            <div className="mt-8 flex justify-between items-start">
+              <div className="flex-[1.5]">
+                <p className="text-[11px] font-medium tracking-wider text-gray-800 mb-3">
+                  CURRENT SELECTION
+                </p>
+                <div className="flex items-center gap-4 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border border-gray-200" style={{ backgroundColor: selectedColor }}></div>
+                    <span>Size: {isSaree ? "FREE" : selectedSize || "-"}</span>
+                  </div>
+                  <div>
+                    <span>Quantity: {quantity < 10 ? `0${quantity}` : quantity}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="">
-                <p className="text-xs font-semibold text-gray-900 hidden sm:block">QUANTITY</p>
-                <div className="flex items-center mt-0 sm:mt-2 border-2">
+              <div>
+                <p className="text-[11px] font-medium tracking-wider text-gray-800 mb-3">
+                  QUANTITY
+                </p>
+                <div className="flex items-center border border-gray-300 h-10 w-28">
                   <button
                     onClick={decrement}
-                    className="text-amber-800 px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    className="flex-1 flex justify-center items-center h-full text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     <Minus size={14} />
                   </button>
-
-                  {/* Using input for direct quantity editing might be better UX, but sticking to original logic here */}
-                  <div className="px-5 py-1 min-w-[40px] text-center">
+                  <div className="w-10 text-center text-xs font-semibold text-gray-800">
                     {quantity < 10 ? `0${quantity}` : quantity}
                   </div>
-
                   <button
                     onClick={increment}
                     disabled={quantity >= availableQuantity}
-                    className={`px-3 py-2 hover:bg-gray-100 cursor-pointer ${quantity >= availableQuantity
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-amber-800"
+                    className={`flex-1 flex justify-center items-center h-full transition-colors ${quantity >= availableQuantity
+                      ? "text-gray-300 cursor-not-allowed"
+                      : "text-gray-500 hover:bg-gray-50 cursor-pointer"
                       }`}
                   >
                     <Plus size={14} />
                   </button>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 text-center">
-                  Max: {availableQuantity}
-                </div>
               </div>
             </div>
 
+            {/* Add Button */}
             <button
               onClick={handleAdd}
               disabled={
@@ -331,11 +342,9 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                 quantity > availableQuantity ||
                 (!isSaree && !selectedSize)
               }
-              className={`w-full mt-6 py-3 border font-semibold tracking-wide transition text-sm ${isCurrentSelectionAdded ||
-                quantity > availableQuantity ||
-                (!isSaree && !selectedSize)
-                ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
-                : "border-[#33022F] text-[#33022F] cursor-pointer"
+              className={`w-full mt-8 py-3.5 border border-[#33022F] text-[13px] font-bold tracking-widest transition-colors ${isCurrentSelectionAdded || quantity > availableQuantity || (!isSaree && !selectedSize)
+                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-white text-[#33022F] hover:bg-gray-50 cursor-pointer"
                 }`}
             >
               {isCurrentSelectionAdded
@@ -344,112 +353,88 @@ const BuyNowColorsPopup = ({ product, onClose, editingItem = null, userRole, onC
                   ? "EXCEEDS STOCK"
                   : !isSaree && !selectedSize
                     ? "SELECT SIZE"
-                    : "ADD TO LIST"}
+                    : "ADD"}
             </button>
-
-            {addedItems.length > 0 && (
-              <div className="mt-4 p-3 bg-gray-50 rounded hidden sm:block">
-                {" "}
-                {/* Hide on extra small screens */}
-                <p className="text-sm font-semibold">Total Items in List: {totalItems}</p>
-                <p className="text-xs text-gray-600">{addedItems.length} variant(s) added</p>
-              </div>
-            )}
           </div>
 
-          {/* Added Items Panel (Right on Desktop, Bottom on Mobile) */}
-          {/* Note: Removed fixed width (w-80) for mobile to allow full width, 
-                         and adjusted padding and margin for better fit. */}
-          <div
-            className="w-full p-6 flex flex-col order-1 md:order-2 md:w-100 border-b md:border-l md:border-b-0"
-            style={{ border: "1px solid #0000001A", borderTop: "1px solid #0000001A" }} // Ensure separation on mobile
-          >
-            <p className="font-semibold text-[18px]">ADDED ITEMS</p>
+          {/* Added Items Panel (Right) */}
+          <div className="flex-[0.8] p-8 flex flex-col bg-white">
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+              <p className="font-semibold text-gray-800 text-[13px] tracking-wide">ADDED ITEMS</p>
+              {/* Close Button X moved here or top right wrapper */}
+              <button
+                className="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer"
+                onClick={onClose}
+              >
+                <X size={20} strokeWidth={1.5} />
+              </button>
+            </div>
 
             {addedItems.length === 0 ? (
-              <div className="flex flex-col items-center rounded-lg text-center text-gray-500 mt-5 mb-5 md:mt-10 md:mb-10 flex-1 justify-center">
-                <Plus size={30} className="m-4 rounded-full border" />
-                No items added yet
+              <div className="flex flex-col items-center justify-center flex-1 text-center py-12">
+                <div className="w-16 h-16 bg-blue-50 text-blue-300 rounded-full flex items-center justify-center mb-4">
+                  <Plus size={24} />
+                </div>
+                <p className="text-[13px] text-[#2D2D7D] font-medium">No items added yet</p>
               </div>
             ) : (
-              // Scrollable list on mobile
-              <div className="flex flex-col gap-3 max-h-[30vh] md:max-h-[50vh] overflow-y-auto scrollbar-hide pr-1">
+              <div className="flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar flex-1">
                 {addedItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}
-                    className="flex items-center gap-3 px-3 py-2 relative group"
-                  >
-                    <div
-                      className="w-5 h-5 border rounded" // Slightly smaller color swatch
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-
-                    <div className="flex text-sm flex-row gap-2 flex-1 items-center">
-                      <div>
-                        <span className="font-medium">Size:</span> {item.size}
-                      </div>
-
-                      {/* Quantity controls inside the item list */}
-                      <div className="flex items-center gap-1 ml-auto">
-                        <span className="font-medium">Qty:</span>
-                        <button
-                          onClick={() => handleUpdateItemQuantity(idx, item.quantity - 1)}
-                          className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded" // Larger tap target
-                          disabled={item.quantity <= 6}
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="min-w-[20px] text-center">
-                          {item.quantity < 10 ? `0${item.quantity}` : item.quantity}
-                        </span>
-                        <button
-                          onClick={() => handleUpdateItemQuantity(idx, item.quantity + 1)}
-                          disabled={item.quantity >= (item.availableQuantity || 999)}
-                          className={`w-6 h-6 flex items-center justify-center rounded ${item.quantity >= (item.availableQuantity || 999)
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-gray-200"
-                            }`}
-                        >
-                          <Plus size={12} />
-                        </button>
+                  <div key={idx} className="flex gap-4 p-4 border border-gray-100 rounded-md bg-white relative group shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    <div className="w-20 h-24 border border-gray-200 bg-gray-50 rounded-sm overflow-hidden flex-shrink-0">
+                      <img
+                        src={product?.imageUrls?.[0] || "/placeholder.jpg"}
+                        alt="Product"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center flex-1">
+                      <p className="text-[13px] font-bold text-gray-800 mb-1 flex items-center gap-2">
+                        Color: <span className="font-medium text-gray-600">{item.color}</span>
+                        <div className="w-3 h-3 rounded-full border border-gray-300 ml-1" style={{ backgroundColor: item.color }}></div>
+                      </p>
+                      <p className="text-[13px] font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        Size: <span className="font-medium text-gray-600">{item.size}</span>
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-[13px] font-bold text-gray-800">Qty:</p>
+                        <div className="flex items-center border border-gray-200 bg-white h-8 rounded-sm overflow-hidden">
+                          <button onClick={() => handleUpdateItemQuantity(idx, item.quantity - 1)} disabled={item.quantity <= 6} className="w-8 flex justify-center items-center text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors"><Minus size={14} /></button>
+                          <span className="w-10 flex items-center justify-center text-[13px] font-bold text-gray-800 border-x border-gray-200 h-full">{item.quantity}</span>
+                          <button onClick={() => handleUpdateItemQuantity(idx, item.quantity + 1)} disabled={item.quantity >= (item.availableQuantity || 999)} className="w-8 flex justify-center items-center text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors"><Plus size={14} /></button>
+                        </div>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => handleDeleteItem(idx)}
-                      className="absolute top-1 right-1 p-1 hover:bg-red-100 rounded-full transition opacity-70 hover:opacity-100 cursor-pointer"
-                      title="Remove this item"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                    <button onClick={() => handleDeleteItem(idx)} className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 ))}
               </div>
             )}
-            {/* Summary for mobile when list is open */}
-            {addedItems.length > 0 && (
-              <div className="mt-4 p-3 bg-gray-50 rounded sm:hidden">
-                <p className="text-sm font-semibold">Total Items in List: {totalItems}</p>
-                <p className="text-xs text-gray-600">{addedItems.length} variant(s) added</p>
-              </div>
-            )}
 
             {/* Continue Button */}
             {addedItems.length > 0 && (
-              <button
-                onClick={handleContinue}
-                // Ensure total order quantity is at least 6
-                disabled={totalItems < 6}
-                className={`mt-6 w-full py-3 cursor-pointer text-white font-semibold tracking-wide transition ${totalItems < 6 ? "bg-gray-400 cursor-not-allowed" : "bg-[#33022F]"}`}
-              >
-                {editingItem ? "UPDATE CART" : `CONTINUE (${totalItems} items)`}
-              </button>
+              <div className="mt-auto pt-6 border-t border-gray-100">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-xs font-medium text-gray-500">Total variants: {addedItems.length}</span>
+                  <span className="text-sm font-semibold text-gray-800">Total items: {totalItems}</span>
+                </div>
+                <button
+                  onClick={handleContinue}
+                  disabled={totalItems < 6}
+                  className={`w-full py-3.5 text-[13px] font-bold tracking-widest transition-colors ${totalItems < 6 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-[#33022F] text-white hover:bg-[#4a0344] cursor-pointer"
+                    }`}
+                >
+                  {editingItem ? "UPDATE CART" : `CONTINUE TO CHECKOUT`}
+                </button>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </>
+    </div>,
+    document.body
   );
 };
 

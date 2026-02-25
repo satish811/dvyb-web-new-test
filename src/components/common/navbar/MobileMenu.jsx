@@ -5,11 +5,38 @@ import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png
 import { LuHeart } from "react-icons/lu";
 import { GoPerson } from "react-icons/go";
 import { MdOutlineShoppingBag } from "react-icons/md";
+import { useLocation } from "react-router-dom";
 
 export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onProtectedClick }) {
   if (!isOpen) return null;
-  const { user, loading, signOutUser } = useAuth();
+  const { user, loading, signOutUser, userRole, userProfile } = useAuth();
   const { setTryOnModalOpen } = useUI();
+  const location = useLocation();
+
+  const isB2B = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const userType = urlParams.get("usertype");
+    const path = location.pathname.toLowerCase();
+
+    const isB2BPath = path.includes("b2b") || urlParams.get("b2b") === "true";
+    const isB2BRole = userRole?.toUpperCase() === "B2B" || userProfile?.role?.toUpperCase() === "B2B" || userProfile?.userType?.toUpperCase() === "B2B";
+    const isB2BSession = sessionStorage.getItem("villy_b2b_mode") === "true";
+
+    const currentlyB2B = userType?.toLowerCase() === "b2b" || isB2BPath || isB2BRole;
+
+    // If we explicitly see B2C, reset session storage
+    if (userType?.toLowerCase() === "b2c" || path.includes("b2c")) {
+      if (isB2BSession) sessionStorage.removeItem("villy_b2b_mode");
+      return false;
+    }
+
+    // If we detect B2B now, persist it
+    if (currentlyB2B && !isB2BSession) {
+      sessionStorage.setItem("villy_b2b_mode", "true");
+    }
+
+    return currentlyB2B || isB2BSession;
+  };
 
   const handleLoginClick = () => {
     onClose();
@@ -53,20 +80,37 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
               onNavClick("/womenwear");
               onClose();
             }}
-            className="w-full text-left text-gray-800 py-1.5 sm:py-2"
+            className="w-full text-left text-gray-800 py-1.5 sm:py-2 font-bold tracking-widest uppercase"
           >
             CATEGORIES
           </button>
 
-          <button
-            onClick={() => {
-              setTryOnModalOpen(true);
-              onClose();
-            }}
-            className="w-full text-left text-gray-800 py-1.5 sm:py-2"
-          >
-            VIRTUAL TRY ON
-          </button>
+          <div className="flex flex-col items-start py-1.5 sm:py-2">
+            <button
+              onClick={() => {
+                onNavClick("/menwear");
+                onClose();
+              }}
+              className="w-full text-left text-gray-800 font-bold tracking-widest uppercase"
+            >
+              MEN
+            </button>
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider pointer-events-none">
+              Coming Soon
+            </span>
+          </div>
+
+          {!isB2B() && (
+            <button
+              onClick={() => {
+                setTryOnModalOpen(true);
+                onClose();
+              }}
+              className="w-full text-left font-['Outfit'] py-1.5 sm:py-2 animate-subtle-blink font-bold tracking-widest uppercase text-black text-lg"
+            >
+              VIRTUAL TRY ON
+            </button>
+          )}
 
           {/* Show Login/Signup button when NOT logged in */}
           {!user && !loading && (

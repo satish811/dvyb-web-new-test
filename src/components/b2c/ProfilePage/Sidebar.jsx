@@ -17,20 +17,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const auth = getAuth();
 
-  // Base menu items - Uppercase labels, no icons
+  // Base menu items - Uppercase labels, no icons (MY MODEL & MY TRY-ON GALLERY hidden for B2B)
   const baseMenu = [
     { id: "my-info", label: "MY INFO" },
     { id: "my-orders", label: "MY ORDERS" },
-    { id: "profile-creation", label: "MY MODEL" }, // Updated to match UserDropdown link
-    { id: "my-tryon-gallery", label: "MY TRY-ON GALLERY" },
+    { id: "profile-creation", label: "MY MODEL", b2cOnly: true },
+    { id: "my-tryon-gallery", label: "MY TRY-ON GALLERY", b2cOnly: true },
     { id: "wishlist", label: "MY WISHLIST" },
   ];
-
-  // Profile creation item - only for B2C users
-  const profileCreationItem = {
-    id: "profile-creation",
-    label: "PROFILE CREATION",
-  };
 
   // Safe URL creation helper
   const safeGetUserCompleteProfile = async (uid) => {
@@ -103,13 +97,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     getUserRoleAndData();
   }, [user]);
 
-  // Create menu based on user role
+  // Create menu based on user role — hide B2C-only items for B2B users
   const getMenuItems = () => {
-    let menuItems = [...baseMenu];
-    // if (userRole === "B2C") {
-    //   menuItems.push(profileCreationItem);
-    // }
-    return menuItems;
+    if (userRole === "B2B") {
+      return baseMenu.filter((item) => !item.b2cOnly);
+    }
+    return [...baseMenu];
   };
 
   const handleLogout = async () => {

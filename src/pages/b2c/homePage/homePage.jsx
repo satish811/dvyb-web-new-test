@@ -8,7 +8,8 @@ import { useProducts } from "../../../hooks/useProducts";
 import LuxuryPicks from "../../../components/b2c/home/LuxuryPicks";
 import SpotlightCollections from "../../../components/b2c/home/SpotlightCollections";
 import BestProducts from "../../../components/b2c/home/BestProducts";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from "react-router-dom";
 import CategoriesSection from "../../../components/b2c/home/CategoriesSection";
 import VirtualTryOnSection from "../../../components/b2c/home/VirtualTryOnSection";
 import PromotionalCarousel from "../../../components/b2c/home/PromotionalCarousel";
@@ -17,15 +18,29 @@ import EthnicWearSection from "../../../components/b2c/home/EthnicWearSection";
 import TryItBuyItSection from "../../../components/b2c/home/TryItBuyItSection";
 import PopularProductsSection from "../../../components/b2c/home/PopularProductsSection";
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
-// import HomeFooter from "../../../components/b2c/home/HomeFooter";
 
-import React, { useState } from 'react';
 export default function Home() {
   const { products, loading, error } = useProducts();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileTab, setMobileTab] = useState("women");
 
-  if (loading) return <div className="text-center py-20 sm:py-2">Loading…</div>;
+  // Handle scroll to section if state is passed (e.g., from Navbar 'WOMEN' click)
+  useEffect(() => {
+    if (!loading && location.state?.scrollTo) {
+      const element = document.getElementById(location.state.scrollTo);
+      if (element) {
+        // Delay slightly to ensure layout is stable after products load
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+          // Clear state after scrolling
+          window.history.replaceState({}, document.title);
+        }, 100);
+      }
+    }
+  }, [loading, location.state]);
+
+  if (loading) return <div className="text-center py-20 sm:py-2 min-h-screen flex items-center justify-center bg-white">Loading…</div>;
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
   const productsArray = Array.isArray(products) ? products : [];
@@ -64,13 +79,11 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#33022F]/40 via-transparent to-[#33022F]/80"></div>
 
           {/* Content Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pt-16">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-16">
             <h1
-              className="text-white drop-shadow-xl mb-3"
+              className="text-white drop-shadow-xl mb-3 text-[14vw] sm:text-[56px]"
               style={{
                 fontFamily: 'Antiga, serif',
-                fontSize: '56px',
-                fontWeight: 400,
                 lineHeight: '1',
                 letterSpacing: '0.02em',
                 textTransform: 'uppercase'
@@ -79,10 +92,9 @@ export default function Home() {
               THIS IS VILLY
             </h1>
             <p
-              className="text-white mb-8 max-w-[300px]"
+              className="text-white mb-8 max-w-[280px] sm:max-w-[300px] text-[3.5vw] sm:text-[13px]"
               style={{
                 fontFamily: 'Inter, sans-serif',
-                fontSize: '13px',
                 fontWeight: 500,
                 lineHeight: '1.4',
                 letterSpacing: '0.01em'
@@ -93,7 +105,7 @@ export default function Home() {
 
             <button
               onClick={() => navigate(mobileTab === "women" ? "/womenwear" : "/menwear")}
-              className="bg-white text-black w-[220px] h-[50px] text-sm font-bold tracking-[0.12em] uppercase shadow-xl hover:bg-gray-100 transition rounded-none flex items-center justify-center"
+              className="bg-white text-black w-[200px] sm:w-[220px] h-[45px] sm:h-[50px] text-xs sm:text-sm font-bold tracking-[0.12em] uppercase shadow-xl hover:bg-gray-100 transition rounded-none flex items-center justify-center"
             >
               SHOP {mobileTab === "women" ? "WOMENS" : "MENS"}
             </button>
@@ -116,7 +128,7 @@ export default function Home() {
           <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/womenwear")}
-              className="bg-white text-black px-10 py-3 text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-white text-black px-6 lg:px-10 py-3 text-xs lg:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
               Shop Women
             </button>
@@ -135,7 +147,7 @@ export default function Home() {
           <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/menwear")}
-              className="bg-white text-black px-10 py-3 text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-white text-black px-6 lg:px-10 py-3 text-xs lg:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
             >
               Shop Men
             </button>
@@ -145,10 +157,9 @@ export default function Home() {
         {/* Centered Text Overlay */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-32 pb-10">
           <h1
-            className="text-white drop-shadow-xl z-20 text-center mx-4"
+            className="text-white drop-shadow-xl z-20 text-center mx-4 text-[8vw] lg:text-[7vw] xl:text-[99.69px]"
             style={{
               fontFamily: 'Antiga, serif',
-              fontSize: '99.69px',
               fontWeight: 400,
               fontStyle: 'normal',
               lineHeight: '100%',

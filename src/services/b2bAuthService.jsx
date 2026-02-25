@@ -179,7 +179,7 @@ class B2BAuthService {
       "Mobile number already exists": "This mobile number is already registered. Please use a different number or login.",
       "PAN already exists": "This PAN is already registered in our system. Please contact support if you believe this is an error.",
       "Aadhaar already exists": "This Aadhaar number is already registered. Please use a different number or login.",
-      
+
       // Fallback custom errors
       USERNAME_EXISTS: "This username is already taken",
       MOBILE_EXISTS: "Mobile number already registered",

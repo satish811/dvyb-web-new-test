@@ -4,9 +4,8 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* html scroll-behavior: smooth was removed. It overrides JS behavior:"instant",
+   causing the footer-first flash on page refresh/navigation. */
 
 body {
   font-family: var(--font-family-sans);

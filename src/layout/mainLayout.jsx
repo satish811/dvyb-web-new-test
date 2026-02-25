@@ -1,9 +1,15 @@
+import React, { useLayoutEffect } from "react";
 import HomeFooter from "../components/b2c/home/HomeFooter";
 import { useLocation } from "react-router-dom";
-import MarqueeStrip from "../components/common/navbar/MarqueeStrip";
+
 
 export default function MainLayout({ children }) {
   const location = useLocation();
+
+  // Synchronous scroll reset for every page using this layout
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [location.pathname]);
 
   const hideHeaderOnMobile =
     location.pathname.startsWith("/products") || location.pathname.startsWith("/womenwear");
@@ -15,8 +21,7 @@ export default function MainLayout({ children }) {
         <main
           className={`flex-grow overflow-x-hidden relative z-10 ${hideHeaderOnMobile ? "md:mt-[73px]" : "mt-[73px]"}`}
         >
-          {/* Marquee Strip - Scrolls with content */}
-          {(location.pathname === "/" || location.pathname.includes("/usertype=b2b")) && <MarqueeStrip />}
+
           {children}
         </main>
 

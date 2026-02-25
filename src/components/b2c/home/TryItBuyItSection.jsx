@@ -54,7 +54,10 @@ export default function TryItBuyItSection() {
     const scrollContainerRef = useRef(null);
 
     return (
-        <section className="relative w-full bg-[#fcfcfc] py-10 md:py-16 overflow-hidden">
+        <section className="relative w-full bg-[#800576] py-10 md:py-16 overflow-hidden">
+
+            {/* White Background for the Pattern Area - Restores the original look for the bottom strip */}
+            <div className="absolute inset-x-0 bottom-0 h-[200px] md:h-[320px] 2xl:h-[450px] bg-white z-0" />
 
             {/* Background Texture - Mobile & Desktop */}
             <div
@@ -71,7 +74,7 @@ export default function TryItBuyItSection() {
             <div className="relative z-10 w-full max-w-[1440px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16">
 
                 {/* Heading */}
-                <h2 className="text-3xl md:text-5xl 2xl:text-7xl font-serif text-[#2F2F2F] mb-8 md:mb-12 2xl:mb-20 text-center tracking-wide">
+                <h2 className="text-3xl md:text-5xl 2xl:text-7xl font-serif text-white mb-8 md:mb-12 2xl:mb-20 text-left tracking-wide">
                     TRY IT & BUY IT
                 </h2>
 
@@ -87,7 +90,7 @@ export default function TryItBuyItSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[320px] md:w-auto md:min-w-[300px] 2xl:min-w-[400px] h-[60vh] md:h-[485px] 2xl:h-[650px] snap-center group"
+                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[80vw] md:w-full aspect-[4/5] md:aspect-[3/4] 2xl:h-[650px] snap-center group"
                         >
                             {/* Full Height Image */}
                             <div className="w-full h-full relative">
@@ -101,7 +104,7 @@ export default function TryItBuyItSection() {
                             </div>
 
                             {/* Floating Details Box */}
-                            <div className="absolute bottom-4 left-4 right-4 md:left-6 md:right-auto md:w-[274px] 2xl:w-[350px] bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-4 2xl:p-6 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
+                            <div className="absolute bottom-4 left-4 right-4 md:left-6 md:right-6 xl:right-auto md:w-auto xl:w-[274px] 2xl:w-[350px] bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-4 2xl:p-6 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
 
                                 <div className="flex justify-between items-start mb-3 2xl:mb-5">
                                     <div className="flex-1 mr-2">

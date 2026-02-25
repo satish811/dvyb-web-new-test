@@ -35,6 +35,8 @@ const AuthContainer = ({ isOpen, onClose }) => {
       const result = await B2BAuthService.login(credentials.email, credentials.password);
 
       if (result.success == true) {
+        // Set B2B session flag immediately so navbar hides Virtual Try On
+        sessionStorage.setItem("villy_b2b_mode", "true");
         // Redirect based on user role
         if (result.user?.role === "B2B") {
           console.log("Redirecting to B2B url");
@@ -61,7 +63,8 @@ const AuthContainer = ({ isOpen, onClose }) => {
 
       if (result.success) {
         console.log("Google login successful:", result);
-
+        // Set B2B session flag immediately so navbar hides Virtual Try On
+        sessionStorage.setItem("villy_b2b_mode", "true");
         switchUserType("b2b");
         navigate("/usertype=b2b");
         onClose();
@@ -79,6 +82,8 @@ const AuthContainer = ({ isOpen, onClose }) => {
     setAuthError("");
     try {
       await B2BAuthService.registerB2B(formData);
+      // Set B2B session flag immediately so navbar hides Virtual Try On
+      sessionStorage.setItem("villy_b2b_mode", "true");
       // After successful registration, switch to B2B route
       switchUserType("b2b");
       setShowRegister(false);

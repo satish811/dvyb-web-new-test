@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext"; // Import useAuth
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "../components/common/PageTransition";
 import ProtectedRoute from "../components/protectedRoute";
@@ -7,6 +8,7 @@ import MainLayout from "../layout/mainLayout";
 import ProductLayout from "../layout/ProductLayout";
 import { useProducts } from "../hooks/useProducts";
 import LazyImageLoader from "../components/b2c/LazyImageLoader/LazyImageLoader";
+import LogoutSkeleton from "../components/common/LogoutSkeleton"; // Import LogoutSkeleton
 
 // 🧱 Pages
 import Home from "../pages/b2c/homePage/homePage";
@@ -44,6 +46,7 @@ import OurStory from "../components/common/OurStory/ourStory";
 
 export default function AppRoutes() {
   const { products, loading, error } = useProducts();
+  const { loggingOut } = useAuth(); // Get loggingOut state
   const location = useLocation();
   const [showLoader, setShowLoader] = useState(false);
 
@@ -58,10 +61,12 @@ export default function AppRoutes() {
   return (
     <>
       {/* FULL PAGE LOADER */}
-      {showLoader && (
-        <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">
-          <LazyImageLoader isProcessing={true} />
-        </div>
+      {(showLoader || loggingOut) && (
+        loggingOut ? <LogoutSkeleton /> : (
+          <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">
+            <LazyImageLoader isProcessing={true} />
+          </div>
+        )
       )}
 
       {/* Fixed Navbar - rendered OUTSIDE PageTransition so transforms don't break fixed positioning */}
@@ -73,6 +78,8 @@ export default function AppRoutes() {
         </header>
       )}
 
+      {/* Overflow hidden prevents page transitions from creating double-height layout,
+          which the browser would then save as scroll position and restore on refresh */}
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           {/* 🏠 Home */}

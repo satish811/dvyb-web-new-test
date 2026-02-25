@@ -10,7 +10,7 @@ import salwarImg from "../../../assets/b2c/landing/Landing-villy/salwarsuit.png"
 import indoWesternImg from "../../../assets/b2c/landing/Landing-villy/indowestern.png";
 import kurtasImg from "../../../assets/b2c/landing/Landing-villy/Kurtas.jpg";
 import shararasImg from "../../../assets/b2c/landing/Landing-villy/Shararas.jpg";
-import indoWestern2Img from "../../../assets/b2c/landing/Landing-villy/indowestern2.jpg";
+import anarkali from "../../../assets/b2c/landing/Landing-villy/anrakalidec.png";
 import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
 
 const categories = [
@@ -20,7 +20,7 @@ const categories = [
     { id: 4, title: "INDO-WESTERN", img: indoWesternImg, link: "/women/indo-western" },
     { id: 5, title: "KURTAS", img: kurtasImg, link: "/women/kurta-sets" },
     { id: 6, title: "SHRARAS", img: shararasImg, link: "/women/shararas" },
-    { id: 7, title: "INDO-WESTERN", img: indoWestern2Img, link: "/women/indo-western" },
+    { id: 7, title: "ANARKALI", img: anarkali, link: "/women/anarkali" },
     { id: 8, title: "BRIDAL", img: bridalImg, link: "/women/bridal" },
 ];
 
@@ -28,12 +28,12 @@ const CategoryCard = ({ item, onClick }) => {
     return (
         <motion.div
             variants={slideUp}
-            className="relative cursor-pointer group w-[75vw] sm:w-[350px] md:w-full h-[350px] md:h-[450px] xl:h-[550px] 2xl:h-[650px] flex-shrink-0 snap-center md:snap-align-none"
+            className="relative cursor-pointer group w-full sm:w-[350px] md:w-full h-[350px] md:h-[450px] xl:h-[550px] 2xl:h-[650px] flex-shrink-0 snap-center md:snap-align-none"
             onClick={() => onClick(item.link)}
             whileHover={{ y: -5 }} // Subtle lift on hover
         >
             {/* Main Image Container */}
-            <div className="w-full h-full relative overflow-hidden rounded-lg md:rounded-none">
+            <div className="w-full h-full relative overflow-hidden rounded-none">
                 <motion.img
                     src={item.img}
                     alt={item.title}
@@ -66,12 +66,9 @@ export default function CategoriesSection() {
     const scrollRef = useRef(null);
 
     return (
-        <section className="bg-[#FAF9F6] py-10 md:py-16 2xl:py-24 px-0 md:px-8">
+        <section id="categories-section" className="bg-[#FAF9F6] pb-10 md:pb-16 2xl:pb-24 px-0 scroll-mt-[80px] md:scroll-mt-[75px]">
             <div className="max-w-[1920px] mx-auto">
-                {/* Section Header */}
-                <h2 className="text-2xl md:text-3xl xl:text-4xl 2xl:text-5xl font-serif text-black mb-6 md:mb-10 2xl:mb-16 tracking-wide text-left uppercase pl-4 md:pl-2">
-                    Categories
-                </h2>
+
 
                 {/* Container */}
                 <motion.div
@@ -80,7 +77,7 @@ export default function CategoriesSection() {
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={staggerContainer}
-                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 xl:gap-8 2xl:gap-10 overflow-x-auto md:overflow-visible pb-6 md:pb-0 px-4 md:px-0 snap-x snap-mandatory scroll-smooth hide-scrollbar"
+                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-0 overflow-x-auto md:overflow-visible pb-6 md:pb-0 px-0 snap-x snap-mandatory scroll-smooth hide-scrollbar"
                 >
                     {categories.map((cat) => (
                         <CategoryCard key={cat.id} item={cat} onClick={navigate} />

@@ -14,16 +14,10 @@ const WelcomeBanner = () => (
     <div className="flex items-center gap-3">
       <span className="text-2xl">🎉</span>
       <div>
-        <p className="font-bold text-gray-900 text-sm">Welcome Offer - Get 15% OFF</p>
-        <p className="text-xs text-gray-600 mt-0.5">Use code <span className="font-bold text-black">WELCOME15</span> on your first purchase</p>
+        <p className="font-bold text-gray-900 text-sm">Free Shipping on All Orders!</p>
+        <p className="text-xs text-gray-600 mt-0.5">No minimum order value • Delivered in 5-7 business days</p>
       </div>
     </div>
-    <button
-      onClick={() => { navigator.clipboard.writeText("WELCOME15"); toast.success("Code copied!") }}
-      className="bg-[#33022F] text-white px-6 py-2 rounded-md text-xs font-bold uppercase tracking-wide hover:bg-[#5a0452] transition"
-    >
-      Apply Now
-    </button>
   </div>
 );
 
@@ -387,21 +381,24 @@ export default function CartPage() {
               <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm sticky top-24">
                 <h2 className="text-lg font-bold text-[#33022F] mb-6">Order Summary</h2>
 
-                {/* Promo Code */}
+                {/* Promo Code - Coming Soon */}
                 <div className="mb-6">
                   <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">Promo Code</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Enter code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#33022F]"
+                      placeholder="Coming soon"
+                      disabled
+                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
                     />
-                    <button className="bg-[#33022F] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#5a0452] transition">
+                    <button
+                      disabled
+                      className="bg-gray-300 text-gray-500 px-4 py-2 rounded-md text-sm font-medium cursor-not-allowed"
+                    >
                       Apply
                     </button>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">Promo codes coming soon!</p>
                 </div>
 
                 {/* Costs */}

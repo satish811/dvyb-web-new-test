@@ -68,45 +68,27 @@ class WishlistOperationalService {
   /** Add item to wishlist with role-based structure */
   async addToWishlist(productId, productData = {}, variants = [], userRole = null) {
     try {
-      console.log("🟦 ===== FIREBASE WRITE OPERATION START =====");
-
-      // 1. Check Authentication
       const user = auth.currentUser;
-      if (!user) {
-        console.error("❌ AUTH FAILED: No authenticated user found");
-        throw new Error("User must be authenticated");
-      }
-      console.log("✅ AUTH: User authenticated -", user.uid);
+      if (!user) throw new Error("User must be authenticated");
 
-      // 2. Get User Role and Collection
       const { role, collection: userCollection } = await this.getUserRoleAndCollection();
-      console.log("✅ ROLE: Detected -", role, "Collection:", userCollection);
 
-      // 3. Ensure User Document Exists
+      // Ensure user document exists
       const userDocRef = doc(db, userCollection, user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        console.log("🟧 USER DOC: Creating new user document...");
-        const userData = {
+        await setDoc(userDocRef, {
           uid: user.uid,
           phoneNumber: user.phoneNumber,
           role: role || userRole,
           createdAt: new Date(),
           updatedAt: new Date(),
-        };
-        await setDoc(userDocRef, userData);
-        console.log("✅ USER DOC: Created successfully");
-      } else {
-        console.log("✅ USER DOC: Already exists");
+        });
       }
 
-      // 4. Prepare Wishlist Data
+      // Prepare and save wishlist item
       const wishlistItemRef = doc(db, userCollection, user.uid, "wishlist", productId);
-      console.log(
-        "📍 PATH: Full Firestore path -",
-        `${userCollection}/${user.uid}/wishlist/${productId}`
-      );
 
       let wishlistData;
       if (role === "B2B" || userRole === "B2B") {
@@ -117,7 +99,6 @@ class WishlistOperationalService {
           userId: user.uid,
         });
         wishlistData = b2bItem.toFirestore();
-        console.log("🟥 MODE: B2B - Data prepared");
       } else {
         const cleanedProductData = Object.fromEntries(
           Object.entries(productData).filter(([_, value]) => value !== undefined && value !== null)
@@ -131,174 +112,21 @@ class WishlistOperationalService {
           isB2B: false,
           ...cleanedProductData,
         };
-        console.log("🟦 MODE: B2C - Data prepared");
       }
 
-      console.log("📝 DATA: Final data to save:", wishlistData);
-
-      // 5. 🔥 CRITICAL: FIREBASE WRITE OPERATION
-      console.log("🚀 WRITE: Attempting setDoc operation...");
-
-      // Measure write operation time
-      const writeStartTime = Date.now();
-
-      let writeEndTime;
-
-      try {
-        await setDoc(wishlistItemRef, wishlistData);
-        writeEndTime = Date.now();
-        console.log(
-          `✅ WRITE: setDoc completed successfully in ${writeEndTime - writeStartTime}ms`
-        );
-      } catch (writeError) {
-        console.error("❌ WRITE: setDoc failed:", writeError);
-        console.error("❌ WRITE: Error details:", {
-          name: writeError.name,
-          code: writeError.code,
-          message: writeError.message,
-        });
-        throw writeError;
-      }
-
-      // 6. IMMEDIATE VERIFICATION
-      console.log("🔍 VERIFICATION: Starting immediate verification...");
-
-      const verifyStartTime = Date.now();
-      const verifyDoc = await getDoc(wishlistItemRef);
-      const verifyEndTime = Date.now();
-
-      console.log(`🔍 VERIFICATION: Read operation took ${verifyEndTime - verifyStartTime}ms`);
-      console.log("🔍 VERIFICATION: Document exists:", verifyDoc.exists());
-
-      if (!verifyDoc.exists()) {
-        console.error("❌ VERIFICATION FAILED: Document does not exist after write!");
-        throw new Error("Firestore write verification failed - document not found");
-      }
-
-      const savedData = verifyDoc.data();
-      console.log("🔍 VERIFICATION: Retrieved data:", savedData);
-      console.log("✅ VERIFICATION: Write operation confirmed successful!");
-
-      // 7. COLLECTION LEVEL VERIFICATION
-      console.log("📋 COLLECTION CHECK: Verifying in collection context...");
-      const wishlistCollectionRef = collection(db, userCollection, user.uid, "wishlist");
-      const allDocs = await getDocs(wishlistCollectionRef);
-      console.log(`📋 COLLECTION CHECK: Total documents in wishlist: ${allDocs.size}`);
-
-      let found = false;
-      allDocs.forEach((doc) => {
-        if (doc.id === productId) {
-          found = true;
-          console.log("✅ COLLECTION CHECK: Document found in collection");
-        }
-      });
-
-      if (!found) {
-        console.error("❌ COLLECTION CHECK: Document not found in collection scan!");
-      }
-
-      // 8. FINAL SUCCESS
-      console.log("🎉 ===== FIREBASE WRITE OPERATION COMPLETED SUCCESSFULLY =====");
+      await setDoc(wishlistItemRef, wishlistData);
 
       return {
         success: true,
         role,
         documentId: productId,
-        writeTime: writeEndTime - writeStartTime,
-        verificationTime: verifyEndTime - verifyStartTime,
-        documentExists: true,
-        data: savedData,
+        data: wishlistData,
       };
     } catch (error) {
-      console.error("💥 ===== FIREBASE WRITE OPERATION FAILED =====");
-      console.error("💥 FINAL ERROR:", {
-        name: error.name,
-        code: error.code,
-        message: error.message,
-        stack: error.stack,
-      });
-
-      // Specific error handling
-      if (error.code === "permission-denied") {
-        console.error("💥 SECURITY RULES: Firestore security rules are blocking write access");
-        console.error("💥 SOLUTION: Check Firestore rules in Firebase Console");
-      } else if (error.code === "not-found") {
-        console.error("💥 NETWORK: Firestore instance not found - check Firebase configuration");
-      } else if (error.code === "unavailable") {
-        console.error("💥 NETWORK: Firestore is unavailable - check internet connection");
-      }
-
+      console.error("Error adding to wishlist:", error.message);
       throw error;
     }
   }
-
-  // async addToWishlist(productId, productData = {}, variants = [], userRole = null) {
-  //   try {
-  //     const user = auth.currentUser;
-  //     if (!user) throw new Error("User must be authenticated");
-
-  //     const { role, collection: userCollection } = await this.getUserRoleAndCollection();
-  //     console.log("The user collection we get", userCollection);
-
-  //     const userDoc = await getDoc(doc(db, userCollection, user.uid));
-  //     console.log("The user document we get", userDoc);
-
-  //     if (!userDoc.exists()) {
-  //       await setDoc(doc(db, userCollection, user.uid), {
-  //         uid: user.uid,
-  //         phoneNumber: user.phoneNumber,
-  //         role: role || userRole,
-  //         createdAt: new Date(),
-  //         updatedAt: new Date(),
-  //       });
-  //     }
-
-  //     const wishlistItemRef = doc(
-  //       db,
-  //       userCollection,
-  //       user.uid,
-  //       "wishlist",
-  //       productId
-  //     );
-
-  //     let wishlistData;
-
-  //     if (role === "B2B" || userRole === "B2B") {
-
-  //       const b2bItem = new B2BWishlistItemModel({
-  //         productId,
-  //         productData,
-  //         variants,
-  //         userId: user.uid
-  //       });
-
-  //       wishlistData = b2bItem.toFirestore();
-
-  //     } else {
-
-  //       const cleanedProductData = Object.fromEntries(
-  //         Object.entries(productData).filter(([_, value]) => value !== undefined && value !== null)
-  //       );
-
-  //       wishlistData = {
-  //         productId,
-  //         addedAt: new Date(),
-  //         updatedAt: new Date(),
-  //         userId: user.uid,
-  //         userRole: role || userRole,
-  //         isB2B: false,
-  //         ...cleanedProductData,
-  //       };
-  //     }
-
-  //     await setDoc(wishlistItemRef, wishlistData);
-  //     console.log(`✅ Item added to ${role} wishlist successfully`);
-  //     return { success: true, role, item: wishlistData };
-  //   } catch (error) {
-  //     console.error("❌ Error adding to wishlist:", error);
-  //     throw error;
-  //   }
-  // }
 
   /** Remove item from wishlist */
   async removeFromWishlist(productId) {
@@ -310,7 +138,7 @@ class WishlistOperationalService {
       const wishlistItemRef = doc(db, userCollection, user.uid, "wishlist", productId);
 
       await deleteDoc(wishlistItemRef);
-      console.log("🗑 Item removed from wishlist successfully");
+      console.log("Item removed from wishlist");
       return { success: true };
     } catch (error) {
       console.error("❌ Error removing from wishlist:", error);
@@ -337,7 +165,7 @@ class WishlistOperationalService {
         updatedAt: doc.data().updatedAt?.toDate?.(),
       }));
 
-      console.log(`📋 Retrieved ${wishlistItems.length} items from ${role} wishlist`);
+      console.log(`Retrieved ${wishlistItems.length} items from ${role} wishlist`);
       return wishlistItems;
     } catch (error) {
       console.error("❌ Error fetching wishlist:", error);

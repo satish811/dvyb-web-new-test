@@ -6,8 +6,10 @@ import b2cValidator from "../../../utils/B2CValidator";
 import B2BAddressValidator from "../../../utils/validators/b2bAddressValidator";
 import B2BAuthService from "../../../services/b2bAuthService";
 import B2BAddressService from "../../../services/b2bAddressService";
+import { auth } from "../../../config/firebaseConfig";
 import { Country, State, City } from "country-state-city";
 import LazyImageLoader from "../LazyImageLoader/LazyImageLoader";
+import B2BUserDetails from "../../../pages/MyProfile/B2BUserDetails";
 
 const MyInfo = () => {
   const { user } = useAuth();
@@ -40,6 +42,8 @@ const MyInfo = () => {
   const [editUserMode, setEditUserMode] = useState(false);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const [newAddress, setNewAddress] = useState({
     firstName: "",
@@ -62,42 +66,72 @@ const MyInfo = () => {
         setRoleLoading(true);
         setLoading(true);
 
-        // Try to get B2B user complete profile first
-        try {
-          const completeProfile = await B2BAuthService.getUserCompleteProfile(user.uid);
+        console.log("=== MyInfo: Starting role detection for uid:", user.uid, "===");
 
-          if (completeProfile && completeProfile.success && completeProfile.data) {
-            const userData = completeProfile.data;
-            const hasB2BData = userData.pan || userData.aadhaar;
+        // Check HOW the user signed in — this determines the role
+        const currentUser = auth.currentUser;
+        const providerId = currentUser?.providerData?.[0]?.providerId;
+        const isPhoneLogin = providerId === "phone";
 
-            if (hasB2BData) {
-              setUserRole("B2B");
-              console.log("User is B2B with complete profile:", completeProfile.data);
+        console.log("MyInfo: sign-in provider:", providerId, "| isPhoneLogin:", isPhoneLogin);
 
-              const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
+        // Phone OTP login = ALWAYS B2C, skip B2B check entirely
+        if (isPhoneLogin) {
+          console.log("MyInfo: Phone login detected → B2C");
+          setUserRole("B2C");
+          await fetchB2CData();
+        } else {
+          // Email/password login — check B2B collection
+          let detectedRole = null;
+          let b2bUserData = null;
 
-              setB2bData({
-                username: userData.username || "",
-                email: userData.email || user.email || "",
-                mobile: userData.mobile || "",
-                pan: userData.pan || "",
-                aadhaar: userData.aadhaar || "",
-                addresses: addressesResponse.success ? addressesResponse.data : [],
-              });
-            } else {
-              setUserRole("B2C");
-              await fetchB2CData();
+          try {
+            const completeProfile = await B2BAuthService.getUserCompleteProfile(user.uid);
+            console.log("MyInfo: getUserCompleteProfile result:", JSON.stringify({
+              success: completeProfile?.success,
+              role: completeProfile?.role,
+              collection: completeProfile?.collection,
+              hasData: !!completeProfile?.data,
+            }));
+
+            if (completeProfile && completeProfile.success && completeProfile.data) {
+              if (completeProfile.role === "B2B") {
+                detectedRole = "B2B";
+                b2bUserData = completeProfile.data;
+              }
             }
+          } catch (profileError) {
+            console.warn("MyInfo: getUserCompleteProfile failed:", profileError.message);
+          }
+
+          console.log("=== MyInfo: Final detected role:", detectedRole || "B2C", "===");
+
+          if (detectedRole === "B2B" && b2bUserData) {
+            setUserRole("B2B");
+
+            let addresses = [];
+            try {
+              const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
+              addresses = addressesResponse.success ? addressesResponse.data : [];
+            } catch (addrError) {
+              console.warn("MyInfo: B2B address fetch failed (non-blocking):", addrError.message);
+            }
+
+            setB2bData({
+              username: b2bUserData.username || "",
+              email: b2bUserData.email || user.email || "",
+              mobile: b2bUserData.mobile || b2bUserData.mobileNo || "",
+              pan: b2bUserData.pan || "",
+              aadhaar: b2bUserData.aadhaar || "",
+              addresses: addresses,
+            });
           } else {
             setUserRole("B2C");
             await fetchB2CData();
           }
-        } catch (b2bError) {
-          setUserRole("B2C");
-          await fetchB2CData();
         }
       } catch (error) {
-        console.error("Error getting user role and data:", error);
+        console.error("MyInfo: Error getting user role and data:", error);
         setUserRole("B2C");
         await fetchB2CData();
       } finally {
@@ -140,6 +174,115 @@ const MyInfo = () => {
   const handleNewAddressChange = (e) => {
     const { name, value } = e.target;
     setNewAddress({ ...newAddress, [name]: value });
+  };
+
+  const handlePinCodeChange = async (e) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setNewAddress((prev) => ({ ...prev, zipPostalCode: value }));
+
+    if (value.length !== 6) return;
+
+    try {
+      setPincodeLoading(true);
+      const res = await fetch(`https://api.postalpincode.in/pincode/${value}`);
+      const data = await res.json();
+
+      if (data?.[0]?.Status === "Success" && data[0].PostOffice?.length > 0) {
+        const postOffice = data[0].PostOffice[0];
+        const stateName = postOffice.State;
+        const cityName = postOffice.Block !== "NA" ? postOffice.Block : postOffice.District;
+
+        const indiaCode = "IN";
+        setSelectedCountryCode(indiaCode);
+
+        const matchedState = State.getStatesOfCountry(indiaCode).find(
+          (s) => s.name.toLowerCase() === stateName.toLowerCase()
+        );
+        const stateCode = matchedState?.isoCode || "";
+        setSelectedStateCode(stateCode);
+
+        setNewAddress((prev) => ({
+          ...prev,
+          country: "India",
+          stateProvince: matchedState?.name || stateName,
+          city: cityName,
+        }));
+      }
+    } catch (error) {
+      console.error("Pincode lookup failed:", error);
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  // Geolocation: auto-fill address from browser location
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      return alert("Geolocation is not supported by your browser.");
+    }
+
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+
+          if (data && data.address) {
+            const addr = data.address;
+            const pinCode = addr.postcode || "";
+            const cityName = addr.city || addr.town || addr.village || addr.county || addr.state_district || "";
+            const stateName = addr.state || "";
+            const countryName = addr.country || "";
+            const road = addr.road || "";
+            const suburb = addr.suburb || addr.neighbourhood || "";
+            const houseNumber = addr.house_number || "";
+            const addressLine = [houseNumber, road, suburb].filter(Boolean).join(", ");
+
+            // Match country code
+            const matchedCountry = Country.getAllCountries().find(
+              (c) => c.name.toLowerCase() === countryName.toLowerCase()
+            );
+            const countryCode = matchedCountry?.isoCode || "IN";
+            setSelectedCountryCode(countryCode);
+
+            // Match state code
+            const matchedState = State.getStatesOfCountry(countryCode).find(
+              (s) => s.name.toLowerCase() === stateName.toLowerCase()
+            );
+            const stateCode = matchedState?.isoCode || "";
+            setSelectedStateCode(stateCode);
+
+            setNewAddress((prev) => ({
+              ...prev,
+              address: addressLine || prev.address,
+              zipPostalCode: pinCode,
+              country: matchedCountry?.name || countryName,
+              stateProvince: matchedState?.name || stateName,
+              city: cityName,
+            }));
+          }
+        } catch (err) {
+          console.error("Reverse geocoding failed:", err);
+          alert("Could not fetch address from your location. Please enter manually.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (error) => {
+        setGeoLoading(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          alert("Location permission denied. Please allow location access and try again.");
+        } else {
+          alert("Unable to get your location. Please try again.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const saveUserData = async () => {
@@ -231,7 +374,14 @@ const MyInfo = () => {
     try {
       if (userRole === "B2B") {
         const completeProfile = await B2BAuthService.getUserCompleteProfile(user.uid);
-        const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
+
+        let addressesList = [];
+        try {
+          const addressesResponse = await B2BAddressService.getAddresses(user.uid, "B2B");
+          addressesList = addressesResponse.success ? addressesResponse.data : [];
+        } catch (addrErr) {
+          console.warn("refreshUserData: B2B address fetch failed:", addrErr.message);
+        }
 
         if (completeProfile.success) {
           const userData = completeProfile.data;
@@ -242,7 +392,7 @@ const MyInfo = () => {
             mobile: userData.mobile || prev.mobile,
             pan: userData.pan || prev.pan,
             aadhaar: userData.aadhaar || prev.aadhaar,
-            addresses: addressesResponse.success ? addressesResponse.data : prev.addresses,
+            addresses: addressesList.length > 0 ? addressesList : prev.addresses,
           }));
         }
       } else {
@@ -349,7 +499,7 @@ const MyInfo = () => {
     );
   }
 
-  // User Details Section - Unified View/Edit Mode
+  // User Details Section - B2C only (Name + Phone)
   const renderUserDetails = () => {
     return (
       <div className="mb-12">
@@ -360,32 +510,20 @@ const MyInfo = () => {
           <div>
             <input
               name="name"
-              value={userRole === "B2B" ? b2bData.username : b2cData.name}
-              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              value={b2cData.name}
+              onChange={handleB2cChange}
               disabled={!editUserMode}
               className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
               placeholder="Name"
             />
           </div>
 
-          {/* Email Input - Added for completeness */}
+          {/* Phone Input */}
           <div>
             <input
-              name="email"
-              value={userRole === "B2B" ? b2bData.email : b2cData.email}
-              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
-              disabled={!editUserMode}
-              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
-              placeholder="Email"
-            />
-          </div>
-
-          {/* Phone/Mobile Input */}
-          <div>
-            <input
-              name={userRole === "B2B" ? "mobile" : "phoneNumber"}
-              value={userRole === "B2B" ? b2bData.mobile : b2cData.phoneNumber}
-              onChange={userRole === "B2B" ? handleB2bChange : handleB2cChange}
+              name="phoneNumber"
+              value={b2cData.phoneNumber}
+              onChange={handleB2cChange}
               disabled={!editUserMode}
               className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
               placeholder="Phone Number"
@@ -413,7 +551,6 @@ const MyInfo = () => {
                 <button
                   onClick={() => {
                     setEditUserMode(false);
-                    // Reset data logic if needed
                   }}
                   className="px-8 py-2 bg-[#F5F5F5] text-gray-600 text-sm font-bold hover:bg-gray-200 transition"
                 >
@@ -434,9 +571,28 @@ const MyInfo = () => {
         <div className="max-w-4xl mx-auto">
           {/* HEADER */}
           <div className="py-6 border-b border-gray-100 mb-8">
-            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-              {editingAddress ? "Edit Shipping Address" : "Add Your Shipping Address"}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                {editingAddress ? "Edit Shipping Address" : "Add Your Shipping Address"}
+              </h2>
+              <button
+                type="button"
+                onClick={handleUseMyLocation}
+                disabled={geoLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#33022F] text-[#33022F] text-xs font-bold rounded hover:bg-[#33022F] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {geoLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" /></svg>
+                    Detecting...
+                  </>
+                ) : (
+                  <>
+                    📍 Use My Location
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* FORM */}
@@ -500,6 +656,24 @@ const MyInfo = () => {
                 className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
                 required
               />
+            </div>
+
+            {/* Zip / Pin Code */}
+            <div className="relative border border-dashed border-gray-400 p-3">
+              <input
+                type="text"
+                name="zipPostalCode"
+                value={newAddress.zipPostalCode}
+                onChange={handlePinCodeChange}
+                placeholder="Pin Code / Zip Code *"
+                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
+                inputMode="numeric"
+                maxLength={6}
+                required
+              />
+              {pincodeLoading && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Loading...</span>
+              )}
             </div>
 
             {/* Country */}
@@ -578,19 +752,6 @@ const MyInfo = () => {
               </select>
             </div>
 
-            {/* Zip Code */}
-            <div className="relative border border-dashed border-gray-400 p-3">
-              <input
-                type="text"
-                name="zipPostalCode"
-                value={newAddress.zipPostalCode}
-                onChange={handleNewAddressChange}
-                placeholder="Zip Code *"
-                className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
-                required
-              />
-            </div>
-
             {/* BUTTONS */}
             <div className="flex gap-4 pt-6 col-span-1 md:col-span-2">
               <button
@@ -612,12 +773,16 @@ const MyInfo = () => {
     );
   }
 
-  // Main View - Same design for both B2B and B2C
+  // Main View - Role-specific user details, shared address section
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
         <div className="max-w-7xl mx-auto">
-          {renderUserDetails()}
+          {userRole === "B2B" ? (
+            <B2BUserDetails userData={b2bData} />
+          ) : (
+            renderUserDetails()
+          )}
 
           {/* Address Section */}
           <div className="mt-8">
