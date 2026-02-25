@@ -663,7 +663,9 @@ In the provided saree image, **surgically replace ONLY the existing sleeves** wi
 Leave every other pixel in the image completely untouched.
 
 ABSOLUTE PRESERVATION RULES
-• Identical woman: exact face, expression, eye direction, makeup intensity, hair strands/volumes, bindis, earrings, necklaces, skin tone/texture/pores/hair on arms if visible
+• 🔒 FACE / HEAD COMPLETELY FROZEN — treat the face, eyes, nose, mouth, jaw, ears, hairline, makeup, skin texture and tone of the face as a LOCKED LAYER that CANNOT be touched, moved, smoothed, regenerated or altered in ANY way — any face change = IMMEDIATE INTERNAL REJECT & REGENERATE
+• 🔒 HAIR FROZEN — hair strands, volume, colour and style must be pixel-identical
+• 🔒 JEWELLERY FROZEN — earrings, necklaces, bindis must remain exactly as in source
 • Identical body & pose: shoulder slope, arm angle/position, bust/waist shape, hand placement, posture — zero anatomy shift
 • Identical saree: drape folds, pleat crispness, pallu placement, border motifs, fabric sheen/weave/color gradient, pinning points
 • CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
@@ -691,7 +693,8 @@ blouseType.toLowerCase().includes('full') || blouseType.toLowerCase().includes('
 - THE SLEEVE FABRIC MUST COVER THE ENTIRE FOREARM FROM ELBOW ALL THE WAY TO THE WRIST BONE
 - Hem sits AT the wrist joint — the hands are visible BELOW the sleeve hem
 - ZERO exposed forearm skin between the elbow and the wrist
-- If ANY section of the forearm between elbow and wrist has exposed skin → length is WRONG → REGENERATE
+- VISUAL TEST: Mentally trace a path from the elbow crease down to the wrist bump — every single centimetre of that path must be covered by sleeve fabric. If even 1 cm of forearm skin is exposed → WRONG → REGENERATE
+- The sleeve must be long enough that you can see the sleeve cuff/hem right above where the hand begins
 - Fitted or slightly loose with optional subtle cuff at wrist` :
 
 blouseType.toLowerCase().includes('3/4') || blouseType.toLowerCase().includes('three quarter') || blouseType.toLowerCase().includes('3-4') || blouseType.toLowerCase().includes('three-quarter') ?
@@ -751,12 +754,13 @@ EDITING CONSTRAINTS
 • No change to sleeve attachment point, armhole height, or overall blouse silhouette
 
 STRICT FORBIDDEN CHANGES (IF ANY DETECTED → INTERNALLY REJECT & REGENERATE)
+• ANY change to the face, eyes, expression, skin texture of the face — ZERO TOLERANCE
 • Any neckline, back, length, fit, colour, texture, embellishment change
-• Any face, hair, jewellery, pose, body reshaping
+• Any hair, jewellery, pose, body reshaping
 • Lighting/shadow inconsistency, smoothing artifacts, anatomy errors
 
 OUTPUT
-Return ONLY one single high-resolution photorealistic edited image.
+Return ONLY one single HIGH-QUALITY photorealistic edited image — maximum resolution, sharp details, no compression artifacts, no blur.
 NO text whatsoever. NO explanations. NO markdown. NO extra images. NO UI elements.
 `;
 

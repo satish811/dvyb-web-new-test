@@ -125,27 +125,27 @@ const UploadSelfieModal = ({
 
     // Define all model arrays
     const lehengamodels = [
-      // {
-      // modelName: "Model 1",
-      // modelimg:
-      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
-      // },
+      {
+      modelName: "Model 1",
+      modelimg:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
+      },
       {
         modelName: "Model",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model12_nvdjir.jpg",
       },
 
-      // {
-      //      modelName: "Model 3",
-      // modelimg:
-      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
-      // },
-      // {
-      //      modelName: "Model 4",
-      // modelimg:
-      //   "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
-      // },
+      {
+           modelName: "Model 3",
+      modelimg:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
+      },
+      {
+           modelName: "Model 4",
+      modelimg:
+        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+      },
 
 
     ]
@@ -168,77 +168,117 @@ const UploadSelfieModal = ({
       {
         modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765958038/model_1_mec4ki.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1772001465/Gemini_Generated_Image_csi0f2csi0f2csi0_ol5dip.png",
       },
     ];
 
     const universalModels = [
+      // // {
+      // //   modelName: "Fair & Slim",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+      // // },
       // {
-      //   modelName: "Fair & Slim",
+      //   modelName: "Dusky & Curvy",
       //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
       // },
+      // // {
+      // //   modelName: "Wheatist & Athletic",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
+      // // },
+      // // {
+      // //   modelName: "Medium",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
+      // // },
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+      },
       {
         modelName: "Dusky & Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
-      // },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
+      },
     ];
 
     const shararaModels = [
-      // {
-      //   modelName: "Fair & Slim",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978924/sharara3_opiohp_12c9c7.jpg",
-      // },
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+      },
       {
         modelName: "Dusky & Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978942/bvfo12yqx2bwfjjbynop_e2f08a.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978969/dg36354daunzulny0vsk_593bdd.jpg",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978906/sharara4_pnw3fi_50fc1f.jpg",
-      // },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
+      },
     ];
 
     const anarkaliModels = [
+      // // {
+      // //   modelName: "Fair & Slim",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
+      // // },
       // {
-      //   modelName: "Fair & Slim",
+      //   modelName: "Dusky & Curvy",
       //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
       // },
+      // // {
+      // //   modelName: "Wheatist & Athletic",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
+      // // },
+      // // {
+      // //   modelName: "Medium",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
+      // // },
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+      },
       {
         modelName: "Dusky & Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
-      // },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
+      },
     ];
 
     const pretModels = [
@@ -284,26 +324,46 @@ const UploadSelfieModal = ({
     ];
 
     const kurthaModels = [
+      // // {
+      // //   modelName: "Fair & Slim",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
+      // // },
       // {
-      //   modelName: "Fair & Slim",
+      //   modelName: "Dusky & Curvy",
       //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
+      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978550/kurthaSet3_mbst5j_f7e8e5.jpg",
       // },
+      // // {
+      // //   modelName: "Wheatist & Athletic",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
+      // // },
+      // // {
+      // //   modelName: "Medium",
+      // //   modelimg:
+      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
+      // // },
+      {
+        modelName: "Fair & Slim",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+      },
       {
         modelName: "Dusky & Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763978550/kurthaSet3_mbst5j_f7e8e5.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
-      // },
+      {
+        modelName: "Wheatist & Athletic",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+      },
+      {
+        modelName: "Medium",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
+      },
     ];
 
     // Map dress types to their corresponding models
