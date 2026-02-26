@@ -29,6 +29,7 @@ async function getVertexClient() {
   if (_vertexClient) return _vertexClient;
 
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const keyFile = process.env.GOOGLE_KEY_FILE;
   let auth;
   if (serviceAccountJson) {
     let credentials;
@@ -38,6 +39,9 @@ async function getVertexClient() {
       throw new Error("Invalid GOOGLE_SERVICE_ACCOUNT_JSON (must be valid JSON)");
     }
     auth = new GoogleAuth({ credentials, scopes: VERTEX_SCOPES });
+  } else if (keyFile) {
+    // Local dev: path to service-account JSON file
+    auth = new GoogleAuth({ keyFilename: keyFile, scopes: VERTEX_SCOPES });
   } else {
     auth = new GoogleAuth({ scopes: VERTEX_SCOPES });
   }
