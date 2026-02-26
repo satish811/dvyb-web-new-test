@@ -8,13 +8,24 @@ const categoryPathMap = {
   LEHENGA: "/womenwear?category=lehenga",
   SAREE: "/womenwear?category=saree",
   "KURTA SETS": "/womenwear?category=kurta-sets",
+  "KURTA SET": "/womenwear?category=kurta-sets",
+  "KURTA-SET": "/womenwear?category=kurta-sets",
+  "KURTA-SETS": "/womenwear?category=kurta-sets",
+  "EMBROIDERED KURTA": "/womenwear?category=kurta-sets",
+  "EMBROIDERED KURTA SET": "/womenwear?category=kurta-sets",
   ANARKALIS: "/womenwear?category=anarkalis",
+  ANARKALI: "/womenwear?category=anarkalis",
   SHARARAS: "/womenwear?category=shararas",
-  PRÊT: "/womenwear?category=pret",
+  SHARARA: "/womenwear?category=shararas",
+  "PRÊT": "/womenwear?category=pret",
   FUSION: "/womenwear?category=fusion",
   WEDDING: "/womenwear?category=wedding",
   SALE: "/womenwear?category=sale",
   "VIRTUAL TRYON": "/virtual-tryon",
+  "SEQUINNED LEHENGA": "/womenwear?category=lehenga",
+  "FESTIVE FABRIC": "/womenwear?category=festive-fabric",
+  BLOUSE: "/womenwear?category=blouses",
+  BLOUSES: "/womenwear?category=blouses",
 };
 
 // Map URL category params to subcategory keys
@@ -84,7 +95,7 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
     // If we're in subcategory mode (current category exists)
     if (currentCategory) {
       // Handle subcategory selection/deselection
-      updateFilter("categories", categoryName.toLowerCase());
+      updateFilter("subcategories", categoryName);
     } else {
       // Handle main category selection/deselection
       const isCurrentlySelected = selectedFilters.categories[0] === categoryName;
@@ -113,8 +124,10 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
       const currentCategory = getCurrentCategory();
 
       if (currentCategory) {
-        // For subcategories - check if this subcategory is selected
-        return selectedFilters.subcategories.includes(itemName.toLowerCase());
+        // For subcategories - check if this subcategory is selected (case-insensitive)
+        return selectedFilters.subcategories?.some(
+          (s) => s.toLowerCase() === itemName.toLowerCase()
+        ) || false;
       } else {
         // For main categories - check if this main category is selected
         return selectedFilters.categories.includes(itemName);
@@ -194,18 +207,20 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
               filtered.map((item, i) => (
                 <label
                   key={i}
-                  className="flex items-center justify-between cursor-pointer p-1.5 rounded hover:bg-gray-50"
+                  className="filter-checkbox-label"
+                  data-checked={isChecked(item.name)}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="filter-checkbox-content">
                     <input
                       type="checkbox"
+                      className="filter-checkbox-input"
                       checked={isChecked(item.name)}
                       onChange={() => handleFilterClick(item.name)}
-                      className="border-gray-300 text-black focus:ring-0 focus:ring-offset-0 focus:outline-none w-4 h-4 rounded"
                     />
-                    <span className="text-gray-700 text-sm">{item.name}</span>
+                    <span className="filter-checkbox-box" />
+                    <span className="filter-checkbox-name">{item.name}</span>
                   </div>
-                  {item.count > 0 && <span className="text-gray-400 text-xs">({item.count})</span>}
+                  {item.count > 0 && <span className="filter-checkbox-count">({item.count})</span>}
                 </label>
               ))}
           </div>

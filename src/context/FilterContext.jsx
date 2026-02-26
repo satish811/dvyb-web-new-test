@@ -65,32 +65,31 @@ export const FilterProvider = ({ children }) => {
 
         switch (filterType) {
           case "categories":
-            const normalized = value.toLowerCase();
-            const isMainCategory = Object.keys(categoryPathMap).includes(value.toUpperCase());
-
-            if (!isMainCategory) {
-              // SUBCATEGORY - toggle in subcategories array
-              const subcategories = newFilters.subcategories || [];
-              if (subcategories.includes(normalized)) {
-                newFilters.subcategories = subcategories.filter((v) => v !== normalized);
-              } else {
-                newFilters.subcategories = [...subcategories, normalized];
-              }
+            // MAIN CATEGORY only — toggle in categories[]
+            if (newFilters.categories.includes(value)) {
+              // Deselect
+              newFilters.categories = [];
+              setNavbarCategory("");
+              newFilters.subcategories = [];
             } else {
-              // MAIN CATEGORY
-              if (newFilters.categories.includes(value)) {
-                // Deselect
-                newFilters.categories = [];
-                setNavbarCategory("");
-                newFilters.subcategories = [];
-              } else {
-                // Select
-                newFilters.categories = [value];
-                setNavbarCategory(value);
-                newFilters.subcategories = [];
-              }
+              // Select
+              newFilters.categories = [value];
+              setNavbarCategory(value);
+              newFilters.subcategories = [];
             }
             break;
+
+          case "subcategories": {
+            // SUBCATEGORY — toggle in subcategories[] (case-insensitive)
+            const normalizedSub = value.toLowerCase();
+            const subs = newFilters.subcategories || [];
+            if (subs.includes(normalizedSub)) {
+              newFilters.subcategories = subs.filter((v) => v !== normalizedSub);
+            } else {
+              newFilters.subcategories = [...subs, normalizedSub];
+            }
+            break;
+          }
 
           case "blouses":
             const blouses = newFilters.blouses || [];

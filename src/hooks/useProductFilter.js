@@ -99,11 +99,17 @@ export const useProductFilter = (products = []) => {
 
       // === SUBCATEGORY FILTER ===
       if (selectedFilters.subcategories?.length > 0) {
-        const productSub =
-          product.subcategory?.trim()?.toLowerCase() || product.subDressType?.trim()?.toLowerCase();
+        const productFields = [
+          product.subcategory,
+          product.subCategory,
+          product.sub_category,
+          product.subDressType,
+          product.dressType,
+          product.category,
+        ].filter(Boolean).map((f) => f.trim().toLowerCase());
 
-        const matchSub = selectedFilters.subcategories.some(
-          (sub) => sub.toLowerCase() === productSub
+        const matchSub = selectedFilters.subcategories.some((sub) =>
+          productFields.some((field) => field === sub.toLowerCase())
         );
 
         if (!matchSub) return false;

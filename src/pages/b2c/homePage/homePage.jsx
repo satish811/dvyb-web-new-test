@@ -18,6 +18,7 @@ import EthnicWearSection from "../../../components/b2c/home/EthnicWearSection";
 import TryItBuyItSection from "../../../components/b2c/home/TryItBuyItSection";
 import PopularProductsSection from "../../../components/b2c/home/PopularProductsSection";
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
+import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
 export default function Home() {
   const { products, loading, error } = useProducts();
@@ -40,7 +41,31 @@ export default function Home() {
     }
   }, [loading, location.state]);
 
-  if (loading) return <div className="text-center py-20 sm:py-2 min-h-screen flex items-center justify-center bg-white">Loading…</div>;
+  // Loading state — show the Villy logo animation
+  const [loadingFrame, setLoadingFrame] = React.useState(0);
+  React.useEffect(() => {
+    if (!loading) return;
+    const timer = setInterval(() => {
+      setLoadingFrame((prev) => (prev + 1) % LOADING_FRAMES.length);
+    }, FRAME_INTERVAL);
+    return () => clearInterval(timer);
+  }, [loading]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <img
+          src={LOADING_FRAMES[loadingFrame]}
+          alt="Loading..."
+          style={{
+            width: "300px",
+            height: "300px",
+            objectFit: "cover",
+          }}
+        />
+      </div>
+    );
+  }
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
   const productsArray = Array.isArray(products) ? products : [];
@@ -186,11 +211,12 @@ export default function Home() {
 
       </section>
 
-      {/* 2. CATEGORIES SECTION */}
-      <CategoriesSection />
-
+    
       {/* 2.5. VIRTUAL TRY ON SECTION */}
       <VirtualTryOnSection />
+
+      {/* 2. CATEGORIES SECTION */}
+      <CategoriesSection />
 
       {/* 2.8 PROMOTIONAL CAROUSEL */}
       <PromotionalCarousel />

@@ -30,12 +30,7 @@ import ProductStarRatingSection from "./individual_product_components/ProductSta
 import AvailColorsPopup from "../../b2b/common/AvailColorsPopup";
 import MobileProductHeader from "./individual_product_components/MobileProductHeader";
 
-import img1 from "../../../assets/lazyloading/logoimg1.svg";
-import img2 from "../../../assets/lazyloading/logoimg2.svg";
-import img3 from "../../../assets/lazyloading/logoimg3.svg";
-import img4 from "../../../assets/lazyloading/logoimg4.svg";
-import img5 from "../../../assets/lazyloading/logoimg5.svg";
-import img6 from "../../../assets/lazyloading/logoimg6.svg";
+import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
 const UploadSelfieModal = React.lazy(() => import("../TryOn/UploadSelfieModal"));
 const TryOnPreviewModal = React.lazy(() => import("../TryOn/TryOnPreviewModal"));
@@ -116,7 +111,7 @@ const IndividualProductDetailsPage = () => {
 
   const isMobile = () => window.innerWidth <= 768;
 
-  const images = [img1, img2, img3, img4, img5, img6];
+  const images = LOADING_FRAMES;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -175,15 +170,18 @@ const IndividualProductDetailsPage = () => {
     });
   }, []);
 
+  // Determine if we're in any loading state
+  const isPageLoading = !showPage || loading || isLoadingUser;
+
   useEffect(() => {
-    if (showPage) return;
+    if (!isPageLoading) return;
 
     const imgTimer = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 200);
+    }, FRAME_INTERVAL);
 
     return () => clearTimeout(imgTimer);
-  }, [showPage]);
+  }, [isPageLoading, currentIndex]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -193,9 +191,9 @@ const IndividualProductDetailsPage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!showPage || loading || isLoadingUser) {
+  if (isPageLoading) {
     return (
-      <div className="mt-24 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <img
           src={images[currentIndex]}
           alt="loader"
@@ -203,14 +201,11 @@ const IndividualProductDetailsPage = () => {
             width: "300px",
             height: "300px",
             objectFit: "cover",
-            transition: "opacity 0.3s",
           }}
         />
       </div>
     );
   }
-
-  if (loading) return <div className="text-center py-10">Loading...</div>;
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
 
   const product = products.find((p) => String(p.id) === String(id));

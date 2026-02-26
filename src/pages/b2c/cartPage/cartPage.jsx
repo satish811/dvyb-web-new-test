@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import B2BAuthService from "../../../services/b2bAuthService";
 import { Minus, Plus, X, Trash2, Heart, Share2, Copy } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaTwitter, FaEnvelope } from "react-icons/fa";
+import LazyImageLoader from "../../../components/b2c/LazyImageLoader/LazyImageLoader";
 
 // --- COMPONENTS ---
 
@@ -335,7 +336,11 @@ export default function CartPage() {
   const tax = subtotal * 0.18; // 18% GST example
   const total = subtotal + shipping + tax;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Cart...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <LazyImageLoader isProcessing={true} size="page" />
+    </div>
+  );
 
   return (
     <div className="bg-[#f9f9f9] min-h-screen font-[Outfit] pb-20">

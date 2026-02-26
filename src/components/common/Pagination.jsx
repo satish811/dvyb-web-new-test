@@ -13,11 +13,11 @@ const Pagination = ({
         const params = new URLSearchParams(location.search);
         params.set('page', page.toString());
 
+        // Scroll to top instantly before navigation to prevent footer flash
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
         // Navigate to same path with updated page param
         navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Generate page numbers to display

@@ -48,7 +48,8 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   const [availableSizes, setAvailableSizes] = useState([]);
   const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const MIN_B2B_QUANTITY = 6;
+  const [quantity, setQuantity] = useState(MIN_B2B_QUANTITY);
 
   /** Update available sizes when color changes */
   useEffect(() => {
@@ -84,11 +85,15 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
     }
   };
 
-  const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+  const decrement = () => setQuantity((q) => (q > MIN_B2B_QUANTITY ? q - 1 : MIN_B2B_QUANTITY));
 
   /** Add Current Selection to List */
   const handleAdd = () => {
     const availableQty = getAvailableQuantity();
+    if (quantity < MIN_B2B_QUANTITY) {
+      alert(`Minimum quantity required is ${MIN_B2B_QUANTITY} units for B2B orders`);
+      return;
+    }
     if (quantity > availableQty) {
       alert(`Only ${availableQty} units available for this combination`);
       return;
@@ -122,7 +127,7 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
       /** Add new entry if combination doesn't exist */
       setAddedItems((prev) => [...prev, newEntry]);
     }
-    setQuantity(1);
+    setQuantity(MIN_B2B_QUANTITY);
   };
 
   /** Check if current selection is already in added items (for button disabling) */
@@ -137,7 +142,10 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
 
   /** Update quantity of existing item */
   const handleUpdateItemQuantity = (index, newQuantity) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < MIN_B2B_QUANTITY) {
+      alert(`Minimum order quantity is ${MIN_B2B_QUANTITY} units for B2B.`);
+      return;
+    }
 
     const item = addedItems[index];
     const availableQty = item.availableQuantity || 999;
@@ -156,6 +164,12 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
   const handleContinue = async () => {
     if (addedItems.length === 0) {
       alert("Please add at least one item before continuing");
+      return;
+    }
+
+    const totalQuantity = addedItems.reduce((sum, item) => sum + item.quantity, 0);
+    if (totalQuantity < MIN_B2B_QUANTITY) {
+      alert(`Minimum order quantity for B2B is ${MIN_B2B_QUANTITY} units`);
       return;
     }
 
@@ -292,7 +306,7 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                   </button>
                 </div>
                 <div className="text-xs text-gray-500 mt-1 text-center">
-                  Max: {availableQuantity}
+                  Min: {MIN_B2B_QUANTITY} | Max: {availableQuantity}
                 </div>
               </div>
             </div>
@@ -353,7 +367,8 @@ const AvailColorsPopup = ({ product, onClose, editingItem = null, userRole, onCo
                         <span>Qty:</span>
                         <button
                           onClick={() => handleUpdateItemQuantity(idx, item.quantity - 1)}
-                          className="w-5 h-5 flex items-center justify-center bg-gray-200 rounded"
+                          disabled={item.quantity <= MIN_B2B_QUANTITY}
+                          className={`w-5 h-5 flex items-center justify-center rounded ${item.quantity <= MIN_B2B_QUANTITY ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-gray-200"}`}
                         >
                           <Minus size={10} />
                         </button>

@@ -161,17 +161,15 @@ const ProductActionButtons = ({
               {/* In-cart state: disabled button */}
               <button
                 disabled
-                className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md bg-green-600 text-white cursor-not-allowed opacity-90"
+                className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none bg-green-600 text-white cursor-not-allowed opacity-90"
               >
-                <CheckCircle size={18} />
                 Product in Cart
               </button>
               {/* Go to Cart link */}
               <button
                 onClick={() => navigate("/cart")}
-                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-md border border-[#33022F] text-[#33022F] hover:bg-[#33022F] hover:text-white transition-all duration-200"
+                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-none border border-[#33022F] text-[#33022F] hover:bg-[#33022F] hover:text-white transition-all duration-200"
               >
-                <ShoppingCart size={16} />
                 Go to Cart
               </button>
             </div>
@@ -180,21 +178,20 @@ const ProductActionButtons = ({
             <button
               onClick={handleAddToCartClick}
               disabled={addingToCart}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md
+              className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none border-2
     ${addingToCart
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#33022F] text-white"
+                  ? "border-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-white border-[#33022F] text-[#33022F]"
                 }
     transition-all duration-200 disabled:opacity-50`}
             >
               {addingToCart ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-[#33022F] border-t-transparent rounded-full animate-spin"></div>
                   Adding...
                 </>
               ) : (
                 <>
-                  <ShoppingBag size={18} />
                   Add to cart
                 </>
               )}
@@ -205,22 +202,21 @@ const ProductActionButtons = ({
           <button
             onClick={handleBuyNowClick}
             disabled={addingToCart}
-            className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-md
+            className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-none
     ${addingToCart
-                ? "border-gray-400 text-gray-400 cursor-not-allowed"
-                : "border-[#33022F] text-[#33022F]"
+                ? "border-gray-400 text-gray-400 bg-gray-300 cursor-not-allowed"
+                : "border-[#33022F] bg-[#33022F] text-white"
               }
     transition-all duration-200 disabled:opacity-50`}
             style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
           >
             {addingToCart ? (
               <>
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Processing...
               </>
             ) : (
               <>
-                <Zap size={18} />
                 {isB2BUser ? "Buy Now (Bulk)" : "Buy Now"}
               </>
             )}
@@ -238,9 +234,13 @@ const ProductActionButtons = ({
         {!isB2BUser && (
           <button
             onClick={handleVirtualTryOnClick}
-            className="flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-md transition-all duration-200 bg-[#FFC400] text-white hover:bg-[#e6b200]"
+            className="flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none transition-all duration-200 bg-[#FFB800] text-white hover:bg-[#e6a600]"
           >
-            <Eye size={18} />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M19 6L21 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             Virtual try on
           </button>
         )}

@@ -1,6 +1,8 @@
 // src/pages/ProductDetail.jsx
 import { useParams } from "react-router-dom";
 import { useProducts } from "../hooks/useProducts";
+import { useState, useEffect } from "react";
+import { LOADING_FRAMES, FRAME_INTERVAL } from "../assets/lazyloading2";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -8,7 +10,18 @@ const ProductDetail = () => {
 
   const product = products.find((p) => p.id === id);
 
-  if (loading) return <div className="p-8 text-center">Loading…</div>;
+  const [loadIdx, setLoadIdx] = useState(0);
+  useEffect(() => {
+    if (!loading) return;
+    const t = setInterval(() => setLoadIdx((p) => (p + 1) % LOADING_FRAMES.length), FRAME_INTERVAL);
+    return () => clearInterval(t);
+  }, [loading]);
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <img src={LOADING_FRAMES[loadIdx]} alt="Loading..." style={{ width: "300px", height: "300px", objectFit: "cover" }} />
+    </div>
+  );
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!product) return <div className="p-8 text-center">Product not found</div>;
 

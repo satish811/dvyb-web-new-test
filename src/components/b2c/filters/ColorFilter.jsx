@@ -27,36 +27,30 @@ const ColorFilter = ({ title, colors, defaultOpen = false }) => {
           {colors.map((color) => (
             <label
               key={color.name}
-              className="flex items-center justify-between cursor-pointer p-0.5 sm:p-1 rounded hover:bg-gray-50"
+              className="filter-checkbox-label"
+              data-checked={selectedFilters.colors.includes(`${color.name}_${color.hex}`)}
             >
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Sharper checkbox */}
+              <div className="filter-checkbox-content">
                 <input
                   type="checkbox"
-                  checked={selectedFilters.colors.includes(color.name)}
-                  onChange={() => updateFilter("colors", color.name)}
+                  checked={selectedFilters.colors.includes(`${color.name}_${color.hex}`)}
+                  onChange={() => updateFilter("colors", `${color.name}_${color.hex}`)}
                   className="border-gray-300 text-gray-900 focus:ring-gray-500 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-none"
                 />
+                <span className="filter-checkbox-box" />
 
-                {/* Color circle */}
+                {/* Color swatch */}
                 <div
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-200"
-                  style={{
-                    backgroundColor: color.hex,
-                    border:
-                      color.hex.toLowerCase() === "#ffffff"
-                        ? "1px solid #d1d5db"
-                        : "1px solid transparent",
-                  }}
+                  className={`filter-color-swatch ${color.hex.toLowerCase() === "#ffffff" ? "filter-color-swatch--white" : ""}`}
+                  style={{ backgroundColor: color.hex }}
                 />
 
-                <span className="text-[10px] sm:text-sm text-gray-800 capitalize">
+                <span className="filter-checkbox-name" style={{ textTransform: "capitalize" }}>
                   {color.name}
                 </span>
               </div>
 
-              {/* Count (not percentage) */}
-              <span className="text-[10px] sm:text-sm text-gray-500">
+              <span className="filter-checkbox-count">
                 ({color.count})
               </span>
             </label>

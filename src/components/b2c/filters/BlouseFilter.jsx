@@ -47,17 +47,10 @@ const BlouseFilter = () => {
   const handleBlouseClick = (blouseName) => {
     const currentCategory = getCurrentCategory();
 
-
     if (!currentCategory?.includes("blouses")) {
       navigate(`/womenwear?category=blouses`);
-
-      setTimeout(() => {
-        updateFilter("blouses", blouseName);
-      }, 100);
-    } else {
-
-      updateFilter("blouses", blouseName);
     }
+    updateFilter("blouses", blouseName);
   };
 
   if (!isRelevantCategory()) {
@@ -86,19 +79,20 @@ const BlouseFilter = () => {
             {blouseTypes.map((blouse, i) => (
               <label
                 key={i}
-                className="flex items-center justify-between cursor-pointer p-0.5 sm:p-1 rounded hover:bg-gray-50"
+                className="filter-checkbox-label"
+                data-checked={isChecked(blouse.name)}
               >
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  {/* Sharper checkbox */}
+                <div className="filter-checkbox-content">
                   <input
                     type="checkbox"
+                    className="filter-checkbox-input"
                     checked={isChecked(blouse.name)}
                     onChange={() => handleBlouseClick(blouse.name)}
-                    className="border-gray-300 text-gray-900 focus:ring-gray-500 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-none"
                   />
-                  <span className="text-black text-[10px] sm:text-xs">{blouse.name}</span>
+                  <span className="filter-checkbox-box" />
+                  <span className="filter-checkbox-name">{blouse.name}</span>
                 </div>
-                <span className="text-gray-500 text-[10px] sm:text-xs">
+                <span className="filter-checkbox-count">
                   ({blouse.count})
                 </span>
               </label>
