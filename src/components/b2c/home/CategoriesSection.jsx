@@ -66,7 +66,7 @@ export default function CategoriesSection() {
     const scrollRef = useRef(null);
 
     return (
-        <section id="categories-section" className="bg-[#FAF9F6] pb-10 md:pb-16 2xl:pb-24 px-0 scroll-mt-[80px] md:scroll-mt-[75px]">
+        <section id="categories-section" className="bg-[#FAF9F6] pb-0 px-0 scroll-mt-[80px] md:scroll-mt-[75px]">
             <div className="max-w-[1920px] mx-auto">
 
 
@@ -77,7 +77,7 @@ export default function CategoriesSection() {
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={staggerContainer}
-                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-0 overflow-x-auto md:overflow-visible pb-6 md:pb-0 px-0 snap-x snap-mandatory scroll-smooth hide-scrollbar"
+                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-0 overflow-x-auto md:overflow-visible pb-0 px-0 snap-x snap-mandatory scroll-smooth hide-scrollbar"
                 >
                     {categories.map((cat) => (
                         <CategoryCard key={cat.id} item={cat} onClick={navigate} />

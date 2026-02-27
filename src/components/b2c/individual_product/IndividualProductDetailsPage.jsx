@@ -15,7 +15,6 @@ import ProductPriceSection from "./individual_product_components/ProductPriceSec
 import ProductSizeSelector from "./individual_product_components/ProductSizeSelector";
 import ProductActionButtons from "./individual_product_components/ProductActionButtons";
 import MemberPricingSection from "./individual_product_components/MemberPricingSection";
-import FindInStoreSection from "./individual_product_components/FindInStoreSection";
 import OfferAndShippingInfo from "./individual_product_components/OfferAndShippingInfo";
 import ProductDescriptionSection from "./individual_product_components/ProductDescriptionSection";
 import MaterialsSection from "./individual_product_components/MaterialsSection";
@@ -781,7 +780,6 @@ const IndividualProductDetailsPage = () => {
           )}
 
           <MemberPricingSection />
-          <FindInStoreSection />
 
           <div className="pt-4">
             <ProductReviewsSection

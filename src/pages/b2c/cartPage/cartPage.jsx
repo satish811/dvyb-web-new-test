@@ -8,6 +8,7 @@ import B2BAuthService from "../../../services/b2bAuthService";
 import { Minus, Plus, X, Trash2, Heart, Share2, Copy } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaTwitter, FaEnvelope } from "react-icons/fa";
 import LazyImageLoader from "../../../components/b2c/LazyImageLoader/LazyImageLoader";
+import { useWishlist } from "../../../context/WishlistContext";
 
 // --- COMPONENTS ---
 
@@ -23,7 +24,7 @@ const WelcomeBanner = () => (
   </div>
 );
 
-const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange }) => {
+const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveForLater }) => {
   // Mock Brand Name for demo matching image (In real app, this comes from product data)
   const brandName = item.brand || "VILLY FASHION";
 
@@ -59,7 +60,10 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange }) => {
           </div>
 
           <div className="flex flex-col items-end gap-3">
-            <button className="text-gray-400 hover:text-[#33022F] flex items-center gap-1.5 text-xs font-medium transition-colors">
+            <button
+              onClick={() => onSaveForLater(item)}
+              className="text-gray-400 hover:text-[#33022F] flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer"
+            >
               <Heart size={16} /> Save for later
             </button>
             <button onClick={() => onRemove(item.uniqueId)} className="text-gray-400 hover:text-red-500 transition-colors">
@@ -232,6 +236,7 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("B2C");
+  const { addToWishlist } = useWishlist();
 
   // State for Layout
   const [promoCode, setPromoCode] = useState("");
@@ -357,6 +362,30 @@ export default function CartPage() {
     // Add logic to persist size change if needed
   };
 
+  const handleSaveForLater = async (item) => {
+    try {
+      const productData = {
+        id: item.productId || item.id,
+        title: item.name,
+        name: item.name,
+        price: item.price,
+        imageUrls: item.image ? [item.image] : [],
+        images: item.image ? [item.image] : [],
+        vendorId: item.vendorId || null,
+      };
+      const result = await addToWishlist(productData, item.size, item.color);
+      if (result?.success) {
+        await handleRemove(item.uniqueId);
+        toast.success("Item saved to wishlist");
+      } else {
+        toast.error("Failed to save item");
+      }
+    } catch (error) {
+      console.error("Save for later error:", error);
+      toast.error("Something went wrong");
+    }
+  };
+
   // Calculations
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = 0; // FREE
@@ -403,6 +432,7 @@ export default function CartPage() {
                     onRemove={handleRemove}
                     onQuantityChange={handleQuantity}
                     onSizeChange={handleSizeChange}
+                    onSaveForLater={handleSaveForLater}
                   />
                 ))}
               </div>

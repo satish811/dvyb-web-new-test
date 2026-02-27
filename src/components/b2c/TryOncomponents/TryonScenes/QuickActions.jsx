@@ -77,13 +77,13 @@ const QuickActions = ({
 </button>
 
 
-        <button
+        {/* <button
           onClick={() => toast.info("Share feature coming soon!")}
           className="w-full bg-white text-primary py-2.5 transition-all font-medium flex items-center justify-center gap-2 text-sm"
         >
           <img src={share_ic} alt="Share" />
           <span>{UI_TEXT.SHARE_MY_LOOK}</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );
