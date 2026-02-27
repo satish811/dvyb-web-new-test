@@ -6,6 +6,7 @@ import { NECK_OPTIONS } from "../../../../utils/tryOnConstants";
 
 /**
  * Neck Style Customizer Component
+ * 2-column grid, all images same height (h-24), text centered.
  */
 const NeckCustomizer = ({
   selectedNeck,
@@ -14,27 +15,20 @@ const NeckCustomizer = ({
   tryOnResult,
 }) => {
   return (
-<div className="
-  bg-white
-  shadow-sm
-  border border-gray-200
-  p-4
-  w-full md:max-w-[300px]
-  grid grid-cols-2 gap-4
-  max-h-[calc(100vh-120px)]
-">
-
+    <div className="w-full p-4 grid grid-cols-2 gap-3 bg-white">
       {NECK_OPTIONS.map((neck) => (
-        <div key={neck.id} className="flex flex-col items-center">
-          <div className="w-32 h-32 mb-2 shadow-sm overflow-hidden relative">
+        <div key={neck.id} className="flex flex-col items-center gap-1">
+
+          {/* Image — fixed height for all cards */}
+          <div className="w-full h-24 overflow-hidden relative shadow-sm border border-gray-100">
             <img
               src={neck.image}
+              alt={neck.label}
               className={`w-full h-full object-cover transition-opacity ${
                 isChangingNeck && selectedNeck === neck.id
                   ? "opacity-30"
                   : "opacity-100"
               }`}
-              alt={neck.label}
             />
             {isChangingNeck && selectedNeck === neck.id && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/10">
@@ -42,23 +36,21 @@ const NeckCustomizer = ({
               </div>
             )}
           </div>
+
+          {/* Label button — full width, centered text */}
           <button
             onClick={() => changeNeck(neck.id)}
             disabled={!tryOnResult || isChangingNeck}
             className={`
-              w-full p-1.5 text-xs font-medium transition-all
+              w-full py-1.5 text-xs font-medium text-center transition-all
               border border-gray-300
-              ${
-                selectedNeck === neck.id
-                  ? "bg-primary text-white border-primary"
-                  : "bg-white text-gray-800 hover:bg-gray-50"
-              }
-              ${
-                !tryOnResult || isChangingNeck
-                  ? "opacity-50 cursor-not-allowed"
-                  : "cursor-pointer"
-              }
-              flex items-center justify-center gap-2
+              flex items-center justify-center gap-1
+              ${selectedNeck === neck.id
+                ? "bg-primary text-white border-primary"
+                : "bg-white text-gray-800 hover:bg-gray-50"}
+              ${!tryOnResult || isChangingNeck
+                ? "opacity-50 cursor-not-allowed"
+                : "cursor-pointer"}
             `}
           >
             {isChangingNeck && selectedNeck === neck.id && (
@@ -66,6 +58,7 @@ const NeckCustomizer = ({
             )}
             <span>{neck.label}</span>
           </button>
+
         </div>
       ))}
     </div>

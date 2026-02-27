@@ -51,7 +51,9 @@ const TryOnPreviewPage = () => {
   // UI STATE
   // ============================================
   const [selectedTab, setSelectedTab] = useState("colours");
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] = useState(
+    () => parseColors(tryOnData?.selectedColors)[0]?.name ?? ""
+  );
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [view360Enabled, setView360Enabled] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
@@ -80,19 +82,22 @@ const TryOnPreviewPage = () => {
     handleReset: resetBackground,
   } = useBackgroundChange(tryOnResult);
 
+  // Use background-changed image as base if available, so blouse/neck edits apply on top of it
+  const activeBaseImage = backgroundChangedImage || tryOnResult;
+
   // Blouse customization logic
   const {
     selectedBlouse,
     isChangingBlouse,
     changeBlouse,
-  } = useBlouseChange(tryOnResult);
+  } = useBlouseChange(activeBaseImage);
 
   // Neck customization logic
   const {
     selectedNeck,
     isChangingNeck,
     changeNeck,
-  } = useNeckChange(tryOnResult);
+  } = useNeckChange(activeBaseImage);
 
   // 3D video generation logic
   const {
@@ -341,23 +346,31 @@ const getCurrentDisplayImage = () => {
 
             {selectedTab === "colours" && (
               <div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Colour: <span className="uppercase font-semibold">{selectedColor}</span>
-                </p>
-                <div className="grid grid-cols-4 gap-3">
-                  {colors.map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`aspect-square transition-all h-12 mt-1.5 rounded ${
-                        selectedColor === color.name
-                          ? "ring-2 ring-gray-900 ring-offset-2"
-                          : "ring-1 ring-gray-200"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
+                {colors.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic py-2">No colour variants available for this product.</p>
+                ) : (
+                  <>
+                    {selectedColor && (
+                      <p className="text-sm text-gray-600 mb-3">
+                        Colour: <span className="uppercase font-semibold">{selectedColor}</span>
+                      </p>
+                    )}
+                    <div className="grid grid-cols-4 gap-3">
+                      {colors.map((color) => (
+                        <button
+                          key={color.name}
+                          onClick={() => setSelectedColor(color.name)}
+                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${
+                            selectedColor === color.name
+                              ? "ring-2 ring-gray-900 ring-offset-2"
+                              : "ring-1 ring-gray-200"
+                          }`}
+                          style={{ backgroundColor: color.color }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -494,6 +507,16 @@ const getCurrentDisplayImage = () => {
           {/* Quick Actions */}
           <div className="px-4 py-4 space-y-3 pb-6">
             <h3 className="text-sm font-semibold mb-3">Quick Actions</h3>
+
+            <button
+              onClick={() => performTryOn({ force: true })}
+              disabled={isProcessing}
+              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${
+                isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
+              }`}
+            >
+              Retry Try-On
+            </button>
 
             <button
               onClick={handleViewProduct}

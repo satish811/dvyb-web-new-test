@@ -6,6 +6,7 @@
 import axios from "axios";
 import multer from "multer";
 import cloudinary from "cloudinary";
+import { GoogleAuth } from "google-auth-library";
 
 
 // ============ VERCEL CONFIG ============
@@ -46,6 +47,75 @@ function runMiddleware(req, res, fn) {
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY;
+
+// Vertex AI Virtual Try-On (no prompting)
+const VERTEX_PROJECT_ID = process.env.GOOGLE_PROJECT_ID || "dvyb-8b572";
+const VERTEX_LOCATION = process.env.GOOGLE_LOCATION || "us-central1";
+const VERTEX_MODEL_ID = process.env.VERTEX_VIRTUAL_TRYON_MODEL_ID || "virtual-try-on-001";
+const VERTEX_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"];
+
+let _vertexClient;
+async function getVertexClient() {
+  if (_vertexClient) return _vertexClient;
+
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  let auth;
+  if (serviceAccountJson) {
+    let credentials;
+    try {
+      credentials = JSON.parse(serviceAccountJson);
+    } catch {
+      throw new Error("Invalid GOOGLE_SERVICE_ACCOUNT_JSON (must be valid JSON)");
+    }
+    auth = new GoogleAuth({ credentials, scopes: VERTEX_SCOPES });
+  } else {
+    auth = new GoogleAuth({ scopes: VERTEX_SCOPES });
+  }
+
+  _vertexClient = await auth.getClient();
+  return _vertexClient;
+}
+
+async function generateVertexVirtualTryOn(personBase64, garmentBase64, garmentType = "upper_and_lower_body") {
+  if (!VERTEX_PROJECT_ID) {
+    throw new Error("Missing GOOGLE_PROJECT_ID (required for Vertex Virtual Try-On)");
+  }
+
+  const url = `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${VERTEX_PROJECT_ID}/locations/${VERTEX_LOCATION}/publishers/google/models/${VERTEX_MODEL_ID}:predict`;
+
+  const requestBody = {
+    instances: [
+      {
+        personImage: { image: { bytesBase64Encoded: personBase64 } },
+        productImages: [{ image: { bytesBase64Encoded: garmentBase64 } }],
+        productType: "APPAREL",
+      },
+    ],
+    parameters: {
+      garmentType,
+      sampleCount: 1,
+      preserveGarmentShape: true,
+      poseAlignment: true,
+      outputStyle: "realistic",
+    },
+  };
+
+  const client = await getVertexClient();
+  const response = await client.request({
+    url,
+    method: "POST",
+    data: requestBody,
+    timeout: 120000,
+  });
+
+  const predictions = response?.data?.predictions || [];
+  const first = predictions[0] || {};
+  const bytes = first.bytesBase64Encoded || first.image?.bytesBase64Encoded;
+  if (!bytes) {
+    throw new Error("Vertex Virtual Try-On returned no image bytes");
+  }
+  return bytes;
+}
 
 const getMinimaxHeaders = () => ({
   'Authorization': `Bearer ${MINIMAX_API_KEY}`,
@@ -129,8 +199,24 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName, outfitType
   const isSharara = lowerName === "sharara";
   const isKurtaSet = lowerName === "kurta set" || lowerName === "kurta sets";
 
-  const prompt = isBackgroundSwap
-    ? `
+  // Apparel try-on uses Vertex Virtual Try-On.
+  // Background swap can optionally use Vertex too (guarded by env flag), otherwise Gemini.
+  if (!isBackgroundSwap) {
+    console.log("🧵 Using Vertex Virtual Try-On model...");
+    return await generateVertexVirtualTryOn(modelBase64, garmentBase64);
+  }
+
+  if (process.env.VERTEX_ENABLE_BACKGROUND_SWAP === "true") {
+    try {
+      console.log("🧵 Using Vertex Virtual Try-On for background swap (enabled by VERTEX_ENABLE_BACKGROUND_SWAP=true)...");
+      return await generateVertexVirtualTryOn(modelBase64, garmentBase64);
+    } catch (error) {
+      console.warn("⚠️ Vertex background swap failed; falling back to Gemini.");
+      console.warn(error?.response?.data || error?.message || error);
+    }
+  }
+
+  const prompt = `
   ROLE
   You are a professional photo editor performing a REALISTIC background replacement.
 
@@ -160,129 +246,6 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName, outfitType
 
   OUTPUT
   Return ONE high-resolution inline_data image only.
-  `
-    :
-    `
-  ROLE
-  Expert fashion AI specializing in STRICT photorealistic Indian ethnic wear virtual try-on.
-
-  INPUT IMAGES
-  - Image 1: Person image (HUMAN OR AI-generated)
-  - Image 2: Garment reference (HUMAN photo OR AI-generated design)
-
-  CORE OBJECTIVE
-  Create ONE realistic photograph where:
-  - The SAME person from Image 1 wears the EXACT garment from Image 2
-  - ONLY the clothing may change
-
-  ━━━━━━━━━━ INTELLIGENT IMAGE ANALYSIS ━━━━━━━━━━
-  Analyze BOTH images before generation:
-
-  PERSON IMAGE (Image 1)
-  - If human → preserve natural anatomy and lighting
-  - If AI-generated → preserve proportions, pose, and facial identity
-  In ALL cases: Image 1 defines identity, pose, body shape, and background
-
-  GARMENT IMAGE (Image 2)
-  - If AI-generated (flat lighting, symmetry, clean background):
-    → Extract garment design as TEMPLATE
-    → Ignore model/background
-    → Reconstruct realistic fabric physics and drape
-  - If real photograph:
-    → Copy garment appearance EXACTLY
-    → Preserve natural folds, texture, and imperfections
-
-  Image 2 is the ABSOLUTE SOURCE OF TRUTH for garment design.
-
-  ━━━━━━━━━━ GLOBAL IDENTITY & SCENE LOCK ━━━━━━━━━━
-  - Face, hair, skin tone, body shape, height, pose → UNCHANGED
-  - Background, camera angle, framing → UNCHANGED
-  - No beautification, stylisation, cleanup, or enhancement
-
-  ━━━━━━━━━━ UNIVERSAL GARMENT TRANSFER RULES ━━━━━━━━━━
-
-  1. COLOR ACCURACY
-  - Extract exact fabric colors from Image 2 only
-  - Ignore background color bleeding
-  - No hue, saturation, brightness, gamma shifts
-  - Adapt shadows ONLY to Image 1 lighting
-
-  2. PATTERN & EMBELLISHMENT
-  - Transfer ALL embroidery, prints, zari, motifs, borders
-  - Maintain exact scale, density, and placement
-  - No simplification or regeneration
-
-  3. FABRIC PROPERTIES
-  - Preserve texture: silk shine, cotton matte, georgette flow
-  - Maintain transparency and fabric weight
-  - Retain weave and material realism
-
-  4. DRAPING & PHYSICS
-  - Apply natural gravity-based folds
-  - If Image 2 is flat/ideal → add realistic draping
-  - If Image 2 shows natural drape → preserve style
-  - No floating or broken fabric
-
-  ━━━━━━━━━━ GARMENT STRUCTURE RULES ━━━━━━━━━━
-  ${isSaree ? `
-  SAREE (CRITICAL)
-  - ONE continuous fabric (not skirt + dupatta)
-  - Natural Nivi drape ONLY
-  - 6–8 waist pleats
-  - Pallu over LEFT shoulder
-  - Blouse must match Image 2 EXACTLY
-  ` : ``}
-
-  ${isLehenga ? `
-  LEHENGA
-  - Choli + Lehenga skirt + Dupatta are DISTINCT
-  - Preserve panel count, flare, hem embroidery
-  - No silhouette conversion
-  ` : ``}
-
-  ${isAnarkali ? `
-  ANARKALI
-  - Bodice + panelled flare + dupatta
-  - Preserve seam positions and flare volume
-  - No gown or skirt conversion
-  ` : ``}
-
-  ${isSharara ? `
-  SHARARA
-  - Kurta + upper flare + lower wide panels + dupatta
-  - No palazzo/churidar/lehenga conversion
-  - Preserve flare rate and panel width
-  ` : ``}
-
-  ${isKurtaSet ? `
-  KURTA SET
-  - Kurta + bottom + dupatta are DISTINCT
-  - Bottom type must match Image 2 exactly
-  - No silhouette changes
-  ` : ``}
-
-  ━━━━━━━━━━ LIGHTING & REALISM ━━━━━━━━━━
-  - Match Image 1 lighting direction and intensity
-  - Add contact shadows at body–fabric intersections
-  - Final output must look like a real camera photograph
-  - No AI-rendered appearance
-
-  ━━━━━━━━━━ STRICT PROHIBITIONS ━━━━━━━━━━
-  - No face/body/background edits
-  - No accessories or props
-  - No logos, text, borders, watermarks
-  - Do NOT return Image 1 or Image 2 unchanged
-  - Do NOT create collage or split views
-
-  QUALITY CHECK BEFORE OUTPUT
-  ✓ Face matches Image 1 exactly  
-  ✓ Garment matches Image 2 exactly  
-  ✓ Natural draping and physics  
-  ✓ Accurate colors  
-  ✓ No artifacts or floating fabric  
-
-  OUTPUT REQUIREMENT
-  Return ONE high-resolution photorealistic inline_data image only.
   `;
 
 
@@ -293,7 +256,6 @@ async function generateTryOn(modelBase64, garmentBase64, garmentName, outfitType
 
 
   // async function generateTryOn(modelBase64, garmentBase64,garmentName, outfitType) {
-  //   console.log(`🎨 Generating AI try-on for: ${outfitType}`);
 
   //   // const lowerType = (outfitType || "").toLowerCase();
   //   // const isSaree = lowerType === "saree";
@@ -540,24 +502,115 @@ async function generateTryOnWithRetry(m, g, type, max = 3) {
 }
 
 
-async function generateBlouseChange(tryOnBase64, blouseType) {
+async function generateBlouseChange(tryOnBase64, blouseType, mimeType = "image/jpeg") {
   const prompt = `
 ROLE
-You are a professional fashion photo editor specializing in saree blouse modifications.
+You are a master Indian saree blouse photo retoucher. You ONLY edit sleeve regions — nothing else.
 
 TASK
-Modify ONLY the blouse in this saree image to a ${blouseType} design.
+In the provided saree image, **surgically replace ONLY the existing sleeves** with **${blouseType} sleeves** (normalized to classic Indian saree style).  
+Leave every other pixel in the image completely untouched.
 
-STRICT RULES
-- Keep the SAME person, face, pose, and body
-- Keep the SAME saree (fabric, color, design, draping)
-- ONLY change the blouse sleeve style to: ${blouseType}
-- Maintain realistic fit and proportions
-- NO other changes to the image
+ABSOLUTE PRESERVATION RULES
+• 🔒 FACE / HEAD COMPLETELY FROZEN — treat the face, eyes, nose, mouth, jaw, ears, hairline, makeup, skin texture and tone of the face as a LOCKED LAYER that CANNOT be touched, moved, smoothed, regenerated or altered in ANY way — any face change = IMMEDIATE INTERNAL REJECT & REGENERATE
+• 🔒 HAIR FROZEN — hair strands, volume, colour and style must be pixel-identical
+• 🔒 JEWELLERY FROZEN — earrings, necklaces, bindis must remain exactly as in source
+• Identical body & pose: shoulder slope, arm angle/position, bust/waist shape, hand placement, posture — zero anatomy shift
+• Identical saree: drape folds, pleat crispness, pallu placement, border motifs, fabric sheen/weave/color gradient, pinning points
+• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
+• Identical blouse except sleeves: fabric match (color, texture, subtle print continuity), exact blouse body length/waist fit, dart positions, side seams, underarm curve, back design (if visible)
+• Identical scene: lighting direction/intensity, cast shadows, highlights on skin & fabric, background, depth-of-field, noise/grain
+
+SLEEVE MODIFICATION – MATCH THIS STYLE PRECISELY
+The requested sleeve type is: **${blouseType}**
+
+${blouseType.toLowerCase().includes('sleeveless') || blouseType.toLowerCase().includes('no sleeve') ?
+`SLEEVELESS
+- ZERO fabric on arm — clean armhole edge only
+- Smooth rounded armhole edge at shoulder
+- Full bust/ribcage coverage MUST be kept — NEVER crop-top or bra-style
+- If original is already sleeveless → output image UNCHANGED` :
+
+blouseType.toLowerCase().includes('cap') ?
+`CAP SLEEVES
+- Ends 1–2 inches BELOW the shoulder seam
+- Covers the shoulder cap ONLY — NO arm coverage below the deltoid
+- Do NOT extend past the top of the upper arm` :
+
+blouseType.toLowerCase().includes('full') || blouseType.toLowerCase().includes('long') ?
+`⚠️ FULL / LONG SLEEVES — CRITICAL
+- THE SLEEVE FABRIC MUST COVER THE ENTIRE FOREARM FROM ELBOW ALL THE WAY TO THE WRIST BONE
+- Hem sits AT the wrist joint — the hands are visible BELOW the sleeve hem
+- ZERO exposed forearm skin between the elbow and the wrist
+- VISUAL TEST: Mentally trace a path from the elbow crease down to the wrist bump — every single centimetre of that path must be covered by sleeve fabric. If even 1 cm of forearm skin is exposed → WRONG → REGENERATE
+- The sleeve must be long enough that you can see the sleeve cuff/hem right above where the hand begins
+- Fitted or slightly loose with optional subtle cuff at wrist` :
+
+blouseType.toLowerCase().includes('3/4') || blouseType.toLowerCase().includes('three quarter') || blouseType.toLowerCase().includes('3-4') || blouseType.toLowerCase().includes('three-quarter') ?
+`THREE QUARTER / 3/4 SLEEVES
+- Ends at EXACTLY the midpoint of the forearm
+- Halfway between the elbow bend and the wrist bone
+- NOT at the elbow — NOT at the wrist — strictly at the mid-forearm point
+- Elegant, modest` :
+
+blouseType.toLowerCase().includes('short') || blouseType.toLowerCase().includes('half') ?
+`SHORT / HALF SLEEVES
+- Ends EXACTLY AT THE ELBOW JOINT — the visible bend/crease of the elbow
+- NOT above the elbow, NOT below the elbow
+- Fitted or gently flared` :
+
+blouseType.toLowerCase().includes('elbow') ?
+`ELBOW SLEEVES
+- Ends EXACTLY AT THE ELBOW JOINT
+- The elbow bend point is the hem termination — no further` :
+
+blouseType.toLowerCase().includes('puff') ?
+`PUFF / PUFFED SLEEVES
+- Volume and gathering concentrated at the shoulder cap
+- Tapers down from the shoulder puff
+- Length typically at or ABOVE the elbow
+- Festive, classic South Indian saree blouse style` :
+
+blouseType.toLowerCase().includes('bell') || blouseType.toLowerCase().includes('flared') ?
+`BELL / FLARED SLEEVES
+- Fitted at the upper arm from shoulder to elbow
+- Dramatically flares/widens from elbow downward
+- Hem reaches wrist level — flowy, dramatic silhouette` :
+
+blouseType.toLowerCase().includes('flutter') || blouseType.toLowerCase().includes('ruffle') ?
+`FLUTTER / RUFFLE SLEEVES
+- Short wavy ruffle extending 2–4 inches from the shoulder seam
+- Feminine, flowing — no full arm coverage` :
+
+blouseType.toLowerCase().includes('bishop') || blouseType.toLowerCase().includes('balloon') ?
+`BISHOP / BALLOON SLEEVES
+- Voluminous throughout the entire arm length from shoulder to wrist
+- Gathered tightly into a fitted cuff at the wrist
+- Reaches the wrist` :
+
+`${blouseType.toUpperCase()} SLEEVES
+- Apply a clean, realistic, moderately fitted ${blouseType} sleeve
+- Match traditional Indian saree blouse tailoring aesthetics`}
+
+CRITICAL LENGTH RULE: The sleeve hem MUST end at EXACTLY the anatomical point defined above — do NOT shorten, do NOT approximate — if the length is wrong → INTERNALLY REJECT and REGENERATE before returning output.
+
+EDITING CONSTRAINTS
+• Regenerate ONLY sleeve fabric, seams & arm coverage area
+• Perfect fabric physics: natural drape over shoulder/bicep, realistic stretch & fold shadows
+• Believable tailoring: subtle stitching lines, no floating fabric, correct shoulder seam placement
+• Seamless skin transition: natural armhole edge, shadow inside armhole if sleeveless
+• No added lace, beads, embroidery, contrast piping, buttons unless standard/classic for that exact sleeve name
+• No change to sleeve attachment point, armhole height, or overall blouse silhouette
+
+STRICT FORBIDDEN CHANGES (IF ANY DETECTED → INTERNALLY REJECT & REGENERATE)
+• ANY change to the face, eyes, expression, skin texture of the face — ZERO TOLERANCE
+• Any neckline, back, length, fit, colour, texture, embellishment change
+• Any hair, jewellery, pose, body reshaping
+• Lighting/shadow inconsistency, smoothing artifacts, anatomy errors
 
 OUTPUT
-Return ONLY one high-resolution photorealistic inline_data image.
-NO text or explanations.
+Return ONLY one single HIGH-QUALITY photorealistic edited image — maximum resolution, sharp details, no compression artifacts, no blur.
+NO text whatsoever. NO explanations. NO markdown. NO extra images. NO UI elements.
 `;
 
   const payload = {
@@ -566,7 +619,7 @@ NO text or explanations.
         { text: prompt },
         {
           inline_data: {
-            mime_type: "image/jpeg",
+            mime_type: mimeType,
             data: tryOnBase64
           }
         }
@@ -592,87 +645,143 @@ NO text or explanations.
 
 //neck change function
 
-async function generateNeckChange(tryOnBase64, neckType) {
+async function generateNeckChange(tryOnBase64, neckType, mimeType = "image/jpeg") {
   // Normalize neck type input
   const normalizedType = neckType.toLowerCase().includes('neck')
     ? neckType.toLowerCase()
     : `${neckType.toLowerCase()} neck`;
 
   // Define neck type specifications
-  const neckTypeSpecs = {
-    'boat neck': `BOAT NECK DEFINITION (CRITICAL)
-- Wide horizontal neckline
-- Runs close to the collarbone
-- Straight or gently curved line
-- NO depth, NO plunge, NO collar stand
-- Elegant, classic Indian saree blouse style`,
+  //   const neckTypeSpecs = {
+  //     'boat neck': `BOAT NECK DEFINITION (CRITICAL)
+  // - Wide horizontal neckline
+  // - Runs close to the collarbone
+  // - Straight or gently curved line
+  // - NO depth, NO plunge, NO collar stand
+  // - Elegant, classic Indian saree blouse style`,
 
-    'regular neck': `REGULAR NECK DEFINITION (CRITICAL)
-- Round neckline
-- Medium depth (2-3 inches below collarbone)
-- Natural, comfortable fit
-- Traditional saree blouse style
-- Not too high, not too low`,
+  //     'regular neck': `REGULAR NECK DEFINITION (CRITICAL)
+  // - Round neckline
+  // - Medium depth (2-3 inches below collarbone)
+  // - Natural, comfortable fit
+  // - Traditional saree blouse style
+  // - Not too high, not too low`,
 
-    'v neck': `V NECK DEFINITION (CRITICAL)
-- V-shaped neckline
-- Moderate depth pointing downward
-- Flattering and elegant
-- Traditional saree blouse proportions`,
+  //     'v neck': `V NECK DEFINITION (CRITICAL)
+  // - V-shaped neckline
+  // - Moderate depth pointing downward
+  // - Flattering and elegant
+  // - Traditional saree blouse proportions`,
 
-    'square neck': `SQUARE NECK DEFINITION (CRITICAL)
-- Straight horizontal top edge
-- Straight vertical side edges forming 90° angles
-- Clean, modern look
-- Traditional saree blouse fit`,
+  //     'square neck': `SQUARE NECK DEFINITION (CRITICAL)
+  // - Straight horizontal top edge
+  // - Straight vertical side edges forming 90° angles
+  // - Clean, modern look
+  // - Traditional saree blouse fit`,
 
-    'sweetheart neck': `SWEETHEART NECK DEFINITION (CRITICAL)
-- Curved neckline resembling top of a heart
-- Romantic and feminine
-- Moderate depth
-- Traditional saree blouse style`,
+  //     'sweetheart neck': `SWEETHEART NECK DEFINITION (CRITICAL)
+  // - Curved neckline resembling top of a heart
+  // - Romantic and feminine
+  // - Moderate depth
+  // - Traditional saree blouse style`,
 
-    'collar neck': `COLLAR NECK DEFINITION (CRITICAL)
-- Stand collar or shirt-style collar
-- Professional and structured look
-- Covers collarbone area
-- Traditional yet modern saree blouse style`
-  };
+  //     'collar neck': `COLLAR NECK DEFINITION (CRITICAL)
+  // - Stand collar or shirt-style collar
+  // - Professional and structured look
+  // - Covers collarbone area
+  // - Traditional yet modern saree blouse style`
+  //   };
 
-  const neckSpec = neckTypeSpecs[normalizedType] || `NECKLINE MODIFICATION
-- Apply ${neckType} neckline style
-- Maintain appropriate coverage and fit
-- Keep traditional blouse proportions`;
+  //   const neckSpec = neckTypeSpecs[normalizedType] || `NECKLINE MODIFICATION
+  // - Apply ${neckType} neckline style
+  // - Maintain appropriate coverage and fit
+  // - Keep traditional blouse proportions`;
 
   const prompt = `
 ROLE
-You are a professional Indian fashion photo editor.
+You are an expert Indian ethnic wear photo retoucher specializing in precise saree blouse neckline edits only.
 
 TASK
-Modify ONLY the blouse NECKLINE to a ${normalizedType.toUpperCase()} design.
+Using the provided input image, surgically modify **ONLY the front neckline / décolletage area** of the blouse to a **${neckType} neck** style (normalized to: ${normalizedType.toUpperCase()}).
+Do NOT touch or regenerate anything else in the entire image.
 
-ABSOLUTE LOCKS (NON-NEGOTIABLE)
-- SAME person (face, hair, skin tone, expression)
-- SAME body shape, pose, proportions
-- SAME saree (fabric, color, design, draping)
-- SAME blouse (fabric, color, sleeves, length, fit)
-- SAME background, camera angle, lighting
+STRICT LOCKS – PRESERVE 100% UNCHANGED
+• Exact same woman: face identity, expression, eyes, lips, makeup, hair style/volume, earrings, necklace, bindi, skin tone/texture/pores
+• Exact same body: posture, shoulder angle, bust/waist/hip proportions, arm position, hand placement
+• Exact same saree: drape, pleats, pallu folds & placement, fabric sheen/texture, color, border patterns, pinning
+• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
+• Exact same blouse everywhere except neckline edge: fabric color & texture match, sleeve style/length/cuffs, blouse length at waist, darts, side seams, underarm fit, back (if visible)
+• Exact same lighting, shadows, highlights, background, depth of field, grain/noise
 
-${neckSpec}
+NECKLINE SPECIFICATIONS – MATCH THIS EXACT STYLE
+Use the most classic/traditional Indian saree blouse interpretation of the requested type:
 
-FORBIDDEN CHANGES
-- No sleeve modification
-- No blouse reshaping
-- No jewelry, makeup, or beautification
-- No color correction or enhancement
-- No background alteration
+${neckType.toLowerCase().includes('boat') ?
+      `BOAT NECK (BATEAU)
+- Wide, straight or softly curved horizontal neckline
+- Sits high, close to / along the collarbone
+- Exposes shoulders minimally to moderately
+- No plunge, no curve downward in center
+- Elegant, modest, timeless for silk/cotton sarees` :
 
-FAILURE CONDITIONS
-- If anything other than the neckline changes → REJECT internally and regenerate correctly
+      neckType.toLowerCase().includes('regular') || neckType.toLowerCase().includes('round') ?
+        `ROUND / REGULAR NECK
+- Rounded neckline with a slight front dip — deeper at center front (3-4 inches below collarbone), shallower at sides
+- Visible front hooks at center neckline opening
+- Traditional Indian blouse style with front depth
+- Smooth curve, no sharp angles
+- No back changes` :
+
+        neckType.toLowerCase().includes('v') ?
+          `V-NECK
+- Clean V-shape pointing downward
+- Moderate depth (not too deep/plunging)
+- Flattering elongation of neck & torso
+- Common elegant saree blouse style
+- Sharp or softly pointed apex` :
+
+          neckType.toLowerCase().includes('square') ?
+            `SQUARE NECK
+- Straight horizontal top line across collarbone
+- Vertical straight sides forming ~90° corners
+- Geometric, structured, modern-traditional look
+- Clean edges, good collarbone emphasis` :
+
+            neckType.toLowerCase().includes('sweetheart') ?
+              `SWEETHEART NECK
+- Curved top resembling upper half of a heart
+- Two soft upward curves meeting at gentle central dip
+- Romantic, feminine, flattering on bust
+- Moderate depth, elegant drape` :
+
+              neckType.toLowerCase().includes('collar') ?
+                `COLLAR NECK / SHIRT COLLAR
+- Structured stand-up or fold-over collar
+- Shirt-style or mandarin-inspired
+- Covers base of neck / collarbone area
+- Crisp, formal-modern fusion look` :
+
+                `Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
+
+EDITING RULES
+• Change ONLY the fabric edge/contour at the neck opening
+• Re-draw the neckline fabric boundary precisely to new shape
+• Maintain exact fabric texture, weave, sheen, color gradient, subtle print continuity
+• Perfect stitching realism along new neck edge (subtle seam allowance if appropriate)
+• Natural skin-to-fabric transition, realistic shadows inside neckline
+• No added embellishments, piping, buttons, embroidery unless standard for this exact classic style
+• No change to blouse overall shape, tightness, or dart placement
+• No anatomy distortion, no extra skin exposure beyond the new neckline definition
+
+FORBIDDEN (IF ANY OCCURS → INTERNALLY REJECT & REGENERATE)
+• Sleeve, back, length, fit, color, texture change
+• Jewelry, makeup, hair, pose shift
+• Face or body reshaping
+• Lighting inconsistency or over-smoothing
 
 OUTPUT
-Return ONE high-resolution photorealistic image.
-NO text. NO explanation.
+Return ONLY one high-resolution photorealistic edited image.
+NO text, NO captions, NO explanations, NO UI overlays, NO multiple variants.
 `;
 
   const payload = {
@@ -681,7 +790,7 @@ NO text. NO explanation.
         { text: prompt },
         {
           inline_data: {
-            mime_type: "image/jpeg",
+            mime_type: mimeType,
             data: tryOnBase64
           }
         }
@@ -874,7 +983,7 @@ export default async function handler(req, res) {
       const payload = {
         model: 'MiniMax-Hailuo-2.3-Fast',
         first_frame_image: imageDataUrl,
-        prompt: 'A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.',
+        prompt: 'A calm, graceful young woman stands centered facing camera in relaxed natural stance. She walks forward three small measured steps with smooth realistic gait and gentle arm swing. She performs one elegant slow full-body pirouette / 360 spin with poise, balanced posture, soft momentum, hair and fabric moving naturally. She then walks backward three precise steps, returning perfectly to starting location and exact original pose. Extremely natural human kinematics, coherent motion, no warping or sliding, photorealistic details, serene mood.',
         duration: 6,
         resolution: '1080P',
         prompt_optimizer: true,
@@ -988,9 +1097,10 @@ export default async function handler(req, res) {
 
       // Convert image to base64
       const tryOnBase64 = req.file.buffer.toString("base64");
+      const imageMimeType = req.file.mimetype || "image/jpeg";
 
       console.log("🎨 Calling Gemini for blouse modification...");
-      const result = await generateBlouseChange(tryOnBase64, blouseType);
+      const result = await generateBlouseChange(tryOnBase64, blouseType, imageMimeType);
 
       if (!result) {
         throw new Error("No image returned from AI");
@@ -1035,9 +1145,10 @@ export default async function handler(req, res) {
 
       // Convert image to base64
       const tryOnBase64 = req.file.buffer.toString("base64");
+      const imageMimeType = req.file.mimetype || "image/jpeg";
 
       console.log("🎨 Calling Gemini for neckline modification...");
-      const result = await generateNeckChange(tryOnBase64, neckType);
+      const result = await generateNeckChange(tryOnBase64, neckType, imageMimeType);
 
       if (!result) {
         throw new Error("No image returned from AI");
@@ -1189,15 +1300,6 @@ export default async function handler(req, res) {
         });
       }
 
-      const apiKey = getApiKeyByOutfit(outfitType);
-      if (!apiKey) {
-        console.log('❌ API key not configured');
-        return res.status(500).json({
-          success: false,
-          error: "API key not configured"
-        });
-      }
-
       console.log(`📥 Downloading model image...`);
       const modelBase64 = await downloadAsBase64(modelUrl);
 
@@ -1242,15 +1344,6 @@ export default async function handler(req, res) {
         return res.status(400).json({
           success: false,
           error: "No garment URL provided"
-        });
-      }
-
-      const apiKey = getApiKeyByOutfit(outfitType);
-      if (!apiKey) {
-        console.log('❌ API key not configured');
-        return res.status(500).json({
-          success: false,
-          error: "API key not configured"
         });
       }
 

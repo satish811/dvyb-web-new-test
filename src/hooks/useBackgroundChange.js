@@ -13,7 +13,7 @@ export const useBackgroundChange = (tryOnResult) => {
   const [isChangingBackground, setIsChangingBackground] = useState(false);
   const [selectedBackground, setSelectedBackground] = useState("");
 
-  const changeBackground = async (backgroundType) => {
+  const changeBackground = async (backgroundType, customBgImage = null) => {
     if (!tryOnResult) {
       toast.error("Please complete try-on first!");
       return;
@@ -25,7 +25,7 @@ export const useBackgroundChange = (tryOnResult) => {
     try {
       console.log("🎨 Starting background change...");
 
-      const formData = await createBackgroundFormData(tryOnResult, backgroundType);
+      const formData = await createBackgroundFormData(tryOnResult, backgroundType, customBgImage);
 
       console.log(`📤 Sending to backend with background: ${backgroundType}`);
 

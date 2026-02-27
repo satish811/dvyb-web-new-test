@@ -10,8 +10,7 @@ import { useNavigate } from "react-router-dom";
 // ============================================
 import { useTryOnLogic } from "../../../hooks/useTryOnLogic";
 import { useBackgroundChange } from "../../../hooks/useBackgroundChange";
-import { useBlouseChange } from "../../../hooks/useBlouseChange";
-import { useNeckChange } from "../../../hooks/useNeckChange";
+import { useBlouseNeckChange } from "../../../hooks/useBlouseNeckChange";
 import { useVideoGeneration } from "../../../hooks/useVideoGeneration";
 // import { useWishlistCart } from "../../../hooks/useWishlistCart";
 import { useLoadingAnimation } from "../../../hooks/useLoadingAnimation";
@@ -54,9 +53,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   // STATE MANAGEMENT (UI State Only)
   // ============================================
   const [selectedTab, setSelectedTab] = useState("colours");
-  const [activeCustomizer, setActiveCustomizer] = useState("blouse");
 
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] = useState(
+    () => parseColors(tryOnData?.selectedColors)[0]?.name ?? ""
+  );
   const [selectedFabric, setSelectedFabric] = useState("pure-silk");
   const [viewMode, setViewMode] = useState("2D");
   const [showBgWarning, setShowBgWarning] = useState(false);
@@ -86,19 +86,24 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     handleReset: resetBackground,
   } = useBackgroundChange(tryOnResult);
 
-  // Blouse customization logic
-  const {
-    selectedBlouse,
-    isChangingBlouse,
-    changeBlouse,
-  } = useBlouseChange(tryOnResult);
+  // Use background-changed image as base if available, so blouse/neck edits apply on top of it
+  const activeBaseImage = backgroundChangedImage || tryOnResult;
 
-  // Neck customization logic
+  // Combined blouse + neck customization logic (saree only)
   const {
-    selectedNeck,
-    isChangingNeck,
-    changeNeck,
-  } = useNeckChange(tryOnResult);
+    pendingBlouse,
+    setPendingBlouse,
+    pendingNeck,
+    setPendingNeck,
+    isApplying,
+    applyChanges,
+    combinedImage,
+  } = useBlouseNeckChange(activeBaseImage);
+
+  // Sync combined blouse+neck result → currentImage
+  useEffect(() => {
+    if (combinedImage) setCurrentImage(combinedImage);
+  }, [combinedImage]);
 
   // 3D video generation logic
   const {
@@ -118,12 +123,20 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
 
 
 
-  // CURRENT IMG SETTING
+  // Sync tryOnResult → currentImage when a new try-on is generated
   useEffect(() => {
     if (tryOnResult) {
       setCurrentImage(tryOnResult);
     }
   }, [tryOnResult]);
+
+  // Sync backgroundChangedImage → currentImage so downstream edits (blouse/neck)
+  // operate on and display the background-changed image
+  useEffect(() => {
+    if (backgroundChangedImage) {
+      setCurrentImage(backgroundChangedImage);
+    }
+  }, [backgroundChangedImage]);
 
 
 
@@ -153,8 +166,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     [tryOnData?.fabric]
   );
 
+  // currentImage is always the latest (try-on → background → blouse/neck edits)
   const getCurrentDisplayImage = () => {
-    return backgroundChangedImage || currentImage || tryOnResult;
+    return currentImage || tryOnResult;
   };
 
 
@@ -176,6 +190,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
 
   const handleReset = () => {
     resetBackground();
+    setCurrentImage(tryOnResult);
     setViewMode("2D");
   };
 
@@ -253,8 +268,6 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
       <CustomizationPanel
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
-        activeCustomizer={activeCustomizer}
-        setActiveCustomizer={setActiveCustomizer}
         selectedColor={selectedColor}
         setSelectedColor={setSelectedColor}
         selectedFabric={selectedFabric}
@@ -263,23 +276,14 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         fabricTypes={fabricTypes}
         viewMode={viewMode}
         handleViewModeSwitch={handleViewModeSwitch}
-        // Blouse props
-        selectedBlouse={selectedBlouse}
-        isChangingBlouse={isChangingBlouse}
-        changeBlouse={async (type) => {
-          const newImg = await changeBlouse(type);
-          if (newImg) setCurrentImage(newImg);
-        }}
-
+        outfitType={tryOnData?.outfitType}
         tryOnResult={tryOnResult}
-        // Neck props
-        selectedNeck={selectedNeck}
-        isChangingNeck={isChangingNeck}
-        changeNeck={async (type) => {
-          const newImg = await changeNeck(type);
-          if (newImg) setCurrentImage(newImg);
-        }}
-
+        pendingBlouse={pendingBlouse}
+        setPendingBlouse={setPendingBlouse}
+        pendingNeck={pendingNeck}
+        setPendingNeck={setPendingNeck}
+        isApplying={isApplying}
+        applyChanges={applyChanges}
       />
 
       {/* ============================================ */}
@@ -292,6 +296,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         isChangingBackground={isChangingBackground}
         tryOnResult={tryOnResult}
         tryOnData={tryOnData}
+        isProcessing={isProcessing}
+        performTryOn={performTryOn}
         isInWishlistState={isInWishlistState}
         onClose={handleClose}
         wishlistLoading={wishlistLoading}

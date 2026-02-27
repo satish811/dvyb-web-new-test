@@ -1,7 +1,7 @@
 // src/components/b2c/TryOn/components/scenes/QuickActions.jsx
 
 import React from "react";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
 import share_ic from "../../../../assets/TryOn/share_ic.svg";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
@@ -16,14 +16,27 @@ const QuickActions = ({
   isInWishlistState,
   wishlistLoading,
   handleToggleWishlist,
-   onClose 
+  onClose,
+  isProcessing,
+  performTryOn,
 }) => {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-800 mb-3">
+      <h3 className="text-sm font-semibold text-gray-800 mb-3 text-center">
         {UI_TEXT.QUICK_ACTIONS}
       </h3>
       <div className="space-y-2">
+        <button
+          onClick={() => performTryOn?.({ force: true })}
+          disabled={!!isProcessing}
+          className={`w-full bg-white border-2 border-primary text-primary py-2.5 transition-all font-medium flex items-center justify-center gap-2 text-sm ${
+            isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-red-50"
+          }`}
+        >
+          <RefreshCcw size={16} />
+          Retry Try-On
+        </button>
+
         <button
           onClick={() => {
           onClose();
@@ -66,10 +79,10 @@ const QuickActions = ({
 
         <button
           onClick={() => toast.info("Share feature coming soon!")}
-          className="w-full bg-white text-primary py-2.5 transition-all font-medium flex items-center pl-3 gap-2 text-sm"
+          className="w-full bg-white text-primary py-2.5 transition-all font-medium flex items-center justify-center gap-2 text-sm"
         >
           <img src={share_ic} alt="Share" />
-          <span className="pl-3">{UI_TEXT.SHARE_MY_LOOK}</span>
+          <span>{UI_TEXT.SHARE_MY_LOOK}</span>
         </button>
       </div>
     </div>

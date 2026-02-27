@@ -3,15 +3,15 @@
 import React from "react";
 
 /**
- * Customizer Tabs Component (Blouse/Neck Switch)
+ * Customizer Tabs Component (Blouse/Neck/Saree Style Switch)
  */
 const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
   return (
-<div className="flex mb-2 w-full max-w-[300px] border border-gray-200 overflow-hidden">
+<div className="flex w-full border-b border-gray-200 overflow-hidden">
 
       <button
         onClick={() => setActiveCustomizer("blouse")}
-        className={`flex-1  text-sm font-medium ${
+        className={`flex-1 py-1.5 text-xs font-medium ${
           activeCustomizer === "blouse"
             ? "bg-primary text-white"
             : "bg-white text-gray-700 hover:bg-gray-50"
@@ -22,7 +22,7 @@ const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
 
       <button
         onClick={() => setActiveCustomizer("neck")}
-        className={`flex-1 p-1 text-sm font-medium ${
+        className={`flex-1 py-1.5 px-1 text-xs font-medium border-l border-gray-200 ${
           activeCustomizer === "neck"
             ? "bg-primary text-white"
             : "bg-white text-gray-700 hover:bg-gray-50"
@@ -30,6 +30,17 @@ const CustomizerTabs = ({ activeCustomizer, setActiveCustomizer }) => {
       >
         Neck
       </button>
+
+      {/* <button
+        onClick={() => setActiveCustomizer("saree-style")}
+        className={`flex-1 py-1.5 px-1 text-xs font-medium border-l border-gray-200 whitespace-nowrap ${
+          activeCustomizer === "saree-style"
+            ? "bg-primary text-white"
+            : "bg-white text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        Saree Style
+      </button> */}
     </div>
   );
 };

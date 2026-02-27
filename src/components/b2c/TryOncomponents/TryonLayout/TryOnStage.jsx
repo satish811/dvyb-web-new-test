@@ -80,19 +80,41 @@ const TryOnStage = ({
       {/* 2D IMAGE VIEW */}
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "2D" && getCurrentDisplayImage() && (
-        <div className="relative flex items-center h-full justify-center shadow-2xl overflow-hidden">
-          <img
-            src={getCurrentDisplayImage()}
-            alt="Try-on result"
-         className="
+        <div className="flex flex-col items-center h-full justify-center">
+          {/* Image */}
+          <div className="mt-4">
+            <img
+              src={getCurrentDisplayImage()}
+              alt="Try-on result"
+              className="
   pointer-events-auto
   w-[360px] sm:w-[400px] xl:w-[440px]
   h-auto max-h-[70vh]
-  mt-4 object-contain
+  object-contain shadow-2xl
 "
+              draggable={false}
+            />
+          </div>
 
-            draggable={false}
-          />
+          {/* AI Disclaimer — below the image */}
+          <div
+            className="mt-3 w-[360px] sm:w-[400px] xl:w-[440px] px-3 py-2 rounded-lg flex items-center gap-2"
+            style={{
+              background: "#d09eca",
+            }}
+          >
+            <span
+              className="text-[10px] font-bold tracking-wider flex-shrink-0 flex items-center gap-0.5"
+              style={{ color: "#fec601" }}
+            >
+              ✦ AI
+            </span>
+            <div className="w-px h-3 bg-white/25 flex-shrink-0" />
+            <p className="text-white/85 text-[9px] leading-snug tracking-wide">
+              AI-generated preview. Results are for visualisation only and may not
+              perfectly represent the actual product.
+            </p>
+          </div>
         </div>
       )}
 
@@ -100,7 +122,7 @@ const TryOnStage = ({
       {/* 3D VIDEO VIEW */}
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "3D" && (
-        <div className="relative w-1/4 h-full flex items-center justify-center">
+        <div className="relative  h-full flex items-center justify-center">
           
           {/* Video Generating */}
           {isGeneratingVideo && (

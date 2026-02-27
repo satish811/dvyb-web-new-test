@@ -18,8 +18,10 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
   const hasStartedRef = useRef(false);
   const { user } = useAuth();
 
-  const performTryOn = async () => {
+  const performTryOn = async (options = {}) => {
     console.log("🎯 performTryOn called");
+
+    const force = options?.force === true;
 
     const { modelImage, garmentImage, garmentName } = tryOnData || {};
     if (!modelImage || !garmentImage || !garmentName) {
@@ -32,17 +34,23 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       return;
     }
 
-    if (tryOnResult) {
+    if (tryOnResult && !force) {
       console.log("⏸️ Already have result - BLOCKING");
       return;
     }
 
-    if (hasStartedRef.current) {
+    // Note: hasStartedRef is mainly to guard the auto-start useEffect.
+    // If there's an error (or if forced), we allow manual retry even if it started once.
+    if (hasStartedRef.current && !errorMsg && !force) {
       console.log("⏸️ Already started once - BLOCKING");
       return;
     }
 
     console.log("🚀 performTryOn EXECUTING");
+
+    if (force) {
+      hasStartedRef.current = false;
+    }
 
     hasStartedRef.current = true;
     setIsProcessing(true);
@@ -113,6 +121,9 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
     } catch (err) {
       console.error("❌ Server Error Detail:", err);
       setErrorMsg(err.message);
+
+      // Allow manual retry after a failure.
+      hasStartedRef.current = false;
     } finally {
       setIsProcessing(false);
     }
