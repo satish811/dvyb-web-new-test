@@ -7,10 +7,10 @@ import { useNavigate } from "react-router-dom";
  * Back button and navigation
  */
 const TryOnHeader = () => {
- const navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   return (
-<div className="
+    <div className="
   absolute 
   top-4 md:top-6
   left-2 md:left-4

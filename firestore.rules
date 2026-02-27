@@ -199,8 +199,8 @@ service cloud.firestore {
        ============================================ */
     match /user_tryons/{tryOnId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      // DEBUG: Temporarily relaxed to debug permission error
-      allow read, delete: if isAuthenticated(); 
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
     
     /* ============================================

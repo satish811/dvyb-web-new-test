@@ -16,6 +16,7 @@ const CATEGORY_MAPPINGS = {
   "kurta-set": "Kurta Set",
   "kurtas": "Kurta Sets",
   "anarkalis": "Anarkalis",
+  "anarkali": "Anarkali",
   "shararas": "Shararas",
   "pret": "Pret",
   "fusion": "Fusion",
@@ -23,7 +24,11 @@ const CATEGORY_MAPPINGS = {
   "virtual-tryon": "Virtual Tryon",
   "boutique": "Boutique",
   "blouses": "Blouses",
-  "blouse": "Blouses"
+  "blouse": "Blouses",
+  "salwar-suit": "Salwar Suit",
+  "salwar-suits": "Salwar Suit",
+  "indo-western": "Indo Western",
+  "bridal": "Bridal"
 };
 
 // Additional dressType aliases to handle Firestore field variations
@@ -86,6 +91,7 @@ const ProductGrid = ({
       "kurta-set": (dt) => dt.includes("kurta"),
       kurtas: (dt) => dt.includes("kurta"),
       anarkalis: (dt) => dt === "anarkali" || dt === "anarkalis" || dt.includes("anarkali"),
+      anarkali: (dt) => dt === "anarkali" || dt === "anarkalis" || dt.includes("anarkali"),
       shararas: (dt) => dt === "sharara" || dt === "shararas" || dt.includes("sharara"),
       pret: (dt) => dt === "pret",
       fusion: (dt) => dt === "fusion",
@@ -93,6 +99,10 @@ const ProductGrid = ({
       blouses: (dt) => dt.includes("blous"),
       blouse: (dt) => dt.includes("blous"),
       boutique: (dt) => dt === "boutique",
+      "salwar-suit": (dt) => dt.includes("salwar"),
+      "salwar-suits": (dt) => dt.includes("salwar"),
+      "indo-western": (dt) => dt.includes("indo") || dt.includes("western"),
+      bridal: (dt) => dt === "bridal" || dt.includes("bridal") || dt === "wedding" || dt.includes("wedding"),
     };
 
     const matcher = CATEGORY_GROUPS[categoryLower];

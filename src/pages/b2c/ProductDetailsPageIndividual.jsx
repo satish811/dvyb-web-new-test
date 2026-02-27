@@ -11,7 +11,7 @@ const ProductDetailsPageIndividual = ({ onClose }) => {
   const { products } = useProducts();
   const currentProduct = products.find(p => p.id === id);
 
-  
+
   useEffect(() => {
     if (currentProduct) {
       addRecentlyViewed(currentProduct);
@@ -19,10 +19,10 @@ const ProductDetailsPageIndividual = ({ onClose }) => {
   }, [currentProduct]);
 
   return (
-    <div className="lg:mt-12 mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 3xl:px-48 my-4 lg:my-8">
+    <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-32 3xl:px-48 relative">
 
       {/* PRODUCT DETAILS */}
-      <div className="w-full mx-auto py-6 lg:py-10">
+      <div className="w-full mx-auto pt-[5px]">
         <IndividualProduct productId={id} />
       </div>
 

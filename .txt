@@ -1688,14 +1688,6 @@ const changeNeck = async (neckType) => {
               />
               {isInWishlistState ? "Added to Wishlist" : " Add to Wishlist"}
             </button>
-
-            <button
-              onClick={() => toast.info("Share feature coming soon!")}
-              className="w-full bg-white  text-primary  py-2.5  transition-all font-medium flex items-center pl-3 gap-2 text-sm"
-            >
-              <img src={share_ic} alt="" />
-              <span className="pl-3">Share my look</span>
-            </button>
           </div>
         </div>
       </div>

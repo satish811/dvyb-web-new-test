@@ -4,6 +4,7 @@ import BuyNowColorsPopup from "../../../b2b/common/BuyNowColorPopup";
 import { useNavigate } from "react-router-dom";
 import RightSlidePopup from "../../../common/PopUps/RightSlidePopup";
 import { useCart } from "../../../../context/CartContext";
+import virtualTryOnLogo from "../../../../assets/b2c/landing/Landing-villy/virtualtryonlogo.png";
 
 const ProductActionButtons = ({
   user,
@@ -168,7 +169,7 @@ const ProductActionButtons = ({
               {/* Go to Cart link */}
               <button
                 onClick={() => navigate("/cart")}
-                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-none border border-[#33022F] text-[#33022F] hover:bg-[#33022F] hover:text-white transition-all duration-200"
+                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-none border border-[#88117F] text-[#88117F] hover:bg-[#88117F] hover:text-white transition-all duration-200"
               >
                 Go to Cart
               </button>
@@ -181,13 +182,13 @@ const ProductActionButtons = ({
               className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none border-2
     ${addingToCart
                   ? "border-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-white border-[#33022F] text-[#33022F]"
+                  : "bg-white border-[#88117F] text-[#88117F]"
                 }
     transition-all duration-200 disabled:opacity-50`}
             >
               {addingToCart ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-[#33022F] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-[#88117F] border-t-transparent rounded-full animate-spin"></div>
                   Adding...
                 </>
               ) : (
@@ -205,7 +206,7 @@ const ProductActionButtons = ({
             className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-none
     ${addingToCart
                 ? "border-gray-400 text-gray-400 bg-gray-300 cursor-not-allowed"
-                : "border-[#33022F] bg-[#33022F] text-white"
+                : "border-[#88117F] bg-[#88117F] text-white"
               }
     transition-all duration-200 disabled:opacity-50`}
             style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
@@ -234,13 +235,14 @@ const ProductActionButtons = ({
         {!isB2BUser && (
           <button
             onClick={handleVirtualTryOnClick}
-            className="flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none transition-all duration-200 bg-[#FFB800] text-white hover:bg-[#e6a600]"
+            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white"
+            style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M19 6L21 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <img
+              src={virtualTryOnLogo}
+              alt="Virtual Try On"
+              className="w-5 h-5 md:w-7 md:h-7 object-contain"
+            />
             Virtual try on
           </button>
         )}

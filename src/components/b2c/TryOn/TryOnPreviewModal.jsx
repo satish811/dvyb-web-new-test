@@ -2,8 +2,8 @@
 //  REFACTORED VERSION - Clean separation of concerns
 
 import { useEffect, useState, useMemo } from "react";
-
 import { useNavigate } from "react-router-dom";
+import { Heart, ArrowRight } from "lucide-react";
 
 // ============================================
 // CUSTOM HOOKS (Business Logic)
@@ -236,7 +236,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   // MAIN RENDER
   // ============================================
   return (
-    <div className="fixed s  inset-0 overflow-y-auto z-50 hide-scrollbar bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="fixed inset-0 overflow-y-auto z-50 hide-scrollbar bg-[#F8F0F8]">
 
       {/* ============================================ */}
       {/* HEADER */}
@@ -351,6 +351,35 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
           </div>
         </div>
       )}
+      {/* ============================================ */}
+      {/* BOTTOM ACTION BAR (Floating) */}
+      {/* ============================================ */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 hidden lg:flex">
+        <div className="bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-4 py-3 flex items-center gap-6">
+          <button
+            onClick={() => {
+              onClose();
+            }}
+            className="bg-[#74136C] hover:bg-[#5a0f54] text-white px-8 py-3 rounded-full text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all uppercase"
+          >
+            VIEW PRODUCT <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+          <button
+            onClick={handleToggleWishlist}
+            disabled={wishlistLoading}
+            className={`flex items-center gap-2 text-[13px] font-semibold pr-4 transition-colors ${isInWishlistState ? "text-red-500" : "text-gray-700 hover:text-gray-900"
+              } ${wishlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {wishlistLoading ? (
+              <span className="animate-spin h-5 w-5 border-2 border-gray-400 border-t-transparent rounded-full" />
+            ) : (
+              <Heart className={`w-[18px] h-[18px] ${isInWishlistState ? "fill-current" : ""}`} />
+            )}
+            <span>{isInWishlistState ? "Added to Wishlist" : "Add to Wishlist"}</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 };

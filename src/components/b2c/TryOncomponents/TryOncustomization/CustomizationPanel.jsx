@@ -6,6 +6,14 @@ import FabricTab from "./FabricTab";
 import BlouseNeckCustomizer from "../TryOncustomization/BlouseNeckCustomizer";
 import ViewModeToggle from "../TryOnshared/ViewModeToggle";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
+import { Palette, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+// ─── SHARED TOKEN ────────────────────────────────────────────────────────────
+// Change ONE value here to resize both left-side boxes together
+const W = "w-[308px]";
+const LEFT = "left-[56px]";
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ─── SHARED TOKEN ────────────────────────────────────────────────────────────
 // Change ONE value here to resize both left-side boxes together
@@ -64,20 +72,24 @@ const CustomizationPanel = ({
       <div className="w-full bg-white shadow-lg p-5">
 
         {selectedTab === "colours" && (
-          <ColorTab
-            selectedColor={selectedColor}
-            setSelectedColor={setSelectedColor}
-            colors={colors}
-            viewMode={viewMode}
-          />
+          <div className="mb-4">
+            <ColorTab
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+              colors={colors}
+              viewMode={viewMode}
+            />
+          </div>
         )}
         {selectedTab === "fabrics" && (
-          <FabricTab
-            selectedFabric={selectedFabric}
-            setSelectedFabric={setSelectedFabric}
-            fabricTypes={fabricTypes}
-            viewMode={viewMode}
-          />
+          <div className="mb-4">
+            <FabricTab
+              selectedFabric={selectedFabric}
+              setSelectedFabric={setSelectedFabric}
+              fabricTypes={fabricTypes}
+              viewMode={viewMode}
+            />
+          </div>
         )}
 
         {/* 360 Toggle */}

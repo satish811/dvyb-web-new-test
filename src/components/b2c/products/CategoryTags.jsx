@@ -23,13 +23,21 @@ export const normalizeCategory = (categoryName) => {
         "kurtas": "kurta-sets",
         "kurta": "kurta-sets",
         "anarkalis": "anarkalis",
+        "anarkali": "anarkali",
         "shararas": "shararas",
         "pret": "pret",
         "fusion": "fusion",
         "wedding": "wedding",
         "sale": "sale",
         "virtual tryon": "virtual-tryon",
-        "boutique": "boutique"
+        "boutique": "boutique",
+        "salwar suit": "salwar-suit",
+        "salwar-suit": "salwar-suit",
+        "salwar suits": "salwar-suit",
+        "salwar-suits": "salwar-suit",
+        "indo-western": "indo-western",
+        "indo western": "indo-western",
+        "bridal": "bridal"
     };
 
     return mappings[lower] || lower.replace(/\s+/g, "-");
@@ -266,8 +274,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     <div
                         ref={scrollContainerRef}
                         className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
-                            ? 'overflow-x-auto scroll-smooth'
-                            : 'overflow-x-hidden'
+                                ? 'overflow-x-auto scroll-smooth'
+                                : 'overflow-x-hidden'
                             }`}
                         style={{
                             scrollbarWidth: 'none',

@@ -4,7 +4,7 @@
 
 import React from "react";
 import { Loader2 } from "lucide-react";
-import { UI_TEXT } from "../../../../utils/tryOnConstants"; 
+import { UI_TEXT } from "../../../../utils/tryOnConstants";
 import LazyImageLoader from "../../LazyImageLoader/LazyImageLoader";
 
 /**
@@ -28,7 +28,7 @@ const TryOnStage = ({
 }) => {
   return (
 
- <div className="
+    <div className="
   absolute inset-0 
   flex items-center justify-center 
   pointer-events-none

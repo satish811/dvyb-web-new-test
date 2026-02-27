@@ -22,17 +22,16 @@ const ColorTab = ({ selectedColor, setSelectedColor, colors, viewMode }) => {
           <span className="uppercase text-gray-900 ml-1">{selectedColor}</span>
         )}
       </p>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="flex flex-wrap gap-[14.77px]">
         {colors.map((color) => (
           <button
             key={color.name}
             onClick={() => viewMode === "2D" && setSelectedColor(color.name)}
             disabled={viewMode === "3D"}
-            className={`aspect-square rounded-lg transition-all ${
-              selectedColor === color.name
-                ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                : "hover:scale-105 border border-gray-200"
-            } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-[26px] h-[26px] rounded-[4px] transition-all ${selectedColor === color.name
+              ? "ring-[1.5px] ring-gray-400 ring-offset-2 scale-105"
+              : "border border-gray-200"
+              } ${viewMode === "3D" ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
             style={{ backgroundColor: color.color }}
           />
         ))}

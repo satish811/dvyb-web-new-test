@@ -193,7 +193,7 @@ app.post("/api/video/create", upload.single("tryOnImage"), async (req, res) => {
       prompt:
         "A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.",
       duration: 6,
-      resolution: "1080P",
+      resolution: "768P",
       prompt_optimizer: true,
       fast_pretreatment: true,
     };
@@ -713,7 +713,6 @@ ABSOLUTE PRESERVATION RULES
 • 🔒 JEWELLERY FROZEN — earrings, necklaces, bindis must remain exactly as in source
 • Identical body & pose: shoulder slope, arm angle/position, bust/waist shape, hand placement, posture — zero anatomy shift
 • Identical saree: drape folds, pleat crispness, pallu placement, border motifs, fabric sheen/weave/color gradient, pinning points
-• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
 • Identical blouse except sleeves: fabric match (color, texture, subtle print continuity), exact blouse body length/waist fit, dart positions, side seams, underarm curve, back design (if visible)
 • Identical scene: lighting direction/intensity, cast shadows, highlights on skin & fabric, background, depth-of-field, noise/grain
 
@@ -861,7 +860,6 @@ STRICT LOCKS – PRESERVE 100% UNCHANGED
 • Exact same woman: face identity, expression, eyes, lips, makeup, hair style/volume, earrings, necklace, bindi, skin tone/texture/pores
 • Exact same body: posture, shoulder angle, bust/waist/hip proportions, arm position, hand placement
 • Exact same saree: drape, pleats, pallu folds & placement, fabric sheen/texture, color, border patterns, pinning
-• CRITICAL SAREE LOCK: The pallu MUST remain draped over and onto the LEFT SHOULDER — do NOT let it fall below the shoulder or change its draping position in any way
 • Exact same blouse everywhere except neckline edge: fabric color & texture match, sleeve style/length/cuffs, blouse length at waist, darts, side seams, underarm fit, back (if visible)
 • Exact same lighting, shadows, highlights, background, depth of field, grain/noise
 
@@ -878,11 +876,11 @@ ${neckType.toLowerCase().includes('boat') ?
 
 neckType.toLowerCase().includes('regular') || neckType.toLowerCase().includes('round') ?
 `ROUND / REGULAR NECK
-- Rounded neckline with a slight front dip — deeper at center front (3-4 inches below collarbone), shallower at sides
-- Visible front hooks/buttons at center neckline opening
-- Traditional Indian blouse style with modest front depth
-- Smooth curve, no sharp angles
-- No back changes` :
+- Classic circular/rounded neckline
+- Medium depth: 4 inches below collarbone center
+- Balanced, comfortable coverage
+- Most versatile traditional style
+- Smooth curve, no sharp angles` :
 
 neckType.toLowerCase().includes('v') ?
 `V-NECK

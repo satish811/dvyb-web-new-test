@@ -2,7 +2,6 @@
 import React, { useRef, useState } from "react";
 import { Image, Camera } from "lucide-react";
 import BackgroundGrid from "./BackgroundGrid";
-import QuickActions from "./QuickActions";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
 
 /**

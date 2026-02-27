@@ -5,8 +5,6 @@ import toast from "react-hot-toast";
 
 // ============================================
 // ASSETS
-// ============================================
-import share_ic from "../../../assets/TryOn/share_ic.svg";
 import customize_ic from "../../../assets/TryOn/customize_ic.svg";
 import t360 from "../../../assets/TryOn/t360_ic.svg";
 import gallery_ic from "../../../assets/TryOn/gallery_ic.svg";
@@ -64,7 +62,7 @@ const TryOnPreviewPage = () => {
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
   // ============================================
-  
+
   // Core try-on logic
   const {
     tryOnResult,
@@ -148,20 +146,20 @@ const TryOnPreviewPage = () => {
 
 
   useEffect(() => {
-  if (backgroundChangedImage) {
-    setCurrentImage(backgroundChangedImage);
-  }
-}, [backgroundChangedImage]);
+    if (backgroundChangedImage) {
+      setCurrentImage(backgroundChangedImage);
+    }
+  }, [backgroundChangedImage]);
 
 
 
-const getCurrentDisplayImage = () => {
-  return currentImage || backgroundChangedImage || tryOnResult;
-};
+  const getCurrentDisplayImage = () => {
+    return currentImage || backgroundChangedImage || tryOnResult;
+  };
 
   const handleReset = () => {
     resetBackground();
-     setCurrentImage(tryOnResult);
+    setCurrentImage(tryOnResult);
     setView360Enabled(false);
   };
 
@@ -202,10 +200,6 @@ const getCurrentDisplayImage = () => {
     } finally {
       setWishlistLoading(false);
     }
-  };
-
-  const handleShare = () => {
-    toast.info("Share feature coming soon!");
   };
 
   const handle360Toggle = () => {
@@ -275,8 +269,8 @@ const getCurrentDisplayImage = () => {
             <div className="text-center p-6">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
               <p className="font-semibold text-lg mb-2">{errorMsg}</p>
-              <button 
-                onClick={performTryOn} 
+              <button
+                onClick={performTryOn}
                 className="mt-4 px-6 py-3 bg-[#8B0000] text-white"
               >
                 Try Again
@@ -328,9 +322,8 @@ const getCurrentDisplayImage = () => {
             <div className="flex gap-2  w-1/2 mb-4 mt-5 bg-[#F0E0E0] p-1">
               <button
                 onClick={() => setSelectedTab("colours")}
-                className={`flex-1  py-2 text-sm font-medium transition-all ${
-                  selectedTab === "colours" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
-                }`}
+                className={`flex-1  py-2 text-sm font-medium transition-all ${selectedTab === "colours" ? "bg-white text-[#8B0000] shadow-sm" : "text-[#8B0000]"
+                  }`}
               >
                 Colours
               </button>
@@ -380,9 +373,8 @@ const getCurrentDisplayImage = () => {
                   <button
                     key={fabric.name}
                     onClick={() => setSelectedFabric(fabric.name)}
-                    className={`w-full p-3 text-left bg-gray-50 hover:bg-gray-100 border ${
-                      selectedFabric === fabric.name ? "border-[#8B0000]" : "border-gray-200"
-                    }`}
+                    className={`w-full p-3 text-left bg-gray-50 hover:bg-gray-100 border ${selectedFabric === fabric.name ? "border-[#8B0000]" : "border-gray-200"
+                      }`}
                   >
                     <div className="text-sm font-medium">{fabric.name}</div>
                     <div className="text-xs text-gray-500">{fabric.category}</div>
@@ -404,14 +396,12 @@ const getCurrentDisplayImage = () => {
               <button
                 onClick={handle360Toggle}
                 disabled={isGeneratingVideo}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  view360Enabled ? "bg-[#8B0000]" : "bg-gray-300"
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${view360Enabled ? "bg-[#8B0000]" : "bg-gray-300"
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform bg-white rounded-full transition-transform ${
-                    view360Enabled ? "translate-x-6" : "translate-x-1"
-                  }`}
+                  className={`inline-block h-4 w-4 transform bg-white rounded-full transition-transform ${view360Enabled ? "translate-x-6" : "translate-x-1"
+                    }`}
                 />
               </button>
             </div>
@@ -432,73 +422,70 @@ const getCurrentDisplayImage = () => {
             </div> */}
 
             {/* Toggle Buttons */}
-<div className="flex mb-4">
-  <button
-    onClick={() => setActiveSection("scenes")}
-    className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${
-      activeSection === "scenes"
-        ? "bg-[#8B0000] text-white border-[#8B0000]"
-        : "bg-white text-black border-gray-300"
-    }`}
-  >
-    Scenes
-  </button>
+            <div className="flex mb-4">
+              <button
+                onClick={() => setActiveSection("scenes")}
+                className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "scenes"
+                    ? "bg-[#8B0000] text-white border-[#8B0000]"
+                    : "bg-white text-black border-gray-300"
+                  }`}
+              >
+                Scenes
+              </button>
 
-  <button
-    onClick={() => setActiveSection("blouse")}
-    className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${
-      activeSection === "blouse"
-        ? "bg-[#8B0000] text-white border-[#8B0000]"
-        : "bg-white text-gray-700 border-gray-300"
-    }`}
-  >
-    Blouse
-  </button>
+              <button
+                onClick={() => setActiveSection("blouse")}
+                className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "blouse"
+                    ? "bg-[#8B0000] text-white border-[#8B0000]"
+                    : "bg-white text-gray-700 border-gray-300"
+                  }`}
+              >
+                Blouse
+              </button>
 
-  <button
-    onClick={() => setActiveSection("neck")}
-    className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${
-      activeSection === "neck"
-        ? "bg-[#8B0000] text-white border-[#8B0000]"
-        : "bg-white text-gray-700 border-gray-300"
-    }`}
-  >
-    Neck
-  </button>
-</div>
+              <button
+                onClick={() => setActiveSection("neck")}
+                className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "neck"
+                    ? "bg-[#8B0000] text-white border-[#8B0000]"
+                    : "bg-white text-gray-700 border-gray-300"
+                  }`}
+              >
+                Neck
+              </button>
+            </div>
 
 
             {/* Conditional Rendering */}
-{/* ===== DYNAMIC PANEL (ONE AT A TIME) ===== */}
-{activeSection === "scenes" && (
-  <div>
-    <p className="text-sm text-gray-500 mb-3">Backgrounds</p>
-    <BackgroundGrid
-      selectedBackground={selectedBackground}
-      changeBackground={changeBackground}
-      isChangingBackground={isChangingBackground}
-      tryOnResult={tryOnResult}
-    />
-  </div>
-)}
+            {/* ===== DYNAMIC PANEL (ONE AT A TIME) ===== */}
+            {activeSection === "scenes" && (
+              <div>
+                <p className="text-sm text-gray-500 mb-3">Backgrounds</p>
+                <BackgroundGrid
+                  selectedBackground={selectedBackground}
+                  changeBackground={changeBackground}
+                  isChangingBackground={isChangingBackground}
+                  tryOnResult={tryOnResult}
+                />
+              </div>
+            )}
 
-{activeSection === "blouse" && (
-  <BlouseCustomizer
-    selectedBlouse={selectedBlouse}
-    isChangingBlouse={isChangingBlouse}
-    changeBlouse={handleBlouseChange}
-    tryOnResult={tryOnResult}
-  />
-)}
+            {activeSection === "blouse" && (
+              <BlouseCustomizer
+                selectedBlouse={selectedBlouse}
+                isChangingBlouse={isChangingBlouse}
+                changeBlouse={handleBlouseChange}
+                tryOnResult={tryOnResult}
+              />
+            )}
 
-{activeSection === "neck" && (
-  <NeckCustomizer
-    selectedNeck={selectedNeck}
-    isChangingNeck={isChangingNeck}
-    changeNeck={handleNeckChange}
-    tryOnResult={tryOnResult}
-  />
-)}
+            {activeSection === "neck" && (
+              <NeckCustomizer
+                selectedNeck={selectedNeck}
+                isChangingNeck={isChangingNeck}
+                changeNeck={handleNeckChange}
+                tryOnResult={tryOnResult}
+              />
+            )}
 
           </div>
 
@@ -529,22 +516,13 @@ const getCurrentDisplayImage = () => {
             <button
               onClick={handleAddToWishlist}
               disabled={wishlistLoading}
-              className={`py-3 w-full font-medium flex items-center justify-center gap-2 transition-all ${
-                isInWishlistState
+              className={`py-3 w-full font-medium flex items-center justify-center gap-2 transition-all ${isInWishlistState
                   ? " border border-red-500 text-red-500"
                   : "border-2 border-[#8B0000] text-[#8B0000] hover:bg-[#8B0000] hover:text-white"
-              }`}
+                }`}
             >
               <Heart size={19} className={isInWishlistState ? "fill-current" : ""} />
               {wishlistLoading ? "Processing..." : "Add to Wishlist"}
-            </button>
-
-            <button
-              onClick={handleShare}
-              className="py-3 w-full border-black text-gray-700 font-medium hover:border-[#8B0000] hover:text-[#8B0000] flex items-center justify-center gap-2"
-            >
-              <img src={share_ic} className="w-5 h-5" alt="share" />
-              <span className="text-primary">Share my look</span>
             </button>
           </div>
         </div>

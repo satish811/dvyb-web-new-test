@@ -20,6 +20,7 @@ import PopularProductsSection from "../../../components/b2c/home/PopularProducts
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
+import React, { useState } from 'react';
 export default function Home() {
   const { products, loading, error } = useProducts();
   const navigate = useNavigate();
@@ -127,12 +128,24 @@ export default function Home() {
             >
               “Try before you buy — experience fashion through your virtual mirror.”
             </p>
+          </div>
 
+          <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate(mobileTab === "women" ? "/womenwear" : "/menwear")}
-              className="bg-white text-black w-[200px] sm:w-[220px] h-[45px] sm:h-[50px] text-xs sm:text-sm font-bold tracking-[0.12em] uppercase shadow-xl hover:bg-gray-100 transition rounded-none flex items-center justify-center"
+              className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-white hover:bg-[#FFFFFF33] transition duration-300 cursor-pointer flex flex-col items-center justify-center border-t border-white/20 uppercase"
             >
-              SHOP {mobileTab === "women" ? "WOMENS" : "MENS"}
+              <span style={{
+                fontFamily: "Outfit, sans-serif",
+                fontWeight: 600,
+                fontSize: "12.46px",
+                lineHeight: "100%",
+                letterSpacing: "0%",
+                textDecorationLine: "underline",
+                textDecorationStyle: "solid",
+                textDecorationSkipInk: "auto",
+                textUnderlineOffset: "4px"
+              }}>SHOP {mobileTab === "women" ? "WOMEN" : "MEN"}</span>
             </button>
           </div>
         </div>
@@ -150,12 +163,25 @@ export default function Home() {
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
-          <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
+          {/* Dark gradient at the bottom for text readability, similar to the image's bottom bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
+
+          <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/womenwear")}
-              className="bg-white text-black px-6 lg:px-10 py-3 text-xs lg:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 lg:py-5 text-white hover:bg-[#FFFFFF33] transition duration-300 cursor-pointer flex flex-col items-center justify-center border-t border-r border-white/20 uppercase"
             >
-              Shop Women
+              <span style={{
+                fontFamily: "Outfit, sans-serif",
+                fontWeight: 600,
+                fontSize: "12.46px",
+                lineHeight: "100%",
+                letterSpacing: "0%",
+                textDecorationLine: "underline",
+                textDecorationStyle: "solid",
+                textDecorationSkipInk: "auto",
+                textUnderlineOffset: "4px"
+              }}>SHOP WOMEN</span>
             </button>
           </div>
         </div>
@@ -169,12 +195,25 @@ export default function Home() {
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
-          <div className="absolute bottom-20 w-full flex justify-center pointer-events-auto">
+          {/* Dark gradient at the bottom for text readability, similar to the image's bottom bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
+
+          <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
             <button
               onClick={() => navigate("/menwear")}
-              className="bg-white text-black px-6 lg:px-10 py-3 text-xs lg:text-sm font-bold tracking-[0.15em] uppercase hover:bg-gray-100 transition shadow-xl"
+              className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 lg:py-5 text-white hover:bg-[#FFFFFF33] transition duration-300 cursor-pointer flex flex-col items-center justify-center border-t border-white/20 uppercase"
             >
-              Shop Men
+              <span style={{
+                fontFamily: "Outfit, sans-serif",
+                fontWeight: 600,
+                fontSize: "12.46px",
+                lineHeight: "100%",
+                letterSpacing: "0%",
+                textDecorationLine: "underline",
+                textDecorationStyle: "solid",
+                textDecorationSkipInk: "auto",
+                textUnderlineOffset: "4px"
+              }}>SHOP MEN</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import colorUtils from "../../../utils/colorUtils";
 
 const ProductColorSelector = ({ similarProducts = [], currentProductId, currentColorName = "" }) => {
   const navigate = useNavigate();
@@ -15,23 +16,33 @@ const ProductColorSelector = ({ similarProducts = [], currentProductId, currentC
 
   return (
     <div className="flex flex-col w-full" style={{ gap: "10px" }}>
-      {/* Label: COLOUR: <current color name> */}
-      <p
+      {/* Label: COLOUR: <color circle> */}
+      <div
         style={{
+          display: "flex",
+          alignItems: "center",
           fontFamily: "Outfit, sans-serif",
           fontWeight: 550,
           fontSize: "14px",
-          lineHeight: "21.33px",
           letterSpacing: "0.5px",
           color: "#333333",
           whiteSpace: "nowrap",
+          gap: "8px",
         }}
       >
-        COLOUR: &nbsp;
-        <span style={{ fontWeight: 400, color: "#555555" }}>
-          {currentColorName}
-        </span>
-      </p>
+        <span>COLOUR:</span>
+        <span
+          style={{
+            display: "inline-block",
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            backgroundColor: colorUtils.getHexFromName(currentColorName),
+            border: "1px solid #E5E7EB",
+          }}
+          title={currentColorName}
+        />
+      </div>
 
       {/* Similar Product Thumbnails */}
       <div

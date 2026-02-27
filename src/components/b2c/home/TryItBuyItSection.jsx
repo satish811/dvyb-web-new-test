@@ -81,7 +81,7 @@ export default function TryItBuyItSection() {
                 {/* Mobile: Horizontal Draggable Scroll | Desktop: Grid */}
                 <div
                     ref={scrollContainerRef}
-                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 2xl:gap-10 overflow-x-auto md:overflow-visible pb-8 md:pb-0 snap-x snap-mandatory hide-scrollbar justify-items-center"
+                    className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-10 overflow-x-auto md:overflow-visible pb-8 md:pb-0 snap-x snap-mandatory hide-scrollbar justify-items-center"
                 >
                     {products.map((product) => (
                         <motion.div
@@ -90,10 +90,11 @@ export default function TryItBuyItSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[80vw] md:w-full aspect-[4/5] md:aspect-[3/4] snap-center group"
+                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[80vw] md:w-full snap-center group"
+                            style={{ height: 'auto' }}
                         >
                             {/* Full Height Image */}
-                            <div className="w-full h-full relative">
+                            <div className="w-full relative" style={{ aspectRatio: '3/4' }}>
                                 <img
                                     src={product.image}
                                     alt={product.name}
@@ -104,7 +105,7 @@ export default function TryItBuyItSection() {
                             </div>
 
                             {/* Floating Details Box */}
-                            <div className="absolute bottom-4 left-4 right-4 md:bottom-5 md:left-4 md:right-4 lg:left-5 lg:right-5 2xl:bottom-6 2xl:left-6 2xl:right-6 bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-3 md:p-4 2xl:p-5 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
+                            <div className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-3 md:right-3 lg:left-3 lg:right-3 lg:bottom-4 xl:left-4 xl:right-4 xl:bottom-5 2xl:bottom-6 2xl:left-6 2xl:right-6 bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-3 md:p-3 lg:p-3 xl:p-4 2xl:p-5 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
 
                                 <div className="flex justify-between items-start mb-3 2xl:mb-5">
                                     <div className="flex-1 mr-2">

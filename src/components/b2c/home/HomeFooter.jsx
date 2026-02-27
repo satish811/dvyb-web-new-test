@@ -99,7 +99,6 @@ export default function HomeFooter() {
                                         </a>
                                     </li>
                                 )}
-                                <li><a href="#" className="hover:text-white transition-colors">Shipping Info</a></li>
                                 <li><Link to="/Returns" className="hover:text-white transition-colors">Return Policy</Link></li>
                                 {/* <li><a href="#" className="hover:text-white transition-colors">Warranty</a></li> */}
                             </ul>
@@ -111,7 +110,6 @@ export default function HomeFooter() {
                             <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 <li><Link to="/faq" className="hover:text-white transition-colors">Support</Link></li>
                                 <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
                             </ul>
                         </div>
 

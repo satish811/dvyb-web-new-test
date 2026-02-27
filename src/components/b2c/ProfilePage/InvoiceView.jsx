@@ -1,10 +1,12 @@
-import React, { useRef } from "react";
-import { Download } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 import Barcode from "react-barcode";
 import { auth } from "../../../config";
+import villyLogo from "../../../assets/b2c/landing/Landing-villy/VillyLogo11.png";
 
 const InvoiceView = ({ order, onBack }) => {
   const invoiceRef = useRef();
+  const [downloading, setDownloading] = useState(false);
 
   // Format date helper function
   const formatDate = (date) => {
@@ -54,28 +56,194 @@ const InvoiceView = ({ order, onBack }) => {
   };
 
   const handleDownloadPDF = async () => {
+    if (downloading) return;
+    setDownloading(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF("p", "mm", "a4");
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      const input = invoiceRef.current;
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
+      // --- Load Villy Logo ---
+      const logoLoaded = await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = villyLogo;
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
       });
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      let yPos = 15;
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Invoice_${order.orderId || order.id}.pdf`);
+      // Add Villy Logo
+      if (logoLoaded) {
+        const logoWidth = 40;
+        const logoHeight = 20;
+        doc.addImage(logoLoaded, "PNG", (pageWidth - logoWidth) / 2, yPos, logoWidth, logoHeight);
+        yPos += 28;
+      } else {
+        doc.setFontSize(22);
+        doc.setTextColor(51, 2, 47);
+        doc.text("VILLY", pageWidth / 2, yPos + 10, { align: "center" });
+        yPos += 20;
+      }
+
+      // --- Invoice Title ---
+      doc.setFontSize(16);
+      doc.setTextColor(51, 2, 47);
+      doc.text("INVOICE", pageWidth / 2, yPos, { align: "center" });
+      yPos += 10;
+
+      // Divider
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += 8;
+
+      // --- Order Info ---
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Order ID:", 20, yPos);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, "bold");
+      doc.text(`#${order.orderId || order.id || "N/A"}`, 50, yPos);
+
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text("Date:", 120, yPos);
+      doc.setTextColor(0, 0, 0);
+      doc.text(formatDate(order.createdAt || order.date), 135, yPos);
+      yPos += 12;
+
+      // --- Customer Information ---
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(51, 2, 47);
+      doc.text("Customer Information", 20, yPos);
+      yPos += 7;
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(80, 80, 80);
+
+      doc.text(`Name: ${customerName}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Email: ${customerEmail}`, 20, yPos);
+      yPos += 6;
+
+      // Handle long address with text wrapping
+      const addressLines = doc.splitTextToSize(`Shipping Address: ${shippingAddress}`, pageWidth - 40);
+      doc.text(addressLines, 20, yPos);
+      yPos += addressLines.length * 5 + 8;
+
+      // Divider
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += 8;
+
+      // --- Order Details Table ---
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(51, 2, 47);
+      doc.text("Order Details", 20, yPos);
+      yPos += 8;
+
+      // Table Header
+      doc.setFillColor(245, 245, 245);
+      doc.rect(20, yPos - 4, pageWidth - 40, 8, "F");
+      doc.setFontSize(9);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(60, 60, 60);
+      doc.text("Product", 22, yPos);
+      doc.text("Size", 110, yPos);
+      doc.text("Qty", 130, yPos);
+      doc.text("Price", 150, yPos);
+      doc.text("Total", 173, yPos);
+      yPos += 8;
+
+      // Table Rows
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(0, 0, 0);
+
+      order.products?.forEach((product) => {
+        const productName = (product.name || "Product").length > 40
+          ? (product.name || "Product").substring(0, 40) + "..."
+          : (product.name || "Product");
+        const qty = product.quantity || 1;
+        const price = product.price || 0;
+
+        doc.text(productName, 22, yPos);
+        doc.text(product.size || "N/A", 110, yPos);
+        doc.text(String(qty), 130, yPos);
+        doc.text(`₹${price.toLocaleString()}`, 150, yPos);
+        doc.text(`₹${(price * qty).toLocaleString()}`, 173, yPos);
+        yPos += 7;
+      });
+
+      // Divider
+      yPos += 3;
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += 8;
+
+      // --- Pricing Summary ---
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.text("Subtotal:", 130, yPos);
+      doc.text(`₹${subtotal.toLocaleString()}`, 173, yPos);
+      yPos += 6;
+
+      doc.text("Delivery Fee:", 130, yPos);
+      doc.text(`₹${deliveryFee}`, 173, yPos);
+      yPos += 8;
+
+      doc.setFont(undefined, "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Total:", 130, yPos);
+      doc.text(`₹${total.toLocaleString()}`, 170, yPos);
+      yPos += 12;
+
+      // Divider
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += 8;
+
+      // --- Payment Details ---
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(51, 2, 47);
+      doc.text("Payment Details", 20, yPos);
+      yPos += 7;
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(80, 80, 80);
+
+      doc.text(`Payment Mode: ${paymentMode}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Transaction ID: ${transactionId}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Payment Date: ${formatDate(paymentDate)} ${formatTime(paymentDate)}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Bank: ${bankName}`, 20, yPos);
+      yPos += 15;
+
+      // --- Footer ---
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Thank you for shopping with Villy!", pageWidth / 2, yPos, { align: "center" });
+      yPos += 4;
+      doc.text("For queries, reach out to support@villy.com", pageWidth / 2, yPos, { align: "center" });
+
+      doc.save(`Villy_Invoice_${order.orderId || order.id || "Order"}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -125,8 +293,13 @@ const InvoiceView = ({ order, onBack }) => {
       </button>
 
       <div ref={invoiceRef} className="max-w-5xl mx-auto bg-white md:shadow-lg md:p-8">
-        {/* Header with Barcode and Download */}
-        <div className="mb-6 pb-6 ">
+        {/* Header with Logo, Barcode and Download */}
+        <div className="mb-6 pb-6">
+          {/* Villy Logo */}
+          <div className="flex justify-center mb-6">
+            <img src={villyLogo} alt="Villy" className="h-16 w-auto object-contain" />
+          </div>
+
           <div className="flex flex-col items-center md:flex-row md:justify-between md:items-start gap-4">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 w-full md:w-auto">
               <div className="bg-white">
@@ -151,9 +324,14 @@ const InvoiceView = ({ order, onBack }) => {
 
             <button
               onClick={handleDownloadPDF}
-              className="hidden md:block bg-[#8B1B1B] hover:bg-[#6d1515] text-white px-6 py-2.5 rounded font-medium transition-colors"
+              disabled={downloading}
+              className="hidden md:flex items-center gap-2 bg-[#8B1B1B] hover:bg-[#6d1515] disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded font-medium transition-colors"
             >
-              Download Invoice
+              {downloading ? (
+                <><Loader2 size={16} className="animate-spin" /> Generating...</>
+              ) : (
+                "Download Invoice"
+              )}
             </button>
           </div>
         </div>
@@ -291,9 +469,14 @@ const InvoiceView = ({ order, onBack }) => {
       <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg">
         <button
           onClick={handleDownloadPDF}
-          className="w-full bg-[#8B1B1B] hover:bg-[#6d1515] text-white px-6 py-3 rounded font-medium transition-colors"
+          disabled={downloading}
+          className="w-full flex items-center justify-center gap-2 bg-[#8B1B1B] hover:bg-[#6d1515] disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 rounded font-medium transition-colors"
         >
-          Download Invoice
+          {downloading ? (
+            <><Loader2 size={16} className="animate-spin" /> Generating...</>
+          ) : (
+            "Download Invoice"
+          )}
         </button>
       </div>
     </div>

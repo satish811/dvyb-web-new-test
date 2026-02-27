@@ -73,8 +73,8 @@ export const BACKGROUND_OPTIONS = [
 // ============================================
 export const NECK_OPTIONS = [
   {
-    id: "boat",
-    label: "Boat",
+    id: "collar",
+    label: "Collar",
     image: " https://res.cloudinary.com/doiezptnn/image/upload/v1771852359/boat_neck_lq92im.png"
   },
   {
@@ -206,7 +206,7 @@ export const UI_TEXT = {
   VIEW_PRODUCT: "VIEW PRODUCT",
   ADD_TO_WISHLIST: "Add to Wishlist",
   ADDED_TO_WISHLIST: "Added to Wishlist",
-  SHARE_MY_LOOK: "Share my look",
+  // SHARE_MY_LOOK: "Share my look",
   CUSTOMIZE_OUTFIT: "Outfit Details",
   CUSTOMIZE_SUBTITLE: "Try different colors, fabrics, and styles",
   SCENES: "Background",
