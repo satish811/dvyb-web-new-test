@@ -16,7 +16,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
   const [hasStarted, setHasStarted] = useState(false);
   const hasStartedRef = useRef(false);
   const { user } = useAuth();
-  const { user } = useAuth();
 
   const performTryOn = async (options = {}) => {
     console.log("🎯 performTryOn called");
@@ -86,22 +85,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
           console.error("Error reading error response:", e);
         }
 
-        console.error("❌ Server Error Detail:", errorMsg);
-        let errorMsg = `Server error: ${response.status}`;
-        try {
-          const errorText = await response.text();
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMsg = errorData.error || errorData.details || errorData.message || errorText;
-          } catch (jsonError) {
-            // If it's not JSON, just use the text
-            errorMsg = errorText || errorMsg;
-          }
-        } catch (e) {
-          console.error("Error reading error response:", e);
-        }
-
-        console.error("❌ Server Error Detail:", errorMsg);
         throw new Error(errorMsg);
       }
 
@@ -132,7 +115,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       }
 
     } catch (err) {
-      console.error("❌ Server Error Detail:", err);
       console.error("❌ Server Error Detail:", err);
       setErrorMsg(err.message);
 
