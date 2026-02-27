@@ -16,7 +16,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
   const [hasStarted, setHasStarted] = useState(false);
   const hasStartedRef = useRef(false);
   const { user } = useAuth();
-  const { user } = useAuth();
 
   const performTryOn = async (options = {}) => {
     console.log("🎯 performTryOn called");
