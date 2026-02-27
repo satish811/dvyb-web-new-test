@@ -71,7 +71,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       });
 
       if (!response.ok) {
-        console.error("❌ Server Error Detail:", errorMsg);
         let errorMsg = `Server error: ${response.status}`;
         try {
           const errorText = await response.text();
@@ -86,7 +85,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
           console.error("Error reading error response:", e);
         }
 
-        console.error("❌ Server Error Detail:", errorMsg);
         throw new Error(errorMsg);
       }
 
@@ -117,7 +115,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       }
 
     } catch (err) {
-      console.error("❌ Server Error Detail:", err);
       console.error("❌ Server Error Detail:", err);
       setErrorMsg(err.message);
 
