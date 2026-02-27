@@ -353,10 +353,11 @@ const TryOnPreviewPage = () => {
                         <button
                           key={color.name}
                           onClick={() => setSelectedColor(color.name)}
-                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${selectedColor === color.name
+                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${
+                            selectedColor === color.name
                               ? "ring-2 ring-gray-900 ring-offset-2"
                               : "ring-1 ring-gray-200"
-                            }`}
+                          }`}
                           style={{ backgroundColor: color.color }}
                         />
                       ))}
@@ -497,8 +498,9 @@ const TryOnPreviewPage = () => {
             <button
               onClick={() => performTryOn({ force: true })}
               disabled={isProcessing}
-              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
-                }`}
+              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${
+                isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
+              }`}
             >
               Retry Try-On
             </button>

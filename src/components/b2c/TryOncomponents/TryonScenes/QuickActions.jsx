@@ -83,7 +83,7 @@ const QuickActions = ({
         >
           <img src={share_ic} alt="Share" />
           <span>{UI_TEXT.SHARE_MY_LOOK}</span>
-        </button> */}
+        </button>
       </div>
     </div>
   );

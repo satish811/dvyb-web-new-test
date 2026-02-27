@@ -8,14 +8,18 @@ import React from "react";
  */
 const ColorTab = ({ selectedColor, setSelectedColor, colors, viewMode }) => {
   if (!colors || colors.length === 0) {
-    return null;
+    return (
+      <div className="py-4 text-center">
+        <p className="text-sm text-gray-400 italic">No colour variants available for this product.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col w-[278.46px] h-[50.69px] gap-[14.77px] justify-between">
-      <p className="text-[12px] text-gray-500 font-medium leading-none">
+    <div>
+      <p className="text-sm font-medium text-gray-500 mb-3">
         Colour:{selectedColor && (
-          <span className="uppercase text-gray-900 ml-1 font-bold">{selectedColor}</span>
+          <span className="uppercase text-gray-900 ml-1">{selectedColor}</span>
         )}
       </p>
       <div className="flex flex-wrap gap-[14.77px]">
