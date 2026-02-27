@@ -71,20 +71,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       });
 
       if (!response.ok) {
-        let errorMsg = `Server error: ${response.status}`;
-        try {
-          const errorText = await response.text();
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMsg = errorData.error || errorData.details || errorData.message || errorText;
-          } catch (jsonError) {
-            // If it's not JSON, just use the text
-            errorMsg = errorText || errorMsg;
-          }
-        } catch (e) {
-          console.error("Error reading error response:", e);
-        }
-
         console.error("❌ Server Error Detail:", errorMsg);
         let errorMsg = `Server error: ${response.status}`;
         try {
