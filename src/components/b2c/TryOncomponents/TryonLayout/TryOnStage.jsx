@@ -1,4 +1,3 @@
-
 //  PURE UI COMPONENT - No business logic
 
 
@@ -81,38 +80,39 @@ const TryOnStage = ({
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "2D" && getCurrentDisplayImage() && (
         <div className="flex flex-col items-center h-full justify-center">
-          {/* Image */}
-          <div className="mt-4">
-            <img
-              src={getCurrentDisplayImage()}
-              alt="Try-on result"
-              className="
-  pointer-events-auto
-  w-[360px] sm:w-[400px] xl:w-[440px]
-  h-auto max-h-[70vh]
-  object-contain shadow-2xl
-"
-              draggable={false}
-            />
+          <div className="bg-white p-4 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-4">
+            {/* Image */}
+            <div className="relative rounded-[24px] overflow-hidden w-full h-full flex items-center justify-center">
+              <img
+                src={getCurrentDisplayImage()}
+                alt="Try-on result"
+                className="
+                  pointer-events-auto
+                  w-[360px] sm:w-[400px] xl:w-[440px]
+                  h-auto max-h-[65vh]
+                  object-contain
+                "
+                draggable={false}
+              />
+            </div>
           </div>
 
-          {/* AI Disclaimer — below the image */}
+          {/* AI Disclaimer — below the image box */}
           <div
-            className="mt-3 w-[360px] sm:w-[400px] xl:w-[440px] px-3 py-2 rounded-lg flex items-center gap-2"
+            className="mt-4 w-[360px] sm:w-[400px] xl:w-[440px] px-3 py-2 rounded-lg flex items-center justify-center gap-2 mx-auto"
             style={{
-              background: "#d09eca",
+              background: "transparent",
             }}
           >
             <span
               className="text-[10px] font-bold tracking-wider flex-shrink-0 flex items-center gap-0.5"
-              style={{ color: "#fec601" }}
+              style={{ color: "#74136C" }}
             >
               ✦ AI
             </span>
-            <div className="w-px h-3 bg-white/25 flex-shrink-0" />
-            <p className="text-white/85 text-[9px] leading-snug tracking-wide">
-              AI-generated preview. Results are for visualisation only and may not
-              perfectly represent the actual product.
+            <div className="w-px h-3 bg-gray-400 flex-shrink-0" />
+            <p className="text-gray-500 text-[10px] leading-snug tracking-wide text-center">
+              *Ai Generated preview. Results are for visualisation only and may not perfectly represent the actual product
             </p>
           </div>
         </div>
@@ -123,7 +123,7 @@ const TryOnStage = ({
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "3D" && (
         <div className="relative  h-full flex items-center justify-center">
-          
+
           {/* Video Generating */}
           {isGeneratingVideo && (
             <div className="text-center max-w-md">

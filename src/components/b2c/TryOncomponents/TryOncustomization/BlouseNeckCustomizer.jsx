@@ -15,85 +15,88 @@ const BlouseNeckCustomizer = ({
   applyChanges,
   tryOnResult,
 }) => {
+  const [activeTab, setActiveTab] = React.useState("sleeve");
   const canApply = !!tryOnResult && !isApplying && (pendingBlouse || pendingNeck);
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white mt-1">
 
-      {/* ── Instruction banner ───────────────────────────────────────── */}
-      <div className="px-3 py-2 bg-[#f5eefa] border-b border-purple-100 text-center">
-        <p className="text-[11px] text-[#6b21a8] font-medium leading-snug">
-          Select a <strong>sleeve</strong> and <strong>neck</strong> style,
-          then tap <strong>Apply</strong> to generate your look
-        </p>
+      {/* ── TABS ────────────────────────────────────────────────────── */}
+      <div className="bg-[#fcf5fa] rounded-full p-1 flex mb-5">
+        <button
+          onClick={() => setActiveTab("sleeve")}
+          className={`flex-1 text-center py-2 text-[12px] font-medium rounded-full transition-all ${activeTab === "sleeve" ? "bg-white text-gray-900 shadow-sm" : "text-[#7B325A]"
+            }`}
+        >
+          SLEEVE STYLE
+        </button>
+        <button
+          onClick={() => setActiveTab("neck")}
+          className={`flex-1 text-center py-2 text-[12px] font-medium rounded-full transition-all ${activeTab === "neck" ? "bg-white text-gray-900 shadow-sm" : "text-[#7B325A]"
+            }`}
+        >
+          Neck Style
+        </button>
       </div>
 
-      {/* ── Sleeve section ───────────────────────────────────────────── */}
-      <div className="px-3 pt-2.5 pb-1">
-        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-          Sleeve Style
-        </p>
-        <div className="grid grid-cols-3 gap-1.5">
+      {/* ── GRID OPTIONS ────────────────────────────────────────────── */}
+      {activeTab === "sleeve" && (
+        <div className="grid grid-cols-3 gap-y-4 gap-x-2 mb-6">
           {BLOUSE_SLEEVE_OPTIONS.map((blouse) => {
             const active = pendingBlouse === blouse.id;
             return (
               <div
                 key={blouse.id}
                 onClick={() => setPendingBlouse(active ? null : blouse.id)}
-                className={`flex flex-col items-center cursor-pointer rounded overflow-hidden transition-all border-2 ${
-                  active ? "border-primary shadow-md" : "border-gray-200 hover:border-gray-400"
-                }`}
+                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
+                  }`}
               >
-                <img src={blouse.image} alt={blouse.name} className="w-full h-[54px] object-cover" />
-                <span className={`w-full py-1 text-[10px] font-semibold text-center ${
-                  active ? "bg-primary text-white" : "bg-gray-50 text-gray-700"
-                }`}>
+                <div className="flex-1 flex items-center justify-center w-full outline-none">
+                  <img src={blouse.image} alt={blouse.name} className="w-[50px] h-[50px] object-contain" />
+                </div>
+                <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
+                  }`}>
                   {blouse.name}
                 </span>
               </div>
             );
           })}
         </div>
-      </div>
+      )}
 
-      {/* ── Neck section ─────────────────────────────────────────────── */}
-      <div className="px-3 pt-2.5 pb-2">
-        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-          Neck Style
-        </p>
-        <div className="grid grid-cols-3 gap-1.5">
+      {activeTab === "neck" && (
+        <div className="grid grid-cols-3 gap-y-4 gap-x-2 mb-6">
           {NECK_OPTIONS.map((neck) => {
             const active = pendingNeck === neck.id;
             return (
               <div
                 key={neck.id}
                 onClick={() => setPendingNeck(active ? null : neck.id)}
-                className={`flex flex-col items-center cursor-pointer rounded overflow-hidden transition-all border-2 ${
-                  active ? "border-primary shadow-md" : "border-gray-200 hover:border-gray-400"
-                }`}
+                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
+                  }`}
               >
-                <img src={neck.image} alt={neck.label} className="w-full h-[52px] object-cover" />
-                <span className={`w-full py-1 text-[10px] font-semibold text-center ${
-                  active ? "bg-primary text-white" : "bg-gray-50 text-gray-700"
-                }`}>
+                <div className="flex-1 flex items-center justify-center w-full outline-none">
+                  <img src={neck.image} alt={neck.label} className="w-[50px] h-[50px] object-contain" />
+                </div>
+                <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
+                  }`}>
                   {neck.label}
                 </span>
               </div>
             );
           })}
         </div>
-      </div>
+      )}
 
-      {/* ── Apply button ─────────────────────────────────────────────── */}
-      <div className="px-3 pt-1 pb-3 border-t border-gray-100">
+      {/* ── APPLY BUTTON ─────────────────────────────────────────────── */}
+      <div>
         <button
           onClick={applyChanges}
           disabled={!canApply}
-          className={`w-full py-2 text-[13px] font-bold rounded-sm transition-all flex items-center justify-center gap-2 ${
-            canApply
-              ? "bg-primary text-white hover:opacity-90 active:scale-[0.98]"
-              : "bg-gray-200 text-gray-400 cursor-not-allowed"
-          }`}
+          className={`w-full py-2.5 text-[14px] font-medium rounded-full transition-all flex items-center justify-center gap-2 ${canApply
+            ? "border border-[#4a044e] text-[#4a044e] hover:bg-[#fcf5fa] active:scale-[0.98]"
+            : "border border-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
         >
           {isApplying ? (
             <>
@@ -105,7 +108,7 @@ const BlouseNeckCustomizer = ({
           )}
         </button>
         {!tryOnResult && (
-          <p className="text-[10px] text-gray-400 text-center mt-1">
+          <p className="text-[10px] text-gray-400 text-center mt-2">
             Complete try-on first to apply styles
           </p>
         )}
@@ -116,4 +119,3 @@ const BlouseNeckCustomizer = ({
 };
 
 export default BlouseNeckCustomizer;
-
