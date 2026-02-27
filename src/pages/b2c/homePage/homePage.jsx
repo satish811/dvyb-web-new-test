@@ -20,7 +20,6 @@ import PopularProductsSection from "../../../components/b2c/home/PopularProducts
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
-import React, { useState } from 'react';
 export default function Home() {
   const { products, loading, error } = useProducts();
   const navigate = useNavigate();
