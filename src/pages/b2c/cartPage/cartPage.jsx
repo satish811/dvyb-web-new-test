@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, Link } from "react-router-dom";
 import { cartService } from "../../../services/cartService";
 import { auth } from "../../../config";
@@ -98,9 +99,33 @@ const ShareCartModal = ({ isOpen, onClose, cartUrl }) => {
   if (!isOpen) return null;
   const [activeTab, setActiveTab] = useState('link'); // 'link' or 'qr'
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 font-[Outfit]">
-      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
+  // Lock body scroll while modal is open, preserving current scroll position
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      const originalStyle = document.body.style.cssText;
+      document.body.style.cssText = `overflow: hidden; position: fixed; top: -${scrollY}px; left: 0; right: 0;`;
+
+      return () => {
+        document.body.style.cssText = originalStyle;
+        window.scrollTo({ top: scrollY, behavior: "instant" });
+      };
+    }
+  }, [isOpen]);
+
+  // Handle backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modal = (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 font-[Outfit]"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up relative">
         {/* Header */}
         <div className="bg-[#33022F] p-4 flex items-center justify-center relative">
           <h3 className="text-white text-lg font-bold">Share Your Cart</h3>
@@ -195,6 +220,8 @@ const ShareCartModal = ({ isOpen, onClose, cartUrl }) => {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 };
 
 

@@ -74,7 +74,7 @@ export default function Home() {
     <div className="">
 
       {/* MOBILE HERO SECTION */}
-      <section className="relative w-full h-[calc(100vh-112px)] md:hidden flex flex-col">
+      <section className="relative w-full h-[calc(100dvh-112px)] md:hidden flex flex-col">
         {/* Tabs */}
         <div className="flex w-full bg-[#FAFAFA]">
           <button
@@ -139,14 +139,14 @@ export default function Home() {
       </section>
 
       {/* DESKTOP HERO SECTION (Hidden on Mobile) */}
-      <section className="hidden md:flex relative w-full overflow-hidden h-[calc(100vh-64px)] flex-row">
+      <section className="hidden md:flex relative w-full overflow-hidden h-[calc(100dvh-64px)] md:max-h-[800px] xl:max-h-none flex-row">
 
         {/* Left Side - Women */}
         <div className="relative w-1/2 h-full">
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-top lg:object-center"
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
@@ -211,7 +211,7 @@ export default function Home() {
 
       </section>
 
-    
+
       {/* 2.5. VIRTUAL TRY ON SECTION */}
       <VirtualTryOnSection />
 

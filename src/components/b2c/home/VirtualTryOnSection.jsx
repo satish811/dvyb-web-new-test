@@ -35,17 +35,16 @@ export default function VirtualTryOnSection() {
                         </div>
 
                         {/* 3. Main Model Image (Center - Highest Z-Index of images) */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[45%] h-[70%] z-20 border-2 border-white shadow-2xl">
-                            <img src={centerModel} alt="Model" className="w-full h-full object-cover" />
-                        </div>
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[45%] h-[70%] z-20 border-2 border-white shadow-2xl flex items-center justify-center">
+                            <img src={centerModel} alt="Model" className="absolute inset-0 w-full h-full object-cover" />
 
-                        {/* 4. OVERLAY TEXT (Spanning across) */}
-                        <div className="absolute top-[40%] left-0 w-full z-30 pointer-events-none">
-                            <h2 className="text-[10vw] sm:text-4xl font-bold uppercase tracking-wider text-center leading-none">
-                                <span className="text-[#9F5F9F] block">VIRTU</span>
-                                <span className="text-white block" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>AL TRY</span>
-                                <span className="text-[#9F5F9F] block">ON</span>
-                            </h2>
+                            {/* OVERLAY TEXT (Inside Center Image) */}
+                            <div className="relative z-30 pointer-events-none w-full px-1">
+                                <h2 className="text-[6.5vw] xs:text-[6vw] sm:text-[4vw] font-bold uppercase tracking-wider text-center leading-tight">
+                                    <span className="text-[#9F5F9F] block text-center">VIRTUAL</span>
+                                    <span className="text-white block text-center" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.8)" }}>TRY ON</span>
+                                </h2>
+                            </div>
                         </div>
                     </div>
 

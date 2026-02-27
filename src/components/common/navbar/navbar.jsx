@@ -225,20 +225,20 @@ export default function Navbar({ setShowLoader }) {
                 >
                     <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-12 lg:px-16 xl:px-20 2xl:px-24 flex items-center justify-between h-full">
 
-                        {/* Mobile Menu Toggle */}
-                        <div className="lg:hidden flex items-center">
+                        {/* Mobile Menu Toggle - LEFT SIDE */}
+                        <div className="lg:hidden flex items-center flex-1 md:flex-none">
                             <motion.button
                                 whileTap={tapScale}
                                 onClick={() => setMobileMenuOpen(true)}
-                                className={`p-2 rounded-full transition ${location.pathname === "/" ? "text-white hover:bg-white/10" : "text-black hover:bg-gray-100"}`}
+                                className={`p-2 -ml-2 rounded-full transition ${location.pathname === "/" ? "text-white hover:bg-white/10" : "text-black hover:bg-gray-100"}`}
                             >
                                 <HiOutlineMenu className="text-3xl" />
                             </motion.button>
                         </div>
 
-                        {/* LEFT: Logo */}
+                        {/* CENTER: Logo (Absolutely positioned in center on mobile to keep exact center alignment, normal flow on tablet+) */}
                         <div
-                            className={`flex-shrink-0 cursor-pointer lg:mr-10 xl:mr-16 2xl:mr-24 absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none`}
+                            className={`absolute left-1/2 transform -translate-x-1/2 md:relative md:left-0 md:transform-none md:flex md:justify-center cursor-pointer z-10 md:mr-10 xl:mr-16 2xl:mr-24`}
                             onClick={() => {
                                 // Force scroll to top immediately even if on same route
                                 window.scrollTo({ top: 0, behavior: "instant" });
@@ -256,12 +256,14 @@ export default function Navbar({ setShowLoader }) {
                             <img
                                 src={villyLogo}
                                 alt="Villy"
-                                className="h-10 xs:h-12 md:h-12 2xl:h-14 w-auto object-contain"
+                                className="h-14 sm:h-16 md:h-12 2xl:h-14 w-auto object-contain"
                             />
                         </div>
 
-                        {/* CENTER-LEFT: Nav Links */}
-                        <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 mr-auto">
+                        {/* Spacer specifically for Mobile to enforce 40px gap visually between logo and right icons.
+                            Because the logo is absolute centered, we push the right flexbox inwards if needed.
+                        */}
+                        <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 ml-10 xl:ml-16 2xl:ml-24 mr-auto">
                             <button
                                 onClick={() => {
                                     if (location.pathname === "/") {
@@ -308,13 +310,17 @@ export default function Navbar({ setShowLoader }) {
                         </div>
 
                         {/* RIGHT: Icons or Login Button */}
-                        <div className="flex items-center space-x-4 md:space-x-6 2xl:space-x-8">
+                        {/* We use flex-1 on mobile so it takes up the right half of the navbar, 
+                            and we add pl-[40px] (padding left) to guarantee there is ALWAYS a 40px gap 
+                            between the absolute-centered logo and the search icon (first element here).
+                        */}
+                        <div className="flex flex-1 lg:flex-none justify-end items-center space-x-3 xs:space-x-4 md:space-x-6 2xl:space-x-8 pl-[40px]">
                             {/* Mobile Search Icon - Always visible */}
                             <button
                                 onClick={() => setSearchOpen(true)}
                                 className={`md:hidden transition relative ${location.pathname === "/" ? "text-white" : "text-black"}`}
                             >
-                                <HiOutlineMagnifyingGlass className="text-3xl" />
+                                <HiOutlineMagnifyingGlass className="text-2xl xs:text-3xl" />
                             </button>
 
 
@@ -324,10 +330,7 @@ export default function Navbar({ setShowLoader }) {
                                     whileHover={hoverScale}
                                     whileTap={tapScale}
                                     onClick={() => setShowLogin(true)}
-                                    className={`px-3 py-1.5 md:px-4 md:py-2 font-semibold text-xs md:text-sm transition-colors uppercase tracking-wide  ${location.pathname === "/"
-                                        ? "bg-white text-black hover:bg-white hover:text-black md:bg-[#884383] md:text-white md:hover:bg-white md:hover:text-black"
-                                        : "bg-[#ebe8e8] text-black hover:bg-white hover:text-black"
-                                        }`}
+                                    className={`px-2 py-1 xs:px-3 xs:py-1.5 md:px-4 md:py-2 font-semibold text-[10px] xs:text-xs md:text-sm transition-colors uppercase tracking-wide whitespace-nowrap min-w-max bg-[#884383] text-white border border-[#884383] hover:bg-white hover:text-black shadow-sm`}
                                 >
                                     Login / Signup
                                 </motion.button>
@@ -350,7 +353,7 @@ export default function Navbar({ setShowLoader }) {
 
                                     {/* Wishlist Icon */}
                                     <button onClick={() => navigate("/wishlist")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
-                                        <HiOutlineHeart className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                        <HiOutlineHeart className="text-2xl xs:text-3xl md:text-2xl 2xl:text-3xl" />
                                         {wishlistCount > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
                                                 {wishlistCount}
@@ -360,7 +363,7 @@ export default function Navbar({ setShowLoader }) {
 
                                     {/* Cart Icon */}
                                     <button onClick={() => navigate("/cart")} className={`transition relative ${location.pathname === "/" ? "text-white md:text-black hover:text-gray-300 md:hover:text-gray-600" : "text-black hover:text-gray-600"}`}>
-                                        <HiOutlineShoppingBag className="text-3xl md:text-2xl 2xl:text-3xl" />
+                                        <HiOutlineShoppingBag className="text-2xl xs:text-3xl md:text-2xl 2xl:text-3xl" />
                                         {cartCount > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] 2xl:text-xs rounded-full w-4 h-4 2xl:w-5 2xl:h-5 flex items-center justify-center font-bold">
                                                 {cartCount}

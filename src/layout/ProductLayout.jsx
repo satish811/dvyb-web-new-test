@@ -2,7 +2,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import Sidebar from "../components/b2c/sidebar/Sidebar";
 import { ArrowLeft, Funnel, X, Search, Heart, ShoppingBag, User, ListFilter, ArrowUpDown, Minus, Plus } from "lucide-react";
 import { mainlogo } from "../assets";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import SearchDropdown from "../components/common/navbar/SearchDropdown";
 import { searchService } from "../services/searchService";
 import useDebounce from "../hooks/useDebounce";
@@ -10,6 +10,7 @@ import ProductGrid from "../components/b2c/products/ProductGrid";
 import { useFilter } from "../context/FilterContext";
 import CategoryTags, { normalizeCategory } from "../components/b2c/products/CategoryTags";
 import { extractSubcategories } from "../utils/categoryExtractor";
+import Fuse from "fuse.js";
 
 export default function ProductLayout({ children, products, categoryFromRoute }) {
   const navigate = useNavigate();
@@ -103,7 +104,60 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   }, [category, subcategory, searchQuery]); // REMOVED selectedFilters dependency to prevent infinite loop
 
   /**
+   * Build a Fuse.js instance for the current product list (memoized)
+   */
+  const productFuse = useMemo(() => {
+    if (!products || products.length === 0) return null;
+    return new Fuse(products, {
+      keys: [
+        { name: "title", weight: 0.3 },
+        { name: "name", weight: 0.3 },
+        { name: "category", weight: 0.2 },
+        { name: "subcategory", weight: 0.15 },
+        { name: "dressType", weight: 0.15 },
+        { name: "description", weight: 0.05 },
+        { name: "tags", weight: 0.15 },
+        { name: "fabric", weight: 0.1 },
+        { name: "craft", weight: 0.1 },
+        { name: "shopName", weight: 0.2 },
+        { name: "boutiqueName", weight: 0.2 },
+        { name: "brand", weight: 0.25 },
+      ],
+      threshold: 0.35,
+      distance: 100,
+      minMatchCharLength: 1,
+      includeScore: true,
+      ignoreLocation: true,
+      findAllMatches: true,
+    });
+  }, [products]);
+
+  /**
+   * Simple stemmer for common Indian fashion plurals
+   */
+  const stemQuery = useCallback((query) => {
+    const pluralMap = {
+      sarees: "saree", lehengas: "lehenga", kurtis: "kurti",
+      shararas: "sharara", anarkalis: "anarkali", gowns: "gown",
+      dupattas: "dupatta", suits: "suit", blouses: "blouse",
+      palazzos: "palazzo", dresses: "dress",
+    };
+    return query
+      .split(/\s+/)
+      .map((w) => {
+        const lower = w.toLowerCase();
+        if (pluralMap[lower]) return pluralMap[lower];
+        if (lower.endsWith("ies") && lower.length > 4) return lower.slice(0, -3) + "y";
+        if (lower.endsWith("es") && lower.length > 4) return lower.slice(0, -2);
+        if (lower.endsWith("s") && !lower.endsWith("ss") && lower.length > 3) return lower.slice(0, -1);
+        return lower;
+      })
+      .join(" ");
+  }, []);
+
+  /**
    * Filter products locally for special cases like "Boutique" and search queries
+   * Uses Fuse.js fuzzy matching for search (handles typos, plurals, partial matches)
    */
   const visibleProducts = useMemo(() => {
     let filtered = products;
@@ -113,24 +167,56 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       filtered = filtered.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
     }
 
-    // Filter by search query if present
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((p) => {
-        const searchableText = [
-          p.name,
-          p.category,
-          p.subcategory,
-          p.description,
-          p.tags?.join(' ')
-        ].filter(Boolean).join(' ').toLowerCase();
+    // Filter by search query if present — using Fuse.js fuzzy matching
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
+      const stemmed = stemQuery(query);
 
-        return searchableText.includes(query);
-      });
+      if (productFuse) {
+        // Fuzzy search with original + stemmed query
+        const fuseResults = productFuse.search(query);
+        const stemmedResults = stemmed !== query ? productFuse.search(stemmed) : [];
+
+        // Also do direct substring match as fallback
+        const substringResults = (filtered || []).filter((p) => {
+          const searchText = [
+            p.title, p.name, p.category, p.subcategory, p.dressType,
+            p.description, p.fabric, p.craft, p.shopName, p.boutiqueName, p.brand,
+            ...(Array.isArray(p.tags) ? p.tags : []),
+          ].filter(Boolean).join(" ").toLowerCase();
+          return searchText.includes(query) || searchText.includes(stemmed);
+        });
+
+        // Merge and deduplicate
+        const seenIds = new Set();
+        const merged = [];
+
+        for (const p of substringResults) {
+          if (!seenIds.has(p.id)) { seenIds.add(p.id); merged.push(p); }
+        }
+        for (const { item } of stemmedResults) {
+          if (!seenIds.has(item.id)) { seenIds.add(item.id); merged.push(item); }
+        }
+        for (const { item } of fuseResults) {
+          if (!seenIds.has(item.id)) { seenIds.add(item.id); merged.push(item); }
+        }
+
+        filtered = merged;
+      } else {
+        // Fallback if Fuse not ready
+        filtered = (filtered || []).filter((p) => {
+          const searchText = [
+            p.title, p.name, p.category, p.subcategory, p.dressType,
+            p.description, p.fabric, p.craft, p.shopName, p.boutiqueName, p.brand,
+            ...(Array.isArray(p.tags) ? p.tags : []),
+          ].filter(Boolean).join(" ").toLowerCase();
+          return searchText.includes(query) || searchText.includes(stemmed);
+        });
+      }
     }
 
     return filtered;
-  }, [category, searchQuery, products]);
+  }, [category, searchQuery, products, productFuse, stemQuery]);
 
   /**
    * Load recent & popular searches from localStorage
@@ -151,7 +237,7 @@ export default function ProductLayout({ children, products, categoryFromRoute })
    * Search effect
    */
   useEffect(() => {
-    if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
+    if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 1) {
       setSearchResults([]);
       setSearchSuggestions([]);
       return;

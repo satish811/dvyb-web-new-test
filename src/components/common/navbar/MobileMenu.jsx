@@ -116,7 +116,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
           {!user && !loading && (
             <button
               onClick={handleLoginClick}
-              className="w-full text-left bg-[#800000] text-white py-2.5 px-4 rounded-md font-semibold text-sm uppercase tracking-wide hover:bg-[#660000] transition-colors mt-2"
+              className="w-full text-left bg-[#884383] text-white py-2.5 px-4 rounded-md font-semibold text-sm uppercase tracking-wide hover:bg-[#6c3568] transition-colors mt-2"
             >
               Login / Signup
             </button>

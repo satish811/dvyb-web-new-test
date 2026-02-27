@@ -46,21 +46,30 @@ export default function Footer() {
 
         {/* MOBILE */}
         <div className="block md:hidden px-5">
-          <FooterAccordion sections={footerSections} />
+          {/* 2x2 Grid for Footer Links on Mobile */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 mb-8">
+            {footerSections.map((section) => (
+              <div key={section.key}>
+                <FooterLinks {...section} />
+              </div>
+            ))}
+          </div>
 
           <div className="py-6 text-center space-y-6">
-            <div>
+            <div className="border-t border-gray-200 pt-6">
               <h5 className="font-medium uppercase text-xs tracking-wider mb-4">Follow Us On</h5>
-              <div className="text-center ">
+              <div className="text-center flex justify-center">
                 <FooterSocials />
               </div>
             </div>
 
-            <div className="border-t pt-6">
+            <div className="border-t border-gray-200 pt-6">
               <h5 className="font-medium uppercase text-xs tracking-wider mb-4">
                 Experience Villy App on Mobile
               </h5>
-              <FooterAppLinks />
+              <div className="flex justify-center">
+                <FooterAppLinks />
+              </div>
             </div>
           </div>
         </div>

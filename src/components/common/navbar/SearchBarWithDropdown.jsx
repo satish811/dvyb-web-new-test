@@ -40,7 +40,7 @@ const SearchBarWithDropdown = ({ onNavigate, searchQuery, onSearchChange }) => {
             abortControllerRef.current = new AbortController();
             const signal = abortControllerRef.current.signal;
 
-            if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 2) {
+            if (!debouncedSearchQuery || debouncedSearchQuery.trim().length < 1) {
                 setSearchResults({ products: [] });
                 setIsDropdownOpen(false);
                 setNoResults(false);
