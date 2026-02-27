@@ -11,8 +11,8 @@ import { useNavigate } from "react-router-dom";
 
 // ─── SHARED TOKEN ────────────────────────────────────────────────────────────
 // Change ONE value here to resize both left-side boxes together
-const W = "w-[308px]";
-const LEFT = "left-[56px]";
+// const W = "w-[308px]";
+// const LEFT = "left-[56px]";
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── SHARED TOKEN ────────────────────────────────────────────────────────────
