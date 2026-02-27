@@ -1,24 +1,49 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Youtube, RotateCcw, ShieldCheck } from "lucide-react";
+import { Facebook, Instagram, Youtube } from "lucide-react";
+import { FaXTwitter } from "react-icons/fa6";
 import { useUI } from "../../../context/UIContext";
 import { useAuth } from "../../../context/AuthContext";
 
 // Assets
-import footerBg from "../../../assets/b2c/landing/Landing-villy/footerbanner.png";
+import footerBg from "../../../assets/b2c/landing/Landing-villy/footerbackground3.png";
+import appStoreImg from "../../../assets/b2c/landing/Landing-villy/AppStore.png";
+import googlePlayImg from "../../../assets/b2c/landing/Landing-villy/GooglePlay.png";
+import originalIcon from "../../../assets/b2c/landing/Landing-villy/Original1.png";
+import returnIcon from "../../../assets/b2c/landing/Landing-villy/ReturnPolicy.png";
+
 
 export default function HomeFooter() {
     const { setTryOnModalOpen } = useUI();
     const { userRole } = useAuth(); // Get user role from context
 
+    const headerStyle = {
+        fontFamily: 'Outfit, sans-serif',
+        fontWeight: 500,
+        fontSize: 'clamp(10px, 0.8vw, 13px)',
+        lineHeight: '100%',
+        letterSpacing: '0%',
+        textTransform: 'uppercase'
+    };
+
+    const linkStyle = {
+        fontFamily: 'Outfit, sans-serif',
+        fontWeight: 300,
+        fontSize: 'clamp(9px, 0.75vw, 12px)',
+        lineHeight: '100%',
+        letterSpacing: '-0.02em',
+        textTransform: 'uppercase'
+    };
+
     return (
         <footer
-            className="relative w-full text-white pt-16 pb-32 md:pb-24 2xl:pt-24 2xl:pb-32 bg-cover bg-no-repeat min-h-[600px] bg-fixed"
+            className="relative w-full text-white pt-16 pb-32 md:pb-24 2xl:pt-24 2xl:pb-32 bg-cover bg-no-repeat min-h-[700px]"
             style={{
                 backgroundImage: `url(${footerBg})`,
                 backgroundColor: '#9A3258', // Fallback color matching the image
-                backgroundPosition: 'center top',
+                backgroundPosition: 'center',
+                opacity: 1,
             }}
         >
             <div className="max-w-[1400px] 2xl:max-w-[1920px] mx-auto px-6 md:px-10 2xl:px-20 h-full flex flex-col justify-between">
@@ -30,8 +55,8 @@ export default function HomeFooter() {
 
                         {/* Column 1 */}
                         <div className="flex flex-col gap-6 2xl:gap-8">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Quick Links</h4>
-                            <ul className="space-y-3 2xl:space-y-4 text-xs md:text-sm 2xl:text-base text-gray-200 font-light">
+                            <h4 style={headerStyle}>Quick Links</h4>
+                            <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 <li>
                                     <button
                                         onClick={() => setTryOnModalOpen(true)}
@@ -47,8 +72,8 @@ export default function HomeFooter() {
 
                         {/* Column 2 */}
                         <div className="flex flex-col gap-6 2xl:gap-8">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Our Company</h4>
-                            <ul className="space-y-3 2xl:space-y-4 text-xs md:text-sm 2xl:text-base text-gray-200 font-light">
+                            <h4 style={headerStyle}>Our Company</h4>
+                            <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 <li><Link to="/our-story" className="hover:text-white transition-colors">Our Story</Link></li>
                                 <li><Link to="/faq" className="hover:text-white transition-colors">Contact Us</Link></li>
                                 <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
@@ -59,8 +84,8 @@ export default function HomeFooter() {
 
                         {/* Column 3 */}
                         <div className="flex flex-col gap-6 2xl:gap-8">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Our Products</h4>
-                            <ul className="space-y-3 2xl:space-y-4 text-xs md:text-sm 2xl:text-base text-gray-200 font-light">
+                            <h4 style={headerStyle}>Our Products</h4>
+                            <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 {/* Conditionally show Digiwarehouse for B2B users only */}
                                 {userRole === "B2B" && (
                                     <li>
@@ -82,8 +107,8 @@ export default function HomeFooter() {
 
                         {/* Column 4 */}
                         <div className="flex flex-col gap-6 2xl:gap-8">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Our Services</h4>
-                            <ul className="space-y-3 2xl:space-y-4 text-xs md:text-sm 2xl:text-base text-gray-200 font-light">
+                            <h4 style={headerStyle}>Our Services</h4>
+                            <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 <li><Link to="/faq" className="hover:text-white transition-colors">Support</Link></li>
                                 <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
                                 <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
@@ -93,66 +118,79 @@ export default function HomeFooter() {
                     </div>
 
                     {/* RIGHT SIDE - Social & App */}
-                    <div className="flex flex-col gap-8 2xl:gap-12 lg:w-80 2xl:w-96">
+                    <div className="lg:w-auto lg:flex-shrink-0" style={{ display: 'flex', flexDirection: 'column' }}>
 
-                        {/* Socials */}
-                        <div className="flex flex-col gap-4 2xl:gap-6">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Follow Us On</h4>
-                            <div className="flex gap-6 2xl:gap-8">
-                                <a href="#" className="hover:text-gray-300 transition-colors"><Facebook size={20} className="md:w-5 md:h-5 2xl:w-6 2xl:h-6" strokeWidth={1.5} /></a>
-                                <a href="#" className="hover:text-gray-300 transition-colors"><Instagram size={20} className="md:w-5 md:h-5 2xl:w-6 2xl:h-6" strokeWidth={1.5} /></a>
-                                <a href="#" className="hover:text-gray-300 transition-colors"><Twitter size={20} className="md:w-5 md:h-5 2xl:w-6 2xl:h-6" strokeWidth={1.5} /></a>
-                                <a href="#" className="hover:text-gray-300 transition-colors"><Youtube size={20} className="md:w-5 md:h-5 2xl:w-6 2xl:h-6" strokeWidth={1.5} /></a>
-                            </div>
-                        </div>
+                        {/* Social + App container */}
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 'clamp(6px, 0.5vw, 10px)',
+                            maxWidth: '280px',
+                            width: '100%',
+                        }}>
 
-                        {/* App Download */}
-                        <div className="flex flex-col gap-4 2xl:gap-6">
-                            <h4 className="font-bold tracking-widest text-xs md:text-sm 2xl:text-base uppercase">Experience VILLY App on Mobile</h4>
-                            <div className="flex gap-3 2xl:gap-4">
-                                <a href="#" className="block w-28 md:w-32 2xl:w-40 transition-opacity hover:opacity-90 bg-black rounded-md overflow-hidden border border-white/20">
-                                    <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
-                                        alt="Download on the App Store"
-                                        className="w-full h-full object-contain p-1"
-                                    />
+                            {/* Follow Us On heading */}
+                            <h4 style={headerStyle}>Follow Us On</h4>
+
+                            {/* Social icons row */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'clamp(10px, 1vw, 16px)',
+                            }}>
+                                <a href="#" className="hover:text-gray-300 transition-colors" style={{ display: 'flex', alignItems: 'center' }}><Facebook size={18} strokeWidth={1.5} /></a>
+                                <a href="https://www.instagram.com/villy.official?igsh=MWtmNm5oNGhrdmlvdA==" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors" style={{ display: 'flex', alignItems: 'center' }}><Instagram size={18} strokeWidth={1.5} /></a>
+                                <a href="https://x.com/Thevillyof34956" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors" style={{ display: 'flex', alignItems: 'center' }}><FaXTwitter size={18} /></a>
+                                <a href="https://www.youtube.com/@thevillyofficial" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors" style={{ display: 'flex', alignItems: 'center' }}><Youtube size={18} strokeWidth={1.5} /></a>
+                            </div>
+
+                            {/* Experience text */}
+                            <h4 style={{
+                                ...headerStyle,
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                            }}>Experience VILLY App on Mobile</h4>
+
+                            {/* Buttons row */}
+                            <div style={{
+                                display: 'flex',
+                                gap: 'clamp(6px, 0.6vw, 12px)',
+                            }}>
+                                {/* App Store Button */}
+                                <a href="#" className="block transition-opacity hover:opacity-90">
+                                    <img src={appStoreImg} alt="Download on the App Store" style={{ height: 'clamp(26px, 2.2vw, 36px)', width: 'auto', display: 'block' }} />
                                 </a>
-                                <a href="#" className="block w-28 md:w-32 2xl:w-40 transition-opacity hover:opacity-90 bg-black rounded-md overflow-hidden border border-white/20">
-                                    <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                                        alt="Get it on Google Play"
-                                        className="w-full h-full object-contain" // removed p-1 for Google Play as it usually has built-in padding in SVG or needs to fill more
-                                    />
+
+                                {/* Google Play Button */}
+                                <a href="#" className="block transition-opacity hover:opacity-90">
+                                    <img src={googlePlayImg} alt="Get it on Google Play" style={{ height: 'clamp(26px, 2.2vw, 36px)', width: 'auto', display: 'block' }} />
                                 </a>
                             </div>
+
                         </div>
 
                     </div>
                 </div>
 
-                {/* MIDDLE BADGES ROW - Spaced out less to move up */}
-                <div className="mt-6 md:mt-10 2xl:mt-16 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 2xl:gap-24 text-center">
+                {/* MIDDLE BADGES ROW */}
+                <div className="mt-6 md:mt-10 2xl:mt-16 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 2xl:gap-24">
 
                     {/* Return Badge */}
-                    <div className="flex items-center gap-4 2xl:gap-6">
-                        <div className="border border-white/50 rounded-full p-2.5 2xl:p-3.5 rotate-45"> {/* Rotate container for style */}
-                            <RotateCcw size={22} className="text-white -rotate-45 md:w-[22px] md:h-[22px] 2xl:w-7 2xl:h-7" /> {/* Counter rotate icon */}
-                        </div>
-                        <div className="text-left">
-                            <p className="text-xs 2xl:text-sm uppercase tracking-wider font-bold">Return within 14 days</p>
-                            <p className="text-[10px] 2xl:text-xs text-gray-200 font-light tracking-wide">of receiving your order</p>
-                        </div>
+                    <div className="flex items-center gap-3 2xl:gap-4 whitespace-nowrap">
+                        <img src={returnIcon} alt="14 Days Return" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain" />
+                        <p className="text-xs 2xl:text-sm tracking-wide">
+                            <span className="uppercase font-bold">Return within 14 days</span>{' '}
+                            <span className="text-gray-200 font-light">of receiving your order</span>
+                        </p>
                     </div>
 
                     {/* Original Badge */}
-                    <div className="flex items-center gap-4 2xl:gap-6">
-                        <div className="border-2 border-white/50 rounded-full p-1 w-12 h-12 2xl:w-16 2xl:h-16 flex items-center justify-center transform -rotate-12 bg-white/10 backdrop-blur-sm">
-                            <span className="text-[8px] 2xl:text-[10px] font-bold uppercase text-center leading-tight">Original</span>
-                        </div>
-                        <div className="text-left">
-                            <p className="text-xs 2xl:text-sm uppercase tracking-wider font-bold">100% Original</p>
-                            <p className="text-[10px] 2xl:text-xs text-gray-200 font-light tracking-wide">guarantee for all products at villy.in</p>
-                        </div>
+                    <div className="flex items-center gap-3 2xl:gap-4 whitespace-nowrap">
+                        <img src={originalIcon} alt="100% Original" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain" />
+                        <p className="text-xs 2xl:text-sm tracking-wide">
+                            <span className="uppercase font-bold">100% Original</span>{' '}
+                            <span className="text-gray-200 font-light">guarantee for all products at villy.in</span>
+                        </p>
                     </div>
 
                 </div>

@@ -203,3 +203,175 @@ body * {
     transform: translateX(-50%);
   }
 }
+
+/* ====== MYNTRA/AJIO STYLE CUSTOM CHECKBOXES ====== */
+
+/* Hide the native checkbox */
+.filter-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Custom checkbox box */
+.filter-checkbox-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 3px;
+  background-color: #fff;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Hover effect on box */
+.filter-checkbox-label:hover .filter-checkbox-box {
+  border-color: #111827;
+}
+
+/* Checked state — black fill */
+.filter-checkbox-input:checked+.filter-checkbox-box,
+.filter-checkbox-input:checked~.filter-checkbox-box {
+  background-color: #111827;
+  border-color: #111827;
+  animation: checkboxPop 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* White tick inside box */
+.filter-checkbox-box::after {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: -1px;
+}
+
+/* Show tick when checked */
+.filter-checkbox-input:checked+.filter-checkbox-box::after,
+.filter-checkbox-input:checked~.filter-checkbox-box::after {
+  transform: rotate(45deg) scale(1);
+}
+
+/* Pop animation on check */
+@keyframes checkboxPop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.85);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Filter label row styling */
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+  position: relative;
+  user-select: none;
+}
+
+.filter-checkbox-label:hover {
+  background-color: #f9fafb;
+}
+
+.filter-checkbox-label:active {
+  background-color: #f3f4f6;
+}
+
+/* Inner content wrapper */
+.filter-checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Filter item name */
+.filter-checkbox-name {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* Active/checked name - slightly bolder */
+.filter-checkbox-input:checked~.filter-checkbox-name,
+.filter-checkbox-label[data-checked="true"] .filter-checkbox-name {
+  color: #111827;
+  font-weight: 500;
+}
+
+/* Count badge */
+.filter-checkbox-count {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* Small screens */
+@media (max-width: 639px) {
+  .filter-checkbox-box {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  .filter-checkbox-box::after {
+    width: 4px;
+    height: 8px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+
+  .filter-checkbox-label {
+    padding: 4px 6px;
+  }
+
+  .filter-checkbox-name {
+    font-size: 12px;
+  }
+
+  .filter-checkbox-count {
+    font-size: 10px;
+  }
+}
+
+/* Color filter specific */
+.filter-color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.filter-color-swatch--white {
+  border-color: #d1d5db;
+}
+
+@media (max-width: 639px) {
+  .filter-color-swatch {
+    width: 16px;
+    height: 16px;
+  }
+}

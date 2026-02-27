@@ -19,23 +19,30 @@ const FooterSocials = () => {
       icon: <FaInstagram />,
       platform: "Instagram",
       color: "hover:text-pink-600",
-      title: "Instagram Coming Soon",
+      title: "Follow us on Instagram",
+      href: "https://www.instagram.com/villy.official?igsh=MWtmNm5oNGhrdmlvdA==",
     },
     {
       icon: <FaXTwitter />,
-      platform: "Twitter",
+      platform: "X",
       color: "hover:text-black",
-      title: "Twitter Coming Soon",
+      title: "Follow us on X",
+      href: "https://x.com/Thevillyof34956",
     },
     {
       icon: <FaYoutube />,
       platform: "YouTube",
       color: "hover:text-red-600",
-      title: "YouTube Coming Soon",
+      title: "Subscribe to our YouTube channel",
+      href: "https://www.youtube.com/@thevillyofficial",
     },
   ];
 
-  const handleSocialClick = (e, platform, title) => {
+  const handleSocialClick = (e, platform, title, href) => {
+    if (href) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      return;
+    }
     e.preventDefault();
     setPopupText(`${platform} page is under development and will be available soon!`);
     setPopupTitle(title);
@@ -53,9 +60,9 @@ const FooterSocials = () => {
         {socialIcons.map((item, index) => (
           <button
             key={index}
-            onClick={(e) => handleSocialClick(e, item.platform, item.title)}
+            onClick={(e) => handleSocialClick(e, item.platform, item.title, item.href)}
             className={`text-gray-700 ${item.color} text-xl transition-colors duration-200 p-2 rounded-full hover:bg-gray-100 cursor-pointer`}
-            aria-label={`${item.platform} - Coming Soon`}
+            aria-label={item.href ? item.title : `${item.platform} - Coming Soon`}
             title={item.title}
           >
             {item.icon}

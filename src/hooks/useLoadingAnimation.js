@@ -1,7 +1,8 @@
 // src/components/b2c/TryOn/hooks/useLoadingAnimation.js
 
 import { useState, useEffect } from "react";
-import { LOADING_IMAGES, TIMINGS } from "../utils/tryOnConstants";
+import { LOADING_IMAGES } from "../utils/tryOnConstants";
+import { FRAME_INTERVAL } from "../assets/lazyloading2";
 
 /**
  * Loading Animation Hook
@@ -15,7 +16,7 @@ export const useLoadingAnimation = (isProcessing) => {
 
     const imgTimer = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % LOADING_IMAGES.length);
-    }, TIMINGS.IMAGE_ROTATION);
+    }, FRAME_INTERVAL);
 
     return () => clearTimeout(imgTimer);
   }, [currentIndex, isProcessing]);

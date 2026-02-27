@@ -140,7 +140,7 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
         }
 
         if (isSubcategory) {
-            updateFilter("categories", catName);
+            updateFilter("subcategories", catName);
         } else {
             const scrollY = window.pageYOffset;
             const normalizedValue = normalizeCategory(catName);
@@ -285,7 +285,9 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
 
                         {/* Subcategory buttons */}
                         {availableSubcategories.map((subCatName, index) => {
-                            const isActive = selectedFilters.categories?.includes(subCatName) || false;
+                            const isActive = selectedFilters.subcategories?.some(
+                                (s) => s.toLowerCase() === subCatName.toLowerCase()
+                            ) || false;
 
                             // Calculate dynamic font size based on text length
                             const getFontSize = (text) => {

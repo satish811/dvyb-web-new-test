@@ -3,12 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import black_warnIc from "../../../assets/TryOn/black_warnIc.svg";
 import red_warnIc from "../../../assets/TryOn/red_warnIc.svg";
-import img1 from "../../../assets/lazyloading/logoimg1.svg";
-import img2 from "../../../assets/lazyloading/logoimg2.svg";
-import img3 from "../../../assets/lazyloading/logoimg3.svg";
-import img4 from "../../../assets/lazyloading/logoimg4.svg";
-import img5 from "../../../assets/lazyloading/logoimg5.svg";
-import img6 from "../../../assets/lazyloading/logoimg6.svg";
+import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
 const TryOnProcessingPage = () => {
   const navigate = useNavigate();
@@ -20,14 +15,14 @@ const TryOnProcessingPage = () => {
   const [uploadError, setUploadError] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const images = [img1, img2, img3, img4, img5, img6];
+  const images = LOADING_FRAMES;
 
   // Rotate loader images
   useEffect(() => {
     if (state === "uploading" || state === "processing") {
       const timer = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % images.length);
-      }, 200);
+      }, FRAME_INTERVAL);
       return () => clearInterval(timer);
     }
   }, [state]);

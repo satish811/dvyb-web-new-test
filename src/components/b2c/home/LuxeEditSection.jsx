@@ -160,7 +160,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 // Desktop Assets
-import Luxeeditsectionframe from "../../../assets/b2c/landing/Landing-villy/Luxeeditsectionframe.png";
+import Luxeeditsectionframe from "../../../assets/b2c/landing/Landing-villy/LuxEditbanner.png";
 import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
 import under20kImg from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
 import bridesmaidImg from "../../../assets/b2c/landing/Landing-villy/silksaree.jpg";
@@ -254,7 +254,10 @@ const LuxeEditSection = () => {
         }}
       >
         <div className="relative z-10 w-full max-w-[1330px] 2xl:max-w-[1920px] mx-auto flex justify-end px-4 md:px-8 xl:px-12 2xl:px-16">
-          <div className="w-full max-w-[500px] lg:max-w-[600px] 2xl:max-w-[800px] grid grid-cols-2 gap-[10px] lg:gap-[15px] 2xl:gap-[25px] relative z-20 mt-10 lg:mt-0">
+          {/* Added lg:mr-32 2xl:mr-[180px] to push the grid away from the floral elements on the right */}
+          <div
+            className="w-full relative z-20 mt-10 lg:mt-0 grid grid-cols-2 lg:mr-32 2xl:mr-[180px] gap-x-[66.69px] gap-y-[26.92px] max-w-[472.83px]"
+          >
             {gridItems.map((item, index) => (
               <motion.div
                 key={item.id}
@@ -263,30 +266,29 @@ const LuxeEditSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => navigate(item.link)}
-                className="cursor-pointer relative overflow-hidden rounded-[8px] lg:rounded-[13px] shadow-lg group aspect-[4/5] 2xl:h-[400px]"
-                style={{
-                  background: "#3F083B",
-                }}
+                className="cursor-pointer relative overflow-hidden group shadow-lg flex flex-col w-[203.07px] h-[263.84px] rounded-[13.13px] border-[0.82px] border-transparent pb-[4.92px] gap-[4.92px] bg-[#3F083B]"
               >
-                <div className="h-full w-full relative pb-[28px] lg:pb-[34px] 2xl:pb-[44px]">
-                  <div className="w-full h-full bg-[#3F083B]">
-                    <img
-                      src={item.img}
-                      alt={item.title}
-                      className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                    />
-                  </div>
+                <div className="w-full flex-grow relative overflow-hidden"
+                  style={{ borderTopLeftRadius: '13.13px', borderTopRightRadius: '13.13px' }}>
+                  <img
+                    src={item.img}
+                    alt={item.title}
+                    className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
 
-                  <div
-                    className="absolute bottom-0 left-0 right-0 flex items-center justify-center transition-colors group-hover:bg-[#580040] h-[28px] lg:h-[34px] 2xl:h-[44px]"
-                    style={{
-                      background: "#3F083B",
-                    }}
-                  >
-                    <span className="text-white text-[8px] lg:text-[10px] 2xl:text-sm font-bold uppercase tracking-[0.05em]">
-                      {item.title}
-                    </span>
-                  </div>
+                <div
+                  className="w-full flex items-center justify-center transition-colors group-hover:bg-[#580040]"
+                  style={{
+                    height: '28px', // Remaining height for the text area
+                    background: "#3F083B",
+                    borderBottomLeftRadius: '12px',
+                    borderBottomRightRadius: '12px',
+                  }}
+                >
+                  <span className="text-white text-[10px] font-bold uppercase tracking-[0.05em]">
+                    {item.title}
+                  </span>
                 </div>
               </motion.div>
             ))}

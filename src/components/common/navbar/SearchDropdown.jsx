@@ -2,10 +2,9 @@
 import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { searchService } from "../../../services/searchService"; // Adjust path as needed
+import { searchService } from "../../../services/searchService";
 import CategoryCard from "./CategoryCard";
 import ProductCard from "../../b2c/products/ProductCard";
-import Fuse from "fuse.js";
 import emptySearch from "../../../assets/common/emptysearch.png";
 import TrendingProducts from "../TrendingProducts/TrendingProducts";
 import RecentlyViewedProducts from "../RecentlyViewedProducts/RecentlyViewedProducts";
@@ -38,47 +37,11 @@ export default function SearchDropdown({
   onRemoveRecent,
 }) {
   const navigate = useNavigate();
-  const [fuse, setFuse] = useState(null);
 
+  // Pre-warm the search cache on mount so first search is fast
   useEffect(() => {
-    const initFuse = async () => {
-      try {
-        // Fetch all products for fuzzy search (or pass from props if available)
-        const allProducts = await searchService.searchProducts("", { limit: 1000 }); // Empty query for all
-        const fuseInstance = new Fuse(allProducts, {
-          keys: ["title", "name", "description", "category", "subcategory", "tags"],
-          threshold: 0.4, // 0.0 = exact, 1.0 = loose
-          includeScore: true,
-          sortFn: (a, b) => a.score - b.score, // Lower score = better match
-        });
-        setFuse(fuseInstance);
-      } catch (error) {
-        console.error("Error initializing Fuse:", error);
-      }
-    };
-    initFuse();
+    searchService.getAllProducts().catch(() => { });
   }, []);
-
-  // Update fetchSuggestions to use fuzzy if available
-  // useEffect(() => {
-  //   const fetchSuggestions = async () => {
-  //     if (searchQuery?.trim()) {
-  //       if (fuse && searchQuery.trim().length >= 2) {
-  //         // Fuzzy search for suggestions
-  //         const fuzzyResults = fuse.search(searchQuery).slice(0, 8);
-  //         const suggestions = fuzzyResults.map(r => r.item.title || r.item.name || r.item.category);
-  //         setSuggestions([...new Set(suggestions)]); // Unique
-  //       } else {
-  //         // Fallback to existing
-  //         const results = await searchService.getSearchSuggestions(searchQuery, 8);
-  //         setSuggestions(results);
-  //       }
-  //     } else {
-  //       setSuggestions([]);
-  //     }
-  //   };
-  //   fetchSuggestions();
-  // }, [searchQuery, fuse]);
 
   const showRecent = !searchQuery?.trim() && recentSearches.length > 0;
 

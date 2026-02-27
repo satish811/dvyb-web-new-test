@@ -90,7 +90,7 @@ export default function TryItBuyItSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[80vw] md:w-full aspect-[4/5] md:aspect-[3/4] 2xl:h-[650px] snap-center group"
+                            className="bg-white rounded-xl overflow-hidden shadow-lg md:shadow-none md:bg-transparent relative flex-shrink-0 w-[85vw] sm:w-[80vw] md:w-full aspect-[4/5] md:aspect-[3/4] snap-center group"
                         >
                             {/* Full Height Image */}
                             <div className="w-full h-full relative">
@@ -104,7 +104,7 @@ export default function TryItBuyItSection() {
                             </div>
 
                             {/* Floating Details Box */}
-                            <div className="absolute bottom-4 left-4 right-4 md:left-6 md:right-6 xl:right-auto md:w-auto xl:w-[274px] 2xl:w-[350px] bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-4 2xl:p-6 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
+                            <div className="absolute bottom-4 left-4 right-4 md:bottom-5 md:left-4 md:right-4 lg:left-5 lg:right-5 2xl:bottom-6 2xl:left-6 2xl:right-6 bg-white/95 backdrop-blur-sm md:backdrop-blur-none md:bg-white p-3 md:p-4 2xl:p-5 rounded-xl shadow-lg transition-all duration-300 md:group-hover:-translate-y-2">
 
                                 <div className="flex justify-between items-start mb-3 2xl:mb-5">
                                     <div className="flex-1 mr-2">

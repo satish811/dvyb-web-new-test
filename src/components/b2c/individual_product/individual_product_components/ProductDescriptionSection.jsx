@@ -12,7 +12,7 @@ const ProductDescriptionSection = ({ product }) => {
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
       >
-        <h3 className="text-base font-semibold text-gray-900">Description & fit</h3>
+        <h3 className="text-base font-semibold text-gray-900">Description & Fit</h3>
         {expanded ? (
           <ChevronUp size={20} className="text-gray-600" />
         ) : (

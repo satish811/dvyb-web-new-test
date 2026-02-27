@@ -1,4 +1,6 @@
 import { X, Ruler } from "lucide-react";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export default function SizeChartPopup({ onClose }) {
   const sizeChart = {
@@ -14,9 +16,53 @@ export default function SizeChartPopup({ onClose }) {
     ],
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[999]">
-      <div className="bg-white max-w-md w-full relative overflow-hidden rounded-lg">
+  // Lock body scroll while modal is open, preserving current scroll position
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const originalStyle = document.body.style.cssText;
+    document.body.style.cssText = `overflow: hidden; position: fixed; top: -${scrollY}px; left: 0; right: 0;`;
+
+    return () => {
+      document.body.style.cssText = originalStyle;
+      window.scrollTo({ top: scrollY, behavior: "instant" });
+    };
+  }, []);
+
+  // Handle backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modal = (
+    <div
+      onClick={handleBackdropClick}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+        zIndex: 9999,
+        overflow: "auto",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "#fff",
+          maxWidth: "448px",
+          width: "100%",
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: "8px",
+        }}
+      >
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -91,4 +137,6 @@ export default function SizeChartPopup({ onClose }) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

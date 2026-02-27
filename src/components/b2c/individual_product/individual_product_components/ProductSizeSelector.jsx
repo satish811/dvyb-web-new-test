@@ -85,7 +85,7 @@ const ProductSizeSelector = ({
         {/* HEADER SECTION (ONE LINE ALWAYS) */}
         {/* ---------------------------------- */}
         <div
-          className="flex items-center"
+          className="flex items-center justify-between w-full"
           style={{
             gap: "10px",
             whiteSpace: "nowrap",
@@ -113,10 +113,11 @@ const ProductSizeSelector = ({
             onClick={handleSizeGuideClick}
             style={{
               fontFamily: "Outfit, sans-serif",
-              fontSize: "13px",
+              fontSize: "14px",
+              fontWeight: 600,
               lineHeight: "21.33px",
               letterSpacing: "0.18px",
-              color: "#E53935",
+              color: "#33022F",
               cursor: "pointer",
               margin: 0,
               padding: 0,
@@ -124,14 +125,13 @@ const ProductSizeSelector = ({
               background: "transparent",
               transition: "0.2s",
               whiteSpace: "nowrap",
+              textDecoration: "underline",
             }}
             onMouseEnter={(e) => {
-              e.target.style.textDecoration = "underline";
-              e.target.style.color = "#b32f2fff";
+              e.target.style.color = "#4a0344";
             }}
             onMouseLeave={(e) => {
-              e.target.style.textDecoration = "none";
-              e.target.style.color = "#E53935";
+              e.target.style.color = "#33022F";
             }}
           >
             Size Guide

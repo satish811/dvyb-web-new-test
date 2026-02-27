@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Copy, Check } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,11 +14,55 @@ import { faEnvelope, faShareAlt } from "@fortawesome/free-solid-svg-icons";
 export default function ShareCart({ onClose }) {
   const [copied, setCopied] = useState(false);
   const shareUrl = window.location.href;
+  const shareTitle = "Check out this amazing product on Villy!";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = (platform) => {
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedTitle = encodeURIComponent(shareTitle);
+
+    switch (platform) {
+      case "WhatsApp":
+        window.open(`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`, "_blank");
+        break;
+      case "Gmail":
+        window.open(`mailto:?subject=${encodedTitle}&body=I thought you might like this: ${encodedUrl}`);
+        break;
+      case "Facebook":
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
+        break;
+      case "Telegram":
+        window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`, "_blank");
+        break;
+      case "Snapchat":
+        // Snapchat sharing via web intent
+        window.open(`https://snapchat.com/scan?attachmentUrl=${encodedUrl}`, "_blank");
+        break;
+      case "Quickshare":
+        if (navigator.share) {
+          navigator.share({
+            title: shareTitle,
+            url: shareUrl,
+          }).catch(console.error);
+        } else {
+          // Fallback if Web Share API is not supported (e.g. desktop browsers)
+          handleCopy();
+        }
+        break;
+      case "Instagram":
+        // Instagram doesn't have a direct web share link for links. 
+        // We copy to clipboard and alert the user so they can paste it manually.
+        handleCopy();
+        alert("Link copied! Open Instagram to share it.");
+        break;
+      default:
+        break;
+    }
   };
 
   const socialPlatforms = [
@@ -34,9 +79,53 @@ export default function ShareCart({ onClose }) {
     { name: "Snapchat", color: "bg-yellow-400", icon: faSnapchat },
   ];
 
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[999]">
-      <div className="bg-white max-w-sm w-full relative overflow-hidden rounded-lg">
+  // Lock body scroll while modal is open, preserving current scroll position
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const originalStyle = document.body.style.cssText;
+    document.body.style.cssText = `overflow: hidden; position: fixed; top: -${scrollY}px; left: 0; right: 0;`;
+
+    return () => {
+      document.body.style.cssText = originalStyle;
+      window.scrollTo({ top: scrollY, behavior: "instant" });
+    };
+  }, []);
+
+  // Handle backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modal = (
+    <div
+      onClick={handleBackdropClick}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+        zIndex: 9999,
+        overflow: "auto",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "#fff",
+          maxWidth: "384px",
+          width: "100%",
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: "8px",
+        }}
+      >
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -78,7 +167,11 @@ export default function ShareCart({ onClose }) {
           {/* Social Icons */}
           <div className="flex flex-wrap justify-center gap-4">
             {socialPlatforms.map((p) => (
-              <button key={p.name} className="flex flex-col items-center gap-2 group">
+              <button
+                key={p.name}
+                onClick={() => handleShare(p.name)}
+                className="flex flex-col items-center gap-2 group"
+              >
                 <div
                   className={`w-10 h-10 rounded-full ${p.color} flex items-center justify-center shadow-md transition-all group-hover:scale-110`}
                 >
@@ -92,4 +185,6 @@ export default function ShareCart({ onClose }) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

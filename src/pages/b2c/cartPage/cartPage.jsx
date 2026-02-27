@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, Link } from "react-router-dom";
 import { cartService } from "../../../services/cartService";
 import { auth } from "../../../config";
@@ -6,6 +7,7 @@ import { toast } from "react-toastify";
 import B2BAuthService from "../../../services/b2bAuthService";
 import { Minus, Plus, X, Trash2, Heart, Share2, Copy } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaTwitter, FaEnvelope } from "react-icons/fa";
+import LazyImageLoader from "../../../components/b2c/LazyImageLoader/LazyImageLoader";
 
 // --- COMPONENTS ---
 
@@ -97,9 +99,33 @@ const ShareCartModal = ({ isOpen, onClose, cartUrl }) => {
   if (!isOpen) return null;
   const [activeTab, setActiveTab] = useState('link'); // 'link' or 'qr'
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 font-[Outfit]">
-      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
+  // Lock body scroll while modal is open, preserving current scroll position
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      const originalStyle = document.body.style.cssText;
+      document.body.style.cssText = `overflow: hidden; position: fixed; top: -${scrollY}px; left: 0; right: 0;`;
+
+      return () => {
+        document.body.style.cssText = originalStyle;
+        window.scrollTo({ top: scrollY, behavior: "instant" });
+      };
+    }
+  }, [isOpen]);
+
+  // Handle backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modal = (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 font-[Outfit]"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up relative">
         {/* Header */}
         <div className="bg-[#33022F] p-4 flex items-center justify-center relative">
           <h3 className="text-white text-lg font-bold">Share Your Cart</h3>
@@ -194,6 +220,8 @@ const ShareCartModal = ({ isOpen, onClose, cartUrl }) => {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 };
 
 
@@ -335,7 +363,11 @@ export default function CartPage() {
   const tax = subtotal * 0.18; // 18% GST example
   const total = subtotal + shipping + tax;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Cart...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <LazyImageLoader isProcessing={true} size="page" />
+    </div>
+  );
 
   return (
     <div className="bg-[#f9f9f9] min-h-screen font-[Outfit] pb-20">

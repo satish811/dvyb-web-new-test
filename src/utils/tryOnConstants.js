@@ -1,15 +1,10 @@
 
-import img1 from '../assets/lazyloading/logoimg1.svg';
-import img2 from '../assets/lazyloading/logoimg2.svg';
-import img3 from '../assets/lazyloading/logoimg3.svg';
-import img4 from '../assets/lazyloading/logoimg4.svg';
-import img5 from '../assets/lazyloading/logoimg5.svg';
-import img6 from '../assets/lazyloading/logoimg6.svg';
+import { LOADING_FRAMES, FRAME_INTERVAL } from '../assets/lazyloading2';
 
 // =============================================
 // LOADING ANIMATION IMAGES
 // ============================================
-export const LOADING_IMAGES = [img1, img2, img3, img4, img5, img6];
+export const LOADING_IMAGES = LOADING_FRAMES;
 
 // ============================================
 // BLOUSE DESIGNS
@@ -195,7 +190,7 @@ export const API_ENDPOINTS = {
 // TIMING CONSTANTS
 // ============================================
 export const TIMINGS = {
-  IMAGE_ROTATION: 200,           // ms between loading image rotation
+  IMAGE_ROTATION: FRAME_INTERVAL,     // ms between loading image rotation
   AUTO_BG_REMOVE_DELAY: 800,     // ms before auto background removal
   AUTO_3D_TRIGGER_DELAY: 1500,   // ms before auto 3D video generation
   VIDEO_POLL_INTERVAL: 5000,     // ms between video status checks
