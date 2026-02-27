@@ -23,13 +23,21 @@ export const normalizeCategory = (categoryName) => {
         "kurtas": "kurta-sets",
         "kurta": "kurta-sets",
         "anarkalis": "anarkalis",
+        "anarkali": "anarkali",
         "shararas": "shararas",
         "pret": "pret",
         "fusion": "fusion",
         "wedding": "wedding",
         "sale": "sale",
         "virtual tryon": "virtual-tryon",
-        "boutique": "boutique"
+        "boutique": "boutique",
+        "salwar suit": "salwar-suit",
+        "salwar-suit": "salwar-suit",
+        "salwar suits": "salwar-suit",
+        "salwar-suits": "salwar-suit",
+        "indo-western": "indo-western",
+        "indo western": "indo-western",
+        "bridal": "bridal"
     };
 
     return mappings[lower] || lower.replace(/\s+/g, "-");

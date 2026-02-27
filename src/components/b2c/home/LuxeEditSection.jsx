@@ -164,7 +164,7 @@ import Luxeeditsectionframe from "../../../assets/b2c/landing/Landing-villy/LuxE
 import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
 import under20kImg from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
 import bridesmaidImg from "../../../assets/b2c/landing/Landing-villy/silksaree.jpg";
-import designerImg from "../../../assets/b2c/landing/Landing-villy/florallehanga.jpg";
+import designerImg from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
 
 // Mobile Assets
 import mobileLeftImg from "../../../assets/b2c/landing/Landing-villy/MobileLuxeditleft.png";

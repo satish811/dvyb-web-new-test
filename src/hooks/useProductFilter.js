@@ -39,8 +39,12 @@ export const useProductFilter = (products = []) => {
           "SAREE": (v) => v === "SAREE" || v === "SAREES",
           "LEHENGA": (v) => v.includes("LEHENGA"),
           "ANARKALIS": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
+          "ANARKALI": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
           "SHARARAS": (v) => v === "SHARARA" || v === "SHARARAS" || v.includes("SHARARA"),
           "BLOUSES": (v) => v.includes("BLOUS"),
+          "SALWAR SUIT": (v) => v.includes("SALWAR"),
+          "INDO WESTERN": (v) => v.includes("INDO") || v.includes("WESTERN"),
+          "BRIDAL": (v) => v === "BRIDAL" || v.includes("BRIDAL") || v === "WEDDING" || v.includes("WEDDING"),
         };
 
         // Get the matcher for this category (fall back to exact match)

@@ -86,11 +86,16 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       "kurta-sets": "KURTA SETS",
       "kurta-set": "KURTA SETS",
       "anarkalis": "ANARKALIS",
+      "anarkali": "ANARKALIS",
       "shararas": "SHARARAS",
       "pret": "PRÊT",
       "fusion": "FUSION",
       "wedding": "WEDDING",
-      "sale": "SALE"
+      "sale": "SALE",
+      "salwar-suit": "SALWAR SUIT",
+      "salwar-suits": "SALWAR SUIT",
+      "indo-western": "INDO WESTERN",
+      "bridal": "BRIDAL"
     };
 
     const filterValue = MAIN_CATEGORIES[normalized] || normalized.toUpperCase();
