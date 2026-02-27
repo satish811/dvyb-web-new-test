@@ -266,8 +266,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     <div
                         ref={scrollContainerRef}
                         className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
-                            ? 'overflow-x-auto scroll-smooth'
-                            : 'overflow-x-hidden'
+                                ? 'overflow-x-auto scroll-smooth'
+                                : 'overflow-x-hidden'
                             }`}
                         style={{
                             scrollbarWidth: 'none',
