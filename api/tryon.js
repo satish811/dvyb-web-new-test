@@ -2273,7 +2273,7 @@ export default async function handler(req, res) {
       const payload = {
         model: 'MiniMax-Hailuo-2.3-Fast',
         first_frame_image: imageDataUrl,
-        prompt: 'A calm, graceful young woman stands centered facing camera in relaxed natural stance. She walks forward three small measured steps with smooth realistic gait and gentle arm swing. She performs one elegant slow full-body pirouette / 360 spin with poise, balanced posture, soft momentum, hair and fabric moving naturally. She then walks backward three precise steps, returning perfectly to starting location and exact original pose. Extremely natural human kinematics, coherent motion, no warping or sliding, photorealistic details, serene mood.',
+        prompt: 'graceful calm young woman facing camera 3 smooth steps forward → slow elegant 360° pirouette → 3 exact steps backward to original spot & pose photorealistic, natural gait & physics, flowing hair/fabric, serene atmosphere, no distortion',
         duration: 6,
         resolution: '1080P',
         prompt_optimizer: true,
