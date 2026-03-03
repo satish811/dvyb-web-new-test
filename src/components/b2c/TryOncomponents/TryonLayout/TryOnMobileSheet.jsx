@@ -36,7 +36,7 @@ const TryOnMobileSheet = ({
 }) => {
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl shadow-2xl max-h-[60vh] overflow-y-auto">
-      
+
       {/* Mobile Handle */}
       <div className="sticky top-0 bg-white pt-2 pb-3 flex justify-center border-b border-gray-200 z-10">
         <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
@@ -58,21 +58,19 @@ const TryOnMobileSheet = ({
         <div className="flex gap-4 mb-4 border-b border-gray-200">
           <button
             onClick={() => setSelectedTab("colours")}
-            className={`pb-2 text-sm font-medium ${
-              selectedTab === "colours"
+            className={`pb-2 text-sm font-medium ${selectedTab === "colours"
                 ? "text-gray-900 border-b-2 border-gray-900"
                 : "text-gray-500"
-            }`}
+              }`}
           >
             Colours
           </button>
           <button
             onClick={() => setSelectedTab("fabrics")}
-            className={`pb-2 text-sm font-medium ${
-              selectedTab === "fabrics"
+            className={`pb-2 text-sm font-medium ${selectedTab === "fabrics"
                 ? "text-gray-900 border-b-2 border-gray-900"
                 : "text-gray-500"
-            }`}
+              }`}
           >
             Fabrics
           </button>
@@ -125,11 +123,10 @@ const TryOnMobileSheet = ({
           <button
             onClick={handleToggleWishlist}
             disabled={wishlistLoading}
-            className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${
-              isInWishlistState
+            className={`py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${isInWishlistState
                 ? "bg-red-50 border-2 border-red-500 text-red-500"
                 : "border-2 border-gray-300 text-gray-700"
-            }`}
+              }`}
           >
             <Heart
               className={`w-4 h-4 ${isInWishlistState ? "fill-current" : ""}`}
