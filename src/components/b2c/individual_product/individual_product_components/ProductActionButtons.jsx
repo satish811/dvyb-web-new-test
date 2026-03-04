@@ -182,7 +182,7 @@ const ProductActionButtons = ({
               className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none border-2
     ${addingToCart
                   ? "border-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-white border-[#88117F] text-[#88117F]"
+                  : "bg-white border-[#88117F] text-[#88117F] hover:bg-[#88117F] hover:text-white"
                 }
     transition-all duration-200 disabled:opacity-50`}
             >
@@ -206,7 +206,7 @@ const ProductActionButtons = ({
             className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-none
     ${addingToCart
                 ? "border-gray-400 text-gray-400 bg-gray-300 cursor-not-allowed"
-                : "border-[#88117F] bg-[#88117F] text-white"
+                : "border-[#88117F] bg-[#88117F] text-white hover:opacity-90 hover:shadow-md"
               }
     transition-all duration-200 disabled:opacity-50`}
             style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
@@ -235,7 +235,7 @@ const ProductActionButtons = ({
         {!isB2BUser && (
           <button
             onClick={handleVirtualTryOnClick}
-            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white"
+            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md"
             style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
           >
             <img

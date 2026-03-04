@@ -89,7 +89,6 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
 
   // Category-specific logic
   const handleCategoryClick = (categoryName) => {
-    const normalizedName = categoryName.toUpperCase().trim();
     const currentCategory = getCurrentCategory();
 
     // If we're in subcategory mode (current category exists)
@@ -97,21 +96,8 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
       // Handle subcategory selection/deselection
       updateFilter("subcategories", categoryName);
     } else {
-      // Handle main category selection/deselection
-      const isCurrentlySelected = selectedFilters.categories[0] === categoryName;
-
-      if (isCurrentlySelected) {
-        updateFilter("categories", categoryName);
-        navigate("/womenwear");
-        return;
-      }
-
-      // Navigate to mapped path for main category
-      const path = categoryPathMap[normalizedName];
-      if (path) {
-        updateFilter("categories", categoryName);
-        navigate(path);
-      }
+      // Handle main category multi-select toggle
+      updateFilter("categories", categoryName);
     }
   };
 
@@ -129,12 +115,12 @@ const FilterSection = ({ title, items, searchable = false, defaultOpen = false, 
           (s) => s.toLowerCase() === itemName.toLowerCase()
         ) || false;
       } else {
-        // For main categories - check if this main category is selected
+        // For main categories - multi-select check
         return selectedFilters.categories.includes(itemName);
       }
     } else {
       // For sizes, colors, discounts
-      return selectedFilters[filterType].includes(itemName);
+      return selectedFilters[filterType]?.includes(itemName) || false;
     }
   };
 

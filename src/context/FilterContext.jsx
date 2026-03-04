@@ -55,25 +55,21 @@ export const FilterProvider = ({ children }) => {
       console.log(`[FilterContext] updateFilter called: ${filterType} = "${value}"`);
 
       setSelectedFilters((prev) => {
-        // Quick optimization: Check if value actually changes
-        if (filterType === "categories" && prev.categories[0] === value) {
-          console.log(`[FilterContext] Category already set to "${value}", no change`);
-          return prev; // No change
-        }
-
         const newFilters = { ...prev };
 
         switch (filterType) {
           case "categories":
-            // MAIN CATEGORY only — toggle in categories[]
+            // MULTI-SELECT — toggle value in categories[]
             if (newFilters.categories.includes(value)) {
-              // Deselect
-              newFilters.categories = [];
-              setNavbarCategory("");
+              // Deselect this category
+              newFilters.categories = newFilters.categories.filter(c => c !== value);
+              if (newFilters.categories.length === 0) {
+                setNavbarCategory("");
+              }
               newFilters.subcategories = [];
             } else {
-              // Select
-              newFilters.categories = [value];
+              // Add this category
+              newFilters.categories = [...newFilters.categories, value];
               setNavbarCategory(value);
               newFilters.subcategories = [];
             }
@@ -172,6 +168,30 @@ export const FilterProvider = ({ children }) => {
     setNavbarCategory("");
   }, []);
 
+  /**
+   * Atomically reset all filters and apply new ones in a single state update.
+   * Prevents race conditions between clearAllFilters + updateFilter.
+   * @param {Object} newFilters - Partial filter state to merge on top of clean slate
+   */
+  const resetAndSetFilters = useCallback((newFilters = {}) => {
+    setSelectedFilters({
+      categories: newFilters.categories || [],
+      subcategories: newFilters.subcategories || [],
+      sizes: newFilters.sizes || [],
+      colors: newFilters.colors || [],
+      priceMin: newFilters.priceMin ?? null,
+      priceMax: newFilters.priceMax ?? null,
+      discounts: newFilters.discounts || [],
+      blouses: newFilters.blouses || [],
+      boutiques: newFilters.boutiques || [],
+    });
+    if (newFilters.categories?.length > 0) {
+      setNavbarCategory(newFilters.categories[0]);
+    } else {
+      setNavbarCategory("");
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       filters,
@@ -179,11 +199,12 @@ export const FilterProvider = ({ children }) => {
       selectedFilters,
       updateFilter,
       clearAllFilters,
+      resetAndSetFilters,
       navbarCategory,
       searchQuery,
       setSearchQuery,
     }),
-    [filters, selectedFilters, updateFilter, clearAllFilters, navbarCategory, searchQuery]
+    [filters, selectedFilters, updateFilter, clearAllFilters, resetAndSetFilters, navbarCategory, searchQuery]
   );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;

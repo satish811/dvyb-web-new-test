@@ -28,11 +28,11 @@ const TryOnStage = ({
   return (
 
     <div className="
-  absolute inset-0 
-  flex items-center justify-center 
-  pointer-events-none
-  px-[320px] xl:px-[360px] 2xl:px-[420px]
-  pb-[60vh] lg:pb-0
+  lg:absolute lg:inset-0 
+  flex flex-col lg:items-center lg:justify-center 
+  lg:pointer-events-none
+  lg:px-[320px] xl:px-[360px] 2xl:px-[420px]
+  relative w-full
 ">
 
       {/* ============================================ */}

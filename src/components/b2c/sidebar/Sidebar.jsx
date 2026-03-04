@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FilterSection, ColorFilter, PriceRange, DiscountFilter } from "../filters";
 import { useFilter } from "../../../context/FilterContext";
 import { useLocation } from "react-router-dom";
@@ -6,7 +6,7 @@ import BlouseFilter from "../filters/BlouseFilter";
 import { Search } from "lucide-react";
 import { extractCategories, extractSubcategories } from "../../../utils/categoryExtractor";
 
-const Sidebar = ({ products = [] }) => {
+const Sidebar = ({ products = [], activeRouteCategory = null }) => {
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);
@@ -68,31 +68,46 @@ const Sidebar = ({ products = [] }) => {
     ? extractSubcategories(products, currentCategory)
     : [];
 
+  // Build the effective category list: merge route category + selected categories
+  const effectiveCategories = useMemo(() => {
+    const cats = [...(selectedFilters.categories || [])];
+    // Map route category name to the label used in CATEGORY_GROUPS
+    if (activeRouteCategory) {
+      const routeCatMap = {
+        "lehenga": "LEHENGA",
+        "saree": "SAREE",
+        "kurta-sets": "KURTA SETS",
+        "anarkalis": "ANARKALIS",
+        "shararas": "SHARARAS",
+        "blouses": "BLOUSES",
+        "salwar-suit": "SALWAR SUIT",
+        "indo-western": "INDO WESTERN",
+        "bridal": "BRIDAL",
+        "wedding": "WEDDING",
+        "boutique": null, // Don't filter by category for boutique pages
+        "boutiques": null,
+      };
+      const mapped = routeCatMap[activeRouteCategory.toLowerCase()] ?? activeRouteCategory.toUpperCase();
+      if (mapped && !cats.includes(mapped)) {
+        cats.push(mapped);
+      }
+    }
+    return cats;
+  }, [selectedFilters.categories, activeRouteCategory]);
+
   useEffect(() => {
     if (products && products.length > 0) {
-      const dynamicData = extractDynamicFilterData(products, urlCategory, selectedFilters.boutiques);
-      updateAllFilterData(dynamicData); // Use the new helper function
+      const dynamicData = extractDynamicFilterData(products, urlCategory, selectedFilters.boutiques, effectiveCategories);
+      updateAllFilterData(dynamicData);
     }
-  }, [products, urlCategory, selectedFilters.boutiques]);
+  }, [products, urlCategory, selectedFilters.boutiques, effectiveCategories]);
 
   const isSareeCategory =
     (selectedCategory && selectedCategory.toUpperCase().includes("SAREE")) || isURLSaree;
 
   return (
-    <aside
-      className="
-      w-full 
-      sm:w-72
-      md:w-64
-      lg:w-60
-      xl:w-64
-      2xl:w-72
-      bg-white shadow-none 
-      lg:sticky lg:top-20 lg:h-fit 
-      h-auto
-    "
-    >
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-0 sm:pt-0 space-y-6 sm:space-y-7 no-scrollbar">
+    <aside className="w-full bg-transparent h-auto block">
+      <div className="p-4 sm:p-5 pt-0 sm:pt-0 space-y-6 sm:space-y-7">
         {/* Designer Section (Top) */}
         <FilterSection
           title="SELECT DESIGNER"
@@ -140,28 +155,78 @@ const Sidebar = ({ products = [] }) => {
 };
 
 /* Helper Functions */
-function extractDynamicFilterData(products, activeCategory, selectedBoutiques) {
-  // If designers are selected, filter the products for category/size/color extraction
-  let filteredProducts = products;
+function extractDynamicFilterData(products, activeCategory, selectedBoutiques, selectedCategories) {
+  // ── Step 1: Filter products by selected CATEGORIES ──
+  // Use the same matching logic as useProductFilter.js
+  const CATEGORY_GROUPS = {
+    "KURTA SETS": (v) => v.includes("KURTA"),
+    "KURTA SET": (v) => v.includes("KURTA"),
+    "SAREE": (v) => v === "SAREE" || v === "SAREES",
+    "LEHENGA": (v) => v.includes("LEHENGA"),
+    "ANARKALIS": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
+    "ANARKALI": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
+    "SHARARAS": (v) => v === "SHARARA" || v === "SHARARAS" || v.includes("SHARARA"),
+    "BLOUSES": (v) => v.includes("BLOUS"),
+    "SALWAR SUIT": (v) => v.includes("SALWAR"),
+    "INDO WESTERN": (v) => v.includes("INDO") || v.includes("WESTERN"),
+    "BRIDAL": (v) => v === "BRIDAL" || v.includes("BRIDAL") || v === "WEDDING" || v.includes("WEDDING"),
+  };
+
+  let categoryFilteredProducts = products;
+  if (selectedCategories && selectedCategories.length > 0) {
+    categoryFilteredProducts = products.filter((product) => {
+      const productCat = (product.category?.trim() || "").toUpperCase();
+      const productDressType = (product.dressType?.trim() || "").toUpperCase();
+      const productSubDressType = (product.subDressType?.trim() || "").toUpperCase();
+      const productSubcategory = (product.subcategory?.trim() || "").toUpperCase();
+      const productType = (product.type?.trim() || "").toUpperCase();
+
+      return selectedCategories.some((cat) => {
+        const selectedCat = cat.trim().toUpperCase();
+        const groupMatcher = CATEGORY_GROUPS[selectedCat] ||
+          ((v) => v === selectedCat || v === selectedCat + "S" || v + "S" === selectedCat);
+
+        return (
+          groupMatcher(productDressType) ||
+          groupMatcher(productCat) ||
+          groupMatcher(productSubDressType) ||
+          groupMatcher(productSubcategory) ||
+          groupMatcher(productType)
+        );
+      });
+    });
+  }
+
+  // ── Step 2: Further filter by selected BOUTIQUES ──
+  let finalFilteredProducts = categoryFilteredProducts;
   if (selectedBoutiques && selectedBoutiques.length > 0) {
     const selectedLower = selectedBoutiques.map(b => b.toLowerCase());
-    filteredProducts = products.filter((p) => {
+    finalFilteredProducts = categoryFilteredProducts.filter((p) => {
       const shopName = (p.shopName?.trim() || p.boutiqueName?.trim() || "").toLowerCase();
       return selectedLower.includes(shopName);
     });
   }
 
+  // ── Step 3: Extract filter facets from the filtered product set ──
+  // Categories always come from ALL products (so user can see all options)
+  // Boutiques come from category-filtered products (so you only see relevant designers)
+  // Sizes, colors, priceRange come from the fully filtered set
   return {
-    categories: extractCategories(filteredProducts),
-    boutiques: extractBoutiques(products, activeCategory),
-    sizes: extractSizes(filteredProducts),
-    colors: extractColors(filteredProducts),
-    priceRange: getPriceRange(filteredProducts),
+    categories: extractCategories(products),
+    boutiques: extractBoutiques(categoryFilteredProducts, activeCategory),
+    sizes: extractSizes(finalFilteredProducts),
+    colors: extractColors(finalFilteredProducts),
+    priceRange: getPriceRange(finalFilteredProducts),
   };
 }
 
 function extractBoutiques(products, activeCategory) {
   const map = new Map();
+  // Garbage boutique names to exclude
+  const GARBAGE_NAMES = new Set([
+    "shop name", "boutique nam", "boutique name", "test", "test shop",
+    "demo", "demo shop", "sample", "n/a", "na", ""
+  ]);
 
   products.forEach((product) => {
     if (
@@ -183,7 +248,7 @@ function extractBoutiques(products, activeCategory) {
     }
 
     const shopName = product.shopName?.trim() || product.boutiqueName?.trim();
-    if (shopName) {
+    if (shopName && !GARBAGE_NAMES.has(shopName.toLowerCase())) {
       map.set(shopName, (map.get(shopName) || 0) + 1);
     }
   });
@@ -195,6 +260,8 @@ function extractBoutiques(products, activeCategory) {
 
 function extractSizes(products) {
   const sizeMap = new Map();
+  // Garbage size values to exclude
+  const GARBAGE_SIZES = new Set(["NOSIZE", "NO SIZE", "FREESIZE", "FREE SIZE", "FREE", "NA", "N/A", ""]);
 
   products.forEach((product) => {
     const units = product.units || {};
@@ -206,6 +273,7 @@ function extractSizes(products) {
         Object.keys(colorSizes).forEach((size) => {
           if (!size.includes("_") && !size.includes("#") && size.trim() !== "") {
             const sizeKey = size.trim().toUpperCase();
+            if (GARBAGE_SIZES.has(sizeKey)) return; // Skip garbage
             const currentCount = sizeMap.get(sizeKey) || 0;
             const quantity = parseInt(colorSizes[size]) || 0;
 
@@ -221,6 +289,7 @@ function extractSizes(products) {
       product.selectedSizes.forEach((size) => {
         if (size && size.trim()) {
           const sizeKey = size.trim().toUpperCase();
+          if (GARBAGE_SIZES.has(sizeKey)) return; // Skip garbage
           sizeMap.set(sizeKey, (sizeMap.get(sizeKey) || 0) + 1);
         }
       });

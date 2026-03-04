@@ -27,15 +27,11 @@ const WomenwearPage = () => {
 
         const label = categoryParam ? paramToLabel[categoryParam] : null;
 
-        // Sync URL → filter state
-        if (label && selectedFilters.categories[0] !== label) {
+        // Sync URL → filter state (additive, don't replace other selections)
+        if (label && !selectedFilters.categories.includes(label)) {
             updateFilter("categories", label);
         }
-        // If URL has no category, but filter has one → clear it
-        else if (!categoryParam && selectedFilters.categories.length > 0) {
-            updateFilter("categories", selectedFilters.categories[0]);
-        }
-    }, [location.search, updateFilter, selectedFilters.categories]);
+    }, [location.search]);
 
     return (
         <MainLayout>

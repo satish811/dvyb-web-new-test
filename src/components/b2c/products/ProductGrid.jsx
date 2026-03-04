@@ -49,7 +49,8 @@ const ProductGrid = ({
   columns = 4,
   responsiveClasses,
   zoomLevel = 100,
-  cardSize = "md"
+  cardSize = "md",
+  loading = false
 }) => {
   const location = useLocation();
   const { selectedFilters, clearAllFilters } = useFilter();
@@ -242,6 +243,33 @@ const ProductGrid = ({
     }
     return "px-1 sm:px-2";
   }, [zoomLevel]);
+
+  // ─── Loading Skeleton ───
+  // Show shimmer placeholders while products are being fetched
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div
+          className={`
+            grid 
+            ${getGridClasses} 
+            ${getGapClasses}
+            ${getContainerClasses}
+          `}
+        >
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className={`${getCardSizeClasses} w-full mx-auto animate-pulse`}>
+              <div className="bg-gray-200 rounded-md" style={{ aspectRatio: '3/4' }} />
+              <div className="mt-3 space-y-2 px-1">
+                <div className="h-3 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Global Empty State (No Category selected, and No Products)
   if ((!products || products.length === 0) && !category) {

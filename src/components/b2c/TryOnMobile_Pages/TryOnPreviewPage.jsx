@@ -353,11 +353,10 @@ const TryOnPreviewPage = () => {
                         <button
                           key={color.name}
                           onClick={() => setSelectedColor(color.name)}
-                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${
-                            selectedColor === color.name
+                          className={`aspect-square transition-all h-12 mt-1.5 rounded ${selectedColor === color.name
                               ? "ring-2 ring-gray-900 ring-offset-2"
                               : "ring-1 ring-gray-200"
-                          }`}
+                            }`}
                           style={{ backgroundColor: color.color }}
                         />
                       ))}
@@ -426,8 +425,8 @@ const TryOnPreviewPage = () => {
               <button
                 onClick={() => setActiveSection("scenes")}
                 className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "scenes"
-                    ? "bg-[#8B0000] text-white border-[#8B0000]"
-                    : "bg-white text-black border-gray-300"
+                  ? "bg-[#8B0000] text-white border-[#8B0000]"
+                  : "bg-white text-black border-gray-300"
                   }`}
               >
                 Scenes
@@ -436,8 +435,8 @@ const TryOnPreviewPage = () => {
               <button
                 onClick={() => setActiveSection("blouse")}
                 className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "blouse"
-                    ? "bg-[#8B0000] text-white border-[#8B0000]"
-                    : "bg-white text-gray-700 border-gray-300"
+                  ? "bg-[#8B0000] text-white border-[#8B0000]"
+                  : "bg-white text-gray-700 border-gray-300"
                   }`}
               >
                 Blouse
@@ -446,8 +445,8 @@ const TryOnPreviewPage = () => {
               <button
                 onClick={() => setActiveSection("neck")}
                 className={`flex-1 py-2 px-3 text-sm font-medium border transition-all ${activeSection === "neck"
-                    ? "bg-[#8B0000] text-white border-[#8B0000]"
-                    : "bg-white text-gray-700 border-gray-300"
+                  ? "bg-[#8B0000] text-white border-[#8B0000]"
+                  : "bg-white text-gray-700 border-gray-300"
                   }`}
               >
                 Neck
@@ -498,9 +497,8 @@ const TryOnPreviewPage = () => {
             <button
               onClick={() => performTryOn({ force: true })}
               disabled={isProcessing}
-              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${
-                isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
-              }`}
+              className={`w-full border-2 border-[#8B0000] text-[#8B0000] py-3 font-medium flex items-center justify-center gap-2 transition-all ${isProcessing ? "opacity-60 cursor-not-allowed" : "hover:bg-[#8B0000] hover:text-white"
+                }`}
             >
               Retry Try-On
             </button>
@@ -517,8 +515,8 @@ const TryOnPreviewPage = () => {
               onClick={handleAddToWishlist}
               disabled={wishlistLoading}
               className={`py-3 w-full font-medium flex items-center justify-center gap-2 transition-all ${isInWishlistState
-                  ? " border border-red-500 text-red-500"
-                  : "border-2 border-[#8B0000] text-[#8B0000] hover:bg-[#8B0000] hover:text-white"
+                ? " border border-red-500 text-red-500"
+                : "border-2 border-[#8B0000] text-[#8B0000] hover:bg-[#8B0000] hover:text-white"
                 }`}
             >
               <Heart size={19} className={isInWishlistState ? "fill-current" : ""} />

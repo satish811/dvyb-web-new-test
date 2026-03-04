@@ -11,16 +11,11 @@ export default function MainLayout({ children }) {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
 
-  const hideHeaderOnMobile =
-    location.pathname.startsWith("/products") || location.pathname.startsWith("/womenwear");
-
   return (
     <>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen overflow-hidden">
         {/* Main content - top padding for fixed header */}
-        <main
-          className={`flex-grow overflow-x-hidden relative z-10 ${hideHeaderOnMobile ? "md:mt-[73px]" : "mt-[73px]"}`}
-        >
+        <main className="flex-grow overflow-x-hidden relative z-10 mt-[73px]">
 
           {children}
         </main>

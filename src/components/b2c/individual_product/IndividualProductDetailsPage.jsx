@@ -27,7 +27,6 @@ import ProductReviewsSection from "./individual_product_components/ProductReview
 import ProductStockAndShipping from "./individual_product_components/ProductStockAndShipping";
 import ProductStarRatingSection from "./individual_product_components/ProductStarRatingSection";
 import AvailColorsPopup from "../../b2b/common/AvailColorsPopup";
-import MobileProductHeader from "./individual_product_components/MobileProductHeader";
 
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
@@ -303,15 +302,8 @@ const IndividualProductDetailsPage = () => {
       outfitType: product.dressType?.toLowerCase() || "lehenga",
     };
 
-    if (isMobile()) {
-      navigate(`/tryon/start/${product.id}`, {
-        state: tryOnPayload,
-      });
-    } else {
-      setTryOnData(tryOnPayload);
-      setShowUploadSelfieModal(true);
-      // ✅ DO NOT call performTryOn here
-    }
+    setTryOnData(tryOnPayload);
+    setShowUploadSelfieModal(true);
   };
 
 
@@ -638,10 +630,7 @@ const IndividualProductDetailsPage = () => {
 
 
   return (
-    <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16">
-
-      {/* Mobile Header */}
-      <MobileProductHeader productName={product?.dressType || "PRODUCT"} />
+    <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16 md:pt-8 mt-4 md:mt-0">
 
       {showAddToBagPopup && (
         <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300">
