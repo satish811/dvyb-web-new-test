@@ -9,31 +9,52 @@
 export function extractCategories(products) {
     if (!products || products.length === 0) return [];
 
+    // Known plural → canonical display name mappings
+    const PLURAL_MAP = {
+        'SAREES': 'SAREE',
+        'LEHENGAS': 'LEHENGA',
+        'ANARKALIS': 'ANARKALI',
+        'SHARARAS': 'SHARARA',
+        'KURTA SETS': 'KURTA-SET',
+        'KURTA-SETS': 'KURTA-SET',
+        'KURTA SET': 'KURTA-SET',
+        'KURTAS': 'KURTA-SET',
+        'SALWAR SUITS': 'SALWAR SUIT',
+        'SALWAR-SUITS': 'SALWAR SUIT',
+        'BLOUSES': 'BLOUSE',
+        'GOWNS': 'GOWN',
+        'DUPATTAS': 'DUPATTA',
+        'DRESSES': 'DRESS',
+    };
+
+    // Words that should be ignored as standalone categories
+    const IGNORE_LIST = new Set(['NEW', 'WOMEN', 'WOMAN', 'ALL', '']);
+
     const categoryMap = new Map();
 
     products.forEach((product) => {
-        const cat = (String(product.category || "")).toUpperCase().trim();
+        // Only use dressType as the primary category field
         const dressType = (String(product.dressType || "")).toUpperCase().trim();
-        const subDressType = (String(product.subDressType || "")).toUpperCase().trim();
 
-        const potentialCategories = [cat, dressType, subDressType].filter(c => c && c.length > 0);
+        if (!dressType || dressType.length < 2) return;
+        if (IGNORE_LIST.has(dressType)) return;
 
-        potentialCategories.forEach(categoryValue => {
-            let normalized = categoryValue;
+        // Normalize via plural map or use as-is
+        const normalized = PLURAL_MAP[dressType] || dressType;
 
-            if (categoryValue.endsWith('S') && categoryValue.length > 3) {
-                const singular = categoryValue.slice(0, -1);
-                normalized = singular;
-            }
+        // Skip compound/multi-word names that are clearly subcategories
+        // e.g. "FESTIVE FABRIC", "EMBROIDERED KURTA SET", "SILK SHARARA FABRIC"
+        // Keep known multi-word main categories like "KURTA-SET", "SALWAR SUIT", "INDO WESTERN"
+        const ALLOWED_MULTIWORD = new Set([
+            'KURTA-SET', 'KURTA SET', 'SALWAR SUIT', 'INDO WESTERN', 'INDO-WESTERN',
+        ]);
+        const wordCount = normalized.split(/[\s-]+/).length;
+        if (wordCount > 2 && !ALLOWED_MULTIWORD.has(normalized)) return;
 
-            if (normalized.length < 3) return;
-            if (normalized === 'NEW' || normalized === 'WOMEN') return;
-
-            const existing = categoryMap.get(normalized);
-            categoryMap.set(normalized, {
-                name: normalized,
-                count: (existing?.count || 0) + 1
-            });
+        const existing = categoryMap.get(normalized);
+        categoryMap.set(normalized, {
+            name: normalized,
+            count: (existing?.count || 0) + 1
         });
     });
 

@@ -28,10 +28,8 @@ export const useProductFilter = (products = []) => {
     }
 
     const result = products.filter((product) => {
-      // === CATEGORY FILTER ===
+      // === CATEGORY FILTER (MULTI-SELECT — OR logic) ===
       if (selectedFilters.categories?.length > 0) {
-        const selectedCat = selectedFilters.categories[0].trim().toUpperCase();
-
         // Category groups: selected filter → matcher function (all comparisons are uppercase)
         const CATEGORY_GROUPS = {
           "KURTA SETS": (v) => v.includes("KURTA"),
@@ -47,10 +45,6 @@ export const useProductFilter = (products = []) => {
           "BRIDAL": (v) => v === "BRIDAL" || v.includes("BRIDAL") || v === "WEDDING" || v.includes("WEDDING"),
         };
 
-        // Get the matcher for this category (fall back to exact match)
-        const groupMatcher = CATEGORY_GROUPS[selectedCat] ||
-          ((v) => v === selectedCat || v === selectedCat + "S" || v + "S" === selectedCat);
-
         // Get all possible category-related fields from product
         const productCat = (product.category?.trim() || "").toUpperCase();
         const productDressType = (product.dressType?.trim() || "").toUpperCase();
@@ -58,14 +52,22 @@ export const useProductFilter = (products = []) => {
         const productSubcategory = (product.subcategory?.trim() || "").toUpperCase();
         const productType = (product.type?.trim() || "").toUpperCase();
 
-        const matchesCategory =
-          groupMatcher(productDressType) ||
-          groupMatcher(productCat) ||
-          groupMatcher(productSubDressType) ||
-          groupMatcher(productSubcategory) ||
-          groupMatcher(productType);
+        // Check if product matches ANY selected category (OR logic)
+        const matchesAnyCategory = selectedFilters.categories.some((cat) => {
+          const selectedCat = cat.trim().toUpperCase();
+          const groupMatcher = CATEGORY_GROUPS[selectedCat] ||
+            ((v) => v === selectedCat || v === selectedCat + "S" || v + "S" === selectedCat);
 
-        if (!matchesCategory) return false;
+          return (
+            groupMatcher(productDressType) ||
+            groupMatcher(productCat) ||
+            groupMatcher(productSubDressType) ||
+            groupMatcher(productSubcategory) ||
+            groupMatcher(productType)
+          );
+        });
+
+        if (!matchesAnyCategory) return false;
       }
 
       // === BOUTIQUE FILTER ===

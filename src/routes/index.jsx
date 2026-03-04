@@ -55,8 +55,7 @@ export default function AppRoutes() {
   const hideNavbar =
     location.pathname.startsWith("/tryon/");
 
-  const hideHeaderOnMobile =
-    location.pathname.startsWith("/products") || location.pathname.startsWith("/womenwear");
+  const hideHeaderOnMobile = false; // Intentionally disabled to show web standard navbar on mobile
 
   return (
     <>
@@ -155,7 +154,7 @@ export default function AppRoutes() {
             element={
               <PageTransition>
                 <MainLayout>
-                  <ProductLayout products={products} />
+                  <ProductLayout products={products} loading={loading} />
                 </MainLayout>
               </PageTransition>
             }
@@ -179,7 +178,7 @@ export default function AppRoutes() {
             element={
               <PageTransition>
                 <MainLayout>
-                  <CategoryPage products={products} />
+                  <CategoryPage products={products} loading={loading} />
                 </MainLayout>
               </PageTransition>
             }

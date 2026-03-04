@@ -324,6 +324,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         isChangingBackground={isChangingBackground}
         tryOnResult={tryOnResult}
         tryOnData={tryOnData}
+        pendingBlouse={pendingBlouse}
+        setPendingBlouse={setPendingBlouse}
+        pendingNeck={pendingNeck}
+        setPendingNeck={setPendingNeck}
+        isApplying={isApplying}
+        applyChanges={applyChanges}
         // handleToggleWishlist={handleToggleWishlist}
         // wishlistLoading={wishlistLoading}
         // isInWishlistState={isInWishlistState}
@@ -379,6 +385,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
           </button>
         </div>
       </div>
+
+
 
     </div>
   );

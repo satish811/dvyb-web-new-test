@@ -12,16 +12,43 @@ import CategoryTags, { normalizeCategory } from "../components/b2c/products/Cate
 import { extractSubcategories } from "../utils/categoryExtractor";
 import Fuse from "fuse.js";
 
-export default function ProductLayout({ children, products, categoryFromRoute }) {
+export default function ProductLayout({ children, products, categoryFromRoute, loading = false }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateFilter, selectedFilters, clearAllFilters, searchQuery } = useFilter();
+  const { updateFilter, selectedFilters, clearAllFilters, resetAndSetFilters, searchQuery } = useFilter();
 
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(false);
+
+  // Lock body scroll when filter drawer is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
+  // Count active filters for badge
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedFilters.categories?.length) count += selectedFilters.categories.length;
+    if (selectedFilters.subcategories?.length) count += selectedFilters.subcategories.length;
+    if (selectedFilters.sizes?.length) count += selectedFilters.sizes.length;
+    if (selectedFilters.colors?.length) count += selectedFilters.colors.length;
+    if (selectedFilters.discounts?.length) count += selectedFilters.discounts.length;
+    if (selectedFilters.blouses?.length) count += selectedFilters.blouses.length;
+    if (selectedFilters.boutiques?.length) count += selectedFilters.boutiques.length;
+    if (selectedFilters.priceMin != null) count++;
+    if (selectedFilters.priceMax != null) count++;
+    return count;
+  }, [selectedFilters]);
 
   const [searchOpen, setSearchOpen] = useState(false);
-  // const [searchQuery, setSearchQuery] = useState(""); // Removed in favor of context
   const [searchResults, setSearchResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -44,6 +71,8 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const category = categoryFromRoute || queryParams.get("category");
   const subcategory = queryParams.get("sub");
+  const urlPriceMax = queryParams.get("priceMax");
+  const urlPriceMin = queryParams.get("priceMin");
 
 
   /**
@@ -58,55 +87,61 @@ export default function ProductLayout({ children, products, categoryFromRoute })
   }, [category, products]);
 
   /**
-   * Sync category to FilterContext when route changes
-   * NOTE: Only runs when category/subcategory changes, NOT on filter updates
+   * Sync URL params (category + price) to FilterContext when route changes
+   * Uses resetAndSetFilters for atomic, race-condition-free state updates
    */
   useEffect(() => {
-    console.log(`[ProductLayout] Category from URL: "${category}"`);
-    console.log(`[ProductLayout] Current selectedFilters:`, selectedFilters);
+    console.log(`[ProductLayout] URL sync: category="${category}", priceMin=${urlPriceMin}, priceMax=${urlPriceMax}, search="${searchQuery}"`);
 
-    if (!category && !searchQuery) {
-      // On "All Products" page - clear filters
-      console.log("[ProductLayout] No category or query, clearing filters");
-      clearAllFilters();
-      return;
-    }
-
-    // If there's a search query, don't update category filter
+    // If there's a search query, let the search handle filtering
     if (searchQuery) {
-      console.log(`[ProductLayout] Search query present: "${searchQuery}", skipping category filter`);
+      console.log(`[ProductLayout] Search query present, skipping URL sync`);
       return;
     }
 
-    // Update category in filter context
-    const normalized = normalizeCategory(category);
-    const MAIN_CATEGORIES = {
-      "saree": "SAREE",
-      "lehenga": "LEHENGA",
-      "kurta-sets": "KURTA SETS",
-      "kurta-set": "KURTA SETS",
-      "anarkalis": "ANARKALIS",
-      "anarkali": "ANARKALIS",
-      "shararas": "SHARARAS",
-      "pret": "PRÊT",
-      "fusion": "FUSION",
-      "wedding": "WEDDING",
-      "sale": "SALE",
-      "salwar-suit": "SALWAR SUIT",
-      "salwar-suits": "SALWAR SUIT",
-      "indo-western": "INDO WESTERN",
-      "bridal": "BRIDAL"
-    };
+    // Build the new filter state from URL params in one go
+    const newFilters = {};
 
-    const filterValue = MAIN_CATEGORIES[normalized] || normalized.toUpperCase();
+    // Parse price from URL
+    if (urlPriceMax != null) {
+      const maxVal = Number(urlPriceMax);
+      if (!isNaN(maxVal) && maxVal > 0) newFilters.priceMax = maxVal;
+    }
+    if (urlPriceMin != null) {
+      const minVal = Number(urlPriceMin);
+      if (!isNaN(minVal) && minVal >= 0) newFilters.priceMin = minVal;
+    }
 
-    console.log(`[ProductLayout] Normalized: "${normalized}", Filter value: "${filterValue}"`);
-    console.log(`[ProductLayout] Calling updateFilter("categories", "${filterValue}")`);
+    // Parse category from URL
+    if (category) {
+      const normalized = normalizeCategory(category);
+      const MAIN_CATEGORIES = {
+        "saree": "SAREE",
+        "lehenga": "LEHENGA",
+        "kurta-sets": "KURTA SETS",
+        "kurta-set": "KURTA SETS",
+        "anarkalis": "ANARKALIS",
+        "anarkali": "ANARKALIS",
+        "shararas": "SHARARAS",
+        "pret": "PRÊT",
+        "fusion": "FUSION",
+        "wedding": "WEDDING",
+        "sale": "SALE",
+        "salwar-suit": "SALWAR SUIT",
+        "salwar-suits": "SALWAR SUIT",
+        "indo-western": "INDO WESTERN",
+        "bridal": "BRIDAL"
+      };
+      const filterValue = MAIN_CATEGORIES[normalized] || normalized.toUpperCase();
+      newFilters.categories = [filterValue];
+      console.log(`[ProductLayout] Setting category filter: "${filterValue}"`);
+    }
 
-    // Only update category when it changes
-    updateFilter("categories", filterValue);
+    console.log(`[ProductLayout] Applying atomic filter reset:`, newFilters);
+    // Atomic: clear all old filters and set new ones in a single state update
+    resetAndSetFilters(newFilters);
 
-  }, [category, subcategory, searchQuery]); // REMOVED selectedFilters dependency to prevent infinite loop
+  }, [category, subcategory, searchQuery, urlPriceMax, urlPriceMin]); // REMOVED selectedFilters dependency to prevent infinite loop
 
   /**
    * Build a Fuse.js instance for the current product list (memoized)
@@ -360,12 +395,16 @@ export default function ProductLayout({ children, products, categoryFromRoute })
             >
               <ArrowLeft size={16} className="text-gray-700" />
             </button>
-            <Link to="/" className="hover:text-black transition-colors">HOME</Link>
-            <span className="mx-1">/</span>
-            <Link to="/womenwear" className="hover:text-black transition-colors">WOMEN</Link>
-            <span className="mx-1">/</span>
-            <span className="text-black font-semibold">
-              {category ? category.toUpperCase().replace("-", " ") : "ALL PRODUCTS"}
+            <Link to="/" className="text-black hover:text-gray-600 transition-colors">HOME</Link>
+            <span className="mx-1 text-black font-medium">{'>'}</span>
+            <Link to="/womenwear" className="text-black hover:text-gray-600 transition-colors">WOMEN</Link>
+            <span className="mx-1 text-black font-medium">{'>'}</span>
+            <span className="text-gray-500 font-medium">
+              {category
+                ? category.toUpperCase().replace("-", " ")
+                : urlPriceMax
+                  ? `UNDER ₹${Number(urlPriceMax).toLocaleString("en-IN")}`
+                  : "ALL PRODUCTS"}
             </span>
           </div>
 
@@ -383,8 +422,14 @@ export default function ProductLayout({ children, products, categoryFromRoute })
             <div className="flex items-center gap-6">
               {/* Filter Prompt */}
               <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="flex items-center gap-2 group cursor pointer"
+                onClick={() => {
+                  if (window.innerWidth >= 1024) {
+                    setIsDesktopSidebarOpen(!isDesktopSidebarOpen);
+                  } else {
+                    setIsSidebarOpen(true);
+                  }
+                }}
+                className="flex items-center gap-2 group cursor-pointer relative"
               >
                 <div className="hidden sm:block">
                   <ListFilter size={18} className="text-gray-800" />
@@ -393,6 +438,11 @@ export default function ProductLayout({ children, products, categoryFromRoute })
                   FILTER
                 </span>
                 <Funnel size={16} className="text-gray-800 ml-1" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
               </button>
 
               {/* Sort Prompt */}
@@ -479,21 +529,30 @@ export default function ProductLayout({ children, products, categoryFromRoute })
       {/* -------------------------------------------------------------- */}
       {/* Mobile Sidebar Overlay */}
       {/* -------------------------------------------------------------- */}
+      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50"
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* -------------------------------------------------------------- */}
-      {/* Sidebar Drawer (Right Side slide-in) */}
+      {/* Mobile Sidebar Drawer (Right Side slide-in) */}
       {/* -------------------------------------------------------------- */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white z-[60] transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col lg:hidden ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="p-2 -mr-2 text-gray-500 hover:text-black transition"
@@ -501,24 +560,103 @@ export default function ProductLayout({ children, products, categoryFromRoute })
             <X size={20} />
           </button>
         </div>
-        <div className="h-full overflow-y-auto pb-20">
-          <Sidebar products={products} />
+
+        {/* Scrollable Filter Content */}
+        <div
+          className="flex-1 overflow-y-auto pb-4"
+          style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        >
+          <Sidebar products={products} activeRouteCategory={category} />
+        </div>
+
+        {/* Sticky Footer */}
+        <div className="shrink-0 border-t border-gray-200 bg-white px-5 py-4 flex items-center gap-3">
+          <button
+            onClick={() => {
+              clearAllFilters();
+            }}
+            className="flex-1 py-3 text-sm font-bold uppercase tracking-wider text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Clear All
+          </button>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="flex-1 py-3 text-sm font-bold uppercase tracking-wider text-white rounded-md transition-colors"
+            style={{ background: 'var(--villy-primary, #33022F)' }}
+          >
+            Apply ({activeFilterCount})
+          </button>
         </div>
       </div>
 
       {/* -------------------------------------------------------------- */}
       {/* Main Content Area */}
       {/* -------------------------------------------------------------- */}
-      <div className="max-w-[1600px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16 pb-10 2xl:pb-16">
-        <ProductGrid
-          products={visibleProducts}
-          category={category}
-          sortBy={sortValue}
-          hideHeader={true}
-          columns={gridColumns}
-          zoomLevel={zoomLevel}
-          cardSize={cardSizeClass}
-        />
+      <div className="max-w-[1600px] 2xl:max-w-[1920px] mx-auto px-4 md:px-8 2xl:px-16 pb-10 2xl:pb-16 flex items-start gap-6 xl:gap-10">
+
+        {/* Left Side - Product Grid */}
+        <div className="flex-1 w-full min-w-0">
+          <ProductGrid
+            products={visibleProducts}
+            category={category}
+            sortBy={sortValue}
+            hideHeader={true}
+            columns={gridColumns}
+            zoomLevel={zoomLevel}
+            cardSize={cardSizeClass}
+            loading={loading}
+          />
+        </div>
+
+        {/* Right Side - Desktop Sticky Sidebar */}
+        {isDesktopSidebarOpen && (
+          <div
+            className="hidden lg:flex w-[300px] xl:w-[320px] flex-shrink-0 sticky top-[240px] flex-col rounded-md shadow-sm bg-white border border-gray-100"
+            style={{
+              height: 'calc(100vh - 250px)',
+            }}
+          >
+            {/* Header - Fixed */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold uppercase tracking-widest">Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="bg-red-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setIsDesktopSidebarOpen(false)}
+                className="p-2 -mr-2 text-gray-500 hover:text-black transition cursor-pointer"
+                aria-label="Close filters"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div
+              className="flex-1 overflow-y-auto pr-2"
+              style={{
+                overscrollBehavior: 'contain',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <Sidebar products={products} activeRouteCategory={category} />
+            </div>
+
+            {/* Footer - Fixed */}
+            <div className="border-t border-gray-200 bg-white px-5 py-4 flex items-center gap-3 shrink-0 rounded-b-md">
+              <button
+                onClick={() => clearAllFilters()}
+                className="flex-1 py-3 text-sm font-bold uppercase tracking-wider text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

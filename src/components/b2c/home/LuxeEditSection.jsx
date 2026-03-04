@@ -164,11 +164,10 @@ import Luxeeditsectionframe from "../../../assets/b2c/landing/Landing-villy/LuxE
 import bridalImg from "../../../assets/b2c/landing/Landing-villy/Bridal.jpg";
 import under20kImg from "../../../assets/b2c/landing/Landing-villy/Sarees.png";
 import bridesmaidImg from "../../../assets/b2c/landing/Landing-villy/silksaree.jpg";
-import designerImg from "../../../assets/b2c/landing/Landing-villy/Lehenga.png";
+import designerImg from "../../../assets/b2c/landing/Landing-villy/DesignerLehangas.jpg";
 
 // Mobile Assets
-import mobileLeftImg from "../../../assets/b2c/landing/Landing-villy/MobileLuxeditleft.png";
-import mobileRightImg from "../../../assets/b2c/landing/Landing-villy/mobileLuxeedit.png";
+import mobileFullImg from "../../../assets/b2c/landing/Landing-villy/MobileLuxeEdit2.png";
 
 const LuxeEditSection = () => {
   const navigate = useNavigate();
@@ -176,7 +175,7 @@ const LuxeEditSection = () => {
   const gridItems = [
     { id: 1, title: "BRIDAL EDIT", img: bridalImg, link: "/womenwear?category=wedding" },
     { id: 2, title: "UNDER ₹20K", img: under20kImg, link: "/womenwear?priceMax=20000" },
-    { id: 3, title: "BRIDES MADE EDIT", img: bridesmaidImg, link: "/womenwear?category=saree" },
+    { id: 3, title: "BRIDESMAID EDIT", img: bridesmaidImg, link: "/womenwear?category=saree" },
     { id: 4, title: "DESIGNER LEHENGAS", img: designerImg, link: "/womenwear?category=lehenga" },
   ];
 
@@ -186,64 +185,19 @@ const LuxeEditSection = () => {
       {/* ================= MOBILE (GAP FIXED) ================= */}
       {/* ================= MOBILE (GAP FIXED V2) ================= */}
       {/* ================= MOBILE (ROBUST LAYOUT V3) ================= */}
+      {/* ================= MOBILE & TABLET (using new MobileLuxeEdit2 image) ================= */}
       <div
-        className="relative lg:hidden w-full overflow-hidden"
-        style={{
-          height: "100dvh", // Dynamic viewport height for mobile
-          background: "radial-gradient(circle at 50% 30%, #5d004d 0%, #2e0026 100%)", // Deeper, Richer Purple
-        }}
+        className="relative md:hidden w-full h-auto flex flex-col items-center justify-center bg-[#5d004d] cursor-pointer"
+        onClick={() => navigate("/womenwear")}
       >
-        {/* TITLE - Positioned relative to viewport height to avoid header overlap */}
-        <div
-          className="absolute w-full text-center z-30 flex items-center justify-center"
-          style={{ top: "9vh", width: '100%' }}
-        >
-          <h2
-            className="text-white tracking-[0.2em] font-light leading-none whitespace-nowrap"
-            style={{
-              fontFamily: "'Catchye Demo', 'Antiga', serif", // Fallback chain
-              fontSize: "clamp(3rem, 11vw, 5rem)", // Responsive sizing
-              textShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            }}
-          >
-            LUXE <span>EDIT</span>
-          </h2>
-        </div>
-
-        {/* IMAGES CONTAINER - Overlapping Bottom */}
-        <div className="absolute inset-x-0 bottom-0 w-full h-[75%] z-10 pointer-events-none">
-          {/* Left Model */}
-          <img
-            src={mobileLeftImg}
-            alt="Luxe Edit Left"
-            className="absolute bottom-0 left-[-15%] w-[85%] max-w-[500px] object-contain z-10"
-            style={{ filter: "drop-shadow(15px 0 25px rgba(0,0,0,0.5))" }}
-          />
-          {/* Right Model */}
-          <img
-            src={mobileRightImg}
-            alt="Luxe Edit Right"
-            className="absolute bottom-0 right-[-15%] w-[85%] max-w-[500px] object-contain z-20"
-            style={{ filter: "drop-shadow(-15px 0 25px rgba(0,0,0,0.5))" }}
-          />
-        </div>
-
-        {/* CTA BUTTON - Smaller, Elegant */}
-        <div className="absolute bottom-[8vh] w-full flex justify-center z-40">
-          <button
-            onClick={() => navigate("/womenwear")}
-            className="bg-white text-black text-xs font-semibold uppercase tracking-[0.25em] shadow-2xl hover:bg-gray-100 transition-transform transform active:scale-95"
-            style={{
-              padding: "12px 32px", // Smaller padding
-              border: "1px solid rgba(255,255,255,0.2)"
-            }}
-          >
-            Shop Now
-          </button>
-        </div>
+        <img
+          src={mobileFullImg}
+          alt="Luxe Edit Mobile"
+          className="w-full h-auto object-cover"
+        />
       </div>
 
-      {/* ================= DESKTOP & TABLET ================= */}
+      {/* ================= DESKTOP ================= */}
       <div
         className="hidden md:flex items-center justify-center relative w-full min-h-[500px] lg:min-h-[630px] 2xl:min-h-[850px] pb-10 2xl:pb-20"
         style={{
@@ -254,9 +208,9 @@ const LuxeEditSection = () => {
         }}
       >
         <div className="relative z-10 w-full max-w-[1330px] 2xl:max-w-[1920px] mx-auto flex justify-end px-4 md:px-8 xl:px-12 2xl:px-16">
-          {/* Added lg:mr-32 2xl:mr-[180px] to push the grid away from the floral elements on the right */}
+          {/* Added md:pr-10 lg:pr-32 2xl:pr-[180px] to push the grid away from the floral elements on the right safely on all sizes */}
           <div
-            className="w-full relative z-20 mt-10 lg:mt-0 grid grid-cols-2 lg:mr-32 2xl:mr-[180px] gap-x-[66.69px] gap-y-[26.92px] max-w-[472.83px]"
+            className="w-full relative z-20 mt-10 md:mt-0 grid grid-cols-2 md:mr-10 lg:mr-32 2xl:mr-[180px] md:gap-x-10 lg:gap-x-[66.69px] gap-y-[26.92px] max-w-[400px] lg:max-w-[472.83px]"
           >
             {gridItems.map((item, index) => (
               <motion.div
@@ -286,7 +240,15 @@ const LuxeEditSection = () => {
                     borderBottomRightRadius: '12px',
                   }}
                 >
-                  <span className="text-white text-[10px] font-bold uppercase tracking-[0.05em]">
+                  <span
+                    className="text-white uppercase"
+                    style={{
+                      fontFamily: 'Outfit, sans-serif',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      letterSpacing: '0.01em'
+                    }}
+                  >
                     {item.title}
                   </span>
                 </div>
@@ -295,7 +257,7 @@ const LuxeEditSection = () => {
           </div>
         </div>
       </div>
-    </section>
+    </section >
   );
 };
 

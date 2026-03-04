@@ -19,7 +19,7 @@ const BlouseNeckCustomizer = ({
   const canApply = !!tryOnResult && !isApplying && (pendingBlouse || pendingNeck);
 
   return (
-    <div className="w-full bg-white mt-1">
+    <div className="w-full bg-transparent mt-1">
 
       {/* ── TABS ────────────────────────────────────────────────────── */}
       <div className="bg-[#fcf5fa] rounded-full p-1 flex mb-5">
@@ -48,11 +48,11 @@ const BlouseNeckCustomizer = ({
               <div
                 key={blouse.id}
                 onClick={() => setPendingBlouse(active ? null : blouse.id)}
-                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
+                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[100px] lg:h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
                   }`}
               >
                 <div className="flex-1 flex items-center justify-center w-full outline-none">
-                  <img src={blouse.image} alt={blouse.name} className="w-[50px] h-[50px] object-contain" />
+                  <img src={blouse.image} alt={blouse.name} className="w-[65px] h-[65px] lg:w-[50px] lg:h-[50px] object-contain" />
                 </div>
                 <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
                   }`}>
@@ -72,11 +72,11 @@ const BlouseNeckCustomizer = ({
               <div
                 key={neck.id}
                 onClick={() => setPendingNeck(active ? null : neck.id)}
-                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
+                className={`flex flex-col items-center justify-between cursor-pointer overflow-hidden transition-all h-[100px] lg:h-[90px] ${active ? "border-[1.5px] border-[#4a044e]" : "border-[1.5px] border-transparent"
                   }`}
               >
                 <div className="flex-1 flex items-center justify-center w-full outline-none">
-                  <img src={neck.image} alt={neck.label} className="w-[50px] h-[50px] object-contain" />
+                  <img src={neck.image} alt={neck.label} className="w-[65px] h-[65px] lg:w-[50px] lg:h-[50px] object-contain" />
                 </div>
                 <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
                   }`}>

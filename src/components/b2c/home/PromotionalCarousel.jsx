@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Ad Assets
 import ad1 from "../../../assets/b2c/landing/Landing-villy/Carousel1.png";
@@ -17,6 +18,7 @@ const slides = [
 
 export default function PromotionalCarousel() {
     const [current, setCurrent] = useState(0);
+    const navigate = useNavigate();
 
     // Auto-slide functionality
     useEffect(() => {
@@ -41,7 +43,11 @@ export default function PromotionalCarousel() {
                         style={{ transform: `translateX(-${current * 100}%)` }}
                     >
                         {slides.map((slide) => (
-                            <div key={slide.id} className="min-w-full relative h-full">
+                            <div
+                                key={slide.id}
+                                className="min-w-full relative h-full cursor-pointer"
+                                onClick={() => navigate("/womenwear")}
+                            >
                                 <img
                                     src={slide.img}
                                     alt={slide.alt}

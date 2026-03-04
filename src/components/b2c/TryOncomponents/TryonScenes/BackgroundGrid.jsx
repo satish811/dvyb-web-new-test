@@ -19,15 +19,13 @@ const BackgroundGrid = ({
           <button
             onClick={() => changeBackground(bg.id)}
             disabled={!tryOnResult || isChangingBackground}
-            className={`relative cursor-pointer p-1 overflow-hidden transition-all ${
-              selectedBackground === bg.id
-                ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                : "hover:scale-105 border border-gray-200"
-            } ${
-              !tryOnResult || isChangingBackground
+            className={`relative cursor-pointer p-1 overflow-hidden transition-all ${selectedBackground === bg.id
+              ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
+              : "hover:scale-105 border border-gray-200"
+              } ${!tryOnResult || isChangingBackground
                 ? "opacity-50 cursor-not-allowed"
                 : ""
-            }`}
+              }`}
           >
             <div className="aspect-square">
               <img
@@ -47,6 +45,7 @@ const BackgroundGrid = ({
 
         </div>
       ))}
+
     </div>
   );
 };

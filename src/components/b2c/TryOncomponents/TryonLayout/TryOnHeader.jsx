@@ -11,9 +11,9 @@ const TryOnHeader = () => {
 
   return (
     <div className="
-  absolute 
-  top-4 md:top-6
-  left-2 md:left-4
+  relative w-full flex justify-start
+  pt-4 px-2 pb-2
+  lg:absolute lg:top-6 lg:left-4 lg:p-0
   z-20
 ">      <button
         onClick={() => {

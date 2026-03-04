@@ -23,10 +23,10 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
@@ -203,7 +203,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     return (
       <>
         <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
-        
+
         {/* Divider */}
         <div className="flex items-center justify-center text-gray-500 my-2">
           <span className="mx-2 text-sm">OR</span>
