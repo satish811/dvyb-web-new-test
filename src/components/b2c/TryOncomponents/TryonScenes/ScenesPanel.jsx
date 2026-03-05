@@ -76,12 +76,12 @@ const ScenesPanel = ({
       max-h-[calc(100vh-90px)] overflow-y-auto hide-scrollbar
     ">
       {/* ── BACKGROUNDS CARD ─────────────────────────────────── */}
-      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-y-auto hide-scrollbar p-5 max-h-[calc(100vh-100px)]">
+      {viewMode === "2D" && (
+        <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-y-auto hide-scrollbar p-5 max-h-[calc(100vh-100px)]">
 
-        {/* ============================================ */}
-        {/* SCENES SECTION - Only visible in 2D mode */}
-        {/* ============================================ */}
-        {viewMode === "2D" && (
+          {/* ============================================ */}
+          {/* SCENES SECTION - Only visible in 2D mode */}
+          {/* ============================================ */}
           <div className="mb-5">
             <div className="flex items-center justify-center gap-2 mb-3">
               <Image className="w-5 h-5 text-gray-600" />
@@ -163,9 +163,8 @@ const ScenesPanel = ({
               )}
             </div>
           </div>
-        )}
-
-      </div>
+        </div>
+      )}
 
       {/* ── QUICK ACTIONS CARD ─────────────────────────────────── */}
       <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-hidden p-5 flex flex-col gap-3">
