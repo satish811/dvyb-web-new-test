@@ -1930,9 +1930,10 @@ blouseType.toLowerCase().includes('elbow') ?
 
 blouseType.toLowerCase().includes('puff') ?
 `PUFF / PUFFED SLEEVES
-- Volume and gathering concentrated at the shoulder cap
+- Small, subtle gathering at shoulder cap
+- Light volume (not exaggerated or balloon-style)
 - Tapers down from the shoulder puff
-- Length typically at or ABOVE the elbow
+- Length typically ABOVE the elbow
 - Festive, classic South Indian saree blouse style` :
 
 blouseType.toLowerCase().includes('bell') || blouseType.toLowerCase().includes('flared') ?
@@ -2074,12 +2075,13 @@ ${neckType.toLowerCase().includes('boat') ?
 
               neckType.toLowerCase().includes('collar') ?
                 `COLLAR NECK / SHIRT COLLAR
-- Structured stand-up or fold-over collar
-- Shirt-style or mandarin-inspired
+- Small structured collar with short front flaps
+- Shirt-inspired but proportioned for blouse design
+- Sharp or rounded flap edges for subtle statement
 - Covers base of neck / collarbone area
-- Crisp, formal-modern fusion look` :
+- Elegant Indo-western, semi-formal look` :
 
-                `Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
+     `Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
 
 EDITING RULES
 • Change ONLY the fabric edge/contour at the neck opening
@@ -2270,14 +2272,56 @@ export default async function handler(req, res) {
       const imageBase64 = req.file.buffer.toString("base64");
       const imageDataUrl = `data:image/jpeg;base64,${imageBase64}`;
 
+      // const payload = {
+      //   model: 'MiniMax-Hailuo-2.3-Fast',
+      //   first_frame_image: imageDataUrl,
+      //   prompt: 'A calm, graceful young woman stands centered facing camera in relaxed natural stance. She walks forward three small measured steps with smooth realistic gait and gentle arm swing. She performs one elegant slow full-body pirouette / 360 spin with poise, balanced posture, soft momentum, hair and fabric moving naturally. She then walks backward three precise steps, returning perfectly to starting location and exact original pose. Extremely natural human kinematics, coherent motion, no warping or sliding, photorealistic details, serene mood.',
+      //   duration: 6,
+      //   resolution: '1080P',
+      //   prompt_optimizer: true,
+      //   fast_pretreatment: true
+      // };
       const payload = {
-        model: 'MiniMax-Hailuo-2.3-Fast',
+        model: "MiniMax-Hailuo-2.3-Fast",
         first_frame_image: imageDataUrl,
-        prompt: 'A calm, graceful young woman stands centered facing camera in relaxed natural stance. She walks forward three small measured steps with smooth realistic gait and gentle arm swing. She performs one elegant slow full-body pirouette / 360 spin with poise, balanced posture, soft momentum, hair and fabric moving naturally. She then walks backward three precise steps, returning perfectly to starting location and exact original pose. Extremely natural human kinematics, coherent motion, no warping or sliding, photorealistic details, serene mood.',
+
+        prompt: `
+      The exact same woman from the first frame. Perfect facial identity preservation, no face change, no morphing.
+
+      Camera is static. Full body visible. Neutral studio lighting. Plain background.
+
+      STRICT MOTION SEQUENCE (follow exactly):
+
+      0s–2s:
+      She slowly walks forward exactly THREE small steps toward the camera.
+      Natural human walking only. No dancing. No posing.
+
+      2s–4s:
+      She performs ONE slow full 360-degree spin in place.
+      Controlled, balanced rotation. Arms relaxed at sides.
+      NO dance moves. NO expressive gestures. NO gymnastics.
+
+      4s–6s:
+      She walks backward exactly THREE small steps.
+      Returns precisely to the original starting position.
+
+      Final frame:
+      She stands still in the exact original pose facing the camera.
+
+      IMPORTANT RULES:
+      No dancing.
+      No jumping.
+      No extra movement.
+      No hand gestures.
+      No head movement.
+      No camera movement.
+      No background change.
+      `,
+
         duration: 6,
-        resolution: '1080P',
-        prompt_optimizer: true,
-        fast_pretreatment: true
+        resolution: "1080P",
+        prompt_optimizer: false,
+        fast_pretreatment: false
       };
 
       console.log('🚀 Calling MiniMax API...');
