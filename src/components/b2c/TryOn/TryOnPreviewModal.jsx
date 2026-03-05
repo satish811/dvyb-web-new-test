@@ -352,7 +352,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
               onClick={() => setShowBgWarning(false)}
               className="w-full bg-primary text-white py-2 rounded-lg"
             >
-              Got it
+              Got itt
             </button>
           </div>
         </div>
