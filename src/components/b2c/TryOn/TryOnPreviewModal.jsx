@@ -284,6 +284,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         setPendingNeck={setPendingNeck}
         isApplying={isApplying}
         applyChanges={applyChanges}
+        handleReset={handleReset}
       />
 
       {/* ============================================ */}

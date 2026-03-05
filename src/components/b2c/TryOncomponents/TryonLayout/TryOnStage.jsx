@@ -80,9 +80,9 @@ const TryOnStage = ({
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "2D" && getCurrentDisplayImage() && (
         <div className="flex flex-col items-center h-full justify-center">
-          <div className="bg-white p-1.5 sm:p-2 rounded-[36px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-2">
+          <div className="bg-white p-[6px] rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-2">
             {/* Image */}
-            <div className="relative rounded-[30px] border-[3.5px] border-[#009EE3] overflow-hidden w-full h-full flex items-center justify-center">
+            <div className="relative rounded-[16px] overflow-hidden w-full h-full flex items-center justify-center">
               <img
                 src={getCurrentDisplayImage()}
                 alt="Try-on result"
@@ -90,7 +90,7 @@ const TryOnStage = ({
                   pointer-events-auto
                   w-[360px] sm:w-[420px] xl:w-[480px]
                   h-auto max-h-[82vh]
-                  object-contain
+                  object-cover
                 "
                 draggable={false}
               />
