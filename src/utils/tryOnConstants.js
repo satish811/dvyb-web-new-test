@@ -209,7 +209,7 @@ export const UI_TEXT = {
   // SHARE_MY_LOOK: "Share my look",
   CUSTOMIZE_OUTFIT: "Outfit Details",
   CUSTOMIZE_SUBTITLE: "Try different colors, fabrics, and styles",
-  SCENES: "Background",
+  SCENES: "Choose Your Screen",
   BACKGROUNDS: "Backgrounds",
   QUICK_ACTIONS: "Quick Actions",
   VIEW_IN_360: "View Virtual Video",

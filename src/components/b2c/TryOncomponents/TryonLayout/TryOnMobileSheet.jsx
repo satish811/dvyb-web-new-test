@@ -93,7 +93,7 @@ const TryOnMobileSheet = ({
           onClick={() => window.location.reload()}
           className="flex items-center gap-1.5 text-sm text-[#4a044e] font-medium transition-opacity hover:opacity-80"
         >
-          <RotateCcw className="w-4 h-4" /> Reset
+          <RotateCcw className="w-4 h-4" /> Re-Try
         </button>
       </div>
 

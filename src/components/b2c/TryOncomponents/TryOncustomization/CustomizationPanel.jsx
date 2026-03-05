@@ -51,6 +51,14 @@ const CustomizationPanel = ({
       {/* ── MAIN CUSTOMIZATION CARD ─────────────────────────────────── */}
       <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-hidden p-5 pb-6">
 
+        {/* ── HEADER ────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-center gap-2 mb-5">
+          <Palette className="w-5 h-5 text-gray-600" />
+          <h3 className="text-sm font-semibold text-gray-800">
+            Choose Your Style
+          </h3>
+        </div>
+
         {/* ── BLOUSE & NECK CUSTOMIZER ──────────────────────────────── */}
         {isSaree && (
           <BlouseNeckCustomizer
@@ -76,7 +84,7 @@ const CustomizationPanel = ({
         className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-full py-3.5 px-6 flex items-center justify-center gap-3 hover:bg-gray-50 transition-all active:scale-[0.98]"
       >
         <span className="text-[17px] font-medium text-black tracking-wide">
-          Reset
+          Re-Try
         </span>
         <img
           src={resetButtonImg}
