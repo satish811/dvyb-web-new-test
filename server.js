@@ -187,16 +187,59 @@ app.post("/api/video/create", upload.single("tryOnImage"), async (req, res) => {
     const imageBase64 = req.file.buffer.toString("base64");
     const imageDataUrl = `data:image/jpeg;base64,${imageBase64}`;
 
-    const payload = {
-      model: "MiniMax-Hailuo-2.3-Fast",
-      first_frame_image: imageDataUrl,
-      prompt:
-        "A young woman stands facing the camera. She slowly walks forward three small steps with calm, natural motion. She then performs one slow, graceful full spin with smooth momentum and balanced posture. Finally, she calmly walks backward three steps returning precisely to her original position, ending in the exact starting pose.",
-      duration: 6,
-      resolution: "768P",
-      prompt_optimizer: true,
-      fast_pretreatment: true,
-    };
+    // const payload = {
+    //   model: "MiniMax-Hailuo-2.3-Fast",
+    //   first_frame_image: imageDataUrl,
+    //   prompt:
+    //     "The exact same young woman from the starting image, perfect facial identity preserved throughout, identical face with no changes, no deformation, no morphing, ultra-consistent facial features, same expression and eye direction as the first frame. She stands in neutral pose facing the camera directly. Very slow, calm, natural motion: she takes three small, deliberate forward steps toward the camera with gentle weight transfer and relaxed arm swing. Then she performs one extremely slow, graceful, balanced full 360-degree twirl clockwise with smooth controlled momentum, arms slightly away from body for elegance, hair and clothing flowing naturally but subtly. After completing the twirl she faces forward again in the same pose. Finally she takes three small, precise backward steps with the same calm pace, returning exactly to her original position and identical starting posture. Photorealistic human movement, fluid and lifelike, slow overall pacing, no sudden changes, maximum temporal consistency, perfect loop closure, highly detailed clothing physics, steady unchanged face.",
+    //   duration: 10,
+    //   resolution: "768P",
+    //   prompt_optimizer: true,
+    //   fast_pretreatment: true,
+    // };
+
+    const payload = {   
+        model: "MiniMax-Hailuo-2.3-Fast",
+        first_frame_image: imageDataUrl,
+
+        prompt: `
+      The exact same woman from the first frame. Perfect facial identity preservation, no face change, no morphing.
+
+      Camera is static. Full body visible. Neutral studio lighting. Plain background.
+
+      STRICT MOTION SEQUENCE (follow exactly):
+
+      0s–2s:
+      She slowly walks forward exactly THREE small steps toward the camera.
+      Natural human walking only. No dancing. No posing.
+
+      2s–4s:
+      She performs ONE slow full 360-degree spin in place.
+      Controlled, balanced rotation. Arms relaxed at sides.
+      NO dance moves. NO expressive gestures. NO gymnastics.
+
+      4s–6s:
+      She walks backward exactly THREE small steps.
+      Returns precisely to the original starting position.
+
+      Final frame:
+      She stands still in the exact original pose facing the camera.
+
+      IMPORTANT RULES:
+      No dancing.
+      No jumping.
+      No extra movement.
+      No hand gestures.
+      No head movement.
+      No camera movement.
+      No background change.
+      `,
+
+        duration: 6,
+        resolution: "1080P",
+        prompt_optimizer: false,
+        fast_pretreatment: false
+      };
 
     console.log("🚀 Calling MiniMax API...");
 
@@ -761,9 +804,10 @@ blouseType.toLowerCase().includes('elbow') ?
 
 blouseType.toLowerCase().includes('puff') ?
 `PUFF / PUFFED SLEEVES
-- Volume and gathering concentrated at the shoulder cap
+- Small, subtle gathering at shoulder cap
+- Light volume (not exaggerated or balloon-style)
 - Tapers down from the shoulder puff
-- Length typically at or ABOVE the elbow
+- Length typically ABOVE the elbow
 - Festive, classic South Indian saree blouse style` :
 
 blouseType.toLowerCase().includes('bell') || blouseType.toLowerCase().includes('flared') ?
@@ -906,10 +950,11 @@ neckType.toLowerCase().includes('sweetheart') ?
 
 neckType.toLowerCase().includes('collar') ?
 `COLLAR NECK / SHIRT COLLAR
-- Structured stand-up or fold-over collar
-- Shirt-style or mandarin-inspired
-- Covers base of neck / collarbone area
-- Crisp, formal-modern fusion look` :
+- Small structured collar with short front flaps
+- Shirt-inspired but proportioned for blouse design
+- Sharp or rounded flap edges for subtle statement
+- Covers base of neck and collarbone area
+- Elegant Indo-western, semi-formal look` :
 
 `Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
 
