@@ -317,7 +317,7 @@ const TryOnPreviewPage = () => {
               <h3 className="text-md font-semibold text-gray-900 mb-3">Outfit Details</h3>
             </div>
             <p className="text-sm font-family-outfit text-gray-600">
-              Try different colors, fabrics, and styles
+              Try different colors, fabrics and Style. 
             </p>
             <div className="flex gap-2  w-1/2 mb-4 mt-5 bg-[#F0E0E0] p-1">
               <button
