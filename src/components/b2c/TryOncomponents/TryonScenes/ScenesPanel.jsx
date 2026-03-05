@@ -60,9 +60,9 @@ const ScenesPanel = ({
   return (
     <div className="
       absolute top-20
-      right-6 xl:right-24 2xl:right-52
+      right-4 lg:right-6 xl:right-10 2xl:right-20
       z-20 hidden lg:flex flex-col gap-4
-      w-[308px]
+      w-[260px] lg:w-[280px] xl:w-[308px]
       max-h-[calc(100vh-90px)] overflow-y-auto hide-scrollbar
     ">
       {/* ── BACKGROUNDS CARD ─────────────────────────────────── */}

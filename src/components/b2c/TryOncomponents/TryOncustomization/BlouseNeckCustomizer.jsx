@@ -35,7 +35,7 @@ const BlouseNeckCustomizer = ({
           className={`flex-1 text-center py-2 text-[12px] font-medium rounded-full transition-all ${activeTab === "neck" ? "bg-white text-gray-900 shadow-sm" : "text-[#7B325A]"
             }`}
         >
-          Neck Style
+         NECK STYLE
         </button>
       </div>
 
