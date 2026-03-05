@@ -101,7 +101,7 @@ const ScenesPanel = ({
                 >
                   <Camera className="w-4 h-4" />
                 </button>
-                <span className="text-xs text-gray-500 flex-1">Add your scenes</span>
+                <span className="text-xs text-gray-500 flex-1">Add your screen</span>
                 <input
                   ref={fileInputRef}
                   type="file"

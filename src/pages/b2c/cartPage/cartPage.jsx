@@ -29,29 +29,29 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
   const brandName = item.brand || "VILLY FASHION";
 
   return (
-    <div className="bg-white border border-gray-100 p-4 rounded-xl flex gap-6 mb-4 relative shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border border-gray-100 p-3 sm:p-4 rounded-xl flex flex-row gap-3 sm:gap-6 mb-4 relative shadow-sm hover:shadow-md transition-shadow">
       {/* Image */}
-      <div className="w-32 h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-        <img src={item.image} alt={item.name} className="w-full h-full object-cover object-top" />
+      <div className="w-[100px] h-[130px] sm:w-32 sm:h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
       </div>
 
       {/* Details */}
       <div className="flex-1 flex flex-col justify-between py-1">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="font-bold text-gray-900 text-sm tracking-wide uppercase mb-1">{brandName}</h3>
-            <p className="text-gray-600 text-sm font-medium leading-relaxed max-w-md">{item.name}</p>
+        <div className="flex justify-between items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 text-sm tracking-wide uppercase mb-1 truncate">{brandName}</h3>
+            <p className="text-gray-600 text-sm font-medium leading-relaxed max-w-md truncate md:whitespace-normal">{item.name}</p>
 
-            <div className="flex items-center gap-6 mt-3 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <span>Color: <span className="font-medium text-gray-900">{item.color || "N/A"}</span></span>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-sm text-gray-600">
+              <div className="flex items-center gap-2 border border-gray-200 rounded px-2 py-1">
+                <span className="text-xs">Color:</span> <span className="font-medium text-gray-900 text-xs">{item.color || "N/A"}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span>Size:</span>
+              <div className="flex items-center gap-1 border border-gray-200 rounded px-2 py-1">
+                <span className="text-xs">Size:</span>
                 <select
                   value={item.size}
                   onChange={(e) => onSizeChange(item.uniqueId, e.target.value)}
-                  className="font-medium text-gray-900 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
+                  className="font-medium text-gray-900 text-xs bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
                 >
                   {["XS", "S", "M", "L", "XL"].map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -59,12 +59,12 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col items-end gap-3 shrink-0">
             <button
               onClick={() => onSaveForLater(item)}
               className="text-gray-400 hover:text-[#33022F] flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer"
             >
-              <Heart size={16} /> Save for later
+              <Heart size={16} /> <span className="hidden sm:inline">Save for later</span>
             </button>
             <button onClick={() => onRemove(item.uniqueId)} className="text-gray-400 hover:text-red-500 transition-colors">
               <Trash2 size={18} />
@@ -72,7 +72,7 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between mt-4 md:mt-auto pt-2 sm:pt-4 border-t border-gray-100 sm:border-t-0">
           {/* Quantity */}
           <div className="flex items-center border border-gray-200 rounded-md">
             <button
@@ -92,7 +92,7 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
           </div>
 
           {/* Price */}
-          <p className="text-xl font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</p>
+          <p className="text-lg sm:text-xl font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</p>
         </div>
       </div>
     </div>
