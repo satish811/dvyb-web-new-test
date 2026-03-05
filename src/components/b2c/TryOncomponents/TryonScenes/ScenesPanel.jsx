@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Image, Camera, Heart, ArrowRight } from "lucide-react";
+import { Image, Camera, Heart, ArrowRight, X } from "lucide-react";
 import BackgroundGrid from "./BackgroundGrid";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
 
@@ -25,6 +25,16 @@ const ScenesPanel = ({
   const fileInputRef = useRef(null);
   const [customScenes, setCustomScenes] = useState([]);
   const [selectedCustomBg, setSelectedCustomBg] = useState(null);
+
+  const handleRemoveCustomScene = (e, idToRemove) => {
+    e.stopPropagation();
+    setCustomScenes((prev) => prev.filter(scene => scene.id !== idToRemove));
+    if (selectedCustomBg === idToRemove) {
+      setSelectedCustomBg(null);
+      // Optional: If you want removing the active bg to reset to default/2D view,
+      // you could call changeBackground(null, null) or similar here.
+    }
+  };
 
   const handleCameraClick = () => {
     fileInputRef.current?.click();
@@ -66,7 +76,7 @@ const ScenesPanel = ({
       max-h-[calc(100vh-90px)] overflow-y-auto hide-scrollbar
     ">
       {/* ── BACKGROUNDS CARD ─────────────────────────────────── */}
-      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-hidden p-5">
+      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-y-auto hide-scrollbar p-5 max-h-[calc(100vh-100px)]">
 
         {/* ============================================ */}
         {/* SCENES SECTION - Only visible in 2D mode */}
@@ -114,21 +124,28 @@ const ScenesPanel = ({
 
               {/* Custom Scenes Grid */}
               {customScenes.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="grid grid-cols-2 gap-2 mt-3 mb-6">
                   {customScenes.map((scene) => (
-                    <div key={scene.id}>
+                    <div key={scene.id} className="relative group">
+                      <button
+                        onClick={(e) => handleRemoveCustomScene(e, scene.id)}
+                        className="absolute top-1 right-1 z-10 w-5 h-5 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove screen"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                       <button
                         onClick={() => handleCustomBgSelect(scene)}
                         disabled={!tryOnResult || isChangingBackground}
-                        className={`relative cursor-pointer p-1 overflow-hidden transition-all w-full ${selectedCustomBg === scene.id
+                        className={`relative cursor-pointer p-1 overflow-hidden w-full transition-all ${selectedCustomBg === scene.id
                           ? "ring-2 ring-gray-800 ring-offset-2 scale-105"
-                          : "hover:scale-105 border border-gray-200"
+                          : "border border-gray-200 hover:border-gray-400"
                           } ${!tryOnResult || isChangingBackground
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                           }`}
                       >
-                        <div className="aspect-square">
+                        <div className="aspect-square rounded-sm overflow-hidden flex items-center justify-center">
                           <img
                             src={scene.image}
                             alt={scene.name}
@@ -137,7 +154,7 @@ const ScenesPanel = ({
                           />
                         </div>
                       </button>
-                      <p className="text-xs font-medium text-center pt-1 text-gray-600 truncate">
+                      <p className="text-[10px] font-medium text-center pt-1 text-gray-500 truncate px-1">
                         {scene.name}
                       </p>
                     </div>
