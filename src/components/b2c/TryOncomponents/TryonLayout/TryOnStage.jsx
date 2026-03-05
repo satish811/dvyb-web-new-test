@@ -90,7 +90,7 @@ const TryOnStage = ({
                   pointer-events-auto
                   w-[360px] sm:w-[420px] xl:w-[480px]
                   h-auto max-h-[82vh]
-                  object-cover
+                  object-cover object-top
                 "
                 draggable={false}
               />

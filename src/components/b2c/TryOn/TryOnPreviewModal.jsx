@@ -1,9 +1,9 @@
 
-//  REFACTORED VERSION - Clean separation of concerns
-
-import { useEffect, useState, useMemo } from "react";
+// ============================================
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, ArrowRight } from "lucide-react";
+import TryonBackground from "../../../assets/b2c/landing/Landing-villy/TryonBackground.png";
 
 // ============================================
 // CUSTOM HOOKS (Business Logic)
@@ -236,7 +236,15 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   // MAIN RENDER
   // ============================================
   return (
-    <div className="fixed inset-0 overflow-y-auto z-50 hide-scrollbar bg-[#F8F0F8]">
+    <div
+      className="fixed inset-0 overflow-y-auto z-50 hide-scrollbar"
+      style={{
+        backgroundImage: `url(${TryonBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
 
       {/* ============================================ */}
       {/* HEADER */}
