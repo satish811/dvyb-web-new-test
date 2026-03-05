@@ -24,7 +24,7 @@ export default function PopularProductsSection({ products: firebaseProducts = []
             {/* Header with Vectors */}
             <div className="flex items-center justify-center gap-2 md:gap-4 2xl:gap-8 mb-8 md:mb-12 2xl:mb-20 px-4">
                 <img src={vector1} alt="decoration left" className="w-[60px] md:w-[150px] 2xl:w-[200px] object-contain" />
-                <h2 className="text-2xl md:text-5xl 2xl:text-7xl text-[#1F2937] font-serif tracking-wide text-center" style={{ fontFamily: 'Antiga, serif' }}>
+                <h2 className="text-center" style={{ fontFamily: "'Merienda', cursive", fontWeight: 400, fontSize: '32px', lineHeight: '44.31px', letterSpacing: '0%', color: '#171717' }}>
                     Popular Products
                 </h2>
                 <img src={vector2} alt="decoration right" className="w-[60px] md:w-[150px] 2xl:w-[200px] object-contain" />

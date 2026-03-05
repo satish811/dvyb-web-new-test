@@ -156,59 +156,37 @@ const ProductActionButtons = ({
         {/* Row for Add to cart and Buy Now */}
 
         <div className="flex gap-4">
-          {/* ADD TO CART / PRODUCT IN CART */}
-          {isProductInCart ? (
-            <div className="flex-1 flex flex-col gap-2">
-              {/* In-cart state: disabled button */}
-              <button
-                disabled
-                className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none bg-green-600 text-white cursor-not-allowed opacity-90"
-              >
-                Product in Cart
-              </button>
-              {/* Go to Cart link */}
-              <button
-                onClick={() => navigate("/cart")}
-                className="flex-1 flex items-center justify-center gap-2 py-2 font-medium text-sm rounded-none border border-[#88117F] text-[#88117F] hover:bg-[#88117F] hover:text-white transition-all duration-200"
-              >
-                Go to Cart
-              </button>
-            </div>
-          ) : (
-            /* Normal Add to Cart button */
-            <button
-              onClick={handleAddToCartClick}
-              disabled={addingToCart}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none border-2
-    ${addingToCart
-                  ? "border-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-white border-[#88117F] text-[#88117F]"
-                }
-    transition-all duration-200 disabled:opacity-50`}
-            >
-              {addingToCart ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-[#88117F] border-t-transparent rounded-full animate-spin"></div>
-                  Adding...
-                </>
-              ) : (
-                <>
-                  Add to cart
-                </>
-              )}
-            </button>
-          )}
+          {/* ADD TO CART / GO TO CART */}
+          <button
+            onClick={isProductInCart ? () => navigate("/cart") : handleAddToCartClick}
+            disabled={addingToCart && !isProductInCart}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none border border-[#88117F]
+              ${(addingToCart && !isProductInCart)
+                ? "border-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-white text-[#88117F] hover:bg-[#88117F] hover:text-white"
+              }
+              transition-all duration-200 disabled:opacity-50`}
+          >
+            {(addingToCart && !isProductInCart) ? (
+              <>
+                <div className="w-4 h-4 border-2 border-[#88117F] border-t-transparent rounded-full animate-spin"></div>
+                Adding...
+              </>
+            ) : (
+              isProductInCart ? "Go to cart" : "Add to cart"
+            )}
+          </button>
 
           {/* BUY NOW */}
           <button
             onClick={handleBuyNowClick}
             disabled={addingToCart}
-            className={`flex-1 flex items-center justify-center gap-2 border-2 py-4 font-semibold text-base rounded-none
-    ${addingToCart
-                ? "border-gray-400 text-gray-400 bg-gray-300 cursor-not-allowed"
-                : "border-[#88117F] bg-[#88117F] text-white"
+            className={`flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-base rounded-none
+              ${addingToCart
+                ? "border-2 border-gray-400 text-gray-400 bg-gray-300 cursor-not-allowed"
+                : "bg-[#88117F] text-white hover:opacity-90 hover:shadow-md"
               }
-    transition-all duration-200 disabled:opacity-50`}
+              transition-all duration-200 disabled:opacity-50`}
             style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
           >
             {addingToCart ? (
@@ -218,7 +196,7 @@ const ProductActionButtons = ({
               </>
             ) : (
               <>
-                {isB2BUser ? "Buy Now (Bulk)" : "Buy Now"}
+                {isB2BUser ? "BUY NOW (BULK)" : "BUY NOW"}
               </>
             )}
           </button>
@@ -235,7 +213,7 @@ const ProductActionButtons = ({
         {!isB2BUser && (
           <button
             onClick={handleVirtualTryOnClick}
-            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white"
+            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md"
             style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
           >
             <img

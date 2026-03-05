@@ -11,17 +11,15 @@ const TryOnHeader = () => {
 
   return (
     <div className="
-  absolute 
-  top-4 md:top-6
-  left-2 md:left-4
+  relative w-full flex justify-start
+  pt-4 px-2 pb-2
+  lg:absolute lg:top-6 lg:left-4 lg:p-0
   z-20
-">
-
-      <button
-        onClick={()=>{
+">      <button
+        onClick={() => {
           navigate(-1)
         }}
-        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-hoverBg text-white transition-all text-sm font-medium"
+        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent hover:opacity-80 text-[#74136C] transition-all text-sm font-medium"
       >
         <ArrowLeft size={18} />
         Back to Products

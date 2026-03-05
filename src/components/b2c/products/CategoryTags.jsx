@@ -25,6 +25,7 @@ export const normalizeCategory = (categoryName) => {
         "anarkalis": "anarkalis",
         "anarkali": "anarkali",
         "shararas": "shararas",
+        "sharara": "shararas",
         "pret": "pret",
         "fusion": "fusion",
         "wedding": "wedding",
@@ -170,8 +171,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                         className={`
                             px-4 py-1.5 text-sm font-medium rounded-full border transition-all duration-200
                             ${isAllActive
-                                ? "bg-black text-white border-black"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                                ? "bg-black text-white border-black shadow-md"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-black hover:text-white hover:border-black hover:shadow-lg hover:scale-105 active:scale-95"
                             }
                         `}
                     >
@@ -204,8 +205,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                                 className={`
                                     flex-shrink-0 px-4 py-1.5 text-sm font-medium border transition-all duration-200 whitespace-nowrap
                                     ${isActive
-                                        ? "bg-black text-white border-black"
-                                        : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                                        ? "bg-black text-white border-black shadow-md"
+                                        : "bg-white text-gray-700 border-gray-300 hover:bg-black hover:text-white hover:border-black hover:shadow-lg hover:scale-105 active:scale-95"
                                     }
                                 `}
                             >
@@ -228,14 +229,16 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     className="px-4 py-1.5 transition-all duration-200 whitespace-nowrap"
                     style={{
                         backgroundColor: '#ffffff',
-                        color: '#33022F',
-                        fontFamily: 'Outfit',
-                        fontWeight: 700,
+                        color: 'var(--villy-primary, #33022F)',
+                        fontFamily: 'Outfit, sans-serif',
+                        fontWeight: 500,
+                        fontStyle: 'normal',
                         fontSize: '16px',
                         lineHeight: '14.77px',
                         letterSpacing: '1px',
                         textAlign: 'center',
                         textTransform: 'uppercase',
+                        opacity: 1
                     }}
                 >
                     {currentCategory?.toUpperCase().replace("-", " ") || "WOMEN"}
@@ -274,8 +277,8 @@ const CategoryTags = ({ products = [], currentCategory, availableSubcategories =
                     <div
                         ref={scrollContainerRef}
                         className={`flex items-center gap-2 py-2 px-2 ${shouldShowArrows
-                                ? 'overflow-x-auto scroll-smooth'
-                                : 'overflow-x-hidden'
+                            ? 'overflow-x-auto scroll-smooth'
+                            : 'overflow-x-hidden'
                             }`}
                         style={{
                             scrollbarWidth: 'none',

@@ -95,7 +95,7 @@ const ProductTitleSection = ({
         />
       )}
 
-      <div className="flex flex-col" style={{ gap: "1px" }}>
+      <div className="flex flex-col mt-4 md:mt-6" style={{ gap: "1px" }}>
         {/* Title + Icons */}
         <div className="flex items-start justify-between">
           {/* Product Title */}

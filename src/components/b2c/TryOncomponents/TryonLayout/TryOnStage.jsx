@@ -28,11 +28,11 @@ const TryOnStage = ({
   return (
 
     <div className="
-  absolute inset-0 
-  flex items-center justify-center 
-  pointer-events-none
-  px-[320px] xl:px-[360px] 2xl:px-[420px]
-  pb-[60vh] lg:pb-0
+  lg:absolute lg:inset-0 
+  flex flex-col lg:items-center lg:justify-center 
+  lg:pointer-events-none
+  lg:px-[320px] xl:px-[360px] 2xl:px-[420px]
+  relative w-full
 ">
 
       {/* ============================================ */}
@@ -80,16 +80,16 @@ const TryOnStage = ({
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "2D" && getCurrentDisplayImage() && (
         <div className="flex flex-col items-center h-full justify-center">
-          <div className="bg-white p-4 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-4">
+          <div className="bg-white p-1.5 sm:p-2 rounded-[36px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-2">
             {/* Image */}
-            <div className="relative rounded-[24px] overflow-hidden w-full h-full flex items-center justify-center">
+            <div className="relative rounded-[30px] border-[3.5px] border-[#009EE3] overflow-hidden w-full h-full flex items-center justify-center">
               <img
                 src={getCurrentDisplayImage()}
                 alt="Try-on result"
                 className="
                   pointer-events-auto
-                  w-[360px] sm:w-[400px] xl:w-[440px]
-                  h-auto max-h-[65vh]
+                  w-[360px] sm:w-[420px] xl:w-[480px]
+                  h-auto max-h-[82vh]
                   object-contain
                 "
                 draggable={false}
@@ -99,7 +99,7 @@ const TryOnStage = ({
 
           {/* AI Disclaimer — below the image box */}
           <div
-            className="mt-4 w-[360px] sm:w-[400px] xl:w-[440px] px-3 py-2 rounded-lg flex items-center justify-center gap-2 mx-auto"
+            className="mt-2 w-[360px] sm:w-[400px] xl:w-[480px] px-3 rounded-lg flex items-center justify-center gap-2 mx-auto"
             style={{
               background: "transparent",
             }}

@@ -8,7 +8,7 @@ import ProductLayout from "../../layout/ProductLayout";
  * Note: Filter management is handled by ProductLayout.
  * ProductLayout syncs the category from URL params to FilterContext automatically.
  */
-const CategoryPage = ({ products }) => {
+const CategoryPage = ({ products, loading }) => {
     const { category } = useParams();
 
     // Validate category exists
@@ -16,7 +16,7 @@ const CategoryPage = ({ products }) => {
         return <Navigate to="/womenwear" replace />;
     }
 
-    return <ProductLayout products={products} categoryFromRoute={category} />;
+    return <ProductLayout products={products} categoryFromRoute={category} loading={loading} />;
 };
 
 export default CategoryPage;

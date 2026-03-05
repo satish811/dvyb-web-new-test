@@ -324,6 +324,12 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         isChangingBackground={isChangingBackground}
         tryOnResult={tryOnResult}
         tryOnData={tryOnData}
+        pendingBlouse={pendingBlouse}
+        setPendingBlouse={setPendingBlouse}
+        pendingNeck={pendingNeck}
+        setPendingNeck={setPendingNeck}
+        isApplying={isApplying}
+        applyChanges={applyChanges}
         // handleToggleWishlist={handleToggleWishlist}
         // wishlistLoading={wishlistLoading}
         // isInWishlistState={isInWishlistState}
@@ -346,7 +352,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
               onClick={() => setShowBgWarning(false)}
               className="w-full bg-primary text-white py-2 rounded-lg"
             >
-              Got it
+              Got itt
             </button>
           </div>
         </div>
@@ -354,7 +360,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
       {/* ============================================ */}
       {/* BOTTOM ACTION BAR (Floating) */}
       {/* ============================================ */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 hidden lg:flex">
+      {/* <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 hidden lg:flex">
         <div className="bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-4 py-3 flex items-center gap-6">
           <button
             onClick={() => {
@@ -378,7 +384,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
             <span>{isInWishlistState ? "Added to Wishlist" : "Add to Wishlist"}</span>
           </button>
         </div>
-      </div>
+      </div> */}
+
+
 
     </div>
   );

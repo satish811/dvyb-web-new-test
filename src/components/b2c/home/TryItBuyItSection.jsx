@@ -54,7 +54,7 @@ export default function TryItBuyItSection() {
     const scrollContainerRef = useRef(null);
 
     return (
-        <section className="relative w-full bg-[#800576] py-10 md:py-16 overflow-hidden">
+        <section className="relative w-full bg-gradient-to-b from-[#6D0063] via-[#800576] to-[#8B4789] py-10 md:py-16 overflow-hidden">
 
             {/* White Background for the Pattern Area - Restores the original look for the bottom strip */}
             <div className="absolute inset-x-0 bottom-0 h-[200px] md:h-[320px] 2xl:h-[450px] bg-white z-0" />

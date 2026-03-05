@@ -20,7 +20,7 @@ export default function ReviewFormModal({
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, []);
 

@@ -135,9 +135,9 @@ const UploadSelfieModal = ({
     // Define all model arrays
     const lehengamodels = [
       {
-      modelName: "Model 1",
-      modelimg:
-        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
+        modelName: "Model 1",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
       },
       {
         modelName: "Model",
@@ -146,14 +146,14 @@ const UploadSelfieModal = ({
       },
 
       {
-           modelName: "Model 3",
-      modelimg:
-        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
       },
       {
-           modelName: "Model 4",
-      modelimg:
-        "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+        modelName: "Model 4",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
       },
 
 
@@ -649,171 +649,110 @@ const UploadSelfieModal = ({
       </button>
 
       {/* Step 1: Initial Selection */}
-      {/* Step 1: Initial Selection */}
       {step === 1 && (
-        <div className="flex flex-col md:flex-row bg-white md:rounded-xl md:gap-[26px] overflow-hidden md:shadow-lg  w-full md:w-[838px] h-auto md:h-[564px] relative">
-          {/* CLOSE BUTTON - Top Right Corner */}
+        <div className="flex flex-col md:flex-row bg-white w-full md:w-[838px] md:h-[564px] max-h-[90vh] overflow-y-auto md:overflow-hidden rounded-[20px] shadow-2xl relative">
+
+          {/* CLOSE BUTTON (Over Image on Mobile) */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
+            className="absolute top-5 right-5 z-10 w-8 h-8 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/20 rounded-full transition-all"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+            <X size={20} strokeWidth={1.5} />
           </button>
 
-          {/* LEFT IMAGE SECTION */}
-          <div className="flex justify-center items-center md:p-3">
+          {/* TOP IMAGE SECTION (Mobile) / LEFT (Desktop) */}
+          <div className="w-full md:w-[400px] shrink-0">
             <img
               src={step1img}
-              alt="Garment"
-              className="w-full h-[240px] md:w-[400px] md:h-[532px] object-cover"
+              alt="Model Preview"
+              className="w-full h-[280px] md:h-full object-cover md:rounded-l-[20px]"
             />
           </div>
 
-          {/* RIGHT SIDE CONTENT */}
-          <div className="flex flex-col pt-4 px-4 md:pt-16 md:px-0 md:w-[400px] w-full pb-16 md:pb-0 relative">
-            {/* HEADING - Shows first on mobile, after card on desktop */}
-            <div className="block md:hidden">
-              <h2 className="text-2xl text-start font-semibold text-black">Try-On</h2>
-              <p className="text-gray-600 text-sm mb-4 mt-1 font-medium">Let's go shopping</p>
-            </div>
+          {/* CONTENT SECTION */}
+          <div className="flex flex-col p-6 w-full relative h-full">
+
+            {/* HEADINGS */}
+            <h2 className="text-[28px] font-bold text-gray-900 leading-tight">Try-On</h2>
+            <p className="text-gray-600 text-[15px] font-semibold mb-6 mt-1 opacity-80">Let's go shopping</p>
 
             {/* SELECTED DRESS CARD */}
-            <div className="w-full md:w-[180px] rounded-xl shadow-md border p-2 border-gray-200 mb-5 md:mb-0">
-              <div className="flex justify-between items-center p-3 bg-[#EEF7F0] border border-[#B8E3C6] py-1 rounded-md">
-                <p className="text-[10px] font-medium text-[#15912C]">SELECTED DRESS</p>
-                <img src={Tickic} className="h-4" alt="" />
+            <div className="w-full rounded-[16px] shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100 p-3 mb-8">
+              <div className="flex justify-between items-center bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2 rounded-lg mb-4">
+                <p className="text-[11px] font-bold tracking-wide text-[#16A34A]">SELECTED DRESS</p>
+                <div className="bg-[#16A34A] rounded-full text-white w-[18px] h-[18px] flex items-center justify-center">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
               </div>
-              <div className="flex gap-3 mt-3 items-center">
-                <img src={garmentImage} className="h-12 w-12 rounded-md object-cover" alt="" />
-                <p className="text-xs text-gray-700 line-clamp-2">{garmentName}</p>
+              <div className="flex gap-4 items-center px-1 pb-1">
+                <img src={garmentImage} className="h-[52px] w-[52px] rounded-lg object-cover shadow-sm bg-gray-50" alt="Garment" />
+                <p className="text-[14px] font-medium text-gray-800 line-clamp-2 pr-2">{garmentName}</p>
               </div>
             </div>
 
-            {/* HEADING - Shows after card on desktop */}
-            <div className="hidden md:block">
-              <h2 className="text-3xl text-start font-semibold mt-6 text-black">Try-On</h2>
-              <p className="text-gray-600 text-sm mb-5 mt-2 font-medium">Let's go shopping</p>
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-col gap-3.5 mt-auto mb-4">
+              <button
+                onClick={() => setStep(2)}
+                className="w-full text-white py-[14px] rounded-[10px] font-medium text-[15px] hover:opacity-95 transition-all shadow-sm"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
+              >
+                Upload a picture
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowModelSelector(true);
+                  setStep(null);
+                }}
+                className="w-full bg-white py-[14px] rounded-[10px] font-medium text-[15px] transition-all"
+                style={{ border: '1.5px solid var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
+              >
+                Select a model
+              </button>
             </div>
-
-            {/* BUTTONS */}
-            <button
-              onClick={() => setStep(2)}
-              className="w-full md:w-[345px] text-white h-[44px] text-sm hover:opacity-90 transition rounded-md md:rounded-none"
-              style={{ background: 'var(--villy-primary, #33022F)' }}
-            >
-              Upload a picture
-            </button>
-
-            <button
-              onClick={() => {
-                setShowModelSelector(true);
-                setStep(null); // hide Step1
-              }}
-              className="w-full md:w-[345px] border mt-2 h-[44px] text-sm hover:text-white transition rounded-md md:rounded-none"
-              style={{ borderColor: 'var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--villy-primary, #33022F)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              Select a model
-            </button>
 
             {/* FOOTNOTE */}
-            <p className="text-[10px] mt-4 text-gray-600 leading-tight md:max-w-[320px] text-start">
-              Hey! To use the 2D TRY ON feature, just upload or take a selfie or{" "}
-              <br className="hidden md:inline" />
-              Press <span className="text-primary text-xs font-medium">SKIP</span> to check out the
-              models you can try on!
+            <p className="text-[11.5px] text-gray-500 leading-snug px-1">
+              Hey! To use the 2D TRY ON feature, just upload or take a selfie or <br />
+              Press <button onClick={onClose} className="font-bold cursor-pointer inline" style={{ color: 'var(--villy-primary, #33022F)' }}>SKIP</button> to check out the models you can try on!
             </p>
 
-            {/* SKIP BUTTON (BOTTOM-RIGHT) */}
-            <button
-              onClick={onClose}
-              className="absolute bottom-4 right-4 cursor-pointer text-gray-600 border border-gray-300 px-4 py-1 rounded-md text-sm font-medium flex items-center gap-1 hover:text-gray-800"
-            >
-              SKIP
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
           </div>
         </div>
       )}
 
       {/* Step 2: Upload Instructions */}
       {step === 2 && (
-        <div className="p-4 items-center text-center bg-white justify-center w-full md:w-[818px] overflow-y-auto relative max-w-full">
+        <div className="p-5 md:p-8 flex flex-col items-center bg-white w-full md:w-[818px] max-w-[95vw] md:max-w-full max-h-[90vh] md:max-h-[85vh] overflow-y-auto relative rounded-[20px] shadow-2xl">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-500 hover:text-gray-700"
+            className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-900 hover:bg-red-50 rounded-full transition-colors duration-200"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <X size={20} strokeWidth={1.5} />
           </button>
 
-          <button
-            onClick={() => setStep(1)}
-            className="mb-4 md:mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-          >
-            {/* <ArrowLeft size={20} /> Back */}
-          </button>
-
-          <h2 className="text-base md:text-xl font-bold text-gray-900 max-w-full md:max-w-2xl pr-8 md:pr-0">
+          <h2 className="text-[17px] md:text-xl font-bold text-gray-900 mt-2 text-center max-w-[280px] md:max-w-none px-4">
             Upload your full photo for the best try-on experience
           </h2>
-          <p className="text-xl">— we'll do the rest!</p>
-          <div className="mt-4 md:mt-6 text-center justify-center -ml-24 flex flex-col md:flex-row md:gap-8 gap-0 md:items-start">
+          <p className="text-[16px] md:text-xl text-gray-700 font-medium mt-1 mb-5 text-center">— we'll do the rest!</p>
+
+          <div className="flex flex-col md:flex-row justify-center items-center md:items-start w-full gap-5 md:gap-8 pb-4">
             {/* Example Image */}
-            <div className="flex justify-center w-full md:w-[230px] h-auto md:h-[369px] mb-4 md:mb-0">
+            <div className="w-full max-w-[220px] md:max-w-[240px] shrink-0">
               <img
                 src="https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg"
                 alt="Example"
-                className="w-full max-w-[280px] md:max-w-none md:w-full h-auto object-cover"
+                className="w-full h-[320px] md:h-[400px] object-cover rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100"
               />
             </div>
 
             {/* Instructions + Upload */}
-            <div className="w-full md:w-[309px] px-0">
+            <div className="flex flex-col w-full max-w-[340px] md:max-w-[360px] shrink-0 px-2 md:px-0 mt-2 md:mt-0">
               {/* Instruction Box */}
               <div
-                className="rounded-lg p-4 md:p-5 w-full md:w-[388px] bg-[#FFF8F4]"
+                className="rounded-xl p-5 w-full bg-[#FFF8F4] mb-3"
                 style={{
                   backgroundImage: `
               repeating-linear-gradient(0deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
@@ -826,37 +765,36 @@ const UploadSelfieModal = ({
                   backgroundRepeat: "no-repeat",
                 }}
               >
-                <h3 className="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">
+                <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">
                   INSTRUCTIONS:
                 </h3>
 
-                <ul className="space-y-1.5 md:space-y-2 mt-3 md:mt-5 text-xs md:text-sm">
+                <ul className="space-y-2 mt-2 text-[12.5px] md:text-sm">
                   <li className="flex gap-2 text-[#7F6301]">
-                    <span className="text-[#7F6301] ml-3 font-medium">
+                    <span className="text-[#7F6301] font-medium leading-snug">
                       • Stand straight and face forward
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
-                    <span className="text-[#7F6301] ml-3 font-medium">
+                    <span className="text-[#7F6301] font-medium leading-snug">
                       • Maintain good lighting and contrast
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
-                    <span className="text-[#7F6301] ml-3 font-medium">
+                    <span className="text-[#7F6301] font-medium leading-snug">
                       • Avoid filters or busy backgrounds
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
-                    <span className="text-[#7F6301] ml-3 font-medium">
+                    <span className="text-[#7F6301] font-medium leading-snug">
                       • Keep file size under 2MB
                     </span>
                   </li>
                 </ul>
               </div>
 
-              <p className="text-xs md:text-sm text-gray-700 font-medium mt-3 md:mt-4 w-full md:w-[388px] leading-relaxed">
-                Your photos are never stored in our system. We respect your privacy and are
-                committed to protecting your personal data.
+              <p className="text-[11px] md:text-sm text-gray-500 font-medium mb-5 px-1 leading-snug text-center md:text-left">
+                Your photos are never stored in our system. We respect your privacy and are committed to protecting your personal data.
               </p>
 
               {/* Upload Button */}
@@ -869,7 +807,8 @@ const UploadSelfieModal = ({
               />
               <label
                 htmlFor="uploadInput"
-                className="mt-3 md:mt-4 block w-full md:w-[388px] bg-primary hover:bg-hoverBg text-white py-3 text-center font-medium cursor-pointer transition-colors text-sm"
+                className="w-full text-white py-3.5 text-center font-semibold rounded-lg cursor-pointer transition-all shadow-sm mb-3 text-[14px]"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 Click to upload
               </label>
@@ -877,9 +816,12 @@ const UploadSelfieModal = ({
               {/* Camera Button */}
               <button
                 onClick={startCamera}
-                className="mt-3 w-full md:w-[388px] border border-[#8A0000] text-primary py-3 font-medium hover:bg-hoverBg hover:text-white cursor-pointer transition text-sm flex items-center justify-center gap-2"
+                className="w-full border-2 py-3 font-semibold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 text-[14px]"
+                style={{ borderColor: 'var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--villy-primary, #33022F)'; e.currentTarget.style.color = '#FFF'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--villy-primary, #33022F)'; }}
               >
-                <Camera size={18} />
+                <Camera size={18} strokeWidth={2.5} />
                 Use camera
               </button>
             </div>
@@ -889,7 +831,7 @@ const UploadSelfieModal = ({
 
       {/* Step 3: Uploading */}
       {step === 3 && (
-        <div className="p-8 flex flex-col  bg-white items-center justify-center overflo text-center min-h-[400px]">
+        <div className="p-6 md:p-8 flex flex-col w-full max-w-md rounded-xl shadow-lg bg-white items-center justify-center overflow-y-auto max-h-[90vh] md:max-h-[85vh] text-center min-h-[400px]">
           <div className="relative bg-gray-100 rounded-xl w-full max-w-sm overflow-hidden mb-6">
             <img
               src={selectedImage}
@@ -921,7 +863,7 @@ const UploadSelfieModal = ({
 
       {/* Step 4: Success */}
       {step === 4 && (
-        <div className="p-8 flex flex-col items-center bg-white justify-center text-center">
+        <div className="p-6 md:p-8 flex flex-col w-full max-w-md rounded-xl shadow-lg bg-white items-center justify-center overflow-y-auto max-h-[90vh] md:max-h-[85vh] text-center">
           <img
             src={selectedImage}
             alt="Success"
@@ -953,7 +895,7 @@ const UploadSelfieModal = ({
 
       {/* Step 5: Error */}
       {step === 5 && (
-        <div className="p-8 flex bg-white  flex-col items-center justify-center text-center">
+        <div className="p-6 md:p-8 flex flex-col w-full max-w-md rounded-xl shadow-lg bg-white items-center justify-center overflow-y-auto max-h-[90vh] md:max-h-[85vh] text-center">
           <div className=" w-full max-w-sm ">
             <img
               src={selectedImage}
@@ -999,7 +941,7 @@ const UploadSelfieModal = ({
 
       {/* Step 6: Camera Interface */}
       {step === 6 && (
-        <div className="p-4 bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col items-center relative">
+        <div className="p-4 bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col items-center relative overflow-y-auto max-h-[90vh] md:max-h-[85vh]">
           <button
             onClick={() => {
               stopCamera();
@@ -1051,7 +993,7 @@ const UploadSelfieModal = ({
 
       {/* Model Selector - Image 1 UI */}
       {showModelSelector && !showModelPreview && (
-        <div className="bg-white w-full max-w-4xl relative shadow-lg">
+        <div className="bg-white w-full max-w-4xl relative shadow-lg overflow-y-auto max-h-[90vh] md:max-h-[85vh] rounded-xl">
           {/* Close Button */}
           <button
             onClick={() => {
@@ -1077,9 +1019,9 @@ const UploadSelfieModal = ({
 
           {/* Toggle Section at Top */}
           {userHasTryOn && (
-            <div className="bg-[#f5e6e6] border-b border-gray-200 px-6 py-3">
-              <div className="flex items-center justify-between max-w-md">
-                <span className="text-sm font-medium text-gray-700">Your model</span>
+            <div className="bg-[#fceeed] border-b border-gray-200 px-4 md:px-6 py-3.5 md:py-3 rounded-t-xl relative">
+              <div className="flex items-center justify-center md:justify-start gap-4 md:justify-between max-w-md pr-8 md:pr-0 mx-auto md:mx-0">
+                <span className="text-sm font-semibold text-gray-700">Your model</span>
 
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -1095,7 +1037,7 @@ const UploadSelfieModal = ({
                   <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--villy-primary, #33022F)' }}></div>
                 </label>
 
-                <span className="text-sm font-medium text-gray-700">Villy Models</span>
+                <span className="text-sm font-semibold text-gray-700">Villy Models</span>
               </div>
             </div>
           )}
@@ -1155,7 +1097,7 @@ const UploadSelfieModal = ({
             {/* DVYB STATIC MODELS - Display ONLY when toggle is ON OR user has no try-on */}
             {(useUserModel || !userHasTryOn) && (
               <div className="mb-6">
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   {models.map((model, index) => (
                     <div
                       key={index}
@@ -1256,7 +1198,7 @@ const UploadSelfieModal = ({
       {/* Model Preview - Image 2 UI */}
 
       {showModelPreview && selectedModel && (
-        <div className="p-6 sm:p-12 w-full bg-white md:max-w-[818px] mx-auto relative">
+        <div className="p-6 sm:p-12 w-full bg-white md:max-w-[818px] mx-auto relative overflow-y-auto max-h-[90vh] md:max-h-[85vh] rounded-xl shadow-lg">
           {/* Close Button */}
           <button
             onClick={() => {
@@ -1315,7 +1257,7 @@ const UploadSelfieModal = ({
             </div>
           </div>
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 mt-4">
             {/* Select Another Dress */}
             <button
               onClick={() => {
@@ -1342,7 +1284,7 @@ const UploadSelfieModal = ({
           </div>
 
           {/* ---------- Continue button (bottom-right) ---------- */}
-          <div className="flex justify-end mt-8">
+          <div className="flex justify-center md:justify-end mt-6 md:mt-8">
             <button
               onClick={async () => {
                 console.log("🔘 Model Preview Continue clicked");
@@ -1384,7 +1326,7 @@ const UploadSelfieModal = ({
                 });
               }}
               disabled={isStoringData}
-              className={`group flex items-center gap-2 px-4 py-2 bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all ${isStoringData ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`group flex items-center justify-center gap-2 px-4 py-3 md:py-2 w-full md:w-auto bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all ${isStoringData ? 'opacity-50 cursor-not-allowed' : ''}`}
               onMouseEnter={(e) => {
                 if (!isStoringData) {
                   e.currentTarget.style.background = 'var(--villy-primary, #33022F)';
