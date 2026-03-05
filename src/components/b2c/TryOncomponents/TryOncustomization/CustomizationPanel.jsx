@@ -53,7 +53,7 @@ const CustomizationPanel = ({
 
         {/* ── HEADER ────────────────────────────────────────────────── */}
         <div className="flex items-center justify-center gap-2 mb-5">
-          <Palette className="w-5 h-5 text-gray-600" />
+          {/* <Palette className="w-5 h-5 text-gray-600" /> */}
           <h3 className="text-sm font-semibold text-gray-800">
             Choose Your Style
           </h3>
