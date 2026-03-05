@@ -360,7 +360,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
       {/* ============================================ */}
       {/* BOTTOM ACTION BAR (Floating) */}
       {/* ============================================ */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 hidden lg:flex">
+      {/* <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30 hidden lg:flex">
         <div className="bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-4 py-3 flex items-center gap-6">
           <button
             onClick={() => {
@@ -384,7 +384,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
             <span>{isInWishlistState ? "Added to Wishlist" : "Add to Wishlist"}</span>
           </button>
         </div>
-      </div>
+      </div> */}
 
 
 
