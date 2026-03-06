@@ -776,7 +776,7 @@ const MyInfo = () => {
   // Main View - Role-specific user details, shared address section
   return (
     <div className="min-h-screen bg-white">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-0 pb-6 lg:pb-12">
         <div className="max-w-7xl mx-auto">
           {userRole === "B2B" ? (
             <B2BUserDetails userData={b2bData} />
