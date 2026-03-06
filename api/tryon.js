@@ -1902,13 +1902,24 @@ blouseType.toLowerCase().includes('cap') ?
 - Do NOT extend past the top of the upper arm` :
 
 blouseType.toLowerCase().includes('full') || blouseType.toLowerCase().includes('long') ?
-`⚠️ FULL / LONG SLEEVES — CRITICAL
-- THE SLEEVE FABRIC MUST COVER THE ENTIRE FOREARM FROM ELBOW ALL THE WAY TO THE WRIST BONE
-- Hem sits AT the wrist joint — the hands are visible BELOW the sleeve hem
-- ZERO exposed forearm skin between the elbow and the wrist
-- VISUAL TEST: Mentally trace a path from the elbow crease down to the wrist bump — every single centimetre of that path must be covered by sleeve fabric. If even 1 cm of forearm skin is exposed → WRONG → REGENERATE
-- The sleeve must be long enough that you can see the sleeve cuff/hem right above where the hand begins
-- Fitted or slightly loose with optional subtle cuff at wrist` :
+`⚠️ FULL SLEEVES — VERY STRICT (NOT 3/4)
+
+- Sleeve fabric MUST cover the ENTIRE forearm from elbow crease to wrist joint.
+- Sleeve hem MUST reach EXACTLY the wrist bone (where the hand begins).
+- Hands must be fully visible BELOW the sleeve hem.
+- ZERO exposed skin allowed between elbow and wrist.
+
+STRICT VISUAL CHECK:
+- Trace from elbow crease → wrist bump.
+- Every single centimeter MUST be covered.
+- If even 1 cm forearm skin is visible → WRONG → REGENERATE.
+
+- Sleeves must NEVER stop mid-forearm (NO 3/4 sleeves).
+- Fitted or slightly relaxed fit allowed.
+- Optional subtle cuff at wrist is allowed.
+
+ABSOLUTE RULE:
+If sleeve length looks even slightly shorter than full wrist length → WRONG → REGENERATE.` :
 
 blouseType.toLowerCase().includes('3/4') || blouseType.toLowerCase().includes('three quarter') || blouseType.toLowerCase().includes('3-4') || blouseType.toLowerCase().includes('three-quarter') ?
 `THREE QUARTER / 3/4 SLEEVES
@@ -2074,12 +2085,31 @@ ${neckType.toLowerCase().includes('boat') ?
 - Moderate depth, elegant drape` :
 
               neckType.toLowerCase().includes('collar') ?
-                `COLLAR NECK / SHIRT COLLAR
-- Small structured collar with short front flaps
-- Shirt-inspired but proportioned for blouse design
-- Sharp or rounded flap edges for subtle statement
-- Covers base of neck / collarbone area
-- Elegant Indo-western, semi-formal look` :
+                `COLLAR NECK BLOUSE — OPEN SHIRT COLLAR — STRICT
+
+COLLAR STRUCTURE (exactly like an open dress shirt):
+- Large, wide, prominent shirt-style collar with two broad flaps spread flat outward over the chest/shoulders.
+- Collar flaps must be clearly visible, wide, and well-defined — like a formal shirt worn open at the top.
+- The front of the collar is OPEN — no button at the top — forming a natural V or keyhole opening at center front.
+- Collar points are sharp, long, and spread wide apart (spread collar style).
+- The collar band wraps around the base of the neck and is attached seamlessly to the blouse.
+- Collar fabric matches the blouse — same color, same texture, same print.
+- Collar must lie flat and neat against the chest — NOT standing up, NOT ruffled, NOT floppy.
+- The collar must cast a realistic shadow beneath it on the blouse, showing it is 3D and physical.
+
+NECKLINE BENEATH THE COLLAR:
+- A soft V-shape or small keyhole opening is visible at center front between the two collar flaps.
+- The V opening should be modest — not too deep, approximately 2–3 inches below the collar band.
+- Collar flaps naturally frame this V-opening on both sides.
+
+ATTACHMENT RULE:
+- The collar MUST be fully integrated into the blouse — it grows directly from the blouse neckline.
+- Seam between collar and blouse must look natural and seamless.
+- ABSOLUTE RULE: If the collar is not wide and prominently visible like an open dress shirt → WRONG → REGENERATE.
+- ABSOLUTE RULE: If the collar appears detached, floating, or costume-like → WRONG → REGENERATE.
+- ABSOLUTE RULE: If the front is closed/buttoned all the way up instead of open → WRONG → REGENERATE.
+
+- Clean, sharp, stylish Indo-western semi-formal saree blouse aesthetic.` :
 
      `Apply a clean, well-tailored ${neckType} neckline that fits traditional saree blouse aesthetics – moderate coverage, realistic tailoring`}
 

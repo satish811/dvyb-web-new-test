@@ -40,6 +40,8 @@ const TryOnMobileSheet = ({
   wishlistLoading,
   isInWishlistState,
   navigate,
+  performTryOn,
+  isProcessing,
 }) => {
   const isSaree = tryOnData?.outfitType?.toLowerCase() === 'saree';
 
@@ -90,10 +92,11 @@ const TryOnMobileSheet = ({
       {/* Reset Button */}
       <div className="flex justify-center -mt-3 mb-1">
         <button
-          onClick={() => window.location.reload()}
-          className="flex items-center gap-1.5 text-sm text-[#4a044e] font-medium transition-opacity hover:opacity-80"
+          onClick={() => performTryOn && performTryOn({ force: true })}
+          disabled={isProcessing}
+          className="flex items-center gap-1.5 text-sm text-[#4a044e] font-medium transition-opacity hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <RotateCcw className="w-4 h-4" /> Re-Try
+          <RotateCcw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} /> Re-Try
         </button>
       </div>
 

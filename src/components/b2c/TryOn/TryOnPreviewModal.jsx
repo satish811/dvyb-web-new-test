@@ -190,8 +190,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
 
   const handleReset = () => {
     resetBackground();
-    setCurrentImage(tryOnResult);
+    setCurrentImage(null);
     setViewMode("2D");
+    performTryOn({ force: true });
   };
 
   const handleClose = () => {
@@ -339,6 +340,8 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         setPendingNeck={setPendingNeck}
         isApplying={isApplying}
         applyChanges={applyChanges}
+        performTryOn={performTryOn}
+        isProcessing={isProcessing}
         // handleToggleWishlist={handleToggleWishlist}
         // wishlistLoading={wishlistLoading}
         // isInWishlistState={isInWishlistState}
