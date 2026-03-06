@@ -16,7 +16,7 @@ const BlouseNeckCustomizer = ({
   tryOnResult,
 }) => {
   const [activeTab, setActiveTab] = React.useState("sleeve");
-  const canApply = !!tryOnResult && !isApplying && (pendingBlouse || pendingNeck);
+  const canApply = !!tryOnResult && !isApplying && !!pendingBlouse && !!pendingNeck;
 
   return (
     <div className="w-full bg-transparent mt-1">
@@ -107,6 +107,11 @@ const BlouseNeckCustomizer = ({
             <span>Apply Changes</span>
           )}
         </button>
+        {(!pendingBlouse || !pendingNeck) && tryOnResult && (
+          <p className="text-[10px] text-gray-400 text-center mt-2">
+            Select both a sleeve style and a neck style to apply
+          </p>
+        )}
         {!tryOnResult && (
           <p className="text-[10px] text-gray-400 text-center mt-2">
             Complete try-on first to apply styles
