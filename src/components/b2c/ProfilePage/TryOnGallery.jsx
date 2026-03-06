@@ -84,7 +84,7 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         <img
           src={item.tryOnImage || item.garmentImage || "https://via.placeholder.com/400x600?text=No+Image"}
           alt={item.productName}
-          className={`md:w-full md:h-full object-cover transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"
             }`}
           onLoad={() => {
             setImageLoaded(true);

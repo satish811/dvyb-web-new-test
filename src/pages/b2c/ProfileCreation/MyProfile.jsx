@@ -1647,9 +1647,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#BE4949] flex items-center justify-center mx-auto mb-4">
-              <img src={women_ic} alt="" className="w-8 h-8 sm:w-10 sm:h-10" />
-            </div>
+
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">
               My Models
             </h1>
