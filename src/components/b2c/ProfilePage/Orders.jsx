@@ -366,18 +366,18 @@ const MyOrders = () => {
 
         {/* --- FILTER MODAL PORTAL --- */}
         <FilterModalPortal isOpen={showFilter} onClose={() => setShowFilter(false)}>
-          <div className="bg-white rounded-lg shadow-2xl w-full flex flex-col max-h-[90vh]">
+          <div className="rounded-lg shadow-2xl w-full flex flex-col max-h-[90vh] overflow-hidden">
 
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-[#33022F]">Filter Orders</h3>
-              <button onClick={() => setShowFilter(false)} className="text-gray-400 hover:text-gray-600">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-white/20" style={{ backgroundColor: '#8B6787' }}>
+              <h3 className="text-lg font-bold text-white">Filter Orders</h3>
+              <button onClick={() => setShowFilter(false)} className="text-white/70 hover:text-white">
                 <X size={20} />
               </button>
             </div>
 
             {/* Modal Body (Scrollable) */}
-            <div className="p-6 overflow-y-auto space-y-8">
+            <div className="p-6 overflow-y-auto space-y-8" style={{ backgroundColor: '#F2E1F0' }}>
 
               {/* Payment Method */}
               <div>
@@ -451,7 +451,7 @@ const MyOrders = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-gray-100 p-6 flex gap-4">
+            <div className="border-t border-white/30 p-6 flex gap-4" style={{ backgroundColor: '#F2E1F0' }}>
               <button
                 onClick={clearFilters}
                 className="flex-1 border border-[#33022F] text-[#33022F] py-3 rounded font-bold text-sm uppercase tracking-wide hover:bg-gray-50 transition"
