@@ -144,7 +144,8 @@ export const useProductFilter = (products = []) => {
       }
 
       // === PRICE FILTER ===
-      const productPrice = Number(product.price) || 0;
+      const rawPrice = String(product.price || "0").replace(/[^0-9.]/g, "");
+      const productPrice = Number(rawPrice) || 0;
       if (selectedFilters.priceMin != null && productPrice < selectedFilters.priceMin) return false;
       if (selectedFilters.priceMax != null && productPrice > selectedFilters.priceMax) return false;
 

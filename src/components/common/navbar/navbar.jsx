@@ -488,7 +488,7 @@ export default function Navbar({ setShowLoader }) {
                                 <p className="text-sm font-medium text-primary mb-4">SELECT ONE</p>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-6">
-                                    {["Saree", "Anarkali", "Lehanga", "Kurti", "Shararas"].map((product) => (
+                                    {["Saree", "Anarkali", "Lehanga", "Kurti", "Shararas", "Salwar Suit"].map((product) => (
                                         <motion.button
                                             whileHover={hoverScale}
                                             whileTap={tapScale}
@@ -517,6 +517,7 @@ export default function Navbar({ setShowLoader }) {
                                                     "Lehanga": "lehenga",
                                                     "Kurti": "kurta-sets",
                                                     "Shararas": "shararas",
+                                                    "Salwar Suit": "salwar-suit",
                                                 };
                                                 const formatted = categoryMap[selectedProduct] || selectedProduct.toLowerCase().replace(" ", "-");
                                                 updateFilter("categories", selectedProduct.toUpperCase());

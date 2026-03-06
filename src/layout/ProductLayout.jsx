@@ -141,7 +141,7 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
     // Atomic: clear all old filters and set new ones in a single state update
     resetAndSetFilters(newFilters);
 
-  }, [category, subcategory, searchQuery, urlPriceMax, urlPriceMin]); // REMOVED selectedFilters dependency to prevent infinite loop
+  }, [category, subcategory, searchQuery, urlPriceMax, urlPriceMin, resetAndSetFilters]); // Added resetAndSetFilters to deps
 
   /**
    * Build a Fuse.js instance for the current product list (memoized)
