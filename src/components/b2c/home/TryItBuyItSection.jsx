@@ -19,10 +19,26 @@ export default function TryItBuyItSection() {
     const navigate = useNavigate();
     const scrollContainerRef = useRef(null);
 
-    // Pick the first 4 products (they are already sorted newest-first by the service)
+    // Filter out Bride/Bridal products, then pick 4 random ones on each mount/refresh
     const displayProducts = useMemo(() => {
         if (!allProducts || allProducts.length === 0) return [];
-        return allProducts.slice(0, 4);
+
+        // Exclude any product whose name, title, category, or dressType contains "bride" or "bridal"
+        const brideRegex = /bride|bridal/i;
+        const filtered = allProducts.filter((p) => {
+            const fields = [p.name, p.title, p.category, p.dressType].filter(Boolean);
+            return !fields.some((f) => brideRegex.test(f));
+        });
+
+        // Shuffle using Fisher-Yates algorithm for true randomness on every refresh
+        const shuffled = [...filtered];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        return shuffled.slice(0, 4);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allProducts]);
 
     /**
