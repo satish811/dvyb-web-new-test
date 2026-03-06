@@ -65,7 +65,6 @@ export default function VirtualTryOnSection() {
                     </div>
                 </div>
 
-
                 {/* ================= DESKTOP LAYOUT (Original) ================= */}
                 <div className="hidden md:block w-full text-center pointer-events-none absolute top-10 md:top-20 2xl:top-28 z-10">
                     <h2
@@ -95,7 +94,7 @@ export default function VirtualTryOnSection() {
                         <p className="text-xs md:text-sm 2xl:text-lg font-medium tracking-widest text-gray-700 leading-relaxed uppercase max-w-xs 2xl:max-w-md self-start md:self-end text-left md:text-right">
                             TRY IT ON INSTANTLY TO SEE HOW IT LOOKS ON YOU BEFORE YOU BUY.
                             EXPLORE DIFFERENT STYLES, COLORS, AND FITS IN SECONDS, SO YOU CAN
-                            CHOOSE WITH CONFIDENCE AND CHECKOUT KNOWING IT’S THE RIGHT MATCH FOR YOU.
+                            CHOOSE WITH CONFIDENCE AND CHECKOUT KNOWING IT'S THE RIGHT MATCH FOR YOU.
                         </p>
                     </div>
 

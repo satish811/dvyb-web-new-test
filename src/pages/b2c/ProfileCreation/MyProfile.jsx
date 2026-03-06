@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Camera, Upload, Check, ChevronRight, ChevronLeft, Edit2, Loader2, Save, RefreshCw } from 'lucide-react';
+import { Camera, Upload, Check, ChevronRight, ChevronLeft, Edit2, Loader2, Save, RefreshCw, Trash2 } from 'lucide-react';
 import women_ic from '../../../assets/ProfileCreation/women_ic.svg';
 import pink_star from '../../../assets/ProfileCreation/pink_star.svg';
 import yellow_star from '../../../assets/ProfileCreation/yellow_star.svg';
@@ -37,6 +37,12 @@ const MyProfile = () => {
 
   // State for gallery modal
   const [showGalleryModal, setShowGalleryModal] = useState(false);
+
+  // State for save-in-progress spinner
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // State for delete-in-progress spinner
+  const [deletingProfile, setDeletingProfile] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -1363,6 +1369,7 @@ const MyProfile = () => {
               <div className="flex flex-col gap-2.5 xs:gap-3 px-2">
                 <button
                   onClick={async () => {
+                    setSavingProfile(true);
                     try {
                       // 1. Save profile data
                       const dataToSave = {
@@ -1385,15 +1392,26 @@ const MyProfile = () => {
                     } catch (error) {
                       console.error("❌ Save error:", error);
                       alert(`Error saving profile: ${error.message}`);
+                    } finally {
+                      setSavingProfile(false);
                     }
                   }}
-                  disabled={Object.keys(generatedResults).length === 0}
+                  disabled={savingProfile || Object.keys(generatedResults).length === 0}
                   className="w-full h-11 xs:h-12 bg-[#33022F] 
 text-white text-xs xs:text-sm font-semibold rounded flex items-center justify-center gap-2
 disabled:opacity-50 transition-all"
                 >
-                  <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
-                  SAVE & CONTINUE
+                  {savingProfile ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      SAVING...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} className="xs:w-[18px] xs:h-[18px]" />
+                      SAVE & CONTINUE
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => setCurrentStep(5)}
@@ -1533,6 +1551,7 @@ disabled:opacity-50 transition-all"
               <div className="flex justify-center items-center gap-6 md:gap-8 mt-10 md:mt-14">
                 <button
                   onClick={async () => {
+                    setSavingProfile(true);
                     try {
                       const dataToSave = {
                         ...profileData,
@@ -1550,13 +1569,22 @@ disabled:opacity-50 transition-all"
                     } catch (error) {
                       console.error("❌ Save error:", error);
                       alert(`Error saving profile: ${error.message}`);
+                    } finally {
+                      setSavingProfile(false);
                     }
                   }}
-                  disabled={Object.keys(generatedResults).length === 0}
+                  disabled={savingProfile || Object.keys(generatedResults).length === 0}
                   className="w-[180px] md:w-[210px] h-12 md:h-14 bg-[#33022F] 
-text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  SAVE & CONTINUE
+                  {savingProfile ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      SAVING...
+                    </>
+                  ) : (
+                    "SAVE & CONTINUE"
+                  )}
                 </button>
                 <button
                   onClick={() => setCurrentStep(5)}
@@ -1706,6 +1734,42 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
             >
               <RefreshCw className="w-4 h-4" />
               RE-CREATE MODELS
+            </button>
+            <button
+              onClick={async () => {
+                if (!window.confirm('Are you sure you want to delete your model? This will remove your profile photo and all try-on results. This action cannot be undone.')) return;
+                setDeletingProfile(true);
+                try {
+                  await profileService.deleteProfile(userCollection);
+                  // Reset all local state
+                  setHasSavedModels(false);
+                  setSavedResults({});
+                  setProfileData(prev => ({ ...prev, photoUrl: '' }));
+                  setCapturedImage(null);
+                  setGeneratedResults({});
+                  setCenterImage(null);
+                  setCurrentStep(0);
+                } catch (error) {
+                  console.error('❌ Delete error:', error);
+                  alert(`Error deleting model: ${error.message}`);
+                } finally {
+                  setDeletingProfile(false);
+                }
+              }}
+              disabled={deletingProfile}
+              className="w-full sm:w-auto px-8 h-12 sm:h-14 border-2 border-red-500 text-red-500 text-sm sm:text-base font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {deletingProfile ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  DELETING...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  DELETE MODEL
+                </>
+              )}
             </button>
           </div>
         </div>

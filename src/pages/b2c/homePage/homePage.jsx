@@ -10,6 +10,7 @@ import SpotlightCollections from "../../../components/b2c/home/SpotlightCollecti
 import BestProducts from "../../../components/b2c/home/BestProducts";
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import CategoriesSection from "../../../components/b2c/home/CategoriesSection";
 import VirtualTryOnSection from "../../../components/b2c/home/VirtualTryOnSection";
 import PromotionalCarousel from "../../../components/b2c/home/PromotionalCarousel";
@@ -18,13 +19,16 @@ import EthnicWearSection from "../../../components/b2c/home/EthnicWearSection";
 import TryItBuyItSection from "../../../components/b2c/home/TryItBuyItSection";
 import PopularProductsSection from "../../../components/b2c/home/PopularProductsSection";
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
+import ProfilePromptPopup from "../../../components/b2c/home/ProfilePromptPopup";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 
 export default function Home() {
   const { products, loading, error } = useProducts();
   const navigate = useNavigate();
   const location = useLocation();
+  const { userRole } = useAuth();
   const [mobileTab, setMobileTab] = useState("women");
+  const isB2B = userRole === "B2B";
 
   // Handle scroll to section if state is passed (e.g., from Navbar 'WOMEN' click)
   useEffect(() => {
@@ -72,6 +76,7 @@ export default function Home() {
 
   return (
     <div className="">
+      <ProfilePromptPopup />
 
       {/* MOBILE HERO SECTION */}
       <section className="relative w-full h-[calc(100dvh-112px)] md:hidden flex flex-col">
@@ -250,8 +255,8 @@ export default function Home() {
       </section>
 
 
-      {/* 2.5. VIRTUAL TRY ON SECTION */}
-      <VirtualTryOnSection />
+      {/* 2.5. VIRTUAL TRY ON SECTION (B2C only) */}
+      {!isB2B && <VirtualTryOnSection />}
 
       {/* 2. CATEGORIES SECTION */}
       <CategoriesSection />
@@ -265,8 +270,8 @@ export default function Home() {
       {/* 2.95 ETHNIC WEAR SECTION */}
       <EthnicWearSection />
 
-      {/* 2.97 TRY IT & BUY IT SECTION */}
-      <TryItBuyItSection />
+      {/* 2.97 TRY IT & BUY IT SECTION (B2C only) */}
+      {!isB2B && <TryItBuyItSection />}
 
       {/* 2.98 POPULAR PRODUCTS SECTION */}
       <PopularProductsSection products={productsArray} />
