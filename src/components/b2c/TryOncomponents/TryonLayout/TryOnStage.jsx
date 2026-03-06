@@ -80,7 +80,7 @@ const TryOnStage = ({
       {/* ============================================ */}
       {!isProcessing && !errorMsg && viewMode === "2D" && getCurrentDisplayImage() && (
         <div className="flex flex-col items-center h-full justify-center">
-          <div className="bg-white p-[6px] rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col items-center mt-2">
+          <div className="">
             {/* Image */}
             <div className="relative rounded-[16px] overflow-hidden w-full h-full flex items-center justify-center">
               <img
