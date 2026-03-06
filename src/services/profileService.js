@@ -1,5 +1,5 @@
 import { auth, db, envConfig } from "../config";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 
 class ProfileService {
   static instance = null;
@@ -170,10 +170,10 @@ class ProfileService {
       const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
 
-      await updateDoc(userDocRef, {
+      await setDoc(userDocRef, {
         tryOnResults: cloudinaryUrls,
         updatedAt: new Date(),
-      });
+      }, { merge: true });
 
       console.log("✅ Try-on results saved to Firestore with Cloudinary URLs");
       return cloudinaryUrls;
@@ -285,6 +285,36 @@ class ProfileService {
       return null;
     } catch (error) {
       console.error("❌ Error fetching profile:", error);
+      throw error;
+    }
+  }
+  /** Delete user profile and try-on results */
+  async deleteProfile(overrideCollection = null) {
+    try {
+      const user = this.auth.currentUser;
+      if (!user) throw new Error("User must be authenticated");
+
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
+      const userDocRef = doc(this.db, userCollection, user.uid);
+
+      // Check the doc exists before trying to update — updateDoc throws if doc is missing
+      const docSnap = await getDoc(userDocRef);
+      if (!docSnap.exists()) {
+        console.log("ℹ️ No profile document found, nothing to delete.");
+        return true;
+      }
+
+      // Remove profile and tryOnResults fields (keeps user doc intact)
+      await updateDoc(userDocRef, {
+        profile: deleteField(),
+        tryOnResults: deleteField(),
+        updatedAt: new Date(),
+      });
+
+      console.log("✅ Profile and try-on results deleted successfully");
+      return true;
+    } catch (error) {
+      console.error("❌ Error deleting profile:", error);
       throw error;
     }
   }
