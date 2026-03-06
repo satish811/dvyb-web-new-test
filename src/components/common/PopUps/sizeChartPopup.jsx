@@ -55,7 +55,7 @@ export default function SizeChartPopup({ onClose }) {
     >
       <div
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: "#F2E1F0",
           maxWidth: "448px",
           width: "100%",
           position: "relative",
