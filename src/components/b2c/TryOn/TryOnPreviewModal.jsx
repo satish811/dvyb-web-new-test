@@ -84,6 +84,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     selectedBackground,
     changeBackground,
     handleReset: resetBackground,
+    setLatestBaseImage,
   } = useBackgroundChange(tryOnResult);
 
   // Use background-changed image as base if available, so blouse/neck edits apply on top of it
@@ -100,19 +101,23 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     combinedImage,
   } = useBlouseNeckChange(activeBaseImage);
 
-  // Sync combined blouse+neck result → currentImage
+  // Sync combined blouse+neck result → currentImage AND update base for background changes
   useEffect(() => {
-    if (combinedImage) setCurrentImage(combinedImage);
-  }, [combinedImage]);
+    if (combinedImage) {
+      setCurrentImage(combinedImage);
+      // Update the base image for background changes so it uses the edited image
+      setLatestBaseImage(combinedImage);
+    }
+  }, [combinedImage, setLatestBaseImage]);
 
-  // 3D video generation logic
+  // 3D video generation logic - uses latest edited image (includes blouse/neck/background)
   const {
     videoUrl,
     isGeneratingVideo,
     videoProgress,
     videoError,
     generateVideo,
-  } = useVideoGeneration(backgroundChangedImage);
+  } = useVideoGeneration(currentImage || tryOnResult);
 
 
   // WISHLIST 
