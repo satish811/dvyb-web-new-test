@@ -48,45 +48,45 @@ const TryOnUploadPage = () => {
       {
         modelName: "Model 1",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/modeltryon_wsilt2.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051219/model2_iaq2pq.png",
       },
       {
         modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_5maj435maj435maj_zsikdk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773050764/model_d1mnwa.png",
       },
       {
         modelName: "Model 3",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213100/Gemini_Generated_Image_784di8784di8784d_ra30uh.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1772001465/Gemini_Generated_Image_csi0f2csi0f2csi0_ol5dip.png",
       },
       {
         modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763213101/Gemini_Generated_Image_1vnwft1vnwft1vnw_gvxeta.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773045046/saree_model_4_pthksx.png",
       },
     ];
 
     const universalModels = [
       {
-        modelName: "Fair & Slim",
+        modelName: "Model 1",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
       },
       {
-        modelName: "Dusky & Curvy",
+        modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
       },
       {
-        modelName: "Wheatist & Athletic",
+        modelName: "Model 3",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
       },
       {
-        modelName: "Medium",
+        modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
       },
     ];
 

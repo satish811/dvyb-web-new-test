@@ -73,9 +73,9 @@ export const BACKGROUND_OPTIONS = [
 // ============================================
 export const NECK_OPTIONS = [
   {
-    id: "collar",
-    label: "Collar",
-    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1772797623/ChatGPT_Image_Mar_6_2026_05_16_52_PM_g60zin.png"
+    id: "boat",
+    label: "Boat",
+    image: "https://res.cloudinary.com/doiezptnn/image/upload/v1771852359/boat_neck_lq92im.png"
   },
   {
     id: "regular",
