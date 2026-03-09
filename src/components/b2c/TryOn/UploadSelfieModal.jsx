@@ -137,23 +137,23 @@ const UploadSelfieModal = ({
       {
         modelName: "Model 1",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055534/model10_cisbwy.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773042832/14_vicmkl.png",
       },
       {
         modelName: "Model",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model12_nvdjir.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773042833/md_img_7_ann4rp.png",
       },
 
       {
         modelName: "Model 3",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model11_k09xmr.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
       },
       {
         modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773043393/Gemini_Generated_Image_3n10aw3n10aw3n10_feyr4p.png",
       },
 
 
@@ -162,217 +162,131 @@ const UploadSelfieModal = ({
       {
         modelName: "Model 1",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765431989/model5_itixab.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051219/model2_iaq2pq.png",
       },
       {
         modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765348065/model1_psruws.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773050764/model_d1mnwa.png",
       },
       {
         modelName: "Model 3",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1765957672/1_Fair_Black_wavy_medium_average_i20rtx.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1772001465/Gemini_Generated_Image_csi0f2csi0f2csi0_ol5dip.png",
       },
       {
         modelName: "Model 4",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1772001465/Gemini_Generated_Image_csi0f2csi0f2csi0_ol5dip.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773045046/saree_model_4_pthksx.png",
       },
     ];
 
     const universalModels = [
-      // // {
-      // //   modelName: "Fair & Slim",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188140/ChatGPT_Image_Nov_15_2025_11_58_37_AM_cnzfyj.png",
-      // // },
-      // {
-      //   modelName: "Dusky & Curvy",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188482/ChatGPT_Image_Nov_15_2025_12_04_25_PM_cyygt0.png",
-      // },
-      // // {
-      // //   modelName: "Wheatist & Athletic",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga3_yksavv.jpg",
-      // // },
-      // // {
-      // //   modelName: "Medium",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763188139/lehenga2_sat3wm.jpg",
-      // // },
       {
-        modelName: "Fair & Slim",
+        modelName: "Model 1",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
       },
       {
-        modelName: "Dusky & Curvy",
+        modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
       },
       {
-        modelName: "Wheatist & Athletic",
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+      },
+      {
+        modelName: "Model 4",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
       },
     ];
 
     const shararaModels = [
       {
-        modelName: "Fair & Slim",
+        modelName: "Model 1",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
       },
       {
-        modelName: "Dusky & Curvy",
+        modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
       },
       {
-        modelName: "Wheatist & Athletic",
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+      },
+      {
+        modelName: "Model 4",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
       },
     ];
 
     const anarkaliModels = [
-      // // {
-      // //   modelName: "Fair & Slim",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971670/Anarkali1_tq8plw.png",
-      // // },
-      // {
-      //   modelName: "Dusky & Curvy",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971671/Anarkali3_uqzket.png",
-      // },
-      // // {
-      // //   modelName: "Wheatist & Athletic",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971669/Anarkali2_ygpvg6.png",
-      // // },
-      // // {
-      // //   modelName: "Medium",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971668/Anarkali4_mn8jpi.png",
-      // // },
       {
-        modelName: "Fair & Slim",
+        modelName: "Model 1",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
       },
       {
-        modelName: "Dusky & Curvy",
+        modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
+      },
+            {
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
       },
       {
-        modelName: "Wheatist & Athletic",
+        modelName: "Model 4",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
-      },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
       },
     ];
 
     const pretModels = [
-      // {
-      //   modelName: "Fair & Slim",
-      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret1_m8ralt.png",
-      // },
       {
         modelName: "Dusky & Curvy",
         modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971710/pret2_jbuvlf.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971711/pret3_baksin.png",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg: "https://res.cloudinary.com/doiezptnn/image/upload/v1763971712/pret4_gl6dky.png",
-      // },
     ];
 
     const fusionModels = [
-      // {
-      //   modelName: "Fair & Slim",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion2_edimql.png",
-      // },
       {
         modelName: "Dusky & Curvy",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion1_rexxbx.png",
       },
-      // {
-      //   modelName: "Wheatist & Athletic",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971758/fusion4_msdxrp.png",
-      // },
-      // {
-      //   modelName: "Medium",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763971756/fusion3_nawkdm.png",
-      // },
     ];
 
     const kurthaModels = [
-      // // {
-      // //   modelName: "Fair & Slim",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978447/kurthaSet2_be2iq3_4dd5c3.jpg",
-      // // },
-      // {
-      //   modelName: "Dusky & Curvy",
-      //   modelimg:
-      //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978550/kurthaSet3_mbst5j_f7e8e5.jpg",
-      // },
-      // // {
-      // //   modelName: "Wheatist & Athletic",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978591/kurthaSet4_hi8i85_305553.jpg",
-      // // },
-      // // {
-      // //   modelName: "Medium",
-      // //   modelimg:
-      // //     "https://res.cloudinary.com/doiezptnn/image/upload/v1763978633/kurthaSet1_lejt7b_6509ef.jpg",
-      // // },
       {
-        modelName: "Fair & Slim",
+        modelName: "Model 1",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
       },
       {
-        modelName: "Dusky & Curvy",
+        modelName: "Model 2",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/52_mctq0z.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
       },
       {
-        modelName: "Wheatist & Athletic",
+        modelName: "Model 3",
+        modelimg:
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+      },
+      {
+        modelName: "Model 4",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
       },
-      {
-        modelName: "Medium",
-        modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/55_cophbi.png",
-      },
+
     ];
 
     // Map dress types to their corresponding models
@@ -1326,19 +1240,11 @@ const UploadSelfieModal = ({
                 });
               }}
               disabled={isStoringData}
-              className={`group flex items-center justify-center gap-2 px-4 py-3 md:py-2 w-full md:w-auto bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium hover:text-white transition-all ${isStoringData ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onMouseEnter={(e) => {
-                if (!isStoringData) {
-                  e.currentTarget.style.background = 'var(--villy-primary, #33022F)';
-                  e.currentTarget.style.borderColor = 'var(--villy-primary, #33022F)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isStoringData) {
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = '#374151';
-                }
-              }}
+              className={`group flex items-center justify-center gap-2 px-4 py-3 md:py-2 w-full md:w-auto bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium transition-all ${
+                isStoringData 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:bg-[#33022F] hover:border-[#33022F] hover:text-white'
+              }`}
             >
               {isStoringData ? (
                 <>
@@ -1347,7 +1253,7 @@ const UploadSelfieModal = ({
                 </>
               ) : (
                 <>
-                  Continue
+                  CONTINUE
                   <img src={right_ic} alt="" className="h-4 w-4 group-hover:hidden" />
                   <img src={rightHoverArrow} alt="" className="h-4 w-4 hidden group-hover:inline" />
                 </>
