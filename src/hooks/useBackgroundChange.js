@@ -1,6 +1,6 @@
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createBackgroundFormData, getBackgroundErrorMessage } from "../utils/tryOnHelpers";
@@ -12,9 +12,15 @@ export const useBackgroundChange = (tryOnResult) => {
   const [backgroundChangedImage, setBackgroundChangedImage] = useState(null);
   const [isChangingBackground, setIsChangingBackground] = useState(false);
   const [selectedBackground, setSelectedBackground] = useState("");
+  const [latestBaseImage, setLatestBaseImage] = useState(tryOnResult);
+
+  // Update base image whenever tryOnResult changes
+  useEffect(() => {
+    setLatestBaseImage(tryOnResult);
+  }, [tryOnResult]);
 
   const changeBackground = async (backgroundType, customBgImage = null) => {
-    if (!tryOnResult) {
+    if (!latestBaseImage) {
       toast.error("Please complete try-on first!");
       return;
     }
@@ -25,7 +31,7 @@ export const useBackgroundChange = (tryOnResult) => {
     try {
       console.log("🎨 Starting background change...");
 
-      const formData = await createBackgroundFormData(tryOnResult, backgroundType, customBgImage);
+      const formData = await createBackgroundFormData(latestBaseImage, backgroundType, customBgImage);
 
       console.log(`📤 Sending to backend with background: ${backgroundType}`);
 
@@ -46,6 +52,8 @@ export const useBackgroundChange = (tryOnResult) => {
       if (data.success && data.result) {
         console.log("✅ Background change successful!");
         setBackgroundChangedImage(data.result);
+        // Update the base image so subsequent edits use the background-changed version
+        setLatestBaseImage(data.result);
         toast.success(`Background changed to ${data.background}! 🎉`);
       } else {
         throw new Error(data.error || "Background change failed");
@@ -70,5 +78,6 @@ export const useBackgroundChange = (tryOnResult) => {
     selectedBackground,
     changeBackground,
     handleReset,
+    setLatestBaseImage,
   };
 };

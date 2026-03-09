@@ -78,6 +78,7 @@ const TryOnPreviewPage = () => {
     selectedBackground,
     changeBackground,
     handleReset: resetBackground,
+    setLatestBaseImage,
   } = useBackgroundChange(tryOnResult);
 
   // Use background-changed image as base if available, so blouse/neck edits apply on top of it
@@ -97,14 +98,14 @@ const TryOnPreviewPage = () => {
     changeNeck,
   } = useNeckChange(activeBaseImage);
 
-  // 3D video generation logic
+  // 3D video generation logic - uses latest edited image (includes blouse/neck/background)
   const {
     videoUrl,
     isGeneratingVideo,
     videoProgress,
     videoError,
     generateVideo,
-  } = useVideoGeneration(backgroundChangedImage);
+  } = useVideoGeneration(currentImage || backgroundChangedImage || tryOnResult);
 
   // Loading animation
   const { currentLoadingImage } = useLoadingAnimation(isProcessing);
@@ -161,6 +162,8 @@ const TryOnPreviewPage = () => {
     resetBackground();
     setCurrentImage(tryOnResult);
     setView360Enabled(false);
+    // Reset base image to original try-on result
+    setLatestBaseImage(tryOnResult);
   };
 
   const handleBack = () => {
@@ -218,13 +221,21 @@ const TryOnPreviewPage = () => {
   // Handle blouse change with image update
   const handleBlouseChange = async (type) => {
     const newImg = await changeBlouse(type);
-    if (newImg) setCurrentImage(newImg);
+    if (newImg) {
+      setCurrentImage(newImg);
+      // Update base image for background changes
+      setLatestBaseImage(newImg);
+    }
   };
 
   // Handle neck change with image update
   const handleNeckChange = async (type) => {
     const newImg = await changeNeck(type);
-    if (newImg) setCurrentImage(newImg);
+    if (newImg) {
+      setCurrentImage(newImg);
+      // Update base image for background changes
+      setLatestBaseImage(newImg);
+    }
   };
 
   // ============================================

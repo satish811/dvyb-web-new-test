@@ -632,9 +632,10 @@ IDENTITY LOCK (ABSOLUTE)
 - No beautification, enhancement, or reshaping
 
 REALISTIC INTEGRATION
+- Model should be positioned at minimum 3 feet (1 meter) distance from camera
 - Match lighting direction, intensity, and color temperature
 - Add natural ground and contact shadows
-- Match perspective and scale
+- Match perspective and scale for natural depth
 - Clean edge blending only
 - Subtle ambient light spill if present
 
@@ -675,6 +676,12 @@ Return ONE high-resolution inline_data image only.
         ],
       },
     ],
+    generationConfig: {
+      temperature: 0.4,
+      topP: 0.95,
+      topK: 40,
+      maxOutputTokens: 8192,
+    },
   };
 
   try {

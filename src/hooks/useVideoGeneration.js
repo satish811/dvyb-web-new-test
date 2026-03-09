@@ -8,7 +8,7 @@ import { createVideoFormData } from "../utils/tryOnHelpers";
  * 3D Video Generation Logic Hook
  * Handles video generation and polling for completion
  */
-export const useVideoGeneration = (backgroundChangedImage) => {
+export const useVideoGeneration = (videoSourceImage) => {
   const [videoUrl, setVideoUrl] = useState(null);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoTaskId, setVideoTaskId] = useState(null);
@@ -78,11 +78,11 @@ export const useVideoGeneration = (backgroundChangedImage) => {
 
   /**
    * Generate 3D video from try-on image
-   * Requires background to be changed first
+   * Uses the latest edited image (includes blouse/neck/background changes)
    */
   const generateVideo = async () => {
-    if (!backgroundChangedImage) {
-      setVideoError('Background changed image required for video generation');
+    if (!videoSourceImage) {
+      setVideoError('Try-on image required for video generation');
       return;
     }
 
@@ -93,7 +93,7 @@ export const useVideoGeneration = (backgroundChangedImage) => {
 
     try {
       // Create form data with try-on image
-      const formData = await createVideoFormData(backgroundChangedImage);
+      const formData = await createVideoFormData(videoSourceImage);
 
       console.log('📤 Sending to video API...');
 
