@@ -459,6 +459,44 @@ app.post('/api/upload-to-cloudinary', async (req, res) => {
   }
 });
 
+// ============================================================
+// ENDPOINT: Save latest try-on look to Cloudinary
+// ============================================================
+app.post('/api/save-look', async (req, res) => {
+  console.log('\n💾 === SAVE LOOK REQUEST ===');
+
+  try {
+    const { image, productName } = req.body || {};
+
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        error: 'image is required'
+      });
+    }
+
+    const uploadResult = await cloudinary.v2.uploader.upload(image, {
+      folder: 'tryon-results/saved-looks',
+      public_id: `saved_${Date.now()}`,
+      resource_type: 'image',
+      context: productName ? `product=${productName}` : undefined,
+    });
+
+    console.log(`✅ Look saved to Cloudinary: ${uploadResult.secure_url}`);
+    return res.json({
+      success: true,
+      url: uploadResult.secure_url,
+    });
+  } catch (err) {
+    console.error('❌ SAVE LOOK ERROR:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to save look',
+      details: err.message,
+    });
+  }
+});
+
 
 
 

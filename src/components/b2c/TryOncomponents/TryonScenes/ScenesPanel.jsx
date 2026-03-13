@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Image, Camera, Heart, ArrowRight, X } from "lucide-react";
+import { Image, Camera, Heart, ArrowRight, X, Bookmark } from "lucide-react";
 import BackgroundGrid from "./BackgroundGrid";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
 
@@ -21,6 +21,9 @@ const ScenesPanel = ({
   wishlistLoading,
   handleToggleWishlist,
   navigate,
+  handleSaveLook,
+  isSaving,
+  isLookSaved,
 }) => {
   const fileInputRef = useRef(null);
   const [customScenes, setCustomScenes] = useState([]);
@@ -106,7 +109,7 @@ const ScenesPanel = ({
                 <button
                   onClick={handleCameraClick}
                   title="Add your own scene"
-                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-white hover:bg-hoverBg transition-colors"
+                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-white hover:bg-hoverBg transition-colors"
                 >
                   <Camera className="w-4 h-4" />
                 </button>
@@ -174,6 +177,20 @@ const ScenesPanel = ({
           className="w-full bg-[#74136C] hover:bg-[#5a0f54] text-white py-3 rounded-full text-[13px] font-bold tracking-wide flex items-center justify-center gap-2 transition-all uppercase"
         >
           VIEW PRODUCT <ArrowRight className="w-4 h-4 ml-1" />
+        </button>
+        <button
+          onClick={handleSaveLook}
+          disabled={isSaving || !tryOnResult || isLookSaved}
+          className={`w-full py-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition-colors border border-[#74136C] rounded-full text-[#74136C] hover:bg-[#74136C] hover:text-white ${
+            isSaving || !tryOnResult || isLookSaved ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          {isSaving ? (
+            <span className="animate-spin h-5 w-5 border-2 border-[#74136C] border-t-transparent rounded-full" />
+          ) : (
+            <Bookmark className={`w-[18px] h-[18px] ${isLookSaved ? "fill-current" : ""}`} />
+          )}
+          <span>{isSaving ? "Saving..." : isLookSaved ? "Saved" : "Save My Look"}</span>
         </button>
         <button
           onClick={handleToggleWishlist}

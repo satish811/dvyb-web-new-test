@@ -2657,6 +2657,39 @@ export default async function handler(req, res) {
 
 
 
+    // ======== POST: /api/save-look ========
+    if (req.method === "POST" && path === "/api/save-look") {
+      console.log("\n💾 === SAVE LOOK REQUEST ===");
+
+      let body = "";
+      await new Promise((resolve) => {
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", resolve);
+      });
+      let parsedBody = {};
+      try { parsedBody = JSON.parse(body); } catch { parsedBody = {}; }
+
+      const { image, productName } = parsedBody;
+
+      if (!image) {
+        return res.status(400).json({ success: false, error: "image is required" });
+      }
+
+      const folder = "tryon-results/saved-looks";
+      const public_id = `saved_${Date.now()}`;
+
+      const uploadResult = await cloudinary.v2.uploader.upload(image, {
+        folder,
+        public_id,
+        resource_type: "image",
+        context: productName ? `product=${productName}` : undefined,
+      });
+
+      console.log(`✅ Look saved to Cloudinary: ${uploadResult.secure_url}`);
+      return res.json({ success: true, url: uploadResult.secure_url });
+    }
+
+
     // ======== POST: /api/tryon-from-urls ========
     if (req.method === "POST" && path === "/api/tryon-from-urls") {
       console.log('\n🎯 === TRY-ON FROM URLs (MyProfile) ===');

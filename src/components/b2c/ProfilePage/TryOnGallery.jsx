@@ -14,14 +14,13 @@ import { useNavigate } from "react-router-dom";
 import { useUserTryons } from "../../../hooks/useUserTryons";
 import { cartService } from "../../../services/cartService";
 import { deleteTryOn } from "../../../services/tryOnService";
-import { tryOnProductService } from "../../../services/tryOnProductService";
 import { usePopup } from "../../../context/ToastPopupContext";
 import { useAuth } from "../../../context/AuthContext";
 import toast from "react-hot-toast";
 
 // --- Helper Components ---
 
-const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
+const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete, isAddedToCart }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -126,9 +125,12 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete }) => {
         <div className="space-y-2">
           <button
             onClick={() => onAddToCart(item)}
-            className="w-full bg-white border border-[#33022F] text-[#33022F] cursor-pointer font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2"
+            disabled={isAddedToCart}
+            className={`w-full bg-white border border-[#33022F] text-[#33022F] font-medium py-2.5 text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+              isAddedToCart ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
+            }`}
           >
-            ADD TO CART
+            {isAddedToCart ? "ADDED TO CART" : "ADD TO CART"}
           </button>
           <button
             onClick={() => onShare(item)}
@@ -297,6 +299,7 @@ export default function TryOnGallery() {
   const { tryons, loading, error, setTryons } = useUserTryons();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [addedToCartMap, setAddedToCartMap] = useState({});
   const { user } = useAuth();
 
   // Safe access to usePopup - fallback if not available
@@ -320,13 +323,21 @@ export default function TryOnGallery() {
     }
 
     try {
+      const safeProductId =
+        item.productId && item.productId !== "unknown" ? item.productId : item.id;
+
+      if (!safeProductId) {
+        toast.error("Unable to add this look to cart right now.");
+        return;
+      }
+
       const productData = {
-        name: item.productName,
-        title: item.productName,
+        name: item.productName || item.garmentName || "Try-On Product",
+        title: item.productName || item.garmentName || "Try-On Product",
         price: parseFloat(item.price) || 0,
         size: item.selectedSizes?.[0] || "Free Size",
         color: item.selectedColors?.[0] || "",
-        image: item.garmentImage,
+        image: item.garmentImage || item.tryOnImage,
         imageUrls: [item.garmentImage, item.tryOnImage].filter(Boolean),
         selectedColors: item.selectedColors || [],
         selectedSizes: item.selectedSizes || [],
@@ -343,7 +354,12 @@ export default function TryOnGallery() {
         },
       };
 
-      await cartService.addToCart(item.productId, productData, 1);
+      await cartService.addToCart(safeProductId, productData, 1);
+
+      setAddedToCartMap((prev) => ({
+        ...prev,
+        [item.id]: true,
+      }));
 
       if (showPopup) {
         showPopup("cart", {
@@ -361,7 +377,7 @@ export default function TryOnGallery() {
 
   const handleDelete = async (tryOnId) => {
     try {
-      await tryOnProductService.deleteTryOnEntry(user.uid, tryOnId);
+      await deleteTryOn(tryOnId);
       setTryons(prevTryons => prevTryons.filter(item => item.id !== tryOnId));
 
       toast.success("Try-on deleted successfully!");
@@ -439,6 +455,7 @@ export default function TryOnGallery() {
               onShare={handleShare}
               onAddToCart={handleAddToCart}
               onDelete={handleDelete}
+              isAddedToCart={Boolean(addedToCartMap[item.id])}
             />
           ))}
         </div>
