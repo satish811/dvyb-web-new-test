@@ -21,7 +21,7 @@ export default function HomeFooter() {
     const headerStyle = {
         fontFamily: 'Outfit, sans-serif',
         fontWeight: 500,
-        fontSize: 'clamp(14px, 1.2vw, 18px)',
+        fontSize: 'clamp(16px, 1.4vw, 22px)',
         lineHeight: '100%',
         letterSpacing: '0%',
         textTransform: 'uppercase',
@@ -31,7 +31,7 @@ export default function HomeFooter() {
     const linkStyle = {
         fontFamily: 'Outfit, sans-serif',
         fontWeight: 300,
-        fontSize: 'clamp(13px, 1vw, 16px)',
+        fontSize: 'clamp(14px, 1.2vw, 18px)',
         lineHeight: '100%',
         letterSpacing: '-0.02em',
         textTransform: 'uppercase'
@@ -141,12 +141,12 @@ export default function HomeFooter() {
                             }}>
                                 {/* App Store Button */}
                                 <a href="#" className="block transition-opacity hover:opacity-90">
-                                    <img src={appStoreImg} alt="Download on the App Store" style={{ height: 'clamp(26px, 2.2vw, 36px)', width: 'auto', display: 'block' }} />
+                                    <img src={appStoreImg} alt="Download on the App Store" style={{ height: 'clamp(28px, 2.4vw, 38px)', width: 'auto', display: 'block' }} />
                                 </a>
 
                                 {/* Google Play Button */}
                                 <a href="#" className="block transition-opacity hover:opacity-90">
-                                    <img src={googlePlayImg} alt="Get it on Google Play" style={{ height: 'clamp(26px, 2.2vw, 36px)', width: 'auto', display: 'block' }} />
+                                    <img src={googlePlayImg} alt="Get it on Google Play" style={{ height: 'clamp(28px, 2.4vw, 38px)', width: 'auto', display: 'block' }} />
                                 </a>
                             </div>
 
@@ -161,7 +161,7 @@ export default function HomeFooter() {
                     {/* Return Badge */}
                     <div className="flex items-center gap-3 2xl:gap-4 justify-start w-full max-w-[320px]">
                         <img src={returnIcon} alt="14 Days Return" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain flex-shrink-0" />
-                        <p className="text-xs 2xl:text-sm tracking-wide text-left">
+                        <p className="text-sm 2xl:text-base tracking-wide text-left">
                             <span className="uppercase font-bold">Return within 14 days</span>{' '}
                             <span className="text-gray-200 font-light block sm:inline">of receiving your order</span>
                         </p>
@@ -170,7 +170,7 @@ export default function HomeFooter() {
                     {/* Original Badge */}
                     <div className="flex items-center gap-3 2xl:gap-4 justify-start w-full max-w-[320px]">
                         <img src={originalIcon} alt="100% Original" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain flex-shrink-0" />
-                        <p className="text-xs 2xl:text-sm tracking-wide text-left">
+                        <p className="text-sm 2xl:text-base tracking-wide text-left">
                             <span className="uppercase font-bold">100% Original</span>{' '}
                             <span className="text-gray-200 font-light block sm:inline">guarantee for all products at villy.in</span>
                         </p>
