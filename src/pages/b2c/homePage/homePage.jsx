@@ -21,6 +21,7 @@ import PopularProductsSection from "../../../components/b2c/home/PopularProducts
 import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 import ProfilePromptPopup from "../../../components/b2c/home/ProfilePromptPopup";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
+import useScrollRestore from "../../../hooks/useScrollRestore";
 
 export default function Home() {
   const { products, loading, error } = useProducts();
@@ -29,6 +30,16 @@ export default function Home() {
   const { userRole } = useAuth();
   const [mobileTab, setMobileTab] = useState("women");
   const isB2B = userRole === "B2B";
+  useScrollRestore(loading);
+
+  useEffect(() => {
+    const scrollPosition = sessionStorage.getItem("scrollPosition");
+
+    if (scrollPosition) {
+      window.scrollTo(0, parseInt(scrollPosition));
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
 
   // Handle scroll to section if state is passed (e.g., from Navbar 'WOMEN' click)
   useEffect(() => {
@@ -274,7 +285,9 @@ export default function Home() {
       {!isB2B && <TryItBuyItSection />}
 
       {/* 2.98 POPULAR PRODUCTS SECTION */}
-      <PopularProductsSection products={productsArray} />
+      <div id="popular-products">
+        <PopularProductsSection products={productsArray} />
+      </div>
 
       {/* 2.99 NEW ARRIVAL BANNER */}
       <NewArrivalBanner />

@@ -264,21 +264,31 @@ export default function Navbar({ setShowLoader }) {
                             Because the logo is absolute centered, we push the right flexbox inwards if needed.
                         */}
                         <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 2xl:space-x-16 ml-10 xl:ml-16 2xl:ml-24 mr-auto">
-                            <button
-                                onClick={() => {
-                                    if (location.pathname === "/") {
-                                        const element = document.getElementById("categories-section");
-                                        if (element) {
-                                            element.scrollIntoView({ behavior: "smooth" });
+                            <div className="relative flex flex-col items-center">
+                                <button
+                                    onClick={() => {
+                                        if (location.pathname === "/") {
+                                            const element = document.getElementById("categories-section");
+                                            if (element) {
+                                                element.scrollIntoView({ behavior: "smooth" });
+                                            }
+                                        } else {
+                                            navigate("/", { state: { scrollTo: "categories-section" } });
                                         }
-                                    } else {
-                                        navigate("/", { state: { scrollTo: "categories-section" } });
-                                    }
-                                }}
-                                className="text-sm xl:text-base 2xl:text-lg font-bold tracking-widest hover:text-gray-600 transition uppercase"
-                            >
-                                WOMEN
-                            </button>
+                                    }}
+                                    className={`text-sm xl:text-base 2xl:text-lg font-bold tracking-widest transition uppercase ${location.pathname === "/" ? "text-[#884383]" : "hover:text-gray-600"}`}
+                                >
+                                    WOMEN
+                                </button>
+                                {location.pathname === "/" && (
+                                    <motion.div
+                                        layoutId="activeUnderline"
+                                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#884383]"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                    />
+                                )}
+                            </div>
                             <div className="relative flex flex-col items-center">
                                 <button
                                     onClick={() => navigate("/menwear")}
@@ -293,7 +303,7 @@ export default function Navbar({ setShowLoader }) {
                             {!isB2BUserType() && (
                                 <button
                                     onClick={() => setTryOnModalOpen(true)}
-                                    className="text-sm xl:text-base 2xl:text-lg font-['Outfit'] font-bold tracking-widest transition uppercase animate-subtle-blink whitespace-nowrap text-black"
+                                    className="text-sm xl:text-base 2xl:text-lg font-['Outfit'] font-bold tracking-widest transition uppercase animate-subtle-blink whitespace-nowrap bg-clip-text text-transparent bg-[linear-gradient(to_right,#99068D_0%,#66045E_23%,#4D0347_56%,#33022F_100%)]"
                                 >
                                     Virtual Try On
                                 </button>

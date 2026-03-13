@@ -79,7 +79,7 @@ const TryOnMobileSheet = ({
   };
 
   return (
-    <div className="lg:hidden w-full px-4 pt-2 pb-8 flex flex-col gap-5 relative z-10 max-w-lg mx-auto">
+    <div className="lg:hidden w-full px-4 pt-2 pb-20 flex flex-col gap-5 relative z-10 max-w-lg mx-auto">
 
       {/* 360 View Toggle Card */}
       <div className="bg-[#FAF5FB] rounded-[24px] p-4 flex items-center justify-between w-full shadow-[0_4px_10px_rgba(0,0,0,0.03)] focus-visible:outline-none">
@@ -225,7 +225,7 @@ const TryOnMobileSheet = ({
       )}
 
       {/* Quick Actions - Scrollable (Web Styling) */}
-      <div className="w-full flex justify-center mt-6 mb-2">
+      <div className="w-full flex justify-center mt-10 mb-10">
         <div className="bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-3 py-2 flex items-center gap-4 max-w-full overflow-x-auto hide-scrollbar">
           <button
             onClick={() => {

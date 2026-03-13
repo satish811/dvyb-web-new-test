@@ -238,7 +238,7 @@ const UploadSelfieModal = ({
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
       },
-            {
+      {
         modelName: "Model 3",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
@@ -783,8 +783,8 @@ const UploadSelfieModal = ({
             alt="Success"
             className="w-full max-w-sm h-64 object-contain shadow-md mb-4"
           />
-          <div className="flex items-center gap-2 px-4 py-3 rounded-lg mb-5">
-            <p className="text-green-700 font-normal -ml-48 text-start text-sm">
+          <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg mb-5 w-full">
+            <p className="text-green-700 font-normal text-center text-sm">
               Image uploaded successfully
             </p>
           </div>
@@ -1240,11 +1240,10 @@ const UploadSelfieModal = ({
                 });
               }}
               disabled={isStoringData}
-              className={`group flex items-center justify-center gap-2 px-4 py-3 md:py-2 w-full md:w-auto bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium transition-all ${
-                isStoringData 
-                  ? 'opacity-50 cursor-not-allowed' 
+              className={`group flex items-center justify-center gap-2 px-4 py-3 md:py-2 w-full md:w-auto bg-white border border-gray-700 text-gray-700 rounded text-sm font-medium transition-all ${isStoringData
+                  ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-[#33022F] hover:border-[#33022F] hover:text-white'
-              }`}
+                }`}
             >
               {isStoringData ? (
                 <>

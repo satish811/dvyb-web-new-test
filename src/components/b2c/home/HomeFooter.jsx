@@ -178,7 +178,7 @@ export default function HomeFooter() {
 
                     {/* Social icons row - moved under Original Badge */}
                     <div className="flex items-center justify-start gap-4 mt-2 w-full max-w-[320px]">
-                        <a href="#" className="hover:text-gray-300 transition-colors flex items-center"><Facebook size={20} strokeWidth={1.5} /></a>
+                        <a href="https://www.facebook.com/profile.php?id=61588636642553" className="hover:text-gray-300 transition-colors flex items-center"><Facebook size={20} strokeWidth={1.5} /></a>
                         <a href="https://www.instagram.com/villy.official?igsh=MWtmNm5oNGhrdmlvdA==" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors flex items-center"><Instagram size={20} strokeWidth={1.5} /></a>
                         <a href="https://x.com/Thevillyof34956" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors flex items-center"><FaXTwitter size={20} /></a>
                         <a href="https://www.youtube.com/@thevillyofficial" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition-colors flex items-center"><Youtube size={20} strokeWidth={1.5} /></a>

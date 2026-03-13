@@ -69,21 +69,21 @@ const ScenesPanel = ({
 
   return (
     <div className="
-      absolute top-20
+      absolute top-1
       right-4 lg:right-6 xl:right-10 2xl:right-20
-      z-20 hidden lg:flex flex-col gap-4
+      z-20 hidden lg:flex flex-col gap-1
       w-[260px] lg:w-[280px] xl:w-[308px]
-      max-h-[calc(100vh-90px)] overflow-y-auto hide-scrollbar
+      max-h-[calc(100vh-8px)] overflow-hidden pb-4
     ">
       {/* ── BACKGROUNDS CARD ─────────────────────────────────── */}
       {viewMode === "2D" && (
-        <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-y-auto hide-scrollbar p-5 max-h-[calc(100vh-100px)]">
+        <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[20px] overflow-visible p-3">
 
           {/* ============================================ */}
           {/* SCENES SECTION - Only visible in 2D mode */}
           {/* ============================================ */}
-          <div className="mb-5">
-            <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="mb-2">
+            <div className="flex items-center justify-center gap-2 mb-1">
               <h3 className="text-sm font-semibold text-gray-800">
                 {UI_TEXT.SCENES}
               </h3>
@@ -100,9 +100,9 @@ const ScenesPanel = ({
             {/* ============================================ */}
             {/* CUSTOM SCENE UPLOAD */}
             {/* ============================================ */}
-            <div className="mt-4">
+            <div className="mt-1">
               {/* Upload Row */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-dashed border-gray-300 rounded-lg px-3 py-2.5">
+              <div className="flex items-center gap-2 bg-gray-50 border border-dashed border-gray-300 rounded-lg px-3 py-1.5">
                 <button
                   onClick={handleCameraClick}
                   title="Add your own scene"
@@ -166,19 +166,19 @@ const ScenesPanel = ({
       )}
 
       {/* ── QUICK ACTIONS CARD ─────────────────────────────────── */}
-      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] overflow-hidden p-5 flex flex-col gap-3">
+      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[20px] overflow-hidden p-3 pb-6 flex flex-col gap-2">
         <button
           onClick={() => {
             if (onClose) onClose();
           }}
-          className="w-full bg-[#74136C] hover:bg-[#5a0f54] text-white py-3 rounded-full text-[13px] font-bold tracking-wide flex items-center justify-center gap-2 transition-all uppercase"
+          className="w-full bg-[#74136C] hover:bg-[#5a0f54] text-white py-2.5 rounded-full text-[12px] font-bold tracking-wide flex items-center justify-center gap-2 transition-all uppercase"
         >
           VIEW PRODUCT <ArrowRight className="w-4 h-4 ml-1" />
         </button>
         <button
           onClick={handleToggleWishlist}
           disabled={wishlistLoading}
-          className={`w-full py-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition-colors border border-[#74136C] rounded-full ${isInWishlistState ? "text-red-500 border-red-500" : "text-[#74136C] hover:bg-[#74136C] hover:text-white"
+          className={`w-full py-2.5 flex items-center justify-center gap-2 text-[12px] font-semibold transition-colors border border-[#74136C] rounded-full ${isInWishlistState ? "text-red-500 border-red-500" : "text-[#74136C] hover:bg-[#74136C] hover:text-white"
             } ${wishlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {wishlistLoading ? (
