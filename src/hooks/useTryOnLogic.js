@@ -2,8 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createTryOnFormData } from "../utils/tryOnHelpers";
-import { saveTryOnResult } from "../services/tryOnService";
-import { useAuth } from "../context/AuthContext";
 
 /**
  * Main try-on logic hook
@@ -15,7 +13,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [hasStarted, setHasStarted] = useState(false);
   const hasStartedRef = useRef(false);
-  const { user } = useAuth();
 
   const performTryOn = async (options = {}) => {
     console.log("🎯 performTryOn called");
@@ -98,21 +95,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       setTryOnResult(resultUrl);
 
       console.log("✅ Try-on complete");
-
-      // Auto-save to gallery
-      if (user) {
-        try {
-          await saveTryOnResult({
-            ...tryOnData,
-            tryOnResult: resultUrl,
-            tryOnImage: resultUrl,
-            is3D: false
-          });
-        } catch (saveErr) {
-          console.error("Failed to auto-save try-on:", saveErr);
-          // Don't block the UI if save fails
-        }
-      }
 
     } catch (err) {
       console.error("❌ Server Error Detail:", err);

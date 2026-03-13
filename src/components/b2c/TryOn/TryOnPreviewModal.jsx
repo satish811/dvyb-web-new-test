@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, ArrowRight } from "lucide-react";
+import toast from "react-hot-toast";
 import TryonBackground from "../../../assets/b2c/landing/Landing-villy/TryonBackground.png";
 
 // ============================================
@@ -31,10 +32,12 @@ import CustomizationPanel from "../TryOncomponents/TryOncustomization/Customizat
 // SCENES & ACTIONS COMPONENTS
 // ============================================
 import ScenesPanel from "../TryOncomponents/TryonScenes/ScenesPanel";
+import { saveTryOnResult } from "../../../services/tryOnService";
 
 
 // WISHLIST
 import { useWishlist } from "../../../context/WishlistContext";
+import { useAuth } from "../../../context/AuthContext";
 
 // ============================================
 // UTILS & CONSTANTS
@@ -63,7 +66,10 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   const [currentImage, setCurrentImage] = useState(null);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isInWishlistState, setIsInWishlistState] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLookSaved, setIsLookSaved] = useState(false);
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { user } = useAuth();
 
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
@@ -143,6 +149,13 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
     }
   }, [backgroundChangedImage]);
 
+  // Reset save-state when user gets a new/updated try-on image
+  useEffect(() => {
+    if (currentImage || tryOnResult) {
+      setIsLookSaved(false);
+    }
+  }, [currentImage, tryOnResult]);
+
 
 
   // Wishlist & Cart logic
@@ -196,6 +209,7 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   const handleReset = () => {
     resetBackground();
     setCurrentImage(null);
+    setIsLookSaved(false);
     setViewMode("2D");
     performTryOn({ force: true });
   };
@@ -206,6 +220,64 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
   };
 
 
+
+  // Save my look handler
+  const handleSaveLook = async () => {
+    if (!user?.uid) {
+      toast.error("Please log in to save your look.");
+      return;
+    }
+
+    const imageToSave = getCurrentDisplayImage();
+    if (!imageToSave) {
+      toast.error("No try-on image to save yet!");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/save-look", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: imageToSave,
+          productName: tryOnData?.garmentName || tryOnData?.productName || "",
+        }),
+      });
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : { success: false, error: `HTTP ${response.status}` };
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      // Persist saved look metadata in Firestore under user_tryons
+      await saveTryOnResult({
+        productId: tryOnData?.productId || product?.id || "unknown",
+        productName: tryOnData?.productName || tryOnData?.garmentName || product?.title || product?.name || "Product",
+        garmentName: tryOnData?.garmentName || product?.title || product?.name || "",
+        tryOnImage: data.url, // Cloudinary URL returned by /api/save-look
+        modelImage: tryOnData?.modelImage || "",
+        garmentImage: tryOnData?.garmentImage || "",
+        selectedColors: tryOnData?.selectedColors || [],
+        selectedSizes: tryOnData?.selectedSizes || [],
+        fabric: tryOnData?.fabric || "",
+        price: parseFloat(tryOnData?.price || product?.price || 0) || 0,
+        discount: tryOnData?.discount || product?.discount || 0,
+        videoUrl: videoUrl || null,
+        is3D: viewMode === "3D",
+      });
+
+      setIsLookSaved(true);
+      toast.success("Look saved to your gallery!");
+    } catch (err) {
+      console.error("Save look failed:", err);
+      toast.error("Failed to save look. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   //  wishlist handler
   const handleToggleWishlist = async () => {
@@ -318,6 +390,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         wishlistLoading={wishlistLoading}
         handleToggleWishlist={handleToggleWishlist}
         navigate={navigate}
+        handleSaveLook={handleSaveLook}
+        isSaving={isSaving}
+        isLookSaved={isLookSaved}
       />
 
       {/* ============================================ */}
@@ -351,6 +426,9 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         // wishlistLoading={wishlistLoading}
         // isInWishlistState={isInWishlistState}
         navigate={navigate}
+        handleSaveLook={handleSaveLook}
+        isSaving={isSaving}
+        isLookSaved={isLookSaved}
       />
 
       {/* ============================================ */}

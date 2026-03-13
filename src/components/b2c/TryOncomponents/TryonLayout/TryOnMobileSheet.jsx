@@ -1,8 +1,7 @@
 // src/components/b2c/TryOn/components/layout/TryOnMobileSheet.jsx
 
 import React, { useRef, useState } from "react";
-import { Heart, Palette, Image as ImageIcon, RotateCcw, ArrowRight, Camera } from "lucide-react";
-import toast from "react-hot-toast";
+import { Heart, Palette, Image as ImageIcon, RotateCcw, ArrowRight, Camera, Bookmark } from "lucide-react";
 import ViewModeToggle from "../TryOnshared/ViewModeToggle";
 import ColorTab from "../TryOncustomization/ColorTab";
 import FabricTab from "../TryOncustomization/FabricTab";
@@ -42,6 +41,9 @@ const TryOnMobileSheet = ({
   navigate,
   performTryOn,
   isProcessing,
+  handleSaveLook,
+  isSaving,
+  isLookSaved,
 }) => {
   const isSaree = tryOnData?.outfitType?.toLowerCase() === 'saree';
 
@@ -172,7 +174,7 @@ const TryOnMobileSheet = ({
                 onClick={handleCameraClick}
                 disabled={!tryOnResult || isChangingBackground}
                 title="Add your own scene"
-                className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-white transition-colors ${!tryOnResult || isChangingBackground ? 'opacity-50' : 'cursor-pointer hover:opacity-90'}`}
+                className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-white transition-colors ${!tryOnResult || isChangingBackground ? 'opacity-50' : 'cursor-pointer hover:opacity-90'}`}
                 style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 <Camera className="w-4 h-4" />
@@ -234,6 +236,21 @@ const TryOnMobileSheet = ({
             className="bg-[#74136C] hover:bg-[#5a0f54] text-white px-6 py-3 rounded-full text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all uppercase shrink-0"
           >
             VIEW PRODUCT <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+
+          <button
+            onClick={handleSaveLook}
+            disabled={isSaving || !tryOnResult || isLookSaved}
+            className={`flex items-center gap-2 text-[13px] font-semibold px-4 py-3 rounded-full border border-[#74136C] text-[#74136C] shrink-0 transition-colors hover:bg-[#74136C] hover:text-white ${
+              isSaving || !tryOnResult || isLookSaved ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSaving ? (
+              <span className="animate-spin h-4 w-4 border-2 border-[#74136C] border-t-transparent rounded-full" />
+            ) : (
+              <Bookmark className={`w-4 h-4 ${isLookSaved ? "fill-current" : ""}`} />
+            )}
+            <span>{isSaving ? "Saving..." : isLookSaved ? "Saved" : "Save My Look"}</span>
           </button>
 
           <button

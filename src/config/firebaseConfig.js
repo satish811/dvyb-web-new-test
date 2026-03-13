@@ -77,16 +77,9 @@ export const functions = getFunctions(app);
 // Connect to emulator if on localhost
 // Connect to emulator if on localhost AND VITE_USE_EMULATOR is set
 if (location.hostname === "localhost" && import.meta.env.VITE_USE_EMULATOR === 'true') {
-  // Add debug token for App Check to avoid "ReCAPTCHA error" locally
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-
   connectFunctionsEmulator(functions, "localhost", 5001);
   console.log("🔥 Connected to Functions Emulator");
 } else if (location.hostname === "localhost") {
-  // If we're NOT using the emulator but are on localhost, 
-  // we still might want the debug token so we can hit production
-  // without reCAPTCHA errors.
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   console.log("🌍 Connected to Production Functions (Localhost)");
 }
 
