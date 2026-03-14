@@ -27,6 +27,9 @@
     "api/upload.js": {
       "maxDuration": 60
     },
+    "api/save-look.js": {
+      "maxDuration": 60
+    },
     "api/video/create.js": {
       "maxDuration": 300
     },
