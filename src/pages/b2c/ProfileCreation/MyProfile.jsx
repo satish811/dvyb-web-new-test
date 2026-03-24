@@ -1690,8 +1690,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
             {/* 1. Original Photo Card */}
             {profileData.photoUrl && (
               <div
-                onClick={() => setShowGalleryModal(true)}
-                className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer group"
+                className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
               >
                 <div className="relative bg-[#F6F4F1] aspect-[3/4] overflow-hidden">
                   <img
@@ -1712,8 +1711,34 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
               </div>
             )}
 
-            {/* 2. Saved Try-On Results (HIDDEN - moved to gallery popup) */}
-            {/* User requested to only show Original Photo here, clicking it opens the gallery */}
+            {/* 2. Saved Try-On Results */}
+            {Object.entries(savedResults).map(([outfitType, imageUrl]) => {
+              if (!imageUrl) return null;
+
+              return (
+                <div
+                  key={outfitType}
+                  className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
+                  <div className="relative bg-[#F6F4F1] aspect-[3/4] overflow-hidden">
+                    <img
+                      src={imageUrl}
+                      alt={`${outfitLabels[outfitType] || outfitType} Model`}
+                      className="w-full h-full object-cover object-top"
+                      crossOrigin="anonymous"
+                    />
+                    <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded uppercase">
+                      {outfitLabels[outfitType] || outfitType}
+                    </div>
+                  </div>
+                  <div className="p-3 sm:p-4 text-center">
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 capitalize">
+                      {outfitLabels[outfitType] || outfitType}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Action Buttons */}

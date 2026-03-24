@@ -99,22 +99,32 @@ const UploadSelfieModal = ({
 
   const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [userTryOnImage, setUserTryOnImage] = useState(null);
-  const [useUserModel, setUseUserModel] = useState(false); // Toggle state
+
+  const resolveMyModelType = () => {
+    const rawType = String(tryOnData?.dressType || garmentName || "").toLowerCase().trim();
+
+    if (rawType.includes("saree") || rawType.includes("sari")) return "saree";
+    if (rawType.includes("lehenga") || rawType.includes("lehanga")) return "lehenga";
+    if (rawType.includes("anarkali")) return "anarkali";
+
+    // For every other category, use kurti model.
+    return "kurti";
+  };
+
+  const mappedMyModelType = resolveMyModelType();
 
   useEffect(() => {
     const checkUserTryOn = async () => {
-      if (!isOpen || !tryOnData?.dressType) return;
+      if (!isOpen) return;
 
       try {
-        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType);
+        const savedImage = await profileService.getTryOnByDressType(mappedMyModelType);
         if (savedImage) {
           setUserHasTryOn(true);
           setUserTryOnImage(savedImage);
-          setUseUserModel(true); // Default to user model if available
         } else {
           setUserHasTryOn(false);
           setUserTryOnImage(null);
-          setUseUserModel(false);
         }
       } catch (error) {
         console.error("Error checking user try-on:", error);
@@ -122,7 +132,29 @@ const UploadSelfieModal = ({
     };
 
     checkUserTryOn();
-  }, [isOpen, tryOnData]);
+  }, [isOpen, mappedMyModelType]);
+
+  const handleUseMyModel = () => {
+    if (!currentUser) {
+      alert("Please log in to continue");
+      return;
+    }
+
+    if (!userTryOnImage) {
+      alert(`No saved ${mappedMyModelType} model found. Please create it in My Models.`);
+      return;
+    }
+
+    setSelectedModel({
+      image: userTryOnImage,
+      name: `My Model (${mappedMyModelType.charAt(0).toUpperCase() + mappedMyModelType.slice(1)})`,
+    });
+
+    // Open the same preview page used by manual model selection.
+    setStep(null);
+    setShowModelSelector(false);
+    setShowModelPreview(true);
+  };
 
   const getModelsForDressType = (dressType) => {
     // Normalize dress type to lowercase and remove extra spaces
@@ -624,6 +656,17 @@ const UploadSelfieModal = ({
               >
                 Select a model
               </button>
+
+              <button
+                onClick={handleUseMyModel}
+                disabled={!userHasTryOn || isStoringData}
+                className="w-full bg-white py-[14px] rounded-[10px] font-medium text-[15px] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ border: '1.5px solid var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
+              >
+                {isStoringData
+                  ? 'Loading My Model...'
+                  : `My Model (${mappedMyModelType.charAt(0).toUpperCase() + mappedMyModelType.slice(1)})`}
+              </button>
             </div>
 
             {/* FOOTNOTE */}
@@ -737,6 +780,19 @@ const UploadSelfieModal = ({
               >
                 <Camera size={18} strokeWidth={2.5} />
                 Use camera
+              </button>
+
+              <button
+                onClick={() => {
+                  setUploadError("");
+                  setStep(1);
+                }}
+                className="w-fit mt-4 border border-gray-300 text-gray-700 py-2.5 px-5 rounded-md font-medium transition-colors hover:bg-gray-50"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <ArrowLeft size={16} />
+                  BACK
+                </span>
               </button>
             </div>
           </div>
@@ -931,31 +987,6 @@ const UploadSelfieModal = ({
             </svg>
           </button>
 
-          {/* Toggle Section at Top */}
-          {userHasTryOn && (
-            <div className="bg-[#fceeed] border-b border-gray-200 px-4 md:px-6 py-3.5 md:py-3 rounded-t-xl relative">
-              <div className="flex items-center justify-center md:justify-start gap-4 md:justify-between max-w-md pr-8 md:pr-0 mx-auto md:mx-0">
-                <span className="text-sm font-semibold text-gray-700">Your model</span>
-
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={!useUserModel}
-                    onChange={(e) => {
-                      setUseUserModel(!e.target.checked);
-                      // Reset selection when toggling
-                      setSelectedModel(null);
-                    }}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--villy-primary, #33022F)' }}></div>
-                </label>
-
-                <span className="text-sm font-semibold text-gray-700">Villy Models</span>
-              </div>
-            </div>
-          )}
-
           {/* Content */}
           <div className="p-6">
             {/* Header */}
@@ -966,111 +997,67 @@ const UploadSelfieModal = ({
               <p className="text-sm text-gray-600">You can only choose one model</p>
             </div>
 
-            {/* USER'S TRY-ON MODEL - Display ONLY when toggle is OFF */}
-            {userHasTryOn && !useUserModel && (
-              <div className="mb-6">
-                <div
-                  onClick={() => {
-                    setSelectedModel({
-                      image: userTryOnImage,
-                      name: "Your Model",
-                    });
-                  }}
-                  className="cursor-pointer inline-block relative"
-                >
-                  <img
-                    src={userTryOnImage}
-                    alt="Your Model"
-                    className="w-[160px] h-[240px] object-cover rounded"
-                  />
-                  <p className="text-left mt-2 text-sm font-medium text-gray-700">Your Model</p>
+            {/* VILLY STATIC MODELS */}
+            <div className="mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {models.map((model, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      setSelectedModel({
+                        image: model.modelimg,
+                        name: model.modelName,
+                      });
+                    }}
+                    className="cursor-pointer relative"
+                  >
+                    <img
+                      src={model.modelimg}
+                      alt={model.modelName}
+                      className="w-full h-[240px] object-contain rounded"
+                    />
+                    <p className="text-left mt-2 text-sm font-medium text-gray-700">
+                      {model.modelName}
+                    </p>
 
-                  {selectedModel?.name === "Your Model" && (
-                    <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
-                      <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="var(--villy-primary, #33022F)"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* DVYB STATIC MODELS - Display ONLY when toggle is ON OR user has no try-on */}
-            {(useUserModel || !userHasTryOn) && (
-              <div className="mb-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                  {models.map((model, index) => (
-                    <div
-                      key={index}
-                      onClick={() => {
-                        setSelectedModel({
-                          image: model.modelimg,
-                          name: model.modelName,
-                        });
-                      }}
-                      className="cursor-pointer relative"
-                    >
-                      <img
-                        src={model.modelimg}
-                        alt={model.modelName}
-                        className="w-full h-[240px] object-contain rounded"
-                      />
-                      <p className="text-left mt-2 text-sm font-medium text-gray-700">
-                        {model.modelName}
-                      </p>
-
-                      {selectedModel?.name === model.modelName && (
-                        <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
-                          <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="var(--villy-primary, #33022F)"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
-                          </div>
+                    {selectedModel?.name === model.modelName && (
+                      <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
+                        <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--villy-primary, #33022F)"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Checkbox */}
-            <div className="flex items-start gap-3 mb-6">
-              <input
-                type="checkbox"
+            {/* <div className="flex items-start gap-3 mb-6"> */}
+              {/* <input */}
+                {/* type="checkbox"
                 checked={makeDefault}
                 onChange={(e) => setMakeDefault(e.target.checked)}
-                className="mt-1 w-4 h-4"
-                style={{ accentColor: 'var(--villy-primary, #33022F)' }}
-              />
-              <p className="text-sm text-gray-700">
+                className="mt-1 w-4 h-4" */}
+                {/* style={{ accentColor: 'var(--villy-primary, #33022F)' }} */}
+              {/* /> */}
+              {/* <p className="text-sm text-gray-700">
                 Make it default model for all future try ons (you can always change the model in the
                 settings)
-              </p>
-            </div>
+              </p> */}
+            {/* </div> */}
 
             {/* Footer Buttons */}
             <div className="flex justify-between items-center">

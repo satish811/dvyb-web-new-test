@@ -20,7 +20,14 @@ import toast from "react-hot-toast";
 
 // --- Helper Components ---
 
-const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete, isAddedToCart }) => {
+const TryOnGalleryCard = ({
+  item,
+  onShare,
+  onAddToCart,
+  onDelete,
+  isAddedToCart,
+  onImageClick,
+}) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -67,7 +74,10 @@ const TryOnGalleryCard = ({ item, onShare, onAddToCart, onDelete, isAddedToCart 
       </button>
 
       {/* Rest of your card component... */}
-      <div className="relative bg-[#D4B89C] aspect-[3/4] overflow-hidden">
+      <div
+        className="relative bg-[#D4B89C] aspect-[3/4] overflow-hidden cursor-zoom-in"
+        onClick={() => onImageClick(item)}
+      >
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
@@ -292,6 +302,44 @@ const ShareModal = ({ isOpen, onClose, item }) => {
   );
 };
 
+const ImagePreviewModal = ({ isOpen, onClose, item }) => {
+  if (!isOpen || !item) return null;
+
+  const imageSrc =
+    item.tryOnImage || item.garmentImage || "https://via.placeholder.com/400x600?text=No+Image";
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image preview"
+    >
+      <div
+        className="w-full h-full flex items-center justify-center overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-2 sm:gap-3 max-w-[98vw] max-h-[94vh]">
+          <img
+            src={imageSrc}
+            alt={item.productName || "Saved try-on"}
+            className="max-w-[calc(100vw-4.5rem)] sm:max-w-[calc(100vw-5.5rem)] max-h-[92vh] w-auto h-auto object-contain"
+          />
+
+          <button
+            onClick={onClose}
+            className="mt-1 text-white/90 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors shrink-0"
+            aria-label="Close preview"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main Page Component ---
 
 export default function TryOnGallery() {
@@ -299,6 +347,8 @@ export default function TryOnGallery() {
   const { tryons, loading, error, setTryons } = useUserTryons();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
   const [addedToCartMap, setAddedToCartMap] = useState({});
   const { user } = useAuth();
 
@@ -314,6 +364,11 @@ export default function TryOnGallery() {
   const handleShare = (item) => {
     setSelectedItem(item);
     setShareModalOpen(true);
+  };
+
+  const handleImagePreview = (item) => {
+    setPreviewItem(item);
+    setPreviewModalOpen(true);
   };
 
   const handleAddToCart = async (item) => {
@@ -456,6 +511,7 @@ export default function TryOnGallery() {
               onAddToCart={handleAddToCart}
               onDelete={handleDelete}
               isAddedToCart={Boolean(addedToCartMap[item.id])}
+              onImageClick={handleImagePreview}
             />
           ))}
         </div>
@@ -466,6 +522,12 @@ export default function TryOnGallery() {
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         item={selectedItem}
+      />
+
+      <ImagePreviewModal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        item={previewItem}
       />
     </div>
   );

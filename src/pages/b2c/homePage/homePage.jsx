@@ -277,7 +277,7 @@ export default function Home() {
       <PopularProductsSection products={productsArray} />
 
       {/* 2.99 NEW ARRIVAL BANNER */}
-      <NewArrivalBanner />
+      <NewArrivalBanner products={productsArray} />
 
       {/* 2.99.1 HOME FOOTER */}
       {/* <HomeFooter /> */}
