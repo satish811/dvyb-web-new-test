@@ -7,6 +7,7 @@ import { useWishlist } from "../../../context/WishlistContext";
 import { auth } from "../../../config";
 import B2BAuthService from "../../../services/b2bAuthService";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
 import ProductImageGallery from "./individual_product_components/ProductImageGallery";
 import ProductTitleSection from "./individual_product_components/ProductTitleSection";
@@ -631,6 +632,16 @@ const IndividualProductDetailsPage = () => {
 
   return (
     <div className="mx-auto flex flex-col w-full max-w-none px-4 lg:px-0 xl:px-8 2xl:px-16 md:pt-8 mt-4 md:mt-0">
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/", { state: { scrollTo: "popular-products" } })}
+        className="flex items-center gap-2 text-[#33022F] hover:opacity-70 transition-opacity mb-4 w-fit group"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="font-medium">Back</span>
+      </button>
+
 
       {showAddToBagPopup && (
         <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300">

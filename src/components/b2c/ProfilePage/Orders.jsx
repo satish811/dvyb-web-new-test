@@ -32,6 +32,8 @@ const MyOrders = () => {
   const [activeTab, setActiveTab] = useState("ALL ORDERS"); // Default to ALL
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   // Filter States
   const [filters, setFilters] = useState({
@@ -139,12 +141,19 @@ const MyOrders = () => {
 
   const displayOrders = getFilteredOrders();
 
-  const handleCancelOrder = async (order) => {
-    if (!window.confirm(`Cancel Order #${order.orderId || order.id}?`)) return;
+  const handleCancelOrder = (order) => {
+    setOrderToCancel(order);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!orderToCancel) return;
 
     try {
-      await orderService.updateOrderStatus(order.id || order.orderId, "Cancelled");
+      await orderService.updateOrderStatus(orderToCancel.id || orderToCancel.orderId, "Cancelled");
       alert("Order cancelled successfully!");
+      setShowCancelModal(false);
+      setOrderToCancel(null);
     } catch (err) {
       console.error("Cancel failed:", err);
       alert("Failed to cancel order.");
@@ -468,6 +477,42 @@ const MyOrders = () => {
 
           </div>
         </FilterModalPortal>
+
+        {/* --- TOP-ALIGNED CANCEL ORDER CONFIRMATION MODAL --- */}
+        {showCancelModal && ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[10000] flex justify-center items-start pt-10 pointer-events-none font-[Outfit]">
+            {/* Overlay for clicking out (optional contextually, but here focus is on the card) */}
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+              onClick={() => { setShowCancelModal(false); setOrderToCancel(null); }}
+            />
+
+            {/* Modal Card */}
+            <div className="relative bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm mx-4 pointer-events-auto animate-in fade-in slide-in-from-top-4 duration-300">
+              <h3 className="text-lg font-bold mb-6 text-[#33022F] text-center">
+                Are you sure you want to cancel order #{orderToCancel?.orderId || orderToCancel?.id}?
+              </h3>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={confirmCancelOrder}
+                  className="bg-[#800000] text-white px-8 py-2.5 rounded hover:bg-[#660000] transition font-bold text-sm"
+                >
+                  YES
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setOrderToCancel(null);
+                  }}
+                  className="bg-gray-100 text-gray-800 px-8 py-2.5 rounded hover:bg-gray-200 transition font-bold text-sm"
+                >
+                  NO
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   );

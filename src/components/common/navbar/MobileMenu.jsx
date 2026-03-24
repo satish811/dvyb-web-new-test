@@ -91,7 +91,7 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
                 onNavClick("/menwear");
                 onClose();
               }}
-              className="w-full text-left text-gray-800 font-bold tracking-widest uppercase"
+              className="w-full text-left text-gray-400 font-bold tracking-widest uppercase hover:text-gray-600"
             >
               MEN
             </button>

@@ -59,9 +59,7 @@ const OrderDetails = ({ order = {}, onBack = () => { }, onDownloadInvoice = () =
       }
     }
     if (isCancelled) {
-      // In the mockup for cancelled, "Order placed" is shown as the active step (idx 0)
-      // but the header is red. Let's stick to this if it's newly cancelled.
-      return 0;
+      return 3;
     }
     switch (order.status) {
       case "Order placed":
@@ -111,7 +109,7 @@ const OrderDetails = ({ order = {}, onBack = () => { }, onDownloadInvoice = () =
           </div>
 
           <div className="flex flex-col items-end w-full md:w-auto gap-1">
-            <span className={`font-bold text-sm tracking-wide ${isCancelled ? 'text-red-500' : 'text-[#D87030]'}`}>
+            <span className={`font-bold text-sm tracking-wide ${isCancelled ? 'text-[#800000]' : 'text-[#D87030]'}`}>
               {isCancelled ? 'ORDER CANCELLED' : (isReturn ? 'RETURN PLACED' : (order.status?.toUpperCase() || 'ACTIVE'))}
             </span>
             <div className="text-[#1a1a1a] font-bold" style={{ fontSize: "16px" }}>
@@ -128,7 +126,7 @@ const OrderDetails = ({ order = {}, onBack = () => { }, onDownloadInvoice = () =
               {statusSteps.map((step, idx) => (
                 <div
                   key={idx}
-                  className={`text-center text-sm font-bold w-24 ${idx === currentStepIdx ? 'text-[#33022F]' : 'text-[#D1D1D1]'}`}
+                  className={`text-center text-sm font-bold w-24 ${idx <= currentStepIdx ? (isCancelled ? 'text-[#800000]' : 'text-[#33022F]') : 'text-[#D1D1D1]'}`}
                   style={{ visibility: idx === currentStepIdx || idx > 0 ? 'visible' : 'visible' }}
                 >
                   {step}
@@ -141,7 +139,7 @@ const OrderDetails = ({ order = {}, onBack = () => { }, onDownloadInvoice = () =
               {statusSteps.map((_, idx) => (
                 <div key={idx} className="flex flex-col items-center z-10">
                   <div
-                    className={`w-4 h-4 rounded-full transition-all duration-500 ${idx <= currentStepIdx ? 'bg-[#1a1a1a]' : 'bg-[#D1D1D1]'}`}
+                    className={`w-4 h-4 rounded-full transition-all duration-500 ${idx <= currentStepIdx ? (isCancelled ? 'bg-[#800000]' : 'bg-[#1a1a1a]') : 'bg-[#D1D1D1]'}`}
                   />
                 </div>
               ))}
@@ -165,9 +163,9 @@ const OrderDetails = ({ order = {}, onBack = () => { }, onDownloadInvoice = () =
                   <div key={idx} className="flex-1 h-2 bg-[#D1D1D1] rounded-full overflow-hidden relative">
                     {/* Dark Progress Bar inside segment */}
                     <div
-                      className="absolute left-0 top-0 h-full bg-[#33022F] transition-all duration-1000 ease-out"
+                      className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out ${isCancelled ? 'bg-[#800000]' : 'bg-[#33022F]'}`}
                       style={{
-                        width: animateProgress ? (isCompleted ? '100%' : (isActive ? '50%' : '0%')) : '0%'
+                        width: animateProgress ? (idx <= currentStepIdx ? '100%' : '0%') : '0%'
                       }}
                     />
                   </div>
