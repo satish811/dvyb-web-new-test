@@ -276,7 +276,7 @@ export default function Navbar({ setShowLoader }) {
                                             navigate("/", { state: { scrollTo: "categories-section" } });
                                         }
                                     }}
-                                    className={`text-sm xl:text-base 2xl:text-lg font-bold tracking-widest transition uppercase ${location.pathname === "/" ? "text-[#884383]" : "hover:text-gray-600"}`}
+                                    className={`text-[12px] xl:text-sm 2xl:text-base font-bold tracking-widest transition uppercase ${location.pathname === "/" ? "text-[#884383]" : "hover:text-gray-600"}`}
                                 >
                                     WOMEN
                                 </button>
@@ -292,7 +292,7 @@ export default function Navbar({ setShowLoader }) {
                             <div className="relative flex flex-col items-center">
                                 <button
                                     onClick={() => navigate("/menwear")}
-                                    className={`text-sm xl:text-base 2xl:text-lg font-bold tracking-widest transition uppercase ${location.pathname === "/menwear" ? "text-gray-600" : "hover:text-gray-600"}`}
+                                    className={`text-sm xl:text-base 2xl:text-lg font-bold tracking-widest transition uppercase text-gray-400 hover:text-gray-600`}
                                 >
                                     MEN
                                 </button>

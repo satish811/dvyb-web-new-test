@@ -163,7 +163,7 @@ export default function PopularProductsSection({ products: firebaseProducts = []
                 </h2>
 
                 <img
-                    src={vector2}
+                    src = {vector2}
                     alt="decoration right"
                     className="w-[60px] md:w-[150px] 2xl:w-[200px] object-contain"
                 />

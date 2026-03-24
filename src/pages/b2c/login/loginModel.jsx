@@ -66,7 +66,8 @@ const LoginModal = ({ isOpen, onClose }) => {
   };
 
   const handleGuestCheckout = () => {
-    navigate("/checkout", { state: { guest: true } });
+    navigate("/");
+    onClose();
   };
 
   const handleB2BLogin = async (credentials) => {

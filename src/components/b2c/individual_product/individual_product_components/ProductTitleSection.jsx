@@ -81,19 +81,6 @@ const ProductTitleSection = ({
 
   return (
     <>
-      {showLoginPopup && (
-        <RightSlidePopup
-          content={
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">Please sign in</div>
-              <div className="text-sm text-gray-600">Login to save items to your wishlist</div>
-            </div>
-          }
-          autoHideDelay={5000}
-          onClose={() => setShowLoginPopup(false)}
-          keyProp="login-required"
-        />
-      )}
 
       <div className="flex flex-col mt-4 md:mt-6" style={{ gap: "1px" }}>
         {/* Title + Icons */}
@@ -157,6 +144,43 @@ const ProductTitleSection = ({
                 <span className="absolute inset-0 flex items-center justify-center">
                   <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                 </span>
+              )}
+
+              {/* Localized Login Popup */}
+              {showLoginPopup && (
+                <div
+                  className="absolute top-[120%] right-0 w-64 bg-white border border-gray-100 shadow-2xl rounded-xl p-5 z-[100] cursor-default animate-in fade-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex flex-col gap-3 text-left">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-[#33022F] text-sm leading-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+                        Please sign in to your account!
+                      </h4>
+                      <button
+                        onClick={() => setShowLoginPopup(false)}
+                        className="text-gray-400 hover:text-gray-600 transition -mt-1 -mr-1 p-1"
+                      >
+                        <span className="text-lg">×</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-normal" style={{ fontFamily: "Outfit, sans-serif" }}>
+                      Add items to your wishlist to find them later and get price updates.
+                    </p>
+                    <button
+                      onClick={() => {
+                        window.location.href = "/login";
+                        setShowLoginPopup(false);
+                      }}
+                      className="bg-[#33022F] text-white text-[10px] font-bold py-2 px-4 rounded-md hover:bg-[#4a0344] transition uppercase tracking-wider mt-1"
+                      style={{ fontFamily: "Outfit, sans-serif" }}
+                    >
+                      LOGIN / SIGNUP
+                    </button>
+                  </div>
+                  {/* Triangle Arrow */}
+                  <div className="absolute -top-1.5 right-3.5 w-3 h-3 bg-white rotate-45 border-l border-t border-gray-50 shadow-sm" />
+                </div>
               )}
             </button>
           </div>

@@ -39,7 +39,7 @@ export default function HomeFooter() {
 
     return (
         <footer
-            className="relative w-full text-white pt-16 pb-32 md:pb-24 2xl:pt-24 2xl:pb-32 bg-cover bg-no-repeat min-h-[700px]"
+            className="relative w-full text-white pt-8 pb-64 md:pb-56 2xl:pt-12 2xl:pb-64 bg-cover bg-no-repeat min-h-[800px]"
             style={{
                 backgroundImage: `url(${footerBg})`,
                 backgroundColor: '#9A3258', // Fallback color matching the image
