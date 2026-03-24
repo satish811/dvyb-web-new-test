@@ -2,10 +2,10 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faInstagram,
-  faPinterestP,
   faFacebookF,
   faTwitter,
-  faTelegramPlane,
+  faYoutube,
+  faXTwitter,
 } from "@fortawesome/free-brands-svg-icons";
 import { faHandsHelping, faGem, faUsers, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 
@@ -17,14 +17,29 @@ import hand from "@/assets/b2c/images/OurStory/hand.svg";
 
 const ourStory = () => {
   const socialIcons = [
-    { icon: faInstagram, hover: "hover:text-pink-600", color: "text-gray-700" },
-    { icon: faPinterestP, hover: "hover:text-red-600", color: "text-gray-700" },
-    { icon: faFacebookF, hover: "hover:text-blue-600", color: "text-gray-700" },
-    { icon: faTwitter, hover: "hover:text-sky-500", color: "text-gray-700" },
     {
-      icon: faTelegramPlane,
-      hover: "hover:text-blue-500",
+      icon: faInstagram,
+      hover: "hover:text-pink-600",
       color: "text-gray-700",
+      link: "https://www.instagram.com/villy.official?igsh=MWtmNm5oNGhrdmlvdA==",
+    },
+    {
+      icon: faFacebookF,
+      hover: "hover:text-blue-600",
+      color: "text-gray-700",
+      link: "https://www.facebook.com/profile.php?id=61588636642553",
+    },
+    {
+      icon: faXTwitter,
+      hover: "hover:text-black",
+      color: "text-gray-700",
+      link: "https://x.com/Thevillyof34956",
+    },
+    {
+      icon: faYoutube,
+      hover: "hover:text-red-600",
+      color: "text-gray-700",
+      link: "https://www.youtube.com/@thevillyofficial",
     },
   ];
 
@@ -66,7 +81,7 @@ const ourStory = () => {
 
       {/* Our Story */}
       <section className="max-w-7xl w-full px-4 sm:px-1 lg:px-8  text-center">
-        <h1 className="font-semibold text-5xl mb-2">Our Story</h1>
+        <h1 className="font-semibold text-4xl mb-2">Our Story</h1>
 
         <div className="w-[40%] h-[30%]  flex justify-center mb-10 max-w-4xl mx-auto">
           <img
@@ -77,14 +92,14 @@ const ourStory = () => {
         </div>
 
         <div className="max-w-4xl mx-auto mb-8 space-y-7 text-center">
-          <p className="text-[24px] leading-[46px] font-[400]  text-gray-600 capitalize">
+          <p className="text-[18px] leading-[32px] font-medium text-gray-600 capitalize">
             DVYB Was Born With A Vision To Make Ethnic Fashion Timeless Yet Effortless. In India,
             Every Weave Tells A Story — From The Grace Of Kanchipuram Silks To The Artistry Of
             Kalamkari And The Elegance Of Banarasi Sarees. But Bringing These Traditions To Modern
             Shoppers, Especially Online, Often Felt Complicated.
           </p>
 
-          <p className="text-[24px] leading-[46px] font-[400] text-gray-600 capitalize">
+          <p className="text-[18px] leading-[32px] font-medium text-gray-600 capitalize">
             That’s Why DVYB Blends Technology With Tradition. Through Our 2D And 3D Virtual Try-On,
             You Don’t Just Shop — You Experience How A Saree, Lehenga, Or Ethnic Outfit Looks On You
             Before Making A Choice. We Bring Together Regional Weaves, Heritage Crafts, And Festive
@@ -97,7 +112,9 @@ const ourStory = () => {
           {socialIcons.map((item, i) => (
             <a
               key={i}
-              href="#"
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label={item.icon.iconName}
               className={`w-10 h-10 flex items-center justify-center rounded-full border border-gray-900 bg-white ${item.color} ${item.hover} transition duration-300 transform hover:scale-110`}
             >
@@ -110,8 +127,8 @@ const ourStory = () => {
 
       {/* Mission */}
       <section className="max-w-5xl w-full text-center px-4 sm:px-6 py-2">
-        <h2 className="text-4xl font-bold mb-3">Our Mission</h2>
-        <p className=" font-semibold text-[24px] leading-[46px] tracking-[0] text-gray-700 text-center capitalize">
+        <h2 className="text-3xl font-bold mb-3">Our Mission</h2>
+        <p className=" font-medium text-[18px] leading-[32px] tracking-[0] text-gray-700 text-center capitalize">
           To Make Ethnic Fashion Accessible, Interactive, And Authentic. We Want Shoppers To
           Discover The Beauty Of Traditional Sarees And Ethnic Wear While Enjoying A Modern,
           Tech-Driven Shopping Experience With Features Like Virtual Try-Ons, Personalized Curation,
@@ -121,8 +138,8 @@ const ourStory = () => {
 
       {/* Vision */}
       <section className="max-w-4xl w-full text-center px-4 sm:px-6 py-14">
-        <h2 className="text-4xl font-bold mb-2">Our Vision</h2>
-        <p className=" font-semibold text-[24px] leading-[46px] tracking-[0] text-gray-700 text-center capitalize">
+        <h2 className="text-3xl font-bold mb-2">Our Vision</h2>
+        <p className=" font-medium text-[18px] leading-[32px] tracking-[0] text-gray-700 text-center capitalize">
           To Become The Go-To Digital Destination For Ethnic Wear Worldwide Celebrating India’s
           Diverse Handlooms, Crafts, And Designs, While Reimagining The Shopping Journey With
           Technology. We Aim To Connect Generations To Their Roots By Offering Heritage Pieces With

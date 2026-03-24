@@ -45,9 +45,23 @@ const ProductSizeSelector = ({
   // Get available sizes with their stock
   const sizesWithStock = extractSizesFromColors();
 
+  // Predefined order for standard sizes
+  const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "FREE SIZE"];
+
   // Final size list - use sizes from colors if available, otherwise use selectedSizes
-  const displaySizes =
-    Object.keys(sizesWithStock).length > 0 ? Object.keys(sizesWithStock) : selectedSizes;
+  // Sort them based on predefined size order
+  const displaySizes = (
+    Object.keys(sizesWithStock).length > 0 ? Object.keys(sizesWithStock) : selectedSizes
+  ).sort((a, b) => {
+    const indexA = SIZE_ORDER.indexOf(a);
+    const indexB = SIZE_ORDER.indexOf(b);
+
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
+  });
 
   // Get stock for a specific size
   const getStockForSize = (size) => {

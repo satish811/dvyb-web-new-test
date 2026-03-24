@@ -80,18 +80,35 @@ const CustomizationPanel = ({
 
       {/* ── RESET BUTTON ────────────────────────────────────────── */}
       <button
-        onClick={handleReset}
-        className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-full py-3.5 px-6 flex items-center justify-center gap-3 hover:bg-gray-50 transition-all active:scale-[0.98]"
-      >
-        <span className="text-[17px] font-medium text-black tracking-wide">
-          Re-Try
-        </span>
-        <img
-          src={resetButtonImg}
-          alt="Reset"
-          className="w-[22px] h-[22px] object-contain"
-        />
-      </button>
+  onClick={handleReset}
+  className="
+    w-full
+    min-h-[48px]
+    bg-white
+    shadow-md
+    rounded-full
+    py-3
+    px-6
+    flex
+    items-center
+    justify-center
+    gap-2
+    border border-gray-200
+    hover:bg-gray-50
+    active:scale-[0.97]
+    transition-all
+  "
+>
+  <img
+    src={resetButtonImg}
+    alt="Reset"
+    className="w-[18px] h-[18px] object-contain shrink-0"
+  />
+
+  <span className="text-[16px] font-semibold text-purple-700 whitespace-nowrap">
+    Re-Try
+  </span>
+</button>
 
     </div>
   );
