@@ -71,6 +71,35 @@ class SearchOperationalService {
       .join(" ");
   }
 
+  _tokenizeQuery(query) {
+    if (!query) return [];
+    return query
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
+  _matchesStrictQuery(product, queryTokens = []) {
+    if (!queryTokens.length) return true;
+
+    const searchableText = [
+      product?.title,
+      product?.name,
+      product?.category,
+      product?.subcategory,
+      product?.dressType,
+      product?.brand,
+      ...(Array.isArray(product?.tags) ? product.tags : []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    // Require every token to exist as a direct substring for strict dropdown relevance.
+    return queryTokens.every((token) => searchableText.includes(token));
+  }
+
   /**
    * Load and cache all products from Firestore, build Fuse index
    */
@@ -178,7 +207,14 @@ class SearchOperationalService {
    */
   async searchProducts(searchQuery, options = {}) {
     try {
-      const { limit = 20, category = null, minPrice = null, maxPrice = null, signal } = options;
+      const {
+        limit = 20,
+        category = null,
+        minPrice = null,
+        maxPrice = null,
+        signal,
+        strictMatch = false,
+      } = options;
 
       // Empty query = no results (not ALL products)
       if (!searchQuery || !searchQuery.trim()) {
@@ -195,6 +231,7 @@ class SearchOperationalService {
 
       const originalQuery = searchQuery.trim().toLowerCase();
       const stemmedQuery = this._stemQuery(originalQuery);
+      const queryTokens = this._tokenizeQuery(originalQuery);
 
       console.log(`🔍 Searching: "${originalQuery}" (stemmed: "${stemmedQuery}")`);
 
@@ -266,6 +303,10 @@ class SearchOperationalService {
         results = results.filter((p) => parseFloat(p.price) <= maxPrice);
       }
 
+      if (strictMatch) {
+        results = results.filter((p) => this._matchesStrictQuery(p, queryTokens));
+      }
+
       // Sort: exact matches first, then by fuzzy score (lower = better)
       results.sort((a, b) => {
         const aExact =
@@ -310,7 +351,7 @@ class SearchOperationalService {
         return [];
       }
 
-      const results = await this.searchProducts(searchQuery, { limit });
+      const results = await this.searchProducts(searchQuery, { limit, strictMatch: true });
 
       const suggestions = new Set();
 

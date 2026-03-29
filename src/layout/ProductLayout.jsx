@@ -10,12 +10,11 @@ import ProductGrid from "../components/b2c/products/ProductGrid";
 import { useFilter } from "../context/FilterContext";
 import CategoryTags, { normalizeCategory } from "../components/b2c/products/CategoryTags";
 import { extractSubcategories } from "../utils/categoryExtractor";
-import Fuse from "fuse.js";
 
 export default function ProductLayout({ children, products, categoryFromRoute, loading = false }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateFilter, selectedFilters, clearAllFilters, resetAndSetFilters, searchQuery } = useFilter();
+  const { updateFilter, selectedFilters, clearAllFilters, resetAndSetFilters, searchQuery, setSearchQuery } = useFilter();
 
   const [sortValue, setSortValue] = useState("recommended");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -71,8 +70,14 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const category = categoryFromRoute || queryParams.get("category");
   const subcategory = queryParams.get("sub");
+  const urlSearchQuery = queryParams.get("query")?.trim() || "";
   const urlPriceMax = queryParams.get("priceMax");
   const urlPriceMin = queryParams.get("priceMin");
+
+  // Sync URL query -> context query only when URL changes, so typing is not overridden.
+  useEffect(() => {
+    setSearchQuery((prev) => (prev === urlSearchQuery ? prev : urlSearchQuery));
+  }, [urlSearchQuery, setSearchQuery]);
 
 
   /**
@@ -91,13 +96,7 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
    * Uses resetAndSetFilters for atomic, race-condition-free state updates
    */
   useEffect(() => {
-    console.log(`[ProductLayout] URL sync: category="${category}", priceMin=${urlPriceMin}, priceMax=${urlPriceMax}, search="${searchQuery}"`);
-
-    // If there's a search query, let the search handle filtering
-    if (searchQuery) {
-      console.log(`[ProductLayout] Search query present, skipping URL sync`);
-      return;
-    }
+    console.log(`[ProductLayout] URL sync: category="${category}", priceMin=${urlPriceMin}, priceMax=${urlPriceMax}, search="${urlSearchQuery}"`);
 
     // Build the new filter state from URL params in one go
     const newFilters = {};
@@ -141,36 +140,7 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
     // Atomic: clear all old filters and set new ones in a single state update
     resetAndSetFilters(newFilters);
 
-  }, [category, subcategory, searchQuery, urlPriceMax, urlPriceMin, resetAndSetFilters]); // Added resetAndSetFilters to deps
-
-  /**
-   * Build a Fuse.js instance for the current product list (memoized)
-   */
-  const productFuse = useMemo(() => {
-    if (!products || products.length === 0) return null;
-    return new Fuse(products, {
-      keys: [
-        { name: "title", weight: 0.3 },
-        { name: "name", weight: 0.3 },
-        { name: "category", weight: 0.2 },
-        { name: "subcategory", weight: 0.15 },
-        { name: "dressType", weight: 0.15 },
-        { name: "description", weight: 0.05 },
-        { name: "tags", weight: 0.15 },
-        { name: "fabric", weight: 0.1 },
-        { name: "craft", weight: 0.1 },
-        { name: "shopName", weight: 0.2 },
-        { name: "boutiqueName", weight: 0.2 },
-        { name: "brand", weight: 0.25 },
-      ],
-      threshold: 0.35,
-      distance: 100,
-      minMatchCharLength: 1,
-      includeScore: true,
-      ignoreLocation: true,
-      findAllMatches: true,
-    });
-  }, [products]);
+  }, [category, subcategory, urlSearchQuery, urlPriceMax, urlPriceMin, resetAndSetFilters]); // Added resetAndSetFilters to deps
 
   /**
    * Simple stemmer for common Indian fashion plurals
@@ -207,56 +177,32 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
       filtered = filtered.filter((p) => p.boutique === true || (p.shopName && p.shopName.trim().length > 0));
     }
 
-    // Filter by search query if present — using Fuse.js fuzzy matching
-    if (searchQuery && searchQuery.trim()) {
-      const query = searchQuery.trim().toLowerCase();
+    // Filter by search query if present — strict token matching to avoid unrelated fuzzy results.
+    const effectiveSearchQuery = (searchQuery || urlSearchQuery || "").trim();
+    if (effectiveSearchQuery) {
+      const query = effectiveSearchQuery.toLowerCase();
       const stemmed = stemQuery(query);
+      const queryTokens = query.split(/\s+/).filter(Boolean);
+      const stemmedTokens = stemmed.split(/\s+/).filter(Boolean);
 
-      if (productFuse) {
-        // Fuzzy search with original + stemmed query
-        const fuseResults = productFuse.search(query);
-        const stemmedResults = stemmed !== query ? productFuse.search(stemmed) : [];
+      filtered = (filtered || []).filter((p) => {
+        const searchText = [
+          p.title, p.name, p.category, p.subcategory, p.dressType,
+          p.description, p.fabric, p.craft, p.shopName, p.boutiqueName, p.brand,
+          ...(Array.isArray(p.tags) ? p.tags : []),
+        ].filter(Boolean).join(" ").toLowerCase();
 
-        // Also do direct substring match as fallback
-        const substringResults = (filtered || []).filter((p) => {
-          const searchText = [
-            p.title, p.name, p.category, p.subcategory, p.dressType,
-            p.description, p.fabric, p.craft, p.shopName, p.boutiqueName, p.brand,
-            ...(Array.isArray(p.tags) ? p.tags : []),
-          ].filter(Boolean).join(" ").toLowerCase();
-          return searchText.includes(query) || searchText.includes(stemmed);
-        });
+        // Every term must be present somewhere in text, enabling partial-in-word matches like blue -> blueish.
+        const matchesAllOriginalTokens = queryTokens.every((token) => searchText.includes(token));
+        if (matchesAllOriginalTokens) return true;
 
-        // Merge and deduplicate
-        const seenIds = new Set();
-        const merged = [];
-
-        for (const p of substringResults) {
-          if (!seenIds.has(p.id)) { seenIds.add(p.id); merged.push(p); }
-        }
-        for (const { item } of stemmedResults) {
-          if (!seenIds.has(item.id)) { seenIds.add(item.id); merged.push(item); }
-        }
-        for (const { item } of fuseResults) {
-          if (!seenIds.has(item.id)) { seenIds.add(item.id); merged.push(item); }
-        }
-
-        filtered = merged;
-      } else {
-        // Fallback if Fuse not ready
-        filtered = (filtered || []).filter((p) => {
-          const searchText = [
-            p.title, p.name, p.category, p.subcategory, p.dressType,
-            p.description, p.fabric, p.craft, p.shopName, p.boutiqueName, p.brand,
-            ...(Array.isArray(p.tags) ? p.tags : []),
-          ].filter(Boolean).join(" ").toLowerCase();
-          return searchText.includes(query) || searchText.includes(stemmed);
-        });
-      }
+        const matchesAllStemmedTokens = stemmedTokens.every((token) => searchText.includes(token));
+        return matchesAllStemmedTokens;
+      });
     }
 
     return filtered;
-  }, [category, searchQuery, products, productFuse, stemQuery]);
+  }, [category, searchQuery, urlSearchQuery, products, stemQuery]);
 
   /**
    * Load recent & popular searches from localStorage
@@ -286,7 +232,7 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
       setIsSearching(true);
       try {
         const [results, suggestions] = await Promise.all([
-          searchService.searchProducts(debouncedSearchQuery, { limit: 10 }),
+          searchService.searchProducts(debouncedSearchQuery, { limit: 10, strictMatch: true }),
           searchService.getSearchSuggestions(debouncedSearchQuery, 5),
         ]);
         setSearchResults(results);

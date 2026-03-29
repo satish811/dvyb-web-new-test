@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import {
   Share2,
   ShoppingCart,
@@ -58,7 +59,7 @@ const TryOnGalleryCard = ({
   };
 
   return (
-    <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group">
+    <div className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 relative group h-full flex flex-col">
       {/* Delete Button (Visible on Hover) */}
       <button
         onClick={handleDelete}
@@ -119,20 +120,22 @@ const TryOnGalleryCard = ({
       </div>
 
       {/* Card Content */}
-      <div className="p-4">
-        {item.garmentName && (
-          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-            {item.garmentName}
-          </p>
-        )}
+      <div className="p-4 flex flex-col flex-1">
+        <div className="min-h-24">
+          {item.garmentName && (
+            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1 line-clamp-2">
+              {item.garmentName}
+            </p>
+          )}
 
-        <h3 className="font-normal text-gray-900 text-sm mb-2 line-clamp-2 leading-snug">
-          {item.productName || "Product"}
-        </h3>
+          <h3 className="font-normal text-gray-900 text-sm mb-2 line-clamp-2 leading-snug">
+            {item.productName || "Product"}
+          </h3>
 
-        <p className="text-xs text-gray-500 mb-4">Tried On {formattedDate}</p>
+          <p className="text-xs text-gray-500 mb-4">Tried On {formattedDate}</p>
+        </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 mt-auto">
           <button
             onClick={() => onAddToCart(item)}
             disabled={isAddedToCart}
@@ -303,40 +306,53 @@ const ShareModal = ({ isOpen, onClose, item }) => {
 };
 
 const ImagePreviewModal = ({ isOpen, onClose, item }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen || !item) return null;
 
   const imageSrc =
     item.tryOnImage || item.garmentImage || "https://via.placeholder.com/400x600?text=No+Image";
 
-  return (
+  return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+      className="fixed inset-0 z-9999 bg-black/90 flex items-center justify-center p-4 overflow-hidden"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Image preview"
     >
       <div
-        className="w-full h-full flex items-center justify-center overflow-hidden"
+        className="relative w-full h-full flex items-center justify-center overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start gap-2 sm:gap-3 max-w-[98vw] max-h-[94vh]">
-          <img
-            src={imageSrc}
-            alt={item.productName || "Saved try-on"}
-            className="max-w-[calc(100vw-4.5rem)] sm:max-w-[calc(100vw-5.5rem)] max-h-[92vh] w-auto h-auto object-contain"
-          />
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 sm:top-5 sm:right-5 text-white/90 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+          aria-label="Close preview"
+        >
+          <X className="w-7 h-7" />
+        </button>
 
-          <button
-            onClick={onClose}
-            className="mt-1 text-white/90 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors shrink-0"
-            aria-label="Close preview"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+        <img
+          src={imageSrc}
+          alt={item.productName || "Saved try-on"}
+          className="max-w-[94vw] max-h-[90vh] w-auto h-auto object-contain"
+        />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

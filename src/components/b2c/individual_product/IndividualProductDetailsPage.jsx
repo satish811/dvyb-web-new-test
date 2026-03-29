@@ -212,6 +212,76 @@ const IndividualProductDetailsPage = () => {
 
   if (!product) return <div className="text-center py-10 text-gray-500">Product not found.</div>;
 
+  const normalizeCategoryForRoute = (value) => {
+    if (!value) return "";
+
+    const normalized = String(value).toLowerCase().trim();
+    const categoryMap = {
+      sarees: "saree",
+      saree: "saree",
+      lehengas: "lehenga",
+      lehenga: "lehenga",
+      "kurta sets": "kurta-sets",
+      "kurta set": "kurta-sets",
+      "kurta-sets": "kurta-sets",
+      "kurta-set": "kurta-sets",
+      kurtas: "kurta-sets",
+      kurta: "kurta-sets",
+      anarkalis: "anarkalis",
+      anarkali: "anarkali",
+      shararas: "shararas",
+      sharara: "shararas",
+      pret: "pret",
+      fusion: "fusion",
+      wedding: "wedding",
+      boutique: "boutique",
+      bridal: "bridal",
+      "salwar suit": "salwar-suit",
+      "salwar suits": "salwar-suit",
+      "salwar-suit": "salwar-suit",
+      "salwar-suits": "salwar-suit",
+      "indo western": "indo-western",
+      "indo-western": "indo-western",
+    };
+
+    return categoryMap[normalized] || normalized.replace(/\s+/g, "-");
+  };
+
+  const handleBackToCategory = () => {
+    const invalidCategorySlugs = new Set([
+      "women",
+      "woman",
+      "womenwear",
+      "mens",
+      "men",
+      "man",
+      "all",
+      "all-products",
+      "product",
+      "products",
+      "category",
+    ]);
+
+    const candidateSources = [
+      product?.dressType,
+      product?.subcategory,
+      product?.subCategory,
+      product?.sub_category,
+      product?.category,
+    ];
+
+    const categorySlug = candidateSources
+      .map(normalizeCategoryForRoute)
+      .find((slug) => slug && !invalidCategorySlugs.has(slug));
+
+    if (categorySlug) {
+      navigate(`/women/${categorySlug}`);
+      return;
+    }
+
+    navigate("/womenwear");
+  };
+
   const isWishlisted = isInWishlist(product.id);
 
   const imageUrls = product.imageUrls?.length ? product.imageUrls : ["/placeholder.jpg"];
@@ -635,7 +705,7 @@ const IndividualProductDetailsPage = () => {
 
       {/* Back Button */}
       <button
-        onClick={() => navigate("/", { state: { scrollTo: "popular-products" } })}
+        onClick={handleBackToCategory}
         className="flex items-center gap-2 text-[#33022F] hover:opacity-70 transition-opacity mb-4 w-fit group"
       >
         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />

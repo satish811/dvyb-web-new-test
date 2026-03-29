@@ -13,6 +13,7 @@ export class ReviewModel {
     rating,
     title,
     comment,
+    images = [],
     createdAt = new Date(),
     updatedAt = new Date(),
   }) {
@@ -25,6 +26,7 @@ export class ReviewModel {
     this.rating = rating;
     this.title = title;
     this.comment = comment;
+    this.images = Array.isArray(images) ? images : [];
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -67,6 +69,7 @@ export class ReviewModel {
       rating: this.rating,
       title: this.title.trim(),
       comment: this.comment.trim(),
+      images: this.images,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
@@ -89,6 +92,7 @@ export class ReviewModel {
       rating: data.rating,
       title: data.title,
       comment: data.comment,
+      images: Array.isArray(data.images) ? data.images : data.image ? [data.image] : [],
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
     });

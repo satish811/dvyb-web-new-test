@@ -167,118 +167,118 @@ const UploadSelfieModal = ({
     // Define all model arrays
     const lehengamodels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Petite Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773042832/14_vicmkl.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811392/Tan_petite_curvy_no8gp9.png",
       },
       {
-        modelName: "Model",
+        modelName: "Dusky Mid-height Fit",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773042833/md_img_7_ann4rp.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811395/Dusky_mid-height_fit_ihazii.png",
       },
 
       {
-        modelName: "Model 3",
+        modelName: "Light-skinned Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1766055352/model13_dvsv7d.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811402/Light-skinned_tall_athletic_or2kyh.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Fair Tall Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773043393/Gemini_Generated_Image_3n10aw3n10aw3n10_feyr4p.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811407/Fair_tall_slim_qs9zs7.png",
       },
 
 
     ]
     const sareeModels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Petite Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051219/model2_iaq2pq.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807971/Tan_petite_curvy_o8vqjp.png",
       },
       {
-        modelName: "Model 2",
+        modelName: "Light-skinned Mid-height Fit",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773050764/model_d1mnwa.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807978/Light-skinned_mid-height_fit_g0njuy.png",
       },
       {
-        modelName: "Model 3",
+        modelName: "Fair Tall Slender",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1772001465/Gemini_Generated_Image_csi0f2csi0f2csi0_ol5dip.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Fair_tall_slender_j039ez.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Dusky Tall Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773045046/saree_model_4_pthksx.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Dusky_tall_lean_ruqqfe.png",
       },
     ];
 
     const universalModels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
       },
       {
-        modelName: "Model 2",
+        modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
       },
       {
-        modelName: "Model 3",
+        modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Olive Mid-height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
       },
     ];
 
     const shararaModels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
       },
       {
-        modelName: "Model 2",
+        modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
       },
       {
-        modelName: "Model 3",
+        modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Olive Mid-height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
       },
     ];
 
     const anarkaliModels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
       },
       {
-        modelName: "Model 2",
+        modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
       },
       {
-        modelName: "Model 3",
+        modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Olive Mid-height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
       },
     ];
 
@@ -299,24 +299,24 @@ const UploadSelfieModal = ({
 
     const kurthaModels = [
       {
-        modelName: "Model 1",
+        modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/32_bymabn.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
       },
       {
-        modelName: "Model 2",
+        modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773051997/model5_l9a1bb.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
       },
       {
-        modelName: "Model 3",
+        modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1773052366/model10_tgcal7.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
       },
       {
-        modelName: "Model 4",
+        modelName: "Olive Mid-height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1771998877/51_gfhrgs.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
       },
 
     ];
@@ -1016,7 +1016,7 @@ const UploadSelfieModal = ({
                       alt={model.modelName}
                       className="w-full h-[240px] object-contain rounded"
                     />
-                    <p className="text-left mt-2 text-sm font-medium text-gray-700">
+                    <p className="text-center mt-2 text-sm font-medium text-gray-700">
                       {model.modelName}
                     </p>
 
@@ -1154,7 +1154,7 @@ const UploadSelfieModal = ({
                 <span className="text-sm font-semibold text-[#15912C]">SELECTED MODEL</span>
                 <img src={Tickic} className="h-4 w-4" alt="check" />
               </div>
-              <p className="text-sm text-gray-700">{selectedModel.name}</p>
+              <p className="text-sm text-gray-700 text-center">{selectedModel.name}</p>
             </div>
           </div>
 

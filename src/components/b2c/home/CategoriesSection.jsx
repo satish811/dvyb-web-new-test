@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // ✨ Animation import
 import { staggerContainer, slideUp } from "../../../utils/animations"; // ✨ Global animations
@@ -64,6 +64,43 @@ const CategoryCard = ({ item, onClick }) => {
 export default function CategoriesSection() {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        const scroller = scrollRef.current;
+        if (!scroller) return;
+
+        const updateActiveIndex = () => {
+            // Mobile-only indicator behavior.
+            if (window.innerWidth >= 768) return;
+
+            const cardWidth = scroller.clientWidth || 1;
+            const nextIndex = Math.round(scroller.scrollLeft / cardWidth);
+            const clampedIndex = Math.max(0, Math.min(categories.length - 1, nextIndex));
+            setActiveIndex(clampedIndex);
+        };
+
+        updateActiveIndex();
+        scroller.addEventListener("scroll", updateActiveIndex, { passive: true });
+        window.addEventListener("resize", updateActiveIndex);
+
+        return () => {
+            scroller.removeEventListener("scroll", updateActiveIndex);
+            window.removeEventListener("resize", updateActiveIndex);
+        };
+    }, []);
+
+    const handleDotClick = (index) => {
+        const scroller = scrollRef.current;
+        if (!scroller) return;
+
+        const cardWidth = scroller.clientWidth;
+        scroller.scrollTo({
+            left: index * cardWidth,
+            behavior: "smooth",
+        });
+        setActiveIndex(index);
+    };
 
     return (
         <section id="categories-section" className="bg-[#FAF9F6] pb-0 px-0 scroll-mt-[80px] md:scroll-mt-[75px]">
@@ -83,6 +120,24 @@ export default function CategoriesSection() {
                         <CategoryCard key={cat.id} item={cat} onClick={navigate} />
                     ))}
                 </motion.div>
+
+                {/* Mobile dots to indicate horizontal scroll/swipe */}
+                {categories.length > 1 && (
+                    <div className="md:hidden flex items-center justify-center gap-2 py-3">
+                        {categories.map((cat, index) => (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => handleDotClick(index)}
+                                aria-label={`Go to ${cat.title}`}
+                                className={`h-2.5 w-2.5 rounded-full transition-all ${index === activeIndex
+                                    ? "bg-primary scale-110"
+                                    : "bg-gray-300"
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

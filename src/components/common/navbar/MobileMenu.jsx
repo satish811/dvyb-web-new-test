@@ -80,9 +80,10 @@ export default function MobileMenu({ isOpen, onClose, navItems, onNavClick, onPr
               onNavClick("/womenwear");
               onClose();
             }}
-            className="w-full text-left text-gray-800 py-1.5 sm:py-2 font-bold tracking-widest uppercase"
+            className="w-full text-left py-1.5 sm:py-2 font-bold tracking-widest uppercase hover:opacity-90"
+            style={{ color: "var(--villy-primary, #33022F)" }}
           >
-            CATEGORIES
+            WOMEN
           </button>
 
           <div className="flex flex-col items-start py-1.5 sm:py-2">

@@ -48,6 +48,7 @@ export default function SearchDropdown({
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery?.trim()) {
+      const trimmedQuery = searchQuery.trim();
       onSaveRecent?.(searchQuery);
 
       const queryLower = searchQuery.toLowerCase().trim();
@@ -68,7 +69,7 @@ export default function SearchDropdown({
       if (categoryMap[queryLower]) {
         navigate(`/womenwear?category=${categoryMap[queryLower]}`);
       } else {
-        navigate(`/womenwear`);
+        navigate(`/womenwear?query=${encodeURIComponent(trimmedQuery)}`);
       }
 
       onClose(); // Close dropdown after search
@@ -104,6 +105,15 @@ export default function SearchDropdown({
   const showPopular = !searchQuery?.trim() && popularSearches.length > 0;
   const showSearchResults = searchResults.length > 0 && searchQuery?.trim();
   const showNoResults = noResults && searchQuery?.trim() && !isLoading;
+
+  const handleViewAllResults = () => {
+    const trimmedQuery = searchQuery?.trim();
+    if (!trimmedQuery) return;
+
+    onSaveRecent?.(trimmedQuery);
+    onClose();
+    navigate(`/womenwear?query=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
@@ -168,6 +178,15 @@ export default function SearchDropdown({
                 onClick={() => handleProductClick(product)}
               />
             ))}
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleViewAllResults}
+              className="px-6 py-3 bg-primary text-white font-semibold rounded hover:opacity-90 transition"
+            >
+              View all results for "{searchQuery}"
+            </button>
           </div>
         </div>
       )}

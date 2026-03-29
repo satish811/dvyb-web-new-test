@@ -61,14 +61,14 @@ const ProfilePage = () => {
   return (
     <>
       {/* DESKTOP VIEW - Sidebar + Content */}
-      <div className="hidden md:flex min-h-screen mt-0 bg-gray-50">
+      <div className="hidden md:flex h-screen bg-gray-50 overflow-hidden">
         {/* Fixed Sidebar */}
 
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* Main Content Area - offset by sidebar width */}
         <div
-          className="flex-1 px-4 sm:px-6 pb-6 pt-6 md:pt-8 lg:pt-10 min-h-screen ml-64"
+          className="flex-1 px-4 sm:px-6 pb-6 pt-6 md:pt-8 lg:pt-10 h-screen overflow-y-auto ml-64"
         >
           <div className="max-w-7xl mx-auto">
             {activeTab === "my-info" && <MyInfo userId={userId} />}
