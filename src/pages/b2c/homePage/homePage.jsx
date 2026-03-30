@@ -111,58 +111,120 @@ export default function Home() {
 
         {/* Hero Image & Overlay */}
         <div className="relative flex-1 w-full overflow-hidden">
-          <img
-            src={mobileTab === "women" ? homeBannerWomen : homeBannerMen}
-            alt={mobileTab === "women" ? "Women's Fashion" : "Men's Fashion"}
-            className="w-full h-full object-cover object-top"
-          />
-          {/* Gradient Overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#33022F]/40 via-transparent to-[#33022F]/80"></div>
+          {mobileTab === "women" ? (
+            <>
+              <img
+                src={homeBannerWomen}
+                alt="Women's Fashion"
+                className="w-full h-full object-cover object-top"
+              />
+              {/* Gradient Overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#33022F]/40 via-transparent to-[#33022F]/80"></div>
 
-          {/* Content Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-16">
-            <h1
-              className="text-white drop-shadow-xl mb-3 text-[14vw] sm:text-[56px]"
-              style={{
-                fontFamily: 'Antiga, serif',
-                lineHeight: '1',
-                letterSpacing: '0.02em',
-                textTransform: 'uppercase'
-              }}
-            >
-              THIS IS VILLY
-            </h1>
-            <p
-              className="text-white mb-8 max-w-[280px] sm:max-w-[300px] text-[3.5vw] sm:text-[13px]"
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontWeight: 500,
-                lineHeight: '1.4',
-                letterSpacing: '0.01em'
-              }}
-            >
-              “Try before you buy — experience fashion through your virtual mirror.”
-            </p>
-          </div>
+              {/* Content Overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-16">
+                <h1
+                  className="text-white drop-shadow-xl mb-3 text-[14vw] sm:text-[56px]"
+                  style={{
+                    fontFamily: 'Antiga, serif',
+                    lineHeight: '1',
+                    letterSpacing: '0.02em',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  THIS IS VILLY
+                </h1>
+                <p
+                  className="text-white mb-8 max-w-[280px] sm:max-w-[300px] text-[3.5vw] sm:text-[13px]"
+                  style={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 500,
+                    lineHeight: '1.4',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  “Try before you buy — experience fashion through your virtual mirror.”
+                </p>
+              </div>
 
-          <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
-            <button
-              onClick={() => navigate(mobileTab === "women" ? "/womenwear" : "/menwear")}
-              className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-white hover:bg-[#FFFFFF33] transition duration-300 cursor-pointer flex flex-col items-center justify-center border-t border-white/20 uppercase"
-            >
-              <span style={{
-                fontFamily: "Outfit, sans-serif",
-                fontWeight: 600,
-                fontSize: "12.46px",
-                lineHeight: "100%",
-                letterSpacing: "0%",
-                textDecorationLine: "underline",
-                textDecorationStyle: "solid",
-                textDecorationSkipInk: "auto",
-                textUnderlineOffset: "4px"
-              }}>SHOP {mobileTab === "women" ? "WOMEN" : "MEN"}</span>
-            </button>
-          </div>
+              <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
+                <button
+                  onClick={() => navigate("/womenwear")}
+                  className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-white hover:bg-[#FFFFFF33] transition duration-300 cursor-pointer flex flex-col items-center justify-center border-t border-white/20 uppercase"
+                >
+                  <span style={{
+                    fontFamily: "Outfit, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "12.46px",
+                    lineHeight: "100%",
+                    letterSpacing: "0%",
+                    textDecorationLine: "underline",
+                    textDecorationStyle: "solid",
+                    textDecorationSkipInk: "auto",
+                    textUnderlineOffset: "4px"
+                  }}>SHOP WOMEN</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-b from-[#B59DB0] via-[#FAF9F6] to-[#33022F]"></div>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                <h2
+                  className="text-[#33022F] mb-2 text-[11vw]"
+                  style={{
+                    fontFamily: 'Antiga, serif',
+                    lineHeight: '1',
+                    letterSpacing: '0.03em',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  MEN
+                </h2>
+                <p
+                  className="text-[#33022F] text-xl mb-3"
+                  style={{
+                    fontFamily: 'Outfit, sans-serif',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Coming Soon
+                </p>
+                <p
+                  className="text-[#5C4A58] max-w-[260px] text-sm"
+                  style={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 500,
+                    lineHeight: '1.5'
+                  }}
+                >
+                  We are preparing something special for men. Stay tuned.
+                </p>
+              </div>
+
+              <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
+                <button
+                  type="button"
+                  className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-[#ffffff] flex flex-col items-center justify-center border-t border-white/20 uppercase"
+                >
+                  <span style={{
+                    fontFamily: "Outfit, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "12.46px",
+                    lineHeight: "100%",
+                    letterSpacing: "0%",
+                    textDecorationLine: "underline",
+                    textDecorationStyle: "solid",
+                    textDecorationSkipInk: "auto",
+                    textUnderlineOffset: "4px"
+                  }}>COMING SOON</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -266,31 +328,33 @@ export default function Home() {
       </section>
 
 
-      {/* 2.5. VIRTUAL TRY ON SECTION (B2C only) */}
-      {!isB2B && <VirtualTryOnSection />}
+      <div className={mobileTab === "men" ? "hidden md:block" : "block"}>
+        {/* 2.5. VIRTUAL TRY ON SECTION (B2C only) */}
+        {!isB2B && <VirtualTryOnSection />}
 
-      {/* 2. CATEGORIES SECTION */}
-      <CategoriesSection />
+        {/* 2. CATEGORIES SECTION */}
+        <CategoriesSection />
 
-      {/* 2.8 PROMOTIONAL CAROUSEL */}
-      <PromotionalCarousel />
+        {/* 2.8 PROMOTIONAL CAROUSEL */}
+        <PromotionalCarousel />
 
-      {/* 2.9 LUXE EDIT SECTION */}
-      <LuxeEditSection />
+        {/* 2.9 LUXE EDIT SECTION */}
+        <LuxeEditSection />
 
-      {/* 2.95 ETHNIC WEAR SECTION */}
-      <EthnicWearSection />
+        {/* 2.95 ETHNIC WEAR SECTION */}
+        <EthnicWearSection />
 
-      {/* 2.97 TRY IT & BUY IT SECTION (B2C only) */}
-      {!isB2B && <TryItBuyItSection />}
+        {/* 2.97 TRY IT & BUY IT SECTION (B2C only) */}
+        {!isB2B && <TryItBuyItSection />}
 
-      {/* 2.98 POPULAR PRODUCTS SECTION */}
-      <div id="popular-products">
-        <PopularProductsSection products={productsArray} />
+        {/* 2.98 POPULAR PRODUCTS SECTION */}
+        <div id="popular-products">
+          <PopularProductsSection products={productsArray} />
+        </div>
+
+        {/* 2.99 NEW ARRIVAL BANNER */}
+        <NewArrivalBanner products={productsArray} />
       </div>
-
-      {/* 2.99 NEW ARRIVAL BANNER */}
-      <NewArrivalBanner products={productsArray} />
 
       {/* 2.99.1 HOME FOOTER */}
       {/* <HomeFooter /> */}

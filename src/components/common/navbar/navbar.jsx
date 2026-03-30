@@ -119,7 +119,7 @@ export default function Navbar({ setShowLoader }) {
             setIsSearching(true);
             try {
                 const [results, suggestions] = await Promise.all([
-                    searchService.searchProducts(debouncedSearchQuery, { limit: 10 }),
+                    searchService.searchProducts(debouncedSearchQuery, { limit: 10, strictMatch: true }),
                     searchService.getSearchSuggestions(debouncedSearchQuery, 5),
                 ]);
 

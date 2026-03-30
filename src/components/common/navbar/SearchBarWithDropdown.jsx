@@ -58,6 +58,7 @@ const SearchBarWithDropdown = ({ onNavigate, searchQuery, onSearchChange }) => {
                 // Fetch products from service
                 const products = await searchService.searchProducts(debouncedSearchQuery, {
                     limit: 8,
+                    strictMatch: true,
                     signal
                 });
 
@@ -132,15 +133,20 @@ const SearchBarWithDropdown = ({ onNavigate, searchQuery, onSearchChange }) => {
 
 
     const handleExecuteSearch = () => {
-        if (searchQuery.trim().length > 0) {
+        const trimmedQuery = searchQuery.trim();
+        if (trimmedQuery.length > 0) {
+            const allResultsPath = `/womenwear?query=${encodeURIComponent(trimmedQuery)}`;
             if (onNavigate) {
-                // Navigate without query param - state is in context
-                onNavigate(`/womenwear`);
+                onNavigate(allResultsPath);
             } else {
-                navigate(`/womenwear`);
+                navigate(allResultsPath);
             }
             setIsDropdownOpen(false);
         }
+    };
+
+    const handleViewAllResults = () => {
+        handleExecuteSearch();
     };
 
     const handleKeyDown = (e) => {
@@ -278,6 +284,13 @@ const SearchBarWithDropdown = ({ onNavigate, searchQuery, onSearchChange }) => {
                                                     </div>
                                                 </motion.div>
                                             ))}
+
+                                            <button
+                                                onClick={handleViewAllResults}
+                                                className="w-full text-left px-6 py-3 bg-gray-50 hover:bg-gray-100 text-primary font-semibold transition-colors border-t border-gray-200"
+                                            >
+                                                View all results for "{searchQuery}"
+                                            </button>
                                         </div>
                                     </>
                                 )}
