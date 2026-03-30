@@ -4,6 +4,23 @@ import { doc, setDoc, getDoc, updateDoc, deleteField } from "firebase/firestore"
 class ProfileService {
   static instance = null;
 
+  normalizeDressTypeKey(value) {
+    const raw = String(value || "").toLowerCase().trim();
+    if (!raw) return "";
+
+    if (/\bsaree\b|\bsarees\b|\bsari\b/.test(raw)) return "saree";
+    if (/\blehenga\b|\blehengas\b|\blehanga\b/.test(raw)) return "lehenga";
+    if (/\banarkali\b|\banarkalis\b/.test(raw)) return "anarkali";
+    if (/\bsharara\b|\bshararas\b/.test(raw)) return "sharara";
+
+    // Keep kurta/kurti family together because profile generation stores one universal topwear model.
+    if (/\bkurti\b|\bkurta\b|\bkurtas\b|\bkurta set\b|\bkurta sets\b|\bkurta-sets\b|\bkurtaset\b/.test(raw)) {
+      return "kurti";
+    }
+
+    return raw;
+  }
+
   static getInstance() {
     if (!ProfileService.instance) {
       ProfileService.instance = new ProfileService();
@@ -213,8 +230,7 @@ class ProfileService {
         return null;
       }
 
-      // Normalize dress type to lowercase for matching
-      const normalizedType = dressType?.toLowerCase().trim();
+      const normalizedType = this.normalizeDressTypeKey(dressType);
 
       console.log(`🔍 Fetching try-on for dress type: ${normalizedType}`);
 
@@ -230,33 +246,16 @@ class ProfileService {
       const tryOnResults = docSnap.data().tryOnResults || {};
       console.log("📦 All try-on results:", Object.keys(tryOnResults));
 
-      // Try to match the dress type
-      // Check exact match first
       if (tryOnResults[normalizedType]) {
         console.log(`✅ Found exact match for ${normalizedType}`);
         return tryOnResults[normalizedType];
       }
 
-      // Try common variations
-      const variations = {
-        'saree': ['saree', 'sari'],
-        'lehenga': ['lehenga', 'lehanga'],
-        'kurti': ['kurti', 'kurta', 'kurtis',],
-        'anarkali': ['anarkali', 'anarkalis'],
-        'sharara': ['sharara', 'shararas'],
-        'kurta set': ['kurta set', 'kurta sets', 'kurta-sets', 'kurtaset', 'kurti', 'kurta', 'kurtis'],
-      };
-
-      // Find matching variation
-      for (const [key, aliases] of Object.entries(variations)) {
-        if (aliases.includes(normalizedType)) {
-          // Check if any alias exists in results
-          for (const alias of aliases) {
-            if (tryOnResults[alias]) {
-              console.log(`✅ Found variation match: ${alias} for ${normalizedType}`);
-              return tryOnResults[alias];
-            }
-          }
+      // Legacy keys can exist with plurals/spelling variants. Match within the same normalized bucket only.
+      for (const [key, value] of Object.entries(tryOnResults)) {
+        if (this.normalizeDressTypeKey(key) === normalizedType) {
+          console.log(`✅ Found normalized key match: ${key} -> ${normalizedType}`);
+          return value;
         }
       }
 
