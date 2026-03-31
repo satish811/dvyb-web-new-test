@@ -2,6 +2,89 @@
 import colorUtils from "../components/utils/colorUtils.jsx";
 import { DEFAULT_FABRIC_TYPES } from "./tryOnConstants";
 
+const MAX_MODEL_IMAGE_BYTES = 4 * 1024 * 1024;
+
+const loadImageFromBlob = (blob) => {
+  return new Promise((resolve, reject) => {
+    const imageUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(imageUrl);
+      resolve(img);
+    };
+    img.onerror = (err) => {
+      URL.revokeObjectURL(imageUrl);
+      reject(err);
+    };
+    img.src = imageUrl;
+  });
+};
+
+const canvasToBlob = (canvas, mimeType, quality) => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Failed to convert canvas to blob"));
+          return;
+        }
+        resolve(blob);
+      },
+      mimeType,
+      quality
+    );
+  });
+};
+
+const compressImageBlobToMaxBytes = async (blob, maxBytes = MAX_MODEL_IMAGE_BYTES) => {
+  if (!blob || blob.size <= maxBytes) return blob;
+
+  try {
+    const img = await loadImageFromBlob(blob);
+
+    const MAX_START_DIMENSION = 2200;
+    const scale = Math.min(1, MAX_START_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+    let width = Math.max(1, Math.floor(img.naturalWidth * scale));
+    let height = Math.max(1, Math.floor(img.naturalHeight * scale));
+
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d", { alpha: false });
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.9;
+    let compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+
+    // Iteratively lower quality first, then dimensions, until we are under maxBytes or reach safe floor.
+    for (let attempt = 0; attempt < 12 && compressed.size > maxBytes; attempt++) {
+      if (quality > 0.45) {
+        quality = Math.max(0.45, quality - 0.1);
+      } else {
+        width = Math.max(640, Math.floor(width * 0.85));
+        height = Math.max(640, Math.floor(height * 0.85));
+
+        const resizedCanvas = document.createElement("canvas");
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+        const resizedCtx = resizedCanvas.getContext("2d", { alpha: false });
+        resizedCtx.drawImage(canvas, 0, 0, width, height);
+
+        canvas = resizedCanvas;
+        ctx = resizedCtx;
+        quality = 0.8;
+      }
+
+      compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+    }
+
+    return compressed;
+  } catch (error) {
+    console.warn("Could not compress model image, using original blob:", error);
+    return blob;
+  }
+};
+
 /**
  * Load image with promise
  */
@@ -130,7 +213,12 @@ export const createTryOnFormData = async (modelImage, garmentImage, outfitType) 
 
   // Handle model image
   const modelBlob = await urlToBlob(modelImage);
-  formData.append("model", modelBlob, "user.jpg");
+  const compressedModelBlob = await compressImageBlobToMaxBytes(modelBlob, MAX_MODEL_IMAGE_BYTES);
+  console.log(
+    "📦 Model image size before/after compression:",
+    `${(modelBlob.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedModelBlob.size / (1024 * 1024)).toFixed(2)}MB`
+  );
+  formData.append("model", compressedModelBlob, "user.jpg");
 
   // Handle garment image
   const garmentBlob = await urlToBlob(garmentImage);

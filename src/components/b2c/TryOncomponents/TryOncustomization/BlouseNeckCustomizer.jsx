@@ -94,7 +94,7 @@ const BlouseNeckCustomizer = ({
           onClick={applyChanges}
           disabled={!canApply}
           className={`w-full py-2.5 text-[14px] font-medium rounded-full transition-all flex items-center justify-center gap-2 ${canApply
-            ? "border border-[#4a044e] text-[#4a044e] hover:bg-[#fcf5fa] active:scale-[0.98]"
+            ? "bg-[#74136C] text-white hover:bg-[#5a0f54] active:scale-[0.98]"
             : "border border-gray-200 text-gray-400 cursor-not-allowed"
             }`}
         >

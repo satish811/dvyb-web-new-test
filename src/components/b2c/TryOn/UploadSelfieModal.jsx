@@ -101,13 +101,23 @@ const UploadSelfieModal = ({
   const [userTryOnImage, setUserTryOnImage] = useState(null);
 
   const resolveMyModelType = () => {
-    const rawType = String(tryOnData?.dressType || garmentName || "").toLowerCase().trim();
+    // Combine all available signals so a weak dressType does not override a strong garment title.
+    const rawType = [
+      tryOnData?.dressType,
+      tryOnData?.outfitType,
+      garmentName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .trim();
 
-    if (rawType.includes("saree") || rawType.includes("sari")) return "saree";
-    if (rawType.includes("lehenga") || rawType.includes("lehanga")) return "lehenga";
-    if (rawType.includes("anarkali")) return "anarkali";
+    if (/\bsaree\b|\bsarees\b|\bsari\b/.test(rawType)) return "saree";
+    if (/\blehenga\b|\blehengas\b|\blehanga\b/.test(rawType)) return "lehenga";
+    if (/\banarkali\b|\banarkalis\b/.test(rawType)) return "anarkali";
+    if (/\bsharara\b|\bshararas\b/.test(rawType)) return "sharara";
 
-    // For every other category, use kurti model.
+    // Profile currently stores one topwear model bucket for kurti/kurta style products.
     return "kurti";
   };
 

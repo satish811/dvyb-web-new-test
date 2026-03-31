@@ -83,8 +83,8 @@ const CustomizationPanel = ({
   onClick={handleReset}
   className="
     w-full
-    min-h-[48px]
-    bg-white
+    min-h-12
+    bg-[#74136C]
     shadow-md
     rounded-full
     py-3
@@ -93,8 +93,8 @@ const CustomizationPanel = ({
     items-center
     justify-center
     gap-2
-    border border-gray-200
-    hover:bg-gray-50
+    border border-[#74136C]
+    hover:bg-[#5a0f54]
     active:scale-[0.97]
     transition-all
   "
@@ -105,7 +105,7 @@ const CustomizationPanel = ({
     className="w-[18px] h-[18px] object-contain shrink-0"
   />
 
-  <span className="text-[16px] font-semibold text-purple-700 whitespace-nowrap">
+  <span className="text-[16px] font-semibold text-white whitespace-nowrap">
     Re-Try
   </span>
 </button>

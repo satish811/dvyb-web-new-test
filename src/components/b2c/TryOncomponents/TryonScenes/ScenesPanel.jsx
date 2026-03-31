@@ -181,7 +181,7 @@ const ScenesPanel = ({
         <button
           onClick={handleSaveLook}
           disabled={isSaving || !tryOnResult || isLookSaved}
-          className={`w-full py-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition-colors border border-[#74136C] rounded-full text-[#74136C] hover:bg-[#74136C] hover:text-white ${
+          className={`w-full min-h-12 px-4 py-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition-colors border border-[#74136C] rounded-full text-[#74136C] hover:bg-[#74136C] hover:text-white ${
             isSaving || !tryOnResult || isLookSaved ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -195,7 +195,7 @@ const ScenesPanel = ({
         <button
           onClick={handleToggleWishlist}
           disabled={wishlistLoading}
-          className={`w-full py-2.5 flex items-center justify-center gap-2 text-[12px] font-semibold transition-colors border border-[#74136C] rounded-full ${isInWishlistState ? "text-red-500 border-red-500" : "text-[#74136C] hover:bg-[#74136C] hover:text-white"
+          className={`w-full min-h-12 px-4 py-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition-colors border border-[#74136C] rounded-full ${isInWishlistState ? "text-red-500 border-red-500" : "text-[#74136C] hover:bg-[#74136C] hover:text-white"
             } ${wishlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {wishlistLoading ? (

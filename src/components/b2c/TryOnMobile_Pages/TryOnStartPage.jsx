@@ -16,15 +16,38 @@ const TryOnStartPage = () => {
   const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [userTryOnImage, setUserTryOnImage] = useState(null);
 
+  const resolveMyModelType = () => {
+    const rawType = [
+      tryOnData?.dressType,
+      tryOnData?.outfitType,
+      tryOnData?.garmentName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .trim();
+
+    if (/\bsaree\b|\bsarees\b|\bsari\b/.test(rawType)) return "saree";
+    if (/\blehenga\b|\blehengas\b|\blehanga\b/.test(rawType)) return "lehenga";
+    if (/\banarkali\b|\banarkalis\b/.test(rawType)) return "anarkali";
+    if (/\bsharara\b|\bshararas\b/.test(rawType)) return "sharara";
+    return "kurti";
+  };
+
+  const mappedMyModelType = resolveMyModelType();
+
   useEffect(() => {
     const checkUserTryOn = async () => {
-      if (!tryOnData?.dressType) return;
+      if (!tryOnData) return;
 
       try {
-        const savedImage = await profileService.getTryOnByDressType(tryOnData.dressType, userCollection);
+        const savedImage = await profileService.getTryOnByDressType(mappedMyModelType, userCollection);
         if (savedImage) {
           setUserHasTryOn(true);
           setUserTryOnImage(savedImage);
+        } else {
+          setUserHasTryOn(false);
+          setUserTryOnImage(null);
         }
       } catch (error) {
         console.error("Error checking user try-on:", error);
@@ -32,7 +55,7 @@ const TryOnStartPage = () => {
     };
 
     checkUserTryOn();
-  }, [tryOnData]);
+  }, [tryOnData, mappedMyModelType, userCollection]);
 
   const handleUploadClick = () => {
     navigate("/tryon/upload", {
