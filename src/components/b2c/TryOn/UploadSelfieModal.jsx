@@ -11,6 +11,7 @@ import right_ic from "../../../assets/TryOn/right_ic.svg";
 import rightHoverArrow from "../../../assets/TryOn/rightHoverArrow.svg";
 import { auth } from "../../../config";
 import { profileService } from "../../../services/profileService.js";
+import { useAuth } from "../../../context/AuthContext";
 // models
 
 import model1 from "../../../assets/TryOn/model1.png";
@@ -71,6 +72,7 @@ const UploadSelfieModal = ({
   tryOnData,
 }) => {
   const currentUser = auth.currentUser;
+  const { userCollection } = useAuth();
   console.log("######### User details:", currentUser);
   console.log("############ User ID:", currentUser?.uid);
 
@@ -128,7 +130,7 @@ const UploadSelfieModal = ({
       if (!isOpen) return;
 
       try {
-        const savedImage = await profileService.getTryOnByDressType(mappedMyModelType);
+        const savedImage = await profileService.getTryOnByDressType(mappedMyModelType, userCollection);
         if (savedImage) {
           setUserHasTryOn(true);
           setUserTryOnImage(savedImage);
@@ -142,7 +144,7 @@ const UploadSelfieModal = ({
     };
 
     checkUserTryOn();
-  }, [isOpen, mappedMyModelType]);
+  }, [isOpen, mappedMyModelType, userCollection]);
 
   const handleUseMyModel = () => {
     if (!currentUser) {

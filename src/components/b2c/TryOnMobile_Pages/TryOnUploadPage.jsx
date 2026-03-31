@@ -20,24 +20,62 @@ const TryOnUploadPage = () => {
 
   // ⭐ NEW: User Profile Logic
   const { userCollection } = useAuth();
-  const [userProfilePhoto, setUserProfilePhoto] = useState(null);
+  const [userTryOnImage, setUserTryOnImage] = useState(null);
+  const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [useUserModel, setUseUserModel] = useState(false);
 
+  const resolveMyModelType = () => {
+    const rawType = [
+      tryOnData?.dressType,
+      tryOnData?.outfitType,
+      tryOnData?.garmentName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .trim();
+
+    if (/\bsaree\b|\bsarees\b|\bsari\b/.test(rawType)) return "saree";
+    if (/\blehenga\b|\blehengas\b|\blehanga\b/.test(rawType)) return "lehenga";
+    if (/\banarkali\b|\banarkalis\b/.test(rawType)) return "anarkali";
+    if (/\bsharara\b|\bshararas\b/.test(rawType)) return "sharara";
+    return "kurti";
+  };
+
+  const mappedMyModelType = resolveMyModelType();
+
+  const prettyMyModelType =
+    mappedMyModelType.charAt(0).toUpperCase() + mappedMyModelType.slice(1);
+
   useEffect(() => {
-    const fetchProfilePhoto = async () => {
+    const fetchMyModelByDressType = async () => {
+      if (!tryOnData) return;
+
       try {
-        const profile = await profileService.getProfile(userCollection);
-        if (profile?.photoUrl) {
-          console.log("✅ Mobile: User profile photo found:", profile.photoUrl);
-          setUserProfilePhoto(profile.photoUrl);
-          setUseUserModel(true); // Default to user model
+        const savedImage = await profileService.getTryOnByDressType(
+          mappedMyModelType,
+          userCollection
+        );
+
+        if (savedImage) {
+          console.log("✅ Mobile: Found saved My Model for", mappedMyModelType);
+          setUserHasTryOn(true);
+          setUserTryOnImage(savedImage);
+          setUseUserModel(true);
+        } else {
+          setUserHasTryOn(false);
+          setUserTryOnImage(null);
+          setUseUserModel(false);
         }
       } catch (error) {
-        console.error("Error fetching profile for mobile:", error);
+        console.error("Error fetching My Model for mobile:", error);
+        setUserHasTryOn(false);
+        setUserTryOnImage(null);
+        setUseUserModel(false);
       }
     };
-    fetchProfilePhoto();
-  }, []);
+    fetchMyModelByDressType();
+  }, [tryOnData, mappedMyModelType, userCollection]);
 
   const isModelSelection = tryOnData?.selectModel;
 
@@ -391,10 +429,10 @@ const TryOnUploadPage = () => {
           <p className="text-xs text-gray-600 mb-6">You can only choose one model</p>
 
           {/* Toggle Section */}
-          {userProfilePhoto && (
+          {userHasTryOn && userTryOnImage && (
             <div className="bg-[#f5e6e6] border-b border-gray-200 px-4 py-3 -mx-4 mb-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Your model</span>
+                <span className="text-sm font-medium text-gray-700">My Model ({prettyMyModelType})</span>
 
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -415,23 +453,23 @@ const TryOnUploadPage = () => {
           )}
 
           {/* USER'S MODEL - Display ONLY when toggle is OFF (useUserModel is TRUE) */}
-          {useUserModel && userProfilePhoto && (
+          {useUserModel && userHasTryOn && userTryOnImage && (
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div
                 onClick={() => {
                   setSelectedModel({
-                    image: userProfilePhoto,
-                    name: "Your Model",
+                    image: userTryOnImage,
+                    name: `My Model (${prettyMyModelType})`,
                   });
                 }}
                 className="cursor-pointer relative p-2.5 overflow-hidden ring-1 ring-gray-200 hover:ring-2 hover:ring-[#8B0000] transition-all"
               >
                 <img
-                  src={userProfilePhoto}
-                  alt="Your Model"
+                  src={userTryOnImage}
+                  alt={`My Model (${prettyMyModelType})`}
                   className="w-full aspect-[3/4] object-cover"
                 />
-                <p className="text-center mt-2 text-sm font-medium">Your Model</p>
+                <p className="text-center mt-2 text-sm font-medium">My Model ({prettyMyModelType})</p>
               </div>
             </div>
           )}
