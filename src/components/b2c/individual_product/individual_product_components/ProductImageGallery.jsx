@@ -330,7 +330,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
           ref={mainImageRef}
           onMouseMove={handleMainImageMouseMove}
           onMouseEnter={() => {
-            if (selectedImage && !imageError && !isLastTwoSareeImage) setIsLensActive(true);
+            if (selectedImage && !imageError) setIsLensActive(true);
           }}
           onMouseLeave={() => setIsLensActive(false)}
         >
@@ -352,7 +352,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
             </div>
           )}
 
-          {isLensActive && selectedImage && !imageError && !isLastTwoSareeImage && (
+          {isLensActive && selectedImage && !imageError && (
             <div
               className="pointer-events-none absolute w-36 h-36 rounded-full shadow-2xl"
               style={{
@@ -360,7 +360,7 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
                 top: `calc(${lensPosition.y}% - 72px)`,
                 backgroundImage: `url(${selectedImage})`,
                 backgroundRepeat: "no-repeat",
-                backgroundSize: "800% 800%",
+                backgroundSize: "400% 400%",
                 backgroundPosition: `${lensPosition.x}% ${lensPosition.y}%`,
               }}
             />

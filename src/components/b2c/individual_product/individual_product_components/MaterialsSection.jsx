@@ -1,11 +1,126 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+const firstNonEmptyString = (...values) => {
+    for (const value of values) {
+        if (typeof value === "string" && value.trim()) {
+            return value.trim();
+        }
+    }
+    return "";
+};
+
+const toDisplayLabel = (key) =>
+    key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/[_-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/^./, (char) => char.toUpperCase());
+
 const MaterialsSection = ({ product }) => {
     const [expanded, setExpanded] = useState(false);
 
-    const { fabric = "Not specified", composition } = product || {};
-    const displayComposition = composition || fabric;
+    const materialsObj = product?.materials && typeof product.materials === "object" ? product.materials : null;
+
+    const baseRows = [
+        {
+            label: "Primary Fabric",
+            value: firstNonEmptyString(
+                product?.primaryFabric,
+                product?.fabric,
+                product?.material,
+                product?.materialType,
+                materialsObj?.primaryFabric,
+                materialsObj?.fabric,
+                materialsObj?.material,
+                materialsObj?.materialType
+            ),
+        },
+        {
+            label: "Fabric Sub-Category",
+            value: firstNonEmptyString(
+                product?.fabricSubCategory,
+                materialsObj?.fabricSubCategory
+            ),
+        },
+        {
+            label: "Weave Type",
+            value: firstNonEmptyString(
+                product?.weaveType,
+                materialsObj?.weaveType
+            ),
+        },
+        {
+            label: "Dress Sub-Category",
+            value: firstNonEmptyString(
+                product?.dressSubCategory,
+                product?.subcategory,
+                materialsObj?.dressSubCategory,
+                materialsObj?.subcategory
+            ),
+        },
+        {
+            label: "Craft",
+            value: firstNonEmptyString(
+                product?.craft,
+                materialsObj?.craft
+            ),
+        },
+        {
+            label: "Composition",
+            value: firstNonEmptyString(
+                product?.composition,
+                product?.materialComposition,
+                materialsObj?.composition,
+                materialsObj?.materialComposition
+            ),
+        },
+        {
+            label: "Lining",
+            value: firstNonEmptyString(product?.lining, materialsObj?.lining),
+        },
+        {
+            label: "Work",
+            value: firstNonEmptyString(
+                product?.work,
+                product?.embellishment,
+                product?.embellishments,
+                materialsObj?.work,
+                materialsObj?.embellishment,
+                materialsObj?.embellishments
+            ),
+        },
+    ].filter((row) => row.value);
+
+    const knownMaterialKeys = new Set([
+        "primaryFabric",
+        "fabric",
+        "material",
+        "materialType",
+        "fabricSubCategory",
+        "weaveType",
+        "dressSubCategory",
+        "subcategory",
+        "craft",
+        "composition",
+        "materialComposition",
+        "lining",
+        "work",
+        "embellishment",
+        "embellishments",
+    ]);
+
+    const extraRows = materialsObj
+        ? Object.entries(materialsObj)
+            .filter(([key, value]) => !knownMaterialKeys.has(key) && typeof value === "string" && value.trim())
+            .map(([key, value]) => ({
+                label: toDisplayLabel(key),
+                value: value.trim(),
+            }))
+        : [];
+
+    const rows = [...baseRows, ...extraRows];
 
     return (
         <div className="w-full border-b border-gray-200">
@@ -23,14 +138,16 @@ const MaterialsSection = ({ product }) => {
 
             {expanded && (
                 <div className="pb-4 text-sm text-gray-700 space-y-2">
-                    <div>
-                        <span className="font-medium">Fabric: </span>
-                        <span>{fabric}</span>
-                    </div>
-                    <div>
-                        <span className="font-medium">Composition: </span>
-                        <span>{displayComposition}</span>
-                    </div>
+                    {rows.length > 0 ? (
+                        rows.map((row) => (
+                            <div key={row.label}>
+                                <span className="font-medium">{row.label}: </span>
+                                <span>{row.value}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p>Material details not available.</p>
+                    )}
                 </div>
             )}
         </div>

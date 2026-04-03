@@ -211,18 +211,23 @@ const ProductActionButtons = ({
 
         {/* VIRTUAL TRY ON - Only show for non-B2B users */}
         {!isB2BUser && (
-          <button
-            onClick={handleVirtualTryOnClick}
-            className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md"
-            style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
-          >
-            <img
-              src={virtualTryOnLogo}
-              alt="Virtual Try On"
-              className="w-5 h-5 md:w-7 md:h-7 object-contain"
-            />
-            Virtual try on
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleVirtualTryOnClick}
+              className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md"
+              style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
+            >
+              <img
+                src={virtualTryOnLogo}
+                alt="Virtual Try On"
+                className="w-5 h-5 md:w-7 md:h-7 object-contain"
+              />
+              Virtual try on
+            </button>
+            <p className="text-xs text-gray-600 text-center leading-relaxed">
+              Note: These are AI-generated models. Please refer to the original garment image for accurate details.
+            </p>
+          </div>
         )}
       </div>
 

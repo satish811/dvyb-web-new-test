@@ -857,6 +857,7 @@ const IndividualProductDetailsPage = () => {
               vendorReviews={product?.vendorReviews}
               onAverageRatingChange={handleAverageRatingChange}
             />
+            <ProductDetailsSection product={product} />
             <ProductDescriptionSection product={product} />
             <MaterialsSection product={product} />
             <CareGuideSection product={product} />
