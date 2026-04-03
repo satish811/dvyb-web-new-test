@@ -19,7 +19,7 @@ const categories = [
     { id: 3, title: "SALWAR SUIT", img: salwarImg, link: "/women/salwar-suit" },
     { id: 4, title: "INDO-WESTERN", img: indoWesternImg, link: "/women/indo-western" },
     { id: 5, title: "KURTAS", img: kurtasImg, link: "/women/kurta-sets" },
-    { id: 6, title: "SHRARAS", img: shararasImg, link: "/women/shararas" },
+    { id: 6, title: "SHARARAS", img: shararasImg, link: "/women/shararas" },
     { id: 7, title: "ANARKALI", img: anarkali, link: "/women/anarkali" },
     { id: 8, title: "BRIDAL", img: bridalImg, link: "/women/bridal" },
 ];
@@ -123,14 +123,14 @@ export default function CategoriesSection() {
 
                 {/* Mobile dots to indicate horizontal scroll/swipe */}
                 {categories.length > 1 && (
-                    <div className="md:hidden flex items-center justify-center gap-2 py-3">
+                    <div className="md:hidden flex items-center justify-center gap-2 pt-3 pb-1">
                         {categories.map((cat, index) => (
                             <button
                                 key={cat.id}
                                 type="button"
                                 onClick={() => handleDotClick(index)}
                                 aria-label={`Go to ${cat.title}`}
-                                className={`h-2.5 w-2.5 rounded-full transition-all ${index === activeIndex
+                                className={`h-2 w-2 rounded-full transition-all ${index === activeIndex
                                     ? "bg-primary scale-110"
                                     : "bg-gray-300"
                                     }`}

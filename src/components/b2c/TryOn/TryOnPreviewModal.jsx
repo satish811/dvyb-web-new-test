@@ -27,6 +27,7 @@ import TryOnMobileSheet from "../TryOncomponents/TryonLayout/TryOnMobileSheet";
 // CUSTOMIZATION COMPONENTS
 // ============================================
 import CustomizationPanel from "../TryOncomponents/TryOncustomization/CustomizationPanel";
+import ProcessingLoadingPopup from "../TryOncomponents/ProcessingLoadingPopup";
 
 // ============================================
 // SCENES & ACTIONS COMPONENTS
@@ -481,7 +482,15 @@ const TryOnPreviewModal = ({ isOpen, onClose, tryOnData, product }) => {
         </div>
       </div> */}
 
-
+      {/* ============================================ */}
+      {/* PROCESSING LOADING POPUP */}
+      {/* ============================================ */}
+      {isChangingBackground && (
+        <ProcessingLoadingPopup isProcessing={isChangingBackground} processingType="background" />
+      )}
+      {isApplying && (
+        <ProcessingLoadingPopup isProcessing={isApplying} processingType="changes" />
+      )}
 
     </div>
   );

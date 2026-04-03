@@ -1,10 +1,38 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+const firstNonEmptyString = (...values) => {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return "";
+};
+
 const ProductDescriptionSection = ({ product }) => {
-  const { description, id } = product || {};
-  const code = id;
   const [expanded, setExpanded] = useState(false);
+
+  const description = firstNonEmptyString(
+    product?.description,
+    product?.shortDescription,
+    product?.productDescription,
+    product?.details?.description
+  );
+
+  const fit = firstNonEmptyString(
+    product?.fit,
+    product?.fitInfo,
+    product?.descriptionFit,
+    product?.details?.fit
+  );
+
+  const code = firstNonEmptyString(
+    product?.productCode,
+    product?.sku,
+    product?.code,
+    product?.id ? String(product.id) : ""
+  );
 
   return (
     <div className="w-full border-b border-gray-200">
@@ -22,18 +50,28 @@ const ProductDescriptionSection = ({ product }) => {
 
       {expanded && (
         <div className="pb-4 text-sm text-gray-700 space-y-3">
-          {/* Description */}
           {description && (
             <div>
-              <p className="leading-relaxed">{description}</p>
+              <span className="font-semibold">Product Description: </span>
+              <span>{description}</span>
             </div>
           )}
 
-          {/* Product Code */}
-          <div>
-            <span className="font-semibold">Product Code: </span>
-            <span>{code || "AKAR102524"}</span>
-          </div>
+          {fit && (
+            <div>
+              <span className="font-semibold">Fit: </span>
+              <span>{fit}</span>
+            </div>
+          )}
+
+          {code && (
+            <div>
+              <span className="font-semibold">Product Code: </span>
+              <span>{code}</span>
+            </div>
+          )}
+
+          {!description && !fit && !code && <p>Details not available.</p>}
         </div>
       )}
     </div>

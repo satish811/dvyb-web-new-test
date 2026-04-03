@@ -1,101 +1,67 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
+const firstNonEmptyString = (...values) => {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return "";
+};
 
 const ProductDetailsSection = ({ product }) => {
   if (!product) return null;
+  const [expanded, setExpanded] = useState(false);
 
-  // Extract product details with fallbacks
-  const {
-    note = "The saree worn by the model is for styling purposes only",
-    fabric = "Not specified",
-    craft = "Not specified",
-    productType = "Not specified",
-    dressType = "Not specified",
-    composition = fabric,
-    care = "Dry clean only",
-    fit = "Fitted at bust",
-  } = product;
+  const detailRows = useMemo(() => {
+    const rows = [
+      {
+        label: "Dress Type",
+        value: firstNonEmptyString(product.dressType),
+      },
+      {
+        label: "Occasion",
+        value: firstNonEmptyString(product.occasion),
+      },
+      {
+        label: "Boutique Name / Shop Name",
+        value: firstNonEmptyString(
+          product.boutiqueName,
+          product.shopName,
+          product.boutique
+        ),
+      },
+    ];
+
+    return rows.map((row) => ({
+      ...row,
+      value: row.value || "N/A",
+    }));
+  }, [product]);
 
   return (
-    <div className="w-full bg-grey-50 border-t border-gray-200 pt-6 mt-6">
-      {/* Product details in grid */}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-8 text-sm">
-        {/* FABRIC */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            FABRIC
-          </h4>
-          <p className="text-gray-700">{fabric}</p>
-        </div>
-
-        {/* CRAFT */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            CRAFT
-          </h4>
-          <p className="text-gray-700">{craft}</p>
-        </div>
-
-        {/* PRODUCT TYPE */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            PRODUCT TYPE
-          </h4>
-          <p className="text-gray-700">{productType}</p>
-        </div>
-
-        {/* DRESS TYPE */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            DRESS TYPE
-          </h4>
-          <p className="text-gray-700">{dressType}</p>
-        </div>
-
-        {/* COMPOSITION */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            COMPOSITION
-          </h4>
-          <p className="text-gray-700">{composition}</p>
-        </div>
-
-        {/* CARE */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">CARE</h4>
-          <p className="text-gray-700">{care}</p>
-        </div>
-
-        {/* FIT */}
-        <div>
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">FIT</h4>
-          <p className="text-gray-700">{fit}</p>
-        </div>
-
-        {/* BOUTIQUE SHOP NAME */}
-        {(product.boutique || product.shopName) && (
-          <div>
-            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">BOUTIQUE NAME</h4>
-            <p className="text-gray-700 font-medium text-[#800000]">
-              {product.shopName || "Boutique Product"}
-            </p>
-          </div>
+    <div className="w-full border-b border-gray-200">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
+      >
+        <h3 className="text-base font-semibold text-gray-900">Product Details</h3>
+        {expanded ? (
+          <ChevronUp size={20} className="text-gray-600" />
+        ) : (
+          <ChevronDown size={20} className="text-gray-600" />
         )}
-      </div>
+      </button>
 
-      {/* NOTE - Full width */}
-      <div className="mt-6">
-        <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">NOTE</h4>
-        <p className="text-gray-700">{note}</p>
-      </div>
-
-      {/* ADDITIONAL DETAILS - Full width (Optional) */}
-      {product?.additionalDetails && (
-        <div className="mt-6">
-          <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-1">
-            ADDITIONAL DETAILS
-          </h4>
-          <p className="text-gray-700 whitespace-pre-wrap">{product.additionalDetails}</p>
+      {expanded && (
+        <div className="pb-4 text-sm text-gray-700">
+          {detailRows.map((row) => (
+            <div key={row.label} className="flex items-start justify-between gap-6 py-2 border-b border-gray-100 last:border-0">
+              <span className="text-gray-600">{row.label}:</span>
+              <span className="text-right text-gray-900">{row.value}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
