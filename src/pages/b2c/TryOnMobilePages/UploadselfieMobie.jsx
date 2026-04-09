@@ -286,7 +286,7 @@ const UploadSelfieModalMobile = ({ onNext, garmentImage, garmentName, isSaree, i
             onClick={() => setStep(2)}
             className="w-full bg-[#8B0000] text-white h-[46px] text-[13px] font-medium hover:bg-[#A30000] transition rounded-md"
           >
-            Upload a picture
+            Upload a Picture
           </button>
 
           <button

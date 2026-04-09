@@ -106,16 +106,14 @@ class UserService {
     try {
       const userInfo = await this.findUserCollection(userId);
 
-      if (!userInfo.exists) {
-        throw new Error("User not found");
-      }
+      // If doc is missing, create/merge in B2C by default so profile edits are not lost.
+      const targetCollection = userInfo.exists ? userInfo.collection : this.collections.b2c;
+      const userRef = doc(this.db, targetCollection, userId);
 
-      const userRef = doc(this.db, userInfo.collection, userId);
-
-      await updateDoc(userRef, {
+      await setDoc(userRef, {
         ...updates,
         updatedAt: new Date(),
-      });
+      }, { merge: true });
 
       toast.success("Profile updated successfully!");
       return true;

@@ -131,7 +131,7 @@ const TryOnStartPage = () => {
             onClick={handleUploadClick}
             className="w-full bg-[#8B0000] text-white h-[48px] text-sm font-medium hover:bg-[#A30000] transition-all "
           >
-            Upload a picture
+            Upload a Picture
           </button>
 
           <button

@@ -68,6 +68,28 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
     ? extractSubcategories(products, currentCategory)
     : [];
 
+  const recentUploadsFilterItems = useMemo(() => {
+    const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - FIFTEEN_DAYS_MS;
+
+    const uploadedInLast15Days = (products || []).filter((product) => {
+      const rawDate = product?.timestamp || product?.createdAt || product?.uploadedAt || product?.uploadDate;
+      if (!rawDate) return false;
+
+      const parsedDate =
+        rawDate?.toDate?.() ||
+        (rawDate instanceof Date ? rawDate : new Date(rawDate));
+
+      if (!(parsedDate instanceof Date) || Number.isNaN(parsedDate.getTime())) {
+        return false;
+      }
+
+      return parsedDate.getTime() >= cutoff;
+    }).length;
+
+    return [{ name: "Uploaded in last 15 days", count: uploadedInLast15Days }];
+  }, [products]);
+
   // Build the effective category list: merge route category + selected categories
   const effectiveCategories = useMemo(() => {
     const cats = [...(selectedFilters.categories || [])];
@@ -125,6 +147,14 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
           defaultOpen={true}
           filterType="categories"
           subcategoryItems={dynamicSubcategories}
+        />
+
+        <FilterSection
+          title="UPLOAD DATE"
+          items={recentUploadsFilterItems}
+          searchable={false}
+          defaultOpen={true}
+          filterType="recentUploads"
         />
 
         {!isSareeCategory && (

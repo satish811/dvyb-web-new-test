@@ -45,6 +45,7 @@ export const FilterProvider = ({ children }) => {
     discounts: [],
     blouses: [],
     boutiques: [],
+    recentUploads: [],
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -132,6 +133,15 @@ export const FilterProvider = ({ children }) => {
             }
             break;
 
+          case "recentUploads":
+            const recentUploads = newFilters.recentUploads || [];
+            if (recentUploads.includes(value)) {
+              newFilters.recentUploads = recentUploads.filter((item) => item !== value);
+            } else {
+              newFilters.recentUploads = [...recentUploads, value];
+            }
+            break;
+
           case "priceMin":
             if (newFilters.priceMin === value) return prev; // No change
             newFilters.priceMin = value;
@@ -164,6 +174,7 @@ export const FilterProvider = ({ children }) => {
       discounts: [],
       blouses: [],
       boutiques: [],
+      recentUploads: [],
     });
     setNavbarCategory("");
   }, []);
@@ -184,6 +195,7 @@ export const FilterProvider = ({ children }) => {
       discounts: newFilters.discounts || [],
       blouses: newFilters.blouses || [],
       boutiques: newFilters.boutiques || [],
+      recentUploads: newFilters.recentUploads || [],
     });
     if (newFilters.categories?.length > 0) {
       setNavbarCategory(newFilters.categories[0]);

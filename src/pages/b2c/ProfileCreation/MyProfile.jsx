@@ -12,6 +12,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { profileService } from '../../../services/profileService';
 
 const MyProfile = () => {
+  const MAX_MODEL_IMAGE_BYTES = 3.5 * 1024 * 1024;
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1775718504/img2_1_j0azs6.png";
+
   const { user, userCollection, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [profileData, setProfileData] = useState({
@@ -24,6 +27,7 @@ const MyProfile = () => {
     hairColor: '',
     photoUrl: '',
   });
+  const [modelName, setModelName] = useState('');
 
   const [capturedImage, setCapturedImage] = useState(null);
   const [cameraError, setCameraError] = useState(false);
@@ -32,6 +36,9 @@ const MyProfile = () => {
 
   // States for saved models persistence
   const [hasSavedModels, setHasSavedModels] = useState(false);
+  const [savedModels, setSavedModels] = useState([]);
+  const [selectedModelId, setSelectedModelId] = useState(null);
+  const [previewModel, setPreviewModel] = useState(null);
   const [savedResults, setSavedResults] = useState({});
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -40,6 +47,7 @@ const MyProfile = () => {
 
   // State for save-in-progress spinner
   const [savingProfile, setSavingProfile] = useState(false);
+  const [processingImage, setProcessingImage] = useState(false);
 
   // State for delete-in-progress spinner
   const [deletingProfile, setDeletingProfile] = useState(false);
@@ -56,7 +64,21 @@ const MyProfile = () => {
   const [generatedResults, setGeneratedResults] = useState({});
   const [centerImage, setCenterImage] = useState(null);
 
-  const totalSteps = 10;
+  const totalSteps = 1;
+  const getModelKey = (model) => model?.id || model?.name || "";
+  const normalizeModelName = (value) => {
+    const lettersOnly = String(value || "")
+      .replace(/[^A-Za-z\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!lettersOnly) return "";
+
+    return lettersOnly
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   // Body shapes, skin tones, hair configs (same as yours) - kept exactly
   const bodyShapes = [
@@ -112,31 +134,222 @@ const MyProfile = () => {
     }
   };
 
-  const capturePhoto = () => {
+  const blobToDataUrl = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const loadImageFromBlob = (blob) => {
+    return new Promise((resolve, reject) => {
+      const imageUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(imageUrl);
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(imageUrl);
+        reject(err);
+      };
+      img.src = imageUrl;
+    });
+  };
+
+  const canvasToBlob = (canvas, mimeType, quality) => {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Failed to convert canvas to blob"));
+            return;
+          }
+          resolve(blob);
+        },
+        mimeType,
+        quality
+      );
+    });
+  };
+
+  const compressImageBlobToMaxBytes = async (blob, maxBytes = MAX_MODEL_IMAGE_BYTES) => {
+    if (!blob || blob.size <= maxBytes) return blob;
+
+    const img = await loadImageFromBlob(blob);
+
+    const MAX_START_DIMENSION = 2200;
+    const scale = Math.min(1, MAX_START_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+    let width = Math.max(1, Math.floor(img.naturalWidth * scale));
+    let height = Math.max(1, Math.floor(img.naturalHeight * scale));
+
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d", { alpha: false });
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.9;
+    let compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+
+    for (let attempt = 0; attempt < 14 && compressed.size > maxBytes; attempt++) {
+      if (quality > 0.45) {
+        quality = Math.max(0.45, quality - 0.1);
+      } else {
+        width = Math.max(640, Math.floor(width * 0.85));
+        height = Math.max(640, Math.floor(height * 0.85));
+
+        const resizedCanvas = document.createElement("canvas");
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+        const resizedCtx = resizedCanvas.getContext("2d", { alpha: false });
+        resizedCtx.drawImage(canvas, 0, 0, width, height);
+
+        canvas = resizedCanvas;
+        ctx = resizedCtx;
+        quality = 0.8;
+      }
+
+      compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+    }
+
+    return compressed;
+  };
+
+  const setProcessedImage = async (sourceBlob, advanceToPreview = false) => {
+    setProcessingImage(true);
+    try {
+      const compressedBlob = await compressImageBlobToMaxBytes(sourceBlob, MAX_MODEL_IMAGE_BYTES);
+
+      if (compressedBlob.size > MAX_MODEL_IMAGE_BYTES) {
+        throw new Error("Could not compress this image to 3.5 MB. Please choose a smaller image.");
+      }
+
+      const base64 = await blobToDataUrl(compressedBlob);
+      setCapturedImage(base64);
+      setProfileData((prev) => ({ ...prev, photoUrl: base64 }));
+      if (advanceToPreview) setCurrentStep(7);
+    } finally {
+      setProcessingImage(false);
+    }
+  };
+
+  const applyDefaultBackgroundToModelImage = async (imageSource) => {
+    if (!imageSource) {
+      throw new Error("No image found for background processing.");
+    }
+
+    const sourceResponse = await fetch(imageSource);
+    if (!sourceResponse.ok) {
+      throw new Error("Failed to read model image for background processing.");
+    }
+
+    const sourceBlob = await sourceResponse.blob();
+
+    const formData = new FormData();
+    formData.append("tryOnImage", sourceBlob, "profile-model.jpg");
+    formData.append("backgroundUrl", DEFAULT_PROFILE_BACKGROUND_URL);
+    formData.append("backgroundName", "Default Profile");
+
+    const response = await fetch('/api/change-tryon-background', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let message = `Background processing failed (${response.status})`;
+      try {
+        const errorData = await response.json();
+        message = errorData?.details || errorData?.error || message;
+      } catch (_error) {
+        const text = await response.text();
+        if (text) message = text;
+      }
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    if (!data?.success || !data?.result) {
+      throw new Error(data?.error || "Background processing did not return an image.");
+    }
+
+    return data.result;
+  };
+
+  const capturePhoto = async () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0);
-    const imageData = canvas.toDataURL('image/jpeg');
-    setCapturedImage(imageData);
-    setProfileData(prev => ({ ...prev, photoUrl: imageData }));
     stopCamera();
-    setCurrentStep(7); // go to preview
+    const capturedBlob = await canvasToBlob(canvas, 'image/jpeg', 0.9);
+    await setProcessedImage(capturedBlob, true);
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e, advanceToPreview = currentStep >= 5) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result;
-      setCapturedImage(base64);
-      setProfileData(prev => ({ ...prev, photoUrl: base64 }));
-      setCurrentStep(7); // go to preview
-    };
-    reader.readAsDataURL(file);
+    try {
+      await setProcessedImage(file, advanceToPreview);
+    } catch (error) {
+      alert(error.message || 'Failed to process image. Please try another one.');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveModel = async () => {
+    const trimmedModelName = normalizeModelName(modelName);
+
+    if (!trimmedModelName) {
+      alert('Please enter a model name using alphabets only.');
+      return;
+    }
+
+    if (!capturedImage && !profileData.photoUrl) {
+      alert('Please upload a photo for your model.');
+      return;
+    }
+
+    if (savedModels.length >= 4 && !savedModels.some((item) => item.name.toLowerCase() === trimmedModelName.toLowerCase())) {
+      alert('You can save up to 4 models. Delete one before adding a new model.');
+      return;
+    }
+
+    const sourceImage = capturedImage || profileData.photoUrl;
+
+    setSavingProfile(true);
+    setProcessingImage(true);
+    try {
+      const processedImage = await applyDefaultBackgroundToModelImage(sourceImage);
+
+      const dataToSave = {
+        modelName: trimmedModelName,
+        photoUrl: processedImage,
+      };
+
+      const savedProfile = await profileService.saveProfile(dataToSave, userCollection);
+      const nextSavedModels = Array.isArray(savedProfile?.savedModels) ? savedProfile.savedModels : [];
+      const persistedPhotoUrl = savedProfile?.photoUrl || dataToSave.photoUrl;
+
+      setSavedModels(nextSavedModels);
+      setSelectedModelId(null);
+      setHasSavedModels(nextSavedModels.length > 0);
+      setProfileData(prev => ({ ...prev, photoUrl: persistedPhotoUrl }));
+      setCapturedImage(persistedPhotoUrl);
+      setModelName(trimmedModelName);
+      setCurrentStep(0);
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      alert(`Error saving model: ${error.message}`);
+    } finally {
+      setProcessingImage(false);
+      setSavingProfile(false);
+    }
   };
 
   // Automatically adjust garment scaling based on image dimensions
@@ -306,13 +519,29 @@ const MyProfile = () => {
         if (hasResults || hasProfilePhoto) {
           if (existingResults) setSavedResults(existingResults);
 
-          if (hasProfilePhoto) {
+          const existingSavedModels = Array.isArray(userProfile?.savedModels) ? userProfile.savedModels : [];
+          const legacySavedModels = !existingSavedModels.length && hasProfilePhoto
+            ? [{
+                id: userProfile?.modelName || 'legacy-model',
+                name: userProfile?.modelName || 'Model 1',
+                photoUrl: userProfile.photoUrl,
+                updatedAt: userProfile.updatedAt || new Date(),
+              }]
+            : existingSavedModels;
+
+          if (legacySavedModels.length > 0) {
+            setSavedModels(legacySavedModels);
+            setSelectedModelId(null);
+            setModelName(normalizeModelName(legacySavedModels[0]?.name || ''));
+            setCapturedImage(legacySavedModels[0]?.photoUrl || userProfile?.photoUrl || null);
+            setProfileData(prev => ({ ...prev, ...userProfile, photoUrl: legacySavedModels[0]?.photoUrl || userProfile?.photoUrl || '' }));
+          } else if (hasProfilePhoto) {
             console.log("✅ Found existing profile photo");
             setProfileData(prev => ({ ...prev, ...userProfile }));
             setCapturedImage(userProfile.photoUrl);
           }
 
-          setHasSavedModels(true);
+          setHasSavedModels(legacySavedModels.length > 0 || hasProfilePhoto);
           console.log('✅ Found existing saved models/profile');
         }
       } catch (error) {
@@ -500,7 +729,7 @@ const MyProfile = () => {
 
           {/* Header */}
           <div className="p-4 border-b flex items-center justify-between shrink-0">
-            <h3 className="text-xl font-semibold text-gray-900">Your Model</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Saved Models</h3>
             <button
               onClick={() => setShowGalleryModal(false)}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -513,17 +742,17 @@ const MyProfile = () => {
           <div className="p-6 overflow-y-auto flex-1">
             {Object.keys(savedResults).length === 0 && !profileData.photoUrl ? (
               <div className="text-center py-12">
-                <p className="text-gray-500">No profile photo or try-on models found.</p>
+                <p className="text-gray-500">No saved models found.</p>
                 <button
                   onClick={() => {
                     setShowGalleryModal(false);
-                    // Reset to step 1 to create profile/models
+                    // Reset to the save screen to create a new model
                     setHasSavedModels(false);
-                    setCurrentStep(1);
+                    setCurrentStep(0);
                   }}
                   className="mt-4 text-[#33022F] font-medium hover:underline"
                 >
-                  Create your profile
+                  Save your model
                 </button>
               </div>
             ) : (
@@ -571,70 +800,148 @@ const MyProfile = () => {
     );
   };
 
+  const SavedModelPreviewModal = () => {
+    if (!previewModel) return null;
+
+    return (
+      <div
+        className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        onClick={() => setPreviewModel(null)}
+      >
+        <div
+          className="relative bg-white rounded-lg p-3 sm:p-4 max-w-md w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => setPreviewModel(null)}
+            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white text-lg leading-none hover:bg-black/75"
+            aria-label="Close preview"
+          >
+            ×
+          </button>
+
+          <img
+            src={previewModel.photoUrl}
+            alt={previewModel.name}
+            className="w-full max-h-[75vh] object-contain bg-[#F6F4F1]"
+          />
+
+          <p className="text-center text-sm sm:text-base font-semibold text-gray-900 mt-3">
+            {previewModel.name}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
 
   const renderStep = () => {
     switch (currentStep) {
       case 0:
         return (
-          <div className="flex flex-col items-center justify-center min-h-[450px] xs:min-h-[500px] sm:min-h-[550px] md:min-h-[450px] lg:min-h-[500px] px-4 sm:px-6 py-8 sm:py-10 md:py-6 lg:py-8">
-            {/* Icon with stars */}
-            <div className="relative mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
-              <div className="w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-[#BE4949] flex items-center justify-center shadow-lg">
-                <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center">
-                  <img src={women_ic} alt="" className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 md:w-8 md:h-8 lg:w-10 lg:h-10" />
+          <div className="flex flex-col items-center justify-center min-h-[520px] px-4 sm:px-6 py-8 sm:py-10 md:py-6 lg:py-8">
+            <div className="relative mb-6 xs:mb-7 sm:mb-8">
+              <div className="w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 bg-[#BE4949] flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
+                  <img src={women_ic} alt="" className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10" />
                 </div>
 
-                <div className="absolute -top-1 -right-3 sm:-right-4 md:-right-3 lg:-right-4">
-                  <img src={yellow_star} className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6" alt="" />
+                <div className="absolute -top-1 -right-3 sm:-right-4">
+                  <img src={yellow_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
                 </div>
               </div>
 
-              <div className="absolute bottom-3 xs:bottom-3 sm:bottom-4 md:bottom-3 lg:bottom-4 -left-5 sm:-left-6 md:-left-5 lg:-left-6">
-                <img src={pink_star} className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6" alt="" />
+              <div className="absolute bottom-3 xs:bottom-3 sm:bottom-4 -left-5 sm:-left-6">
+                <img src={pink_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
               </div>
             </div>
 
-            {/* Title */}
-            <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-2 xs:mb-2 sm:mb-3 md:mb-2 lg:mb-3 text-center px-2 leading-tight">
-              Create Your Tryon Profile
+            <h2 className="text-xl xs:text-xl sm:text-2xl font-semibold text-gray-900 mb-2 text-center px-2 leading-tight">
+              Save your model
             </h2>
 
-            {/* Description */}
-            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] text-center max-w-md mb-8 xs:mb-10 sm:mb-12 md:mb-8 lg:mb-12 px-4 leading-relaxed">
-              Answer a few quick questions to see outfits on a virtual version of you.
+            <p className="text-sm xs:text-sm sm:text-base text-[#45556C] text-center max-w-md mb-6 px-4 leading-relaxed">
+              Give your model a name, upload a photo, and keep up to 4 models in your account.
             </p>
 
-            {/* Start Button */}
-            <button
-              onClick={handleNext}
-              className="w-full max-w-md h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all duration-200 mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4"
-              style={{ background: 'var(--villy-primary, #33022F)' }}
-            >
-              START CREATING
-            </button>
-
-            {/* Maybe Later */}
-            <button
-              onClick={() => navigate('/')}
-              className="text-[#62748E] text-sm xs:text-sm sm:text-base md:text-sm lg:text-base cursor-pointer font-medium hover:text-gray-700 mb-8 xs:mb-10 sm:mb-12 md:mb-6 lg:mb-0"
-            >
-              MAYBE LATER
-            </button>
-
-            {/* Feature Pills */}
-            <div className="flex flex-col xs:flex-col sm:flex-row md:flex-row lg:flex-row gap-4 xs:gap-4 sm:gap-8 md:gap-6 lg:gap-8 mt-8 xs:mt-10 sm:mt-12 md:mt-6 lg:mt-12">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-semibold text-black whitespace-nowrap">
-                  Private & Secure
-                </span>
+            <div className="w-full max-w-xl space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Model name</label>
+                <input
+                  type="text"
+                  value={modelName}
+                  onChange={(e) => setModelName(normalizeModelName(e.target.value))}
+                  placeholder="Enter model name"
+                  className="w-full border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-[#33022F]"
+                />
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm font-semibold text-black whitespace-nowrap">
-                  Takes 2 minutes
-                </span>
+
+              <div className="border-2 border-dashed border-gray-300 bg-white p-5 sm:p-6 text-center">
+                {capturedImage ? (
+                  <div className="space-y-4">
+                    <img
+                      src={capturedImage}
+                      alt="Model preview"
+                      className="mx-auto h-64 w-full max-w-sm object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-sm font-semibold text-[#33022F] hover:underline"
+                    >
+                      Change photo
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-gray-700 font-medium">Upload a photo for this model</p>
+                    <p className="text-sm text-gray-500">A photo is required before saving.</p>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-5 py-3 text-sm font-semibold text-white"
+                      style={{ background: 'var(--villy-primary, #33022F)' }}
+                    >
+                      Upload photo
+                    </button>
+                  </div>
+                )}
               </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={handleSaveModel}
+                  disabled={savingProfile || processingImage || !modelName.trim() || !capturedImage}
+                  className="flex-1 h-12 text-white text-sm font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: 'var(--villy-primary, #33022F)' }}
+                >
+                  {processingImage ? 'PROCESSING IMAGE...' : savingProfile ? 'SAVING...' : 'SAVE MODEL'}
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex-1 h-12 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                >
+                  MAYBE LATER
+                </button>
+              </div>
+
+              <div className="text-center text-sm text-gray-600">
+                {savedModels.length} / 4 models saved
+              </div>
+
+              {savedModels.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  {savedModels.map((model) => (
+                    <div key={model.id || model.name} className="bg-white border border-gray-200 overflow-hidden">
+                      <img src={model.photoUrl} alt={model.name} className="h-36 w-full object-cover" />
+                      <div className="p-2 text-center">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{model.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1662,83 +1969,54 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
 
   // Saved Models View — show when user already has generated models
   if (hasSavedModels && currentStep === 0) {
-    const outfitLabels = {
-      saree: 'Saree',
-      kurti: 'Kurti',
-      lehenga: 'Lehenga',
-      anarkali: 'Anarkali',
-    };
-
     return (
       <div className="bg-[#FAF8F5] min-h-screen flex flex-col justify-start pb-20">
         <ModelGalleryModal />
+        <SavedModelPreviewModal />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
 
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">
-              My Models
+              My Saved Models
             </h1>
             <p className="text-sm sm:text-base text-[#45556C]">
-              Your virtual try-on models are ready. Browse products to see how they look on you!
+              You can save up to 4 named models and revisit them later.
             </p>
           </div>
 
           {/* Models Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
-
-            {/* 1. Original Photo Card */}
-            {profileData.photoUrl && (
+            {savedModels.map((model) => (
               <div
-                className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                key={model.id || model.name}
+                onClick={() => {
+                  setSelectedModelId(getModelKey(model));
+                  setPreviewModel(model);
+                }}
+                className={`bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer ${selectedModelId === getModelKey(model)
+                  ? 'ring-2 ring-[#33022F]'
+                  : 'ring-1 ring-transparent'
+                  }`}
               >
                 <div className="relative bg-[#F6F4F1] aspect-[3/4] overflow-hidden">
                   <img
-                    src={profileData.photoUrl}
-                    alt="Original Profile"
+                    src={model.photoUrl}
+                    alt={model.name}
                     className="w-full h-full object-cover"
                     crossOrigin="anonymous"
                   />
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
-                    ORIGINAL
+                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded uppercase">
+                    {selectedModelId === getModelKey(model) ? 'Selected' : 'Saved'}
                   </div>
                 </div>
                 <div className="p-3 sm:p-4 text-center">
-                  <p className="text-sm sm:text-base font-semibold text-gray-900">
-                    Your Photo
+                  <p className="text-sm sm:text-base font-semibold text-gray-900 capitalize">
+                    {model.name}
                   </p>
                 </div>
               </div>
-            )}
-
-            {/* 2. Saved Try-On Results */}
-            {Object.entries(savedResults).map(([outfitType, imageUrl]) => {
-              if (!imageUrl) return null;
-
-              return (
-                <div
-                  key={outfitType}
-                  className="bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-                >
-                  <div className="relative bg-[#F6F4F1] aspect-[3/4] overflow-hidden">
-                    <img
-                      src={imageUrl}
-                      alt={`${outfitLabels[outfitType] || outfitType} Model`}
-                      className="w-full h-full object-cover object-top"
-                      crossOrigin="anonymous"
-                    />
-                    <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded uppercase">
-                      {outfitLabels[outfitType] || outfitType}
-                    </div>
-                  </div>
-                  <div className="p-3 sm:p-4 text-center">
-                    <p className="text-sm sm:text-base font-semibold text-gray-900 capitalize">
-                      {outfitLabels[outfitType] || outfitType}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+            ))}
           </div>
 
           {/* Action Buttons */}
@@ -1752,28 +2030,50 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
             </button>
             <button
               onClick={() => {
+                setCapturedImage(null);
+                setModelName('');
+                setSelectedModelId(null);
+                setPreviewModel(null);
                 setHasSavedModels(false);
                 setCurrentStep(0);
               }}
               className="w-full sm:w-auto px-8 h-12 sm:h-14 border-2 border-[#33022F] text-[#33022F] text-sm sm:text-base font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
-              RE-CREATE MODELS
+              SAVE ANOTHER MODEL
             </button>
             <button
               onClick={async () => {
-                if (!window.confirm('Are you sure you want to delete your model? This will remove your profile photo and all try-on results. This action cannot be undone.')) return;
+                const selectedModel = savedModels.find((item) => getModelKey(item) === selectedModelId);
+                if (!selectedModel) return;
+
+                if (!window.confirm(`Are you sure you want to delete model "${selectedModel.name}"?`)) return;
                 setDeletingProfile(true);
                 try {
-                  await profileService.deleteProfile(userCollection);
-                  // Reset all local state
-                  setHasSavedModels(false);
-                  setSavedResults({});
-                  setProfileData(prev => ({ ...prev, photoUrl: '' }));
-                  setCapturedImage(null);
-                  setGeneratedResults({});
-                  setCenterImage(null);
-                  setCurrentStep(0);
+                  const remainingModels = await profileService.deleteSavedModel(selectedModelId, userCollection);
+                  setSavedModels(remainingModels);
+                  setSelectedModelId(null);
+                  setPreviewModel(null);
+                  setHasSavedModels(remainingModels.length > 0);
+
+                  if (remainingModels.length > 0) {
+                    const primary = remainingModels[0];
+                    setModelName(normalizeModelName(primary.name || ''));
+                    setCapturedImage(primary.photoUrl || null);
+                    setProfileData((prev) => ({
+                      ...prev,
+                      modelName: primary.name || prev.modelName,
+                      photoUrl: primary.photoUrl || '',
+                    }));
+                  } else {
+                    setSavedResults({});
+                    setModelName('');
+                    setProfileData(prev => ({ ...prev, photoUrl: '' }));
+                    setCapturedImage(null);
+                    setGeneratedResults({});
+                    setCenterImage(null);
+                    setCurrentStep(0);
+                  }
                 } catch (error) {
                   console.error('❌ Delete error:', error);
                   alert(`Error deleting model: ${error.message}`);
@@ -1781,7 +2081,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
                   setDeletingProfile(false);
                 }
               }}
-              disabled={deletingProfile}
+              disabled={deletingProfile || !selectedModelId}
               className="w-full sm:w-auto px-8 h-12 sm:h-14 border-2 border-red-500 text-red-500 text-sm sm:text-base font-semibold hover:bg-red-50 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {deletingProfile ? (
@@ -1792,7 +2092,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
               ) : (
                 <>
                   <Trash2 className="w-4 h-4" />
-                  DELETE MODEL
+                  {selectedModelId ? 'DELETE MODEL' : 'SELECT MODEL TO DELETE'}
                 </>
               )}
             </button>
@@ -1820,7 +2120,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
       </div>
 
       {/* Back Button */}
-      {currentStep < 8 && (
+      {currentStep > 0 && currentStep < 8 && (
         <div className={`absolute top-44   flex z-40 ${currentStep === 7 ? 'left-74 mt-2' : 'left-112 '}`}>
           <button onClick={handleBack} className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-black">
             <ChevronLeft size={20} /> Back

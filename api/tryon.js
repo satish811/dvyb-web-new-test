@@ -1605,7 +1605,7 @@ async function getVertexClient() {
     try {
       credentials = JSON.parse(serviceAccountJson);
     } catch {
-      throw new Error("Invalid GOOGLE_SERVICE_ACCOUNT_JSON (must be valid JSON)");
+      throw new Error("Invalid SERVICE_ACCOUNT_JSON (must be valid JSON)");
     }
     auth = new GoogleAuth({ credentials, scopes: VERTEX_SCOPES });
   } else {
@@ -1618,7 +1618,7 @@ async function getVertexClient() {
 
 async function generateVertexVirtualTryOn(personBase64, garmentBase64, garmentType = "upper_and_lower_body") {
   if (!VERTEX_PROJECT_ID) {
-    throw new Error("Missing GOOGLE_PROJECT_ID (required for Vertex Virtual Try-On)");
+    throw new Error("Missing PROJECT_ID (required for Virtual Try-On)");
   }
 
   const url = `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${VERTEX_PROJECT_ID}/locations/${VERTEX_LOCATION}/publishers/google/models/${VERTEX_MODEL_ID}:predict`;
@@ -2408,6 +2408,18 @@ export default async function handler(req, res) {
         bgBase64 = req.files.backgroundImage[0].buffer.toString("base64");
         bgName = req.body.backgroundName || "Custom";
         console.log(`🖼️ Using uploaded custom background: ${bgName}`);
+      } else if (req.body.backgroundUrl) {
+        const backgroundUrl = String(req.body.backgroundUrl).trim();
+
+        if (!/^https?:\/\//i.test(backgroundUrl)) {
+          return res.status(400).json({
+            error: "backgroundUrl must be a valid http(s) URL"
+          });
+        }
+
+        bgName = req.body.backgroundName || "Custom";
+        console.log(`🌍 Using background URL: ${backgroundUrl.substring(0, 80)}...`);
+        bgBase64 = await downloadAsBase64(backgroundUrl);
       } else {
         const background = req.body.background;
         if (!background || !backgrounds[background]) {
