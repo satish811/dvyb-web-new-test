@@ -20,10 +20,39 @@ import model3 from "../../../assets/TryOn/young.jpg";
 import model4 from "../../../assets/TryOn/model4.jpg";
 
 const ProfilePhotoSelector = ({ onSelect }) => {
-  const [firebaseImage, setFirebaseImage] = useState(
-    "https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg"
-  );
+  const [savedModels, setSavedModels] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadSavedModels = async () => {
+      setLoading(true);
+      try {
+        const profile = await profileService.getProfile();
+        const models = Array.isArray(profile?.savedModels) ? profile.savedModels : [];
+
+        if (models.length > 0) {
+          setSavedModels(models);
+        } else if (profile?.photoUrl) {
+          setSavedModels([
+            {
+              id: profile.modelName || "saved-model",
+              name: profile.modelName || "My Model",
+              photoUrl: profile.photoUrl,
+            },
+          ]);
+        } else {
+          setSavedModels([]);
+        }
+      } catch (error) {
+        console.error("Error loading saved models:", error);
+        setSavedModels([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSavedModels();
+  }, []);
 
   if (loading) {
     return (
@@ -33,31 +62,45 @@ const ProfilePhotoSelector = ({ onSelect }) => {
     );
   }
 
-  if (!firebaseImage) return null;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-4">
+        <div className="animate-spin h-6 w-6 border-2 border-b-red-700 rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!savedModels.length) return null;
 
   return (
-    <button
-      onClick={() => onSelect(firebaseImage)}
-      className="w-full border border-gray-200 rounded-xl p-4 hover:border-primary transition-all bg-white hover:bg-red-50"
-    >
-      <div className="flex items-center gap-4">
-        <img
-          src={firebaseImage}
-          alt="Saved model"
-          className="w-16 h-20 object-cover rounded-md border border-gray-200"
-        />
-        <div className="text-left flex-1">
-          <div className="flex items-center gap-2">
-            <User size={16} className="text-primary" />
-            <span className="font-medium text-gray-800">Use My Saved Photo</span>
+    <div className="space-y-3">
+      <p className="text-sm font-semibold text-gray-800">My Models</p>
+      {savedModels.map((model) => (
+        <button
+          key={model.id || model.name}
+          onClick={() => onSelect(model)}
+          className="w-full border border-gray-200 rounded-xl p-4 hover:border-primary transition-all bg-white hover:bg-red-50"
+        >
+          <div className="flex items-center gap-4">
+            <img
+              src={model.photoUrl}
+              alt={model.name || "Saved model"}
+              className="w-16 h-20 object-cover rounded-md border border-gray-200"
+            />
+            <div className="text-left flex-1">
+              <div className="flex items-center gap-2">
+                <User size={16} className="text-primary" />
+                <span className="font-medium text-gray-800">{model.name || "My Saved Model"}</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">Tap to use this saved model</p>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full inline-block mt-2">
+                ✓ Ready to use
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-gray-600 mt-1">Use your uploaded model photo</p>
-          <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full inline-block mt-2">
-            ✓ Ready to use
-          </span>
-        </div>
-      </div>
-    </button>
+        </button>
+      ))}
+    </div>
   );
 };
 
@@ -71,6 +114,9 @@ const UploadSelfieModal = ({
   is3D = false,
   tryOnData,
 }) => {
+  const MAX_UPLOAD_IMAGE_BYTES = 3.5 * 1024 * 1024;
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1775718504/img2_1_j0azs6.png";
+
   const currentUser = auth.currentUser;
   const { userCollection } = useAuth();
   console.log("######### User details:", currentUser);
@@ -89,8 +135,10 @@ const UploadSelfieModal = ({
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedModel, setSelectedModel] = useState(null);
   const [showModelPreview, setShowModelPreview] = useState(false);
+  const [modelSource, setModelSource] = useState(null);
   const [makeDefault, setMakeDefault] = useState(false);
   const [isStoringData, setIsStoringData] = useState(false);
+  const [loadingSavedModels, setLoadingSavedModels] = useState(false);
 
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
@@ -101,6 +149,7 @@ const UploadSelfieModal = ({
 
   const [userHasTryOn, setUserHasTryOn] = useState(false);
   const [userTryOnImage, setUserTryOnImage] = useState(null);
+  const [savedProfileModels, setSavedProfileModels] = useState([]);
 
   const resolveMyModelType = () => {
     // Combine all available signals so a weak dressType does not override a strong garment title.
@@ -146,26 +195,67 @@ const UploadSelfieModal = ({
     checkUserTryOn();
   }, [isOpen, mappedMyModelType, userCollection]);
 
+  const loadSavedProfileModels = async () => {
+    setLoadingSavedModels(true);
+    try {
+      const profile = await profileService.getProfile(userCollection);
+      const models = Array.isArray(profile?.savedModels) ? profile.savedModels : [];
+
+      if (models.length > 0) {
+        setSavedProfileModels(models);
+        return;
+      }
+
+      if (profile?.photoUrl) {
+        setSavedProfileModels([
+          {
+            id: profile.modelName || "saved-model",
+            name: profile.modelName || "My Saved Model",
+            photoUrl: profile.photoUrl,
+          },
+        ]);
+        return;
+      }
+
+      setSavedProfileModels([]);
+    } catch (error) {
+      console.error("Error loading saved models:", error);
+      setSavedProfileModels([]);
+    } finally {
+      setLoadingSavedModels(false);
+    }
+  };
+
+  const openDefaultModels = () => {
+    setModelSource("default");
+    setSavedProfileModels([]);
+    setSelectedModel(null);
+    setShowModelPreview(false);
+    setShowModelSelector(true);
+    setStep(null);
+  };
+
+  const openSavedModels = async () => {
+    setModelSource("saved");
+    setSelectedModel(null);
+    setShowModelPreview(false);
+    setShowModelSelector(true);
+    setStep(null);
+    await loadSavedProfileModels();
+  };
+
   const handleUseMyModel = () => {
     if (!currentUser) {
       alert("Please log in to continue");
       return;
     }
 
-    if (!userTryOnImage) {
+    if (!savedProfileModels.length && !userTryOnImage) {
       alert(`No saved ${mappedMyModelType} model found. Please create it in My Models.`);
       return;
     }
 
-    setSelectedModel({
-      image: userTryOnImage,
-      name: `My Model (${mappedMyModelType.charAt(0).toUpperCase() + mappedMyModelType.slice(1)})`,
-    });
-
-    // Open the same preview page used by manual model selection.
-    setStep(null);
-    setShowModelSelector(false);
-    setShowModelPreview(true);
+    openSavedModels();
   };
 
   const getModelsForDressType = (dressType) => {
@@ -442,6 +532,174 @@ const UploadSelfieModal = ({
     }
   };
 
+  const loadImageFromBlob = (blob) => {
+    return new Promise((resolve, reject) => {
+      const imageUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(imageUrl);
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(imageUrl);
+        reject(err);
+      };
+      img.src = imageUrl;
+    });
+  };
+
+  const canvasToBlob = (canvas, mimeType, quality) => {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Failed to convert canvas to blob"));
+            return;
+          }
+          resolve(blob);
+        },
+        mimeType,
+        quality
+      );
+    });
+  };
+
+  const compressImageBlobToMaxBytes = async (blob, maxBytes = MAX_UPLOAD_IMAGE_BYTES) => {
+    if (!blob || blob.size <= maxBytes) return blob;
+
+    const img = await loadImageFromBlob(blob);
+
+    const MAX_START_DIMENSION = 2200;
+    const scale = Math.min(1, MAX_START_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+    let width = Math.max(1, Math.floor(img.naturalWidth * scale));
+    let height = Math.max(1, Math.floor(img.naturalHeight * scale));
+
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d", { alpha: false });
+    ctx.drawImage(img, 0, 0, width, height);
+
+    let quality = 0.9;
+    let compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+
+    for (let attempt = 0; attempt < 14 && compressed.size > maxBytes; attempt++) {
+      if (quality > 0.45) {
+        quality = Math.max(0.45, quality - 0.1);
+      } else {
+        width = Math.max(640, Math.floor(width * 0.85));
+        height = Math.max(640, Math.floor(height * 0.85));
+
+        const resizedCanvas = document.createElement("canvas");
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+        const resizedCtx = resizedCanvas.getContext("2d", { alpha: false });
+        resizedCtx.drawImage(canvas, 0, 0, width, height);
+
+        canvas = resizedCanvas;
+        ctx = resizedCtx;
+        quality = 0.8;
+      }
+
+      compressed = await canvasToBlob(canvas, "image/jpeg", quality);
+    }
+
+    return compressed;
+  };
+
+  const uploadBlobToCloudinary = async (blob, fileName = "tryon-model.jpg") => {
+    const formData = new FormData();
+    formData.append("file", blob, fileName);
+    formData.append("folder", "warehouse_uploads");
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Upload failed (${response.status})`);
+    }
+
+    const data = await response.json();
+    if (!data?.url) {
+      throw new Error("Upload succeeded but no URL returned.");
+    }
+
+    return data.url;
+  };
+
+  const applyDefaultBackgroundSwap = async (imageBlob) => {
+    const formData = new FormData();
+    formData.append("tryOnImage", imageBlob, "tryon-model.jpg");
+    formData.append("backgroundUrl", DEFAULT_PROFILE_BACKGROUND_URL);
+    formData.append("backgroundName", "Default Profile");
+
+    const response = await fetch("/api/change-tryon-background", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let message = `Background processing failed (${response.status})`;
+      try {
+        const errorData = await response.json();
+        message = errorData?.details || errorData?.error || message;
+      } catch (_error) {
+        const text = await response.text();
+        if (text) message = text;
+      }
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    if (!data?.success || !data?.result) {
+      throw new Error(data?.error || "Background processing did not return an image.");
+    }
+
+    return data.result;
+  };
+
+  const processAndSetUploadedImage = async (file, sourceLabel) => {
+    const previewUrl = URL.createObjectURL(file);
+    let shouldRevokePreview = false;
+    setSelectedImage(previewUrl);
+    setStep(3);
+    setIsUploading(true);
+    setUploadError("");
+
+    try {
+      const compressedBlob = await compressImageBlobToMaxBytes(file, MAX_UPLOAD_IMAGE_BYTES);
+
+      if (compressedBlob.size > MAX_UPLOAD_IMAGE_BYTES) {
+        throw new Error("Could not compress image to 3.5MB. Please upload a smaller image.");
+      }
+
+      const swappedImageDataUrl = await applyDefaultBackgroundSwap(compressedBlob);
+      const swappedBlob = await fetch(swappedImageDataUrl).then((r) => r.blob());
+      const finalImageUrl = await uploadBlobToCloudinary(swappedBlob, "tryon-model-bg-swapped.jpg");
+
+      setSelectedImage(finalImageUrl);
+      shouldRevokePreview = true;
+      setImageSource(sourceLabel);
+
+      const isValid = await validateImage(finalImageUrl);
+      setStep(isValid ? 4 : 5);
+      if (!isValid) {
+        setUploadError("Image processing completed, but output did not meet quality checks.");
+      }
+    } catch (error) {
+      setUploadError(error.message || "Failed to process uploaded image.");
+      setStep(5);
+    } finally {
+      if (shouldRevokePreview) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setIsUploading(false);
+    }
+  };
+
   const capturePhoto = async () => {
     if (!videoRef.current) return;
 
@@ -460,40 +718,8 @@ const UploadSelfieModal = ({
       const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
       stopCamera();
 
-      setStep(3);
-      setIsUploading(true);
-      setUploadError("");
-
-      try {
-        const cloudinaryUrl = await uploadToCloudinary(file);
-        setSelectedImage(cloudinaryUrl);
-        setImageSource("camera");
-
-        const isValid = await validateImage(cloudinaryUrl);
-        setStep(isValid ? 4 : 5);
-      } catch {
-        setUploadError("Failed to upload captured image.");
-        setStep(5);
-      } finally {
-        setIsUploading(false);
-      }
+      await processAndSetUploadedImage(file, "camera");
     }, "image/jpeg");
-  };
-
-  const uploadToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "tryon_unsigned");
-    data.append("cloud_name", "doiezptnn");
-
-    const res = await fetch("https://api.cloudinary.com/v1_1/doiezptnn/image/upload", {
-      method: "POST",
-      body: data,
-    });
-
-    const json = await res.json();
-    if (!json.secure_url) throw new Error("Cloudinary upload failed");
-    return json.secure_url;
   };
 
   const validateImage = async (imageUrl) => {
@@ -520,28 +746,16 @@ const UploadSelfieModal = ({
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadError("File size exceeds 2MB. Please choose a smaller image.");
+    if (file.size > 20 * 1024 * 1024) {
+      setUploadError("File size is too large. Please choose an image up to 20MB.");
       setStep(5);
       return;
     }
 
-    setStep(3);
-    setIsUploading(true);
-    setUploadError("");
+    await processAndSetUploadedImage(file, "upload");
 
-    try {
-      const cloudinaryUrl = await uploadToCloudinary(file);
-      setSelectedImage(cloudinaryUrl);
-      setImageSource("upload");
-
-      const isValid = await validateImage(cloudinaryUrl);
-      setStep(isValid ? 4 : 5);
-    } catch {
-      setUploadError("Failed to upload image. Please try again.");
-      setStep(5);
-    } finally {
-      setIsUploading(false);
+    if (event.target) {
+      event.target.value = "";
     }
   };
 
@@ -655,37 +869,34 @@ const UploadSelfieModal = ({
                 className="w-full text-white py-[14px] rounded-[10px] font-medium text-[15px] hover:opacity-95 transition-all shadow-sm"
                 style={{ background: 'var(--villy-primary, #33022F)' }}
               >
-                Upload a picture
+                Upload a Picture
               </button>
 
               <button
-                onClick={() => {
-                  setShowModelSelector(true);
-                  setStep(null);
-                }}
+                onClick={openDefaultModels}
                 className="w-full bg-white py-[14px] rounded-[10px] font-medium text-[15px] transition-all"
                 style={{ border: '1.5px solid var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
               >
-                Select a model
+                Select from Default Models
               </button>
 
               <button
-                onClick={handleUseMyModel}
-                disabled={!userHasTryOn || isStoringData}
+                onClick={openSavedModels}
+                disabled={isStoringData}
                 className="w-full bg-white py-[14px] rounded-[10px] font-medium text-[15px] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{ border: '1.5px solid var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
               >
                 {isStoringData
                   ? 'Loading My Model...'
-                  : `My Model (${mappedMyModelType.charAt(0).toUpperCase() + mappedMyModelType.slice(1)})`}
+                  : 'My Saved Models'}
               </button>
             </div>
 
-            {/* FOOTNOTE */}
+            {/* FOOTNOTE
             <p className="text-[11.5px] text-gray-500 leading-snug px-1">
               Hey! To use the 2D TRY ON feature, just upload or take a selfie or <br />
               Press <button onClick={onClose} className="font-bold cursor-pointer inline" style={{ color: 'var(--villy-primary, #33022F)' }}>SKIP</button> to check out the models you can try on!
-            </p>
+            </p> */}
 
           </div>
         </div>
@@ -756,7 +967,7 @@ const UploadSelfieModal = ({
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
                     <span className="text-[#7F6301] font-medium leading-snug">
-                      • Keep file size under 2MB
+                      • Keep file size under 3.5MB
                     </span>
                   </li>
                 </ul>
@@ -828,7 +1039,7 @@ const UploadSelfieModal = ({
           <div className="bg-red-50 p-4 rounded-xl border border-red-200 text-left w-full max-w-sm">
             <p className="font-semibold text-red-800 mb-2">Please follow the below instructions</p>
             <ul className="text-sm text-red-700 space-y-1">
-              <li>• Keep file size under 2MB</li>
+              <li>• Keep file size under 3.5MB</li>
               <li>• Ensure image is clear and not pixelated</li>
               <li>• Maintain good lighting and contrast</li>
               <li>• Keep background clean or neutral</li>
@@ -900,7 +1111,7 @@ const UploadSelfieModal = ({
               </p>
             </div>
             <ul className="text-md ml-2 text-black  text-outfit  mt-3 space-y-1">
-              <li>• Keep file size under 2MB</li>
+              <li>• Keep file size under 3.5MB</li>
               <li>• Ensure image is clear and not pixelated</li>
               <li>
                 • Maintain <span className="text-primary"> good lighting and contrast </span>{" "}
@@ -1004,57 +1215,125 @@ const UploadSelfieModal = ({
             {/* Header */}
             <div className="mb-6">
               <h2 className="text-base font-semibold mb-1">
-                Select a model <span className="text-red-600">*</span>
+                {modelSource === "saved" ? "My Saved Models" : "Select from Default Models"} <span className="text-red-600">*</span>
               </h2>
               <p className="text-sm text-gray-600">You can only choose one model</p>
             </div>
 
-            {/* VILLY STATIC MODELS */}
-            <div className="mb-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {models.map((model, index) => (
-                  <div
-                    key={index}
-                    onClick={() => {
-                      setSelectedModel({
-                        image: model.modelimg,
-                        name: model.modelName,
-                      });
-                    }}
-                    className="cursor-pointer relative"
-                  >
-                    <img
-                      src={model.modelimg}
-                      alt={model.modelName}
-                      className="w-full h-[240px] object-contain rounded"
-                    />
-                    <p className="text-center mt-2 text-sm font-medium text-gray-700">
-                      {model.modelName}
-                    </p>
-
-                    {selectedModel?.name === model.modelName && (
-                      <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
-                        <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="var(--villy-primary, #33022F)"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {modelSource === "saved" && loadingSavedModels && (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin h-6 w-6 border-2 border-b-red-700 rounded-full"></div>
               </div>
-            </div>
+            )}
+
+            {modelSource === "saved" && !loadingSavedModels && savedProfileModels.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-800">My Saved Models</h3>
+                  <span className="text-xs text-gray-500">Fetched from your profile</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                  {savedProfileModels.map((model) => (
+                    <div
+                      key={model.id || model.name}
+                      onClick={() => {
+                        setSelectedModel({
+                          image: model.photoUrl,
+                          name: model.name || "My Model",
+                          id: model.id || model.name,
+                        });
+                      }}
+                      className="cursor-pointer relative"
+                    >
+                      <img
+                        src={model.photoUrl}
+                        alt={model.name || "Saved model"}
+                        className="w-full h-[240px] object-contain rounded"
+                      />
+                      <p className="text-center mt-2 text-sm font-medium text-gray-700">
+                        {model.name || "My Model"}
+                      </p>
+
+                      {selectedModel && (selectedModel.id === (model.id || model.name) || selectedModel.name === model.name) && (
+                        <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
+                          <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--villy-primary, #33022F)"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {modelSource !== "saved" && (
+              <div className="mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                  {models.map((model, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSelectedModel({
+                          image: model.modelimg,
+                          name: model.modelName,
+                          id: model.modelName,
+                        });
+                      }}
+                      className="cursor-pointer relative"
+                    >
+                      <img
+                        src={model.modelimg}
+                        alt={model.modelName}
+                        className="w-full h-[240px] object-contain rounded"
+                      />
+                      <p className="text-center mt-2 text-sm font-medium text-gray-700">
+                        {model.modelName}
+                      </p>
+
+                      {selectedModel?.id === model.modelName && (
+                        <div className="absolute top-0 left-0 w-full h-[240px] border-[3px] pointer-events-none rounded" style={{ borderColor: 'var(--villy-primary, #33022F)' }}>
+                          <div className="absolute top-2 left-2 bg-white px-2 py-1 flex items-center gap-1 rounded">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--villy-primary, #33022F)"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span className="text-xs font-medium" style={{ color: 'var(--villy-primary, #33022F)' }}>SELECTED</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Default models only */}
+            {modelSource === "saved" && !loadingSavedModels && savedProfileModels.length === 0 && (
+              <div className="mb-6 rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-600">
+                No saved models found in your profile.
+              </div>
+            )}
 
             {/* Checkbox */}
             {/* <div className="flex items-start gap-3 mb-6"> */}

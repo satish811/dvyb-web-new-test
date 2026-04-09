@@ -163,7 +163,15 @@ const MyInfo = () => {
 
   // B2C Handlers
   const handleB2cChange = (e) => {
-    setB2cData({ ...b2cData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "phoneNumber") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setB2cData({ ...b2cData, phoneNumber: digitsOnly });
+      return;
+    }
+
+    setB2cData({ ...b2cData, [name]: value });
   };
 
   // B2B Handlers
@@ -173,6 +181,13 @@ const MyInfo = () => {
 
   const handleNewAddressChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setNewAddress({ ...newAddress, phone: digitsOnly });
+      return;
+    }
+
     setNewAddress({ ...newAddress, [name]: value });
   };
 
@@ -300,10 +315,18 @@ const MyInfo = () => {
       }
     } else {
       // B2C Save Logic
-      const error = b2cValidator.validateName(b2cData.name);
-      if (error) return alert(error);
+      const nameError = b2cValidator.validateName(b2cData.name);
+      if (nameError) return alert(nameError);
+
+      const phoneError = b2cValidator.validatePhone(b2cData.phoneNumber);
+      if (phoneError) return alert(phoneError);
+
       try {
-        await userService.updateUserProfile(user.uid, { name: b2cData.name });
+        await userService.updateUserProfile(user.uid, {
+          name: b2cData.name,
+          phoneNumber: b2cData.phoneNumber,
+        });
+        await refreshUserData();
         setEditUserMode(false);
         alert("Profile updated successfully");
       } catch (error) {
@@ -326,6 +349,11 @@ const MyInfo = () => {
     // Only validate email if it's provided (optional field)
     if (newAddress.email && b2cValidator.validateEmail(newAddress.email)) {
       errors.push(b2cValidator.validateEmail(newAddress.email));
+    }
+
+    // Only validate phone if it's provided (optional field)
+    if (newAddress.phone && b2cValidator.validatePhone(newAddress.phone)) {
+      errors.push(b2cValidator.validatePhone(newAddress.phone));
     }
 
     if (errors.length > 0) {
@@ -506,29 +534,45 @@ const MyInfo = () => {
         <h2 className="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wide">User Details</h2>
 
         <div className="w-full max-w-md space-y-4">
-          {/* Name Input */}
-          <div>
-            <input
-              name="name"
-              value={b2cData.name}
-              onChange={handleB2cChange}
-              disabled={!editUserMode}
-              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
-              placeholder="Name"
-            />
-          </div>
+          {!editUserMode ? (
+            <>
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Name</p>
+                <p className="text-sm font-medium text-gray-900">{b2cData.name || "Not added"}</p>
+              </div>
 
-          {/* Phone Input */}
-          <div>
-            <input
-              name="phoneNumber"
-              value={b2cData.phoneNumber}
-              onChange={handleB2cChange}
-              disabled={!editUserMode}
-              className="w-full p-4 border border-dashed border-gray-400 text-sm text-gray-700 focus:outline-none focus:border-[#33022F] disabled:bg-white"
-              placeholder="Phone Number"
-            />
-          </div>
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Phone Number</p>
+                <p className="text-sm font-medium text-gray-900">{b2cData.phoneNumber || "Not added"}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <fieldset className="border border-dashed border-gray-400 rounded-sm px-3 py-2">
+                <legend className="px-1 text-xs text-gray-500 font-medium tracking-wide">Name</legend>
+                <input
+                  name="name"
+                  value={b2cData.name}
+                  onChange={handleB2cChange}
+                  className="w-full bg-transparent text-sm text-gray-800 focus:outline-none"
+                  placeholder="Name"
+                />
+              </fieldset>
+
+              <fieldset className="border border-dashed border-gray-400 rounded-sm px-3 py-2">
+                <legend className="px-1 text-xs text-gray-500 font-medium tracking-wide">Phone Number</legend>
+                <input
+                  name="phoneNumber"
+                  value={b2cData.phoneNumber}
+                  onChange={handleB2cChange}
+                  inputMode="numeric"
+                  maxLength={10}
+                  className="w-full bg-transparent text-sm text-gray-800 focus:outline-none"
+                  placeholder="Phone Number"
+                />
+              </fieldset>
+            </>
+          )}
 
           {/* Action Buttons */}
           <div className="pt-2">
@@ -641,6 +685,8 @@ const MyInfo = () => {
                 name="phone"
                 value={newAddress.phone}
                 onChange={handleNewAddressChange}
+                inputMode="numeric"
+                maxLength={10}
                 placeholder="Phone (Optional)"
                 className="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent"
               />

@@ -32,7 +32,7 @@ export default function ProfilePromptPopup() {
 
             try {
                 const profile = await profileService.getProfile();
-                const hasModel = !!(profile && profile.photoUrl);
+                const hasModel = !!(profile && (profile.photoUrl || (Array.isArray(profile.savedModels) && profile.savedModels.length > 0)));
 
                 if (!isMounted) return;
 
@@ -103,13 +103,13 @@ export default function ProfilePromptPopup() {
                 {/* Heading */}
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
                     style={{ fontFamily: "Outfit, sans-serif" }}>
-                    Your Virtual Model Isn't Ready Yet
+                    Save Your First Model
                 </h2>
 
                 {/* Sub-text */}
                 <p className="text-sm md:text-base text-[#45556C] leading-relaxed max-w-sm mx-auto mb-8"
                     style={{ fontFamily: "Inter, sans-serif" }}>
-                    Create your profile to try on outfits virtually — see how sarees, lehengas, kurtis and more look on <em>you</em> before you buy.
+                    Give your model a name, upload a photo, and save up to 4 models for future try-ons.
                 </p>
 
                 {/* CTA Button */}
@@ -118,7 +118,7 @@ export default function ProfilePromptPopup() {
                     className="bg-[#33022F] text-white w-full max-w-xs py-4 text-sm font-bold tracking-[0.15em] uppercase hover:bg-[#460341] hover:shadow-xl transition-all duration-300 rounded-[4px]"
                     style={{ fontFamily: "Outfit, sans-serif" }}
                 >
-                    CREATE MY MODEL
+                    SAVE MY MODEL
                 </button>
 
                 {/* Feature pills */}
@@ -129,7 +129,7 @@ export default function ProfilePromptPopup() {
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                        <span className="text-[11px] md:text-xs font-semibold text-gray-600">Takes 2 Minutes</span>
+                        <span className="text-[11px] md:text-xs font-semibold text-gray-600">Up to 4 Saved Models</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />

@@ -1,7 +1,7 @@
 //  PURE UI COMPONENT - No business logic
 
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { UI_TEXT } from "../../../../utils/tryOnConstants";
 import LazyImageLoader from "../../LazyImageLoader/LazyImageLoader";
@@ -25,6 +25,27 @@ const TryOnStage = ({
   performTryOn,
   generateVideo,
 }) => {
+  const videoRef = useRef(null);
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+
+  useEffect(() => {
+    if (viewMode === "3D" && videoUrl) {
+      setIsVideoPaused(false);
+    }
+  }, [viewMode, videoUrl]);
+
+  const handleToggleVideoPlayback = () => {
+    if (!videoRef.current) return;
+
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsVideoPaused(false);
+    } else {
+      videoRef.current.pause();
+      setIsVideoPaused(true);
+    }
+  };
+
   return (
 
     <div className="
@@ -149,14 +170,25 @@ const TryOnStage = ({
 
           {/* Video Success */}
           {!isGeneratingVideo && videoUrl && (
-            <div className="relative max-w-[85vw] h-full">
+            <div className="relative max-w-[85vw] h-full pointer-events-auto flex flex-col items-center gap-3">
               <video
+                ref={videoRef}
                 src={videoUrl}
-                controls
                 autoPlay
                 loop
-                className="w-full h-full object-cover shadow-2xl"
+                onPlay={() => setIsVideoPaused(false)}
+                onPause={() => setIsVideoPaused(true)}
+                onClick={handleToggleVideoPlayback}
+                controlsList="nodownload noplaybackrate noremoteplayback"
+                disablePictureInPicture
+                className="w-full h-full object-cover shadow-2xl cursor-pointer"
               />
+
+              <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 px-2 py-0.5 text-white">
+                <span className="text-3xl leading-none font-medium">
+                  {isVideoPaused ? "▶️ " : "⏸️"}
+                </span>
+              </div>
             </div>
           )}
 

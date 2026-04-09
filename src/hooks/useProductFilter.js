@@ -16,7 +16,8 @@ export const useProductFilter = (products = []) => {
       selectedFilters.priceMax != null ||
       selectedFilters.discounts?.length > 0 ||
       selectedFilters.blouses?.length > 0 ||
-      selectedFilters.boutiques?.length > 0;
+      selectedFilters.boutiques?.length > 0 ||
+      selectedFilters.recentUploads?.length > 0;
 
     console.log(`[useProductFilter] Total products: ${products.length}`);
     console.log(`[useProductFilter] Active filters:`, selectedFilters);
@@ -148,6 +149,29 @@ export const useProductFilter = (products = []) => {
       const productPrice = Number(rawPrice) || 0;
       if (selectedFilters.priceMin != null && productPrice < selectedFilters.priceMin) return false;
       if (selectedFilters.priceMax != null && productPrice > selectedFilters.priceMax) return false;
+
+      // === UPLOAD DATE FILTER (LAST 15 DAYS) ===
+      if (selectedFilters.recentUploads?.includes("Uploaded in last 15 days")) {
+        const rawDate =
+          product.timestamp ||
+          product.createdAt ||
+          product.uploadedAt ||
+          product.uploadDate;
+
+        if (!rawDate) return false;
+
+        const parsedDate =
+          rawDate?.toDate?.() ||
+          (rawDate instanceof Date ? rawDate : new Date(rawDate));
+
+        if (!(parsedDate instanceof Date) || Number.isNaN(parsedDate.getTime())) {
+          return false;
+        }
+
+        const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
+        const cutoff = Date.now() - FIFTEEN_DAYS_MS;
+        if (parsedDate.getTime() < cutoff) return false;
+      }
 
       return true;
     });

@@ -27,7 +27,7 @@ export const footerSections = [
     key: "policies",
     links: [
       // { label: "Store", to: "/store" },
-      { label: "Store", to: "https://www.digiwarehousedvyb.in/", external: true },
+      { label: "Store", to: "https://www.villydigi.in/", external: true },
 
       // { label: "Shipping Info", to: "/shipping" },
       { label: "Return Policy", to: "/returns" },

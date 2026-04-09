@@ -1,6 +1,10 @@
 import { auth, db, envConfig } from "../config";
 import { doc, setDoc, getDoc, updateDoc, deleteField } from "firebase/firestore";
 
+const MAX_PROFILE_IMAGE_BYTES = 3.5 * 1024 * 1024;
+const MAX_START_DIMENSION = 1600;
+const MIN_DIMENSION = 640;
+
 class ProfileService {
   static instance = null;
 
@@ -33,6 +37,139 @@ class ProfileService {
     this.auth = auth;
     this.b2cCollection = envConfig.firebaseStorage.b2cCollection;
     this.b2bCollection = envConfig.firebaseStorage.b2bCollection;
+  }
+
+  isDataImageUrl(value) {
+    return typeof value === "string" && value.startsWith("data:image/");
+  }
+
+  normalizeModelName(value) {
+    const lettersOnly = String(value || "")
+      .replace(/[^A-Za-z\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!lettersOnly) return "";
+
+    return lettersOnly
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  async compressImageBlobToMaxBytes(blob, maxBytes = MAX_PROFILE_IMAGE_BYTES) {
+    if (!blob || blob.size <= maxBytes) return blob;
+
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      const objectUrl = URL.createObjectURL(blob);
+
+      image.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(image);
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Failed to load image for compression"));
+      };
+
+      image.src = objectUrl;
+    });
+
+    const scale = Math.min(1, MAX_START_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+    let width = Math.max(1, Math.floor(img.naturalWidth * scale));
+    let height = Math.max(1, Math.floor(img.naturalHeight * scale));
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return blob;
+
+    let bestBlob = blob;
+
+    for (let pass = 0; pass < 6; pass += 1) {
+      canvas.width = width;
+      canvas.height = height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      for (let quality = 0.9; quality >= 0.45; quality -= 0.15) {
+        // eslint-disable-next-line no-await-in-loop
+        const candidate = await new Promise((resolve) => {
+          canvas.toBlob((result) => resolve(result), "image/jpeg", quality);
+        });
+
+        if (!candidate) continue;
+        bestBlob = candidate;
+        if (candidate.size <= maxBytes) {
+          return candidate;
+        }
+      }
+
+      if (Math.min(width, height) <= MIN_DIMENSION) break;
+
+      width = Math.max(MIN_DIMENSION, Math.floor(width * 0.85));
+      height = Math.max(MIN_DIMENSION, Math.floor(height * 0.85));
+    }
+
+    if (bestBlob.size > maxBytes) {
+      throw new Error("Could not compress image to 3.5MB. Please upload a smaller image.");
+    }
+
+    return bestBlob;
+  }
+
+  async uploadBlobToCloudinary(blob, fileName = "profile-model.jpg") {
+    const formData = new FormData();
+    formData.append("file", blob, fileName);
+    formData.append("folder", "warehouse_uploads");
+
+    const uploadResponse = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      let errorMessage = `Upload failed with status ${uploadResponse.status}`;
+      try {
+        const contentType = uploadResponse.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const errorData = await uploadResponse.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } else {
+          const text = await uploadResponse.text();
+          errorMessage = text.includes("Cannot POST")
+            ? "Backend endpoint /api/upload not found. Please restart the server."
+            : text.substring(0, 120) || errorMessage;
+        }
+      } catch (_error) {
+        // keep fallback error message
+      }
+      throw new Error(errorMessage);
+    }
+
+    const uploadResult = await uploadResponse.json();
+    if (!uploadResult?.url) {
+      throw new Error("Upload succeeded but no image URL was returned.");
+    }
+
+    return uploadResult.url;
+  }
+
+  async resolveProfilePhotoUrl(photoUrl, fileName = "profile-model.jpg") {
+    if (!photoUrl || !this.isDataImageUrl(photoUrl)) {
+      return photoUrl;
+    }
+
+    const response = await fetch(photoUrl);
+    const originalBlob = await response.blob();
+    const compressedBlob = await this.compressImageBlobToMaxBytes(originalBlob, MAX_PROFILE_IMAGE_BYTES);
+    console.log(
+      "📦 Profile image size before/after compression:",
+      `${(originalBlob.size / (1024 * 1024)).toFixed(2)}MB -> ${(compressedBlob.size / (1024 * 1024)).toFixed(2)}MB`
+    );
+
+    return this.uploadBlobToCloudinary(compressedBlob, fileName);
   }
 
   /** Get current user collection based on route or database check */
@@ -75,6 +212,83 @@ class ProfileService {
 
       const userCollection = overrideCollection || await this.getCurrentUserCollection();
       const userDocRef = doc(this.db, userCollection, user.uid);
+      const docSnap = await getDoc(userDocRef);
+      const existingProfile = docSnap.exists() ? (docSnap.data().profile || {}) : {};
+
+      const modelName = this.normalizeModelName(profileData.modelName || existingProfile.modelName || "");
+      const inputPhotoUrl = profileData.photoUrl || existingProfile.photoUrl || "";
+
+      if (!modelName) {
+        throw new Error("Please name your model using alphabets only.");
+      }
+
+      if (!inputPhotoUrl) {
+        throw new Error("Please add a photo before saving your model.");
+      }
+
+      const safeFileBase = modelName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "model";
+      const photoUrl = await this.resolveProfilePhotoUrl(inputPhotoUrl, `${safeFileBase}.jpg`);
+
+      const existingSavedModelsRaw = Array.isArray(existingProfile.savedModels)
+        ? [...existingProfile.savedModels]
+        : existingProfile.photoUrl
+          ? [{
+              id: existingProfile.modelName ? existingProfile.modelName.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "legacy-model",
+              name: existingProfile.modelName || "Model 1",
+              photoUrl: existingProfile.photoUrl,
+              createdAt: existingProfile.createdAt || new Date(),
+              updatedAt: existingProfile.updatedAt || new Date(),
+            }]
+          : [];
+
+      const existingSavedModels = [];
+      for (let index = 0; index < existingSavedModelsRaw.length; index += 1) {
+        const model = existingSavedModelsRaw[index];
+        if (!model?.photoUrl) continue;
+
+        // eslint-disable-next-line no-await-in-loop
+        const resolvedModelPhotoUrl = await this.resolveProfilePhotoUrl(
+          model.photoUrl,
+          `${String(model.name || `model-${index + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, "-")}.jpg`
+        );
+
+        existingSavedModels.push({
+          ...model,
+          id: model.id || `${String(model.name || `model-${index + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${index + 1}`,
+          name: model.name || `Model ${index + 1}`,
+          photoUrl: resolvedModelPhotoUrl,
+          updatedAt: model.updatedAt || new Date(),
+        });
+      }
+
+      const normalizedModelName = modelName.toLowerCase();
+      const existingModelIndex = existingSavedModels.findIndex((item) =>
+        String(item?.name || "").trim().toLowerCase() === normalizedModelName
+      );
+
+      const nextModelEntry = {
+        id: existingModelIndex >= 0
+          ? existingSavedModels[existingModelIndex].id || normalizedModelName
+          : `${normalizedModelName}-${Date.now()}`,
+        name: modelName,
+        photoUrl,
+        createdAt: existingModelIndex >= 0
+          ? existingSavedModels[existingModelIndex].createdAt || new Date()
+          : new Date(),
+        updatedAt: new Date(),
+      };
+
+      let savedModels = [...existingSavedModels];
+
+      if (existingModelIndex >= 0) {
+        savedModels[existingModelIndex] = nextModelEntry;
+      } else {
+        if (savedModels.length >= 4) {
+          throw new Error("You can save up to 4 models. Delete one before adding a new model.");
+        }
+
+        savedModels.push(nextModelEntry);
+      }
 
       await setDoc(
         userDocRef,
@@ -83,14 +297,11 @@ class ProfileService {
           phoneNumber: user.phoneNumber,
           role: userCollection === "B2BBulkOrders_users" ? "B2B" : "B2C",
           profile: {
-            height: profileData.height,
-            unit: profileData.unit,
-            bodyShape: profileData.bodyShape,
-            skinTone: profileData.skinTone,
-            hairType: profileData.hairType,
-            hairLength: profileData.hairLength,
-            hairColor: profileData.hairColor,
-            photoUrl: profileData.photoUrl,
+            ...existingProfile,
+            ...profileData,
+            modelName,
+            photoUrl,
+            savedModels,
             updatedAt: new Date(),
           },
           updatedAt: new Date(),
@@ -99,7 +310,14 @@ class ProfileService {
       );
 
       console.log("✅ Profile saved successfully");
-      return true;
+      return {
+        ...existingProfile,
+        ...profileData,
+        modelName,
+        photoUrl,
+        savedModels,
+        updatedAt: new Date(),
+      };
     } catch (error) {
       console.error("❌ Error saving profile:", error);
       throw error;
@@ -287,6 +505,65 @@ class ProfileService {
       throw error;
     }
   }
+
+  /** Delete one saved model by id or name */
+  async deleteSavedModel(modelIdOrName, overrideCollection = null) {
+    try {
+      const user = this.auth.currentUser;
+      if (!user) throw new Error("User must be authenticated");
+      if (!modelIdOrName) throw new Error("Please select a model to delete.");
+
+      const userCollection = overrideCollection || await this.getCurrentUserCollection();
+      const userDocRef = doc(this.db, userCollection, user.uid);
+      const docSnap = await getDoc(userDocRef);
+
+      if (!docSnap.exists()) {
+        throw new Error("No profile document found.");
+      }
+
+      const currentProfile = docSnap.data().profile || {};
+      const savedModels = Array.isArray(currentProfile.savedModels) ? currentProfile.savedModels : [];
+
+      if (!savedModels.length) {
+        throw new Error("No saved models found to delete.");
+      }
+
+      const target = String(modelIdOrName).toLowerCase().trim();
+      const remainingModels = savedModels.filter((item) => {
+        const id = String(item?.id || "").toLowerCase().trim();
+        const name = String(item?.name || "").toLowerCase().trim();
+        return id !== target && name !== target;
+      });
+
+      if (remainingModels.length === savedModels.length) {
+        throw new Error("Selected model was not found.");
+      }
+
+      const nextPrimaryModel = remainingModels[0] || null;
+      const updatePayload = {
+        "profile.savedModels": remainingModels,
+        "profile.updatedAt": new Date(),
+        updatedAt: new Date(),
+      };
+
+      if (nextPrimaryModel) {
+        updatePayload["profile.modelName"] = nextPrimaryModel.name || "";
+        updatePayload["profile.photoUrl"] = nextPrimaryModel.photoUrl || "";
+      } else {
+        updatePayload["profile.modelName"] = deleteField();
+        updatePayload["profile.photoUrl"] = deleteField();
+      }
+
+      await updateDoc(userDocRef, updatePayload);
+
+      console.log("✅ Saved model deleted successfully");
+      return remainingModels;
+    } catch (error) {
+      console.error("❌ Error deleting saved model:", error);
+      throw error;
+    }
+  }
+
   /** Delete user profile and try-on results */
   async deleteProfile(overrideCollection = null) {
     try {

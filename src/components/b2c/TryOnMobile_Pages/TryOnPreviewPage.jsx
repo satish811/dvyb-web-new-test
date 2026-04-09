@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Heart, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
@@ -58,6 +58,8 @@ const TryOnPreviewPage = () => {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isInWishlistState, setIsInWishlistState] = useState(false);
   const [activeSection, setActiveSection] = useState("scenes");
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+  const videoRef = useRef(null);
 
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
@@ -218,6 +220,18 @@ const TryOnPreviewPage = () => {
     setView360Enabled(!view360Enabled);
   };
 
+  const handleToggleVideoPlayback = () => {
+    if (!videoRef.current) return;
+
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsVideoPaused(false);
+    } else {
+      videoRef.current.pause();
+      setIsVideoPaused(true);
+    }
+  };
+
   // Handle blouse change with image update
   const handleBlouseChange = async (type) => {
     const newImg = await changeBlouse(type);
@@ -288,14 +302,28 @@ const TryOnPreviewPage = () => {
               </button>
             </div>
           ) : view360Enabled && videoUrl ? (
-            <video
-              src={videoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="max-w-full max-h-[75vh] object-cover"
-            />
+            <div className="relative flex flex-col items-center gap-3">
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                onPlay={() => setIsVideoPaused(false)}
+                onPause={() => setIsVideoPaused(true)}
+                onClick={handleToggleVideoPlayback}
+                controlsList="nodownload noplaybackrate noremoteplayback"
+                disablePictureInPicture
+                className="max-w-full max-h-[75vh] object-cover cursor-pointer"
+              />
+
+              <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-2 py-0.5 text-white backdrop-blur-sm">
+                <span className="text-2xl leading-none font-medium">
+                  {isVideoPaused ? "▶️" : "⏸️"}
+                </span>
+              </div>
+            </div>
           ) : (
             <>
               <img

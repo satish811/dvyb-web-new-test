@@ -474,7 +474,7 @@ const TryOnUploadPage = () => {
             </div>
           )}
 
-          {/* DVYB STATIC MODELS */}
+          {/* Villy STATIC MODELS */}
           {!useUserModel && (
             <div className="grid grid-cols-2 gap-4 mb-6">
               {models.map((model, index) => (

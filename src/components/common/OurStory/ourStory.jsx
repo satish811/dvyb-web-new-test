@@ -93,14 +93,14 @@ const ourStory = () => {
 
         <div className="max-w-4xl mx-auto mb-8 space-y-7 text-center">
           <p className="text-[18px] leading-[32px] font-medium text-gray-600 capitalize">
-            DVYB Was Born With A Vision To Make Ethnic Fashion Timeless Yet Effortless. In India,
+            Villy Was Born With A Vision To Make Ethnic Fashion Timeless Yet Effortless. In India,
             Every Weave Tells A Story — From The Grace Of Kanchipuram Silks To The Artistry Of
             Kalamkari And The Elegance Of Banarasi Sarees. But Bringing These Traditions To Modern
             Shoppers, Especially Online, Often Felt Complicated.
           </p>
 
           <p className="text-[18px] leading-[32px] font-medium text-gray-600 capitalize">
-            That’s Why DVYB Blends Technology With Tradition. Through Our 2D And 3D Virtual Try-On,
+            That’s Why Villy Blends Technology With Tradition. Through Our 2D And 3D Virtual Try-On,
             You Don’t Just Shop — You Experience How A Saree, Lehenga, Or Ethnic Outfit Looks On You
             Before Making A Choice. We Bring Together Regional Weaves, Heritage Crafts, And Festive
             Collections Under One Platform, Making It Simple For Anyone, Anywhere, To Embrace

@@ -184,7 +184,7 @@ function PremiumSection05() {
         {/* Header */}
         <div className="text-center mb-12">
           <span className="inline-block px-6 py-2 bg-[#E6F0F5] text-[#3C8E9A] text-sm font-semibold tracking-widest rounded-full mb-6">
-            DVYB COLLECTION
+            VILLY COLLECTION
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
             PREMIUM SELECTIONS

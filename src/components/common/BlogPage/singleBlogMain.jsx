@@ -133,14 +133,14 @@ const SingleMainBlog = () => {
           commemorating Lord Rama's triumph over Ravana. Beyond its spiritual significance, Diwali
           is a time for joyous reunions with family and friends, filled with love, laughter, and, of
           course, festive attire. As with every celebration, Diwali provides the perfect occasion to
-          embrace stunning traditional wear. This season, DVYB offers a curated collection of sarees
+          embrace stunning traditional wear. This season, Villy offers a curated collection of sarees
           designed to make you shine. Here’s what to consider when choosing the perfect Diwali
           saree. Diwali, also known as the Festival of Lights, is one of the most celebrated
           festivals in India and among Indian communities worldwide. It symbolises the victory of
           good over evil, commemorating Lord Rama's triumph over Ravana. Beyond its spiritual
           significance, Diwali is a time for joyous reunions with family and friends, filled with
           love, laughter, and, of course, festive attire. As with every celebration, Diwali provides
-          the perfect occasion to embrace stunning traditional wear. This season, DVYB offers a
+          the perfect occasion to embrace stunning traditional wear. This season, Villy offers a
           curated collection of sarees designed to make you shine. Here’s what to consider when
           choosing the perfect Diwali saree.
         </p>
