@@ -64,7 +64,7 @@ const MyProfile = () => {
   const [generatedResults, setGeneratedResults] = useState({});
   const [centerImage, setCenterImage] = useState(null);
 
-  const totalSteps = 1;
+  const totalSteps = 8;
   const getModelKey = (model) => model?.id || model?.name || "";
   const normalizeModelName = (value) => {
     const lettersOnly = String(value || "")
@@ -228,8 +228,16 @@ const MyProfile = () => {
       }
 
       const base64 = await blobToDataUrl(compressedBlob);
-      setCapturedImage(base64);
-      setProfileData((prev) => ({ ...prev, photoUrl: base64 }));
+      let processedImage = base64;
+
+      try {
+        processedImage = await applyDefaultBackgroundToModelImage(base64);
+      } catch (backgroundError) {
+        console.warn('Background enhancement failed, falling back to the uploaded image.', backgroundError);
+      }
+
+      setCapturedImage(processedImage);
+      setProfileData((prev) => ({ ...prev, photoUrl: processedImage }));
       if (advanceToPreview) setCurrentStep(7);
     } finally {
       setProcessingImage(false);
@@ -323,13 +331,11 @@ const MyProfile = () => {
     const sourceImage = capturedImage || profileData.photoUrl;
 
     setSavingProfile(true);
-    setProcessingImage(true);
     try {
-      const processedImage = await applyDefaultBackgroundToModelImage(sourceImage);
-
       const dataToSave = {
+        ...profileData,
         modelName: trimmedModelName,
-        photoUrl: processedImage,
+        photoUrl: sourceImage,
       };
 
       const savedProfile = await profileService.saveProfile(dataToSave, userCollection);
@@ -342,12 +348,11 @@ const MyProfile = () => {
       setProfileData(prev => ({ ...prev, photoUrl: persistedPhotoUrl }));
       setCapturedImage(persistedPhotoUrl);
       setModelName(trimmedModelName);
-      setCurrentStep(0);
+      setCurrentStep(9);
     } catch (error) {
       console.error('❌ Save error:', error);
       alert(`Error saving model: ${error.message}`);
     } finally {
-      setProcessingImage(false);
       setSavingProfile(false);
     }
   };
@@ -562,16 +567,12 @@ const MyProfile = () => {
   }, [currentStep]);
 
 
-  useEffect(() => {
-    if (capturedImage && currentStep === 8 && capturedImage && Object.keys(generatedResults).length === 0) {
-      setCenterImage(capturedImage); // Show user photo initially
-      generateVirtualTryOns();
-    }
-  }, [capturedImage, currentStep]);
-
-
-
   const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const getDisplayedStep = () => {
+    if (currentStep >= totalSteps) return totalSteps;
+    return currentStep + 1;
+  };
+
   const handleBack = () => {
     if (currentStep === 8) setCurrentStep(7);
     else if ([6, 7, 8].includes(currentStep)) setCurrentStep(5);
@@ -858,11 +859,11 @@ const MyProfile = () => {
             </div>
 
             <h2 className="text-xl xs:text-xl sm:text-2xl font-semibold text-gray-900 mb-2 text-center px-2 leading-tight">
-              Save your model
+              Create Your Tryon Profile
             </h2>
 
             <p className="text-sm xs:text-sm sm:text-base text-[#45556C] text-center max-w-md mb-6 px-4 leading-relaxed">
-              Give your model a name, upload a photo, and keep up to 4 models in your account.
+              Tell us your height, body shape, skin tone, and hair details before we create your model.
             </p>
 
             <div className="w-full max-w-xl space-y-4">
@@ -877,71 +878,31 @@ const MyProfile = () => {
                 />
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 bg-white p-5 sm:p-6 text-center">
-                {capturedImage ? (
-                  <div className="space-y-4">
-                    <img
-                      src={capturedImage}
-                      alt="Model preview"
-                      className="mx-auto h-64 w-full max-w-sm object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-sm font-semibold text-[#33022F] hover:underline"
-                    >
-                      Change photo
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-gray-700 font-medium">Upload a photo for this model</p>
-                    <p className="text-sm text-gray-500">A photo is required before saving.</p>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-5 py-3 text-sm font-semibold text-white"
-                      style={{ background: 'var(--villy-primary, #33022F)' }}
-                    >
-                      Upload photo
-                    </button>
-                  </div>
-                )}
+              <div className="border border-dashed border-gray-300 bg-white p-5 sm:p-6 text-center">
+                <p className="text-gray-700 font-medium">You’ll answer a few quick questions next.</p>
+                <p className="text-sm text-gray-500 mt-1">Your profile is created after the questionnaire and photo upload.</p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
-                  onClick={handleSaveModel}
-                  disabled={savingProfile || processingImage || !modelName.trim() || !capturedImage}
+                  onClick={() => {
+                    if (!normalizeModelName(modelName)) {
+                      alert('Please enter a model name using alphabets only.');
+                      return;
+                    }
+                    setCurrentStep(1);
+                  }}
+                  disabled={!normalizeModelName(modelName)}
                   className="flex-1 h-12 text-white text-sm font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: 'var(--villy-primary, #33022F)' }}
                 >
-                  {processingImage ? 'PROCESSING IMAGE...' : savingProfile ? 'SAVING...' : 'SAVE MODEL'}
-                </button>
-                <button
-                  onClick={() => navigate('/')}
-                  className="flex-1 h-12 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all duration-200"
-                >
-                  MAYBE LATER
+                  START CREATING
                 </button>
               </div>
 
               <div className="text-center text-sm text-gray-600">
                 {savedModels.length} / 4 models saved
               </div>
-
-              {savedModels.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  {savedModels.map((model) => (
-                    <div key={model.id || model.name} className="bg-white border border-gray-200 overflow-hidden">
-                      <img src={model.photoUrl} alt={model.name} className="h-36 w-full object-cover" />
-                      <div className="p-2 text-center">
-                        <p className="text-xs font-semibold text-gray-900 truncate">{model.name}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         );
@@ -950,7 +911,6 @@ const MyProfile = () => {
       case 1:
         return (
           <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
-            {/* Header Section */}
             <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
               How tall are you?
             </h2>
@@ -958,14 +918,13 @@ const MyProfile = () => {
               We'll use this to scale your virtual try-on accurately.
             </p>
 
-            {/* Unit Toggle Buttons */}
             <div className="flex gap-2 justify-center mt-8 xs:mt-9 sm:mt-12 md:mt-6 lg:mt-12 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
               <button
                 onClick={() => setProfileData({ ...profileData, unit: 'cm' })}
                 className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'cm'
                   ? 'text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                }`}
                 style={profileData.unit === 'cm' ? { background: 'var(--DVYB-P-900, #200000)' } : undefined}
               >
                 cm
@@ -975,13 +934,12 @@ const MyProfile = () => {
                 className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'ft'
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                }`}
               >
                 ft
               </button>
             </div>
 
-            {/* Height Display */}
             <div className="text-center items-center justify-center flex gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
               <div className="text-4xl xs:text-5xl sm:text-6xl md:text-5xl lg:text-6xl font-semibold text-gray-900">
                 {profileData.unit === 'cm' ? profileData.height : getHeightInFeet()}
@@ -991,7 +949,6 @@ const MyProfile = () => {
               </div>
             </div>
 
-            {/* Range Slider */}
             <div className="px-2 xs:px-2 sm:px-0 md:px-2 lg:px-0">
               <input
                 type="range"
@@ -1013,12 +970,11 @@ const MyProfile = () => {
               />
             </div>
 
-            {/* Instruction Text */}
             <p className="text-center text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm mt-6 xs:mt-7 sm:mt-9 md:mt-5 lg:mt-9 font-medium text-gray-600 tracking-wide">
               DRAG THIS TO SET YOUR HEIGHT
             </p>
 
-            <div className={`max-w-4xl mx-auto mt-12  w-full items-center justify-center md:relative   flex px-6  `}>
+            <div className={`max-w-4xl mx-auto mt-12  w-full items-center justify-center md:relative flex px-6`}>
               <button
                 onClick={handleNext}
                 disabled={
@@ -1033,7 +989,6 @@ const MyProfile = () => {
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
-
           </div>
         );
 
@@ -1269,11 +1224,12 @@ const MyProfile = () => {
                 For best results:
               </div>
               <ul className="space-y-1.5 xs:space-y-2 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-[#4A2D47] font-semibold">
-                <li>• Face the camera directly</li>
-                <li>• Ensure good lighting</li>
-                <li>• Keep a neutral expression</li>
-                <li>• Show shoulders in frame</li>
-                <li>• Keep your Hands straight</li>
+                <li>• Stand straight facing the camera with your arms at your sides.</li>
+                <li>• Full-body frame: Ensure you are visible from head to toe.</li>
+                <li>• Lighting &amp; Background: Use bright light and a plain, neutral background.</li>
+                <li>• Wear fitted clothing: This allows the AI to map the outfit to your body shape accurately.</li>
+                <li>• Photo Quality: Avoid blurry, dark, filtered, or cropped images.</li>
+                <li>• Single Subject: Make sure you are the only person in the photo.</li>
               </ul>
             </div>
 
@@ -1282,8 +1238,8 @@ const MyProfile = () => {
               {/* Take Photo Button */}
               <button
                 onClick={startCamera}
-                disabled={cameraError}
-                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#200000] hover:bg-gray-50 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4"
+                disabled={cameraError || processingImage}
+                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#200000] hover:bg-gray-50 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#400000] flex items-center justify-center flex-shrink-0">
                   <Camera className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
@@ -1300,8 +1256,12 @@ const MyProfile = () => {
 
               {/* Upload Photo Button */}
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#4000003D] hover:border-gray-300 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4"
+                onClick={() => {
+                  if (processingImage) return;
+                  fileInputRef.current?.click();
+                }}
+                disabled={processingImage}
+                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#4000003D] hover:border-gray-300 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#F0EDE8] flex items-center justify-center flex-shrink-0">
                   <Upload className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-600" />
@@ -1337,13 +1297,13 @@ const MyProfile = () => {
                 </div>
               )}
 
-              {/* Skip Button */}
-              <button
-                onClick={() => setCurrentStep(9)}
-                className="w-full border border-[#E5E1DB] py-2.5 xs:py-2.5 sm:py-3 md:py-2 lg:py-3 mt-2 xs:mt-2 sm:mt-3 md:mt-2 lg:mt-3 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600 font-medium hover:text-gray-900"
-              >
-                SKIP FOR NOW
-              </button>
+              {processingImage && (
+                <div className="mt-4 p-3 bg-[#33022F]/10 border border-[#33022F]/20 text-[#33022F] text-sm flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Enhancing your background, please wait...
+                </div>
+              )}
+
             </div>
           </div>
         );
@@ -1368,11 +1328,12 @@ const MyProfile = () => {
                 For best results:
               </div>
               <ul className="space-y-1.5 xs:space-y-1.5 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-600">
-                <li>• Face the camera directly</li>
-                <li>• Ensure good lighting</li>
-                <li>• Keep a neutral expression</li>
-                <li>• Show shoulders in frame</li>
-                <li>• Keep your Hands straight</li>
+                <li>• Stand straight facing the camera with your arms at your sides.</li>
+                <li>• Full-body frame: Ensure you are visible from head to toe.</li>
+                <li>• Lighting &amp; Background: Use bright light and a plain, neutral background.</li>
+                <li>• Wear fitted clothing: This allows the AI to map the outfit to your body shape accurately.</li>
+                <li>• Photo Quality: Avoid blurry, dark, filtered, or cropped images.</li>
+                <li>• Single Subject: Make sure you are the only person in the photo.</li>
               </ul>
             </div>
 
@@ -1420,24 +1381,13 @@ const MyProfile = () => {
 
               {/* Capture/Continue Button */}
               <button
-                onClick={capturedImage ? handleNext : capturePhoto}
+                onClick={capturedImage ? handleSaveModel : capturePhoto}
+                disabled={processingImage || savingProfile}
                 className="w-full h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all"
               >
-                {capturedImage ? 'CONTINUE' : 'CAPTURE PHOTO'}
+                {processingImage ? 'PROCESSING BACKGROUND...' : capturedImage ? 'SAVE & CONTINUE' : 'CAPTURE PHOTO'}
               </button>
 
-              {/* Skip Button - Only show when no image captured */}
-              {!capturedImage && (
-                <button
-                  onClick={() => {
-                    stopCamera();
-                    setCurrentStep(9);
-                  }}
-                  className="w-full py-2.5 xs:py-2.5 sm:py-3 md:py-2 lg:py-3 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-gray-600 font-medium hover:text-gray-900"
-                >
-                  SKIP FOR NOW
-                </button>
-              )}
             </div>
 
             {/* Hidden Canvas */}
@@ -1464,10 +1414,10 @@ const MyProfile = () => {
               {/* Right: Text + Tips */}
               <div className=" flex flex-col justify-center -mt-38 w-full  max-w-md">
                 <h1 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1.5 sm:mb-2 md:mb-1 lg:mb-2 text-center lg:text-left">
-                  Take your photo
+                  Your Model: {normalizeModelName(modelName) || 'Model'}
                 </h1>
                 <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-4 xs:mb-5 sm:mb-8 md:mb-4 lg:mb-8 text-center lg:text-left">
-                  This helps us create a more accurate virtual avatar of you.
+                  Review your model and continue, or retake the image.
                 </p>
 
                 {/* Tips Card */}
@@ -1480,11 +1430,12 @@ const MyProfile = () => {
                   </p>
                   <ul className="space-y-2 xs:space-y-2 sm:space-y-3 md:space-y-2 lg:space-y-3 text-[#403200]">
                     {[
-                      "Face the camera directly",
-                      "Ensure good lighting",
-                      "Keep a neutral expression",
-                      "Show shoulders in frame",
-                      "Keep your Hands straight"
+                      "Stand straight facing the camera with your arms at your sides.",
+                      "Full-body frame: Ensure you are visible from head to toe.",
+                      "Lighting & Background: Use bright light and a plain, neutral background.",
+                      "Wear fitted clothing: This allows the AI to map the outfit to your body shape accurately.",
+                      "Photo Quality: Avoid blurry, dark, filtered, or cropped images.",
+                      "Single Subject: Make sure you are the only person in the photo."
                     ].map((tip, i) => (
                       <li key={i} className="flex items-start gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
                         <span className="text-base xs:text-base sm:text-lg md:text-base lg:text-lg leading-none">•</span>
@@ -1498,11 +1449,11 @@ const MyProfile = () => {
                 <div className="space-y-3 xs:space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
                   {/* Continue Button */}
                   <button
-                    onClick={() => setCurrentStep(8)}
+                    onClick={handleSaveModel}
                     className="w-full h-11 xs:h-12 sm:h-14 md:h-11 lg:h-14 text-white text-sm xs:text-sm sm:text-lg md:text-sm lg:text-lg font-bold shadow-md flex items-center justify-center"
                     style={{ backgroundColor: '#33022F' }}
                   >
-                    CONTINUE →
+                    SAVE & CONTINUE →
                   </button>
                   {/* Retake Button */}
                   <button
@@ -1681,6 +1632,7 @@ const MyProfile = () => {
                       // 1. Save profile data
                       const dataToSave = {
                         ...profileData,
+                        modelName: normalizeModelName(modelName),
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
                       await profileService.saveProfile(dataToSave, userCollection);
@@ -1862,6 +1814,7 @@ disabled:opacity-50 transition-all"
                     try {
                       const dataToSave = {
                         ...profileData,
+                        modelName: normalizeModelName(modelName),
                         photoUrl: capturedImage || profileData.photoUrl,
                       };
                       await profileService.saveProfile(dataToSave, userCollection);
@@ -1935,14 +1888,26 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
                   You can now see how clothes will look on your virtual avatar while shopping.
                 </p>
 
-                {/* Start Button */}
-                <button
-                  onClick={handleComplete}
-                  className="h-12 xs:h-13 sm:h-14 md:h-12 lg:h-14 px-10 xs:px-11 sm:px-12 md:px-10 lg:px-12 text-white font-bold text-sm xs:text-base sm:text-lg md:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                  style={{ background: 'var(--villy-primary, #33022F)' }}
-                >
-                  START TRYING ON
-                </button>
+                <div className="flex flex-col items-center gap-3">
+                  {/* Start Button */}
+                  <button
+                    onClick={handleComplete}
+                    className="h-12 xs:h-13 sm:h-14 md:h-12 lg:h-14 px-10 xs:px-11 sm:px-12 md:px-10 lg:px-12 text-white font-bold text-sm xs:text-base sm:text-lg md:text-base lg:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    style={{ background: 'var(--villy-primary, #33022F)' }}
+                  >
+                    START TRYING ON
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setHasSavedModels(true);
+                      setCurrentStep(0);
+                    }}
+                    className="h-12 px-8 border-2 border-[#33022F] text-[#33022F] font-semibold text-sm sm:text-base hover:bg-[#33022F]/5 transition-all duration-200"
+                  >
+                    VIEW YOUR SAVED MODELS
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2030,6 +1995,11 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
             </button>
             <button
               onClick={() => {
+                if (savedModels.length >= 4) {
+                  alert('You can save up to 4 models. Delete one before adding a new model.');
+                  return;
+                }
+
                 setCapturedImage(null);
                 setModelName('');
                 setSelectedModelId(null);
@@ -2107,13 +2077,13 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
       {/* Progress Bar */}
 
 
-      <div className=" mt-3 ">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="text-xs text-gray-600 mb-2">{currentStep + 1} of {totalSteps}</div>
+      <div className="mt-1">
+        <div className="max-w-2xl mx-auto px-6 py-1">
+          <div className="text-xs text-gray-600 mb-1">{getDisplayedStep()} of {totalSteps}</div>
           <div className="h-0.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-gray-600 transition-all"
-              style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+              style={{ width: `${(getDisplayedStep() / totalSteps) * 100}%` }}
             />
           </div>
         </div>
