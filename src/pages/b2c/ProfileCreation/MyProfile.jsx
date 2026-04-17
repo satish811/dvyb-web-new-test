@@ -13,7 +13,7 @@ import { profileService } from '../../../services/profileService';
 
 const MyProfile = () => {
   const MAX_MODEL_IMAGE_BYTES = 3.5 * 1024 * 1024;
-  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1775718504/img2_1_j0azs6.png";
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1776421637/Gemini_Generated_Image_tga4sxtga4sxtga4_k0gpfo.png";
 
   const { user, userCollection, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
