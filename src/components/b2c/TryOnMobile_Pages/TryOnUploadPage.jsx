@@ -539,10 +539,10 @@ const TryOnUploadPage = () => {
               >
                 <h3 className="font-bold text-gray-900 mb-4 text-base">INSTRUCTIONS:</h3>
                 <ul className="space-y-2 pl-1 text-sm text-[#7F6301]">
-                  <li className="font-medium">• Stand straight and face forward</li>
-                  <li className="font-medium">• Maintain good lighting and contrast</li>
-                  <li className="font-medium">• Avoid filters or busy backgrounds</li>
-                  <li className="font-medium">• Keep file size under 2MB</li>
+                  <li className="font-medium">• Stand straight facing the camera with your arms at your sides, and keep a full-body frame so you are visible from head to toe.</li>
+                  <li className="font-medium">• Use bright light with a plain, neutral background.</li>
+                  <li className="font-medium">• Wear fitted clothing so the AI can map the outfit to your body shape accurately.</li>
+                  <li className="font-medium">• Avoid blurry, dark, filtered, or cropped images, and make sure you are the only person in the photo.</li>
                 </ul>
               </div>
 

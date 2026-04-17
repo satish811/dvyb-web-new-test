@@ -1,190 +1,261 @@
-// import React from "react";
-// import logo from "@/assets/b2c/images/FAQ/Logo.svg";
-// import logoName from "@/assets/b2c/images/FAQ/LogoName.svg";
+const sections = [
+  {
+    id: 1,
+    title: 'Disclaimer',
+    intro:
+      'Villy (operated by Digiware House) provides this platform and its services on an "as-is" and "as-available" basis.',
+    items: [
+      {
+        label: 'Visual Representation',
+        text:
+          'While we use advanced rendering, we do not guarantee that the product colors, textures, or details displayed on your device will be an exact match to the physical product due to varying display calibrations and the nature of AI-generated imagery.',
+      },
+      {
+        label: 'Service Limitations',
+        text:
+          'We do not warrant that the website will be error-free or that the server is free of viruses. Use of the platform is at your own risk.',
+      },
+      {
+        label: 'External Content',
+        text:
+          'We are not responsible for the content or privacy practices of any third-party websites linked to our platform.',
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Cancellation, Returns, Exchange, Shipping & Refund Policy',
+    items: [
+      {
+        label: 'Shipping',
+        text:
+          'We aim to dispatch orders within 24-48 hours. Delivery typically takes 3-7 business days across India. Shipping costs are calculated at checkout based on location and weight.',
+      },
+      {
+        label: 'Cancellation',
+        text:
+          'You may cancel your order at any time before it is marked as "Dispatched" via the user dashboard.',
+      },
+      {
+        label: 'Returns & Exchange',
+        text:
+          'We offer a 7-day return/exchange window from the delivery date for items that are damaged, defective, or significantly different from the description. Items must be unworn, unwashed, and include all original tags.',
+      },
+      {
+        label: 'Refunds',
+        text:
+          'Once the returned item passes our quality check, refunds are initiated to the original payment method within 5-7 working days (or as per RBI settlement guidelines).',
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Consumer Protection Rights',
+    intro:
+      'In strict adherence to the Central Consumer Protection Authority (CCPA) guidelines and the Consumer Protection Act, 2019:',
+    items: [
+      {
+        label: 'Right to Safety',
+        text:
+          'Protection against the marketing of goods which are hazardous to life and property.',
+      },
+      {
+        label: 'Right to be Informed',
+        text:
+          'Transparent disclosure of all costs (GST, shipping), country of origin, and seller details.',
+      },
+      {
+        label: 'Right to Redressal',
+        text:
+          'A robust grievance mechanism is in place to address consumer complaints within statutory timelines (acknowledgment within 48 hours).',
+      },
+    ],
+  },
+  {
+    id: 4,
+    title: 'Consumer Protection & Statutory Adherence',
+    intro: 'Villy operates under the highest legal standards in India:',
+    items: [
+      {
+        label: 'E-Commerce Rules 2020',
+        text:
+          'We maintain a "fallback liability" for sellers and provide clear pre-purchase information, including a "Country of Origin" filter.',
+      },
+      {
+        label: 'Indian Contracts Act 1872',
+        text:
+          'All electronic transactions on Villy are recognized as valid and binding digital contracts.',
+      },
+      {
+        label: 'IT Act 2000 & Data Protection',
+        text:
+          'We utilize 256-bit encryption for all data transfers.',
+      },
+      {
+        label: 'Privacy Lockdown',
+        text:
+          'Villy does NOT store any user-uploaded pictures (e.g., for virtual trials or profile customization) to ensure zero risk of personal data misuse or identity theft.',
+      },
+      {
+        label: 'Payment & Settlements Systems Act 2007',
+        text:
+          'We use only RBI-authorized payment aggregators. All customer funds are routed through secure escrow accounts.',
+      },
+      {
+        label: 'Truthful Advertising (1986, 2019 Act)',
+        text:
+          'We strictly prohibit misleading advertisements. All claims regarding product performance or quality are backed by factual data.',
+      },
+    ],
+  },
+  {
+    id: 5,
+    title: 'Cookie Policy',
+    intro: 'We use cookies to enhance your browsing and shopping experience.',
+    items: [
+      {
+        label: 'Strictly Necessary',
+        text: 'Required for cart functionality and secure login.',
+      },
+      {
+        label: 'Analytical Cookies',
+        text: 'Help us optimize the UI/UX by understanding how you interact with Villy.',
+      },
+      {
+        label: 'Choice',
+        text:
+          'You can choose to opt-out of non-essential cookies via your browser settings, though this may limit your access to certain personalized features.',
+      },
+    ],
+  },
+  {
+    id: 6,
+    title: 'National Retail Policy',
+    intro: 'Villy is aligned with the National Retail Policy objectives to:',
+    bullets: [
+      'Foster a modern, digitally-driven retail ecosystem.',
+      'Improve supply chain efficiency through streamlined warehousing.',
+      'Support small-scale Indian manufacturers by providing a transparent digital marketplace.',
+    ],
+  },
+  {
+    id: 7,
+    title: 'Privacy Policy',
+    items: [
+      {
+        label: 'Data Collection',
+        text:
+          'We collect only the minimum data required for order fulfillment (Name, Email, Phone, Address).',
+      },
+      {
+        label: 'AI Disclosure',
+        text:
+          'To protect human privacy and ensure creative consistency, all Mannequin Models on Villy are AI-Generated and NOT humans.',
+      },
+      {
+        label: 'Data Sharing',
+        text:
+          'We never sell your personal information. Data is shared only with logistics (for delivery) and payment partners (for transactions).',
+      },
+    ],
+  },
+  {
+    id: 8,
+    title: 'Track Order',
+    items: [
+      {
+        label: 'Live Tracking',
+        text:
+          'Once dispatched, a real-time tracking link will be provided via SMS and your "My Orders" dashboard.',
+      },
+      {
+        label: 'Milestones',
+        text:
+          'Users will receive updates for Order Confirmed, Packed, Shipped, Out for Delivery, and Delivered.',
+      },
+      {
+        label: 'Support',
+        text:
+          'If a shipment is delayed beyond the estimated delivery date, users can escalate the issue directly through the "Track Order" interface.',
+      },
+    ],
+  },
+  {
+    id: 9,
+    title: 'Terms of Service / Use',
+    items: [
+      {
+        label: 'Intellectual Property',
+        text:
+          'All designs, logos, and UI elements (including the "Villy" brand) are the exclusive property of Digiware House.',
+      },
+      {
+        label: 'Rights & Trademark Infringement',
+        text:
+          'We have a zero-tolerance policy for counterfeit goods. If you believe your IP rights are being infringed, please contact our Nodal Officer.',
+      },
+      {
+        label: 'User Conduct',
+        text:
+          'Users are prohibited from using bots, data scrapers, or engaging in fraudulent transaction patterns on the platform.',
+      },
+    ],
+  },
+];
+
+function SectionContent({ section }) {
+  return (
+    <section className="space-y-4 sm:space-y-5">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+          {section.id}. {section.title}
+        </h2>
+        {section.intro && <p className="text-base sm:text-lg text-gray-700 leading-7">{section.intro}</p>}
+      </div>
+
+      {section.items && (
+        <div className="space-y-4">
+          {section.items.map((item) => (
+            <div key={`${section.id}-${item.label}`} className="space-y-1">
+              <p className="text-base sm:text-lg text-gray-800 leading-7">
+                <span className="font-semibold">{item.label}:</span> {item.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section.bullets && (
+        <ul className="space-y-2 pl-5 list-disc text-base sm:text-lg text-gray-700 leading-7">
+          {section.bullets.map((bullet) => (
+            <li key={bullet}>{bullet}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export default function TermsAndConditions() {
   return (
-    <div className=" bg-white flex flex-col mt-34 items-center  mx-12 ">
-      {/* Header */}
-      {/* <div className="flex justify-center pt-4 pb-">
-        <div className="flex items-center justify-center w-17 cursor-pointer mb-10">
-          <img src={logo} alt="LOGO" />
-          <img src={logoName} alt="LOGOName" />
+    <div className="bg-white min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="text-center mb-10 sm:mb-14">
+          <div className="inline-flex items-center justify-center mb-5">
+            <span className="text-4xl sm:text-5xl font-black tracking-wide text-[#4B0A4B]">
+              VILLY
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">Terms & Conditions</h1>
+          <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-6">
+            Please read these terms carefully before using the Villy platform and related services.
+          </p>
         </div>
-      </div> */}
 
-      {/* Content */}
-      <div className="px-5 pb-8 w-full">
-        {/* Title */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-1">Terms & Conditions</h2>
-
-        {/* Intro */}
-        <p className="text-lg font-light text-gray-700 mb-6">
-          Welcome to VILLY Bulk Ordering. These Terms & Conditions govern your use of our mobile
-          application and services related to bulk ordering purchases. By accessing or using our
-          App, you agree to be bound by these Terms. If you do not agree, please do not use the App.
-        </p>
-
-        {/* Eligibility */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Eligibility</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          You must be at least 18 years old (or the legal age in your country) to use the App.
-        </p>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          By registering, you confirm that the information you provide is accurate and complete.
-        </p>
-
-        {/* Account Registration */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Account Registration</h2>
-        <ul className="space-y-2 mb-6 ml-3">
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>To place bulk orders, you may need to create an account.</span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>
-              You are responsible for maintaining the confidentiality of your login details.
-            </span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>
-              You are not responsible for unauthorized use of your account caused by your
-              negligence.
-            </span>
-          </li>
-        </ul>
-
-        {/* Orders & Payments */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Orders & Payments</h2>
-        <ul className="space-y-2 mb-6 ml-3">
-          <li className="text-lg font-light text-gray-700 flex ">
-            <span className="mr-2">•</span>
-            <span>All orders are subject to acceptance and availability.</span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>
-              Bulk discounts and offers are displayed in the App and may change without prior
-              notice.
-            </span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>Payments must be completed through our secure payment gateways.</span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>
-              Once confirmed, orders cannot be cancelled or changed unless allowed under our
-              return/refund policy.
-            </span>
-          </li>
-        </ul>
-
-        {/* Pricing & Offers */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Pricing & Offers</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          Prices displayed in the App are in [currency] and may include or exclude taxes as per
-          local laws.
-        </p>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          Discounts and offers are applicable only to bulk orders as defined in the App.
-        </p>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          We reserve the right to modify or withdraw offers at any time.
-        </p>
-
-        {/* Shipping & Delivery */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Shipping & Delivery</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          Delivery times will be provided during checkout but may vary due to logistics or
-          unforeseen events.
-        </p>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          We are not liable for delays caused by courier partners or incorrect delivery details
-          provided by users.
-        </p>
-
-        {/* Returns & Refunds */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Returns & Refunds</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          Returns and refunds (if applicable) are subject to our Return & Refund Policy, available
-          in the App.
-        </p>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          Bulk order discounts may affect eligibility for returns or refunds.
-        </p>
-
-        {/* Data Security */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Data Security</h2>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          We use encryption, secure servers, and limited access protocols to protect your data.
-          However, no online platform can guarantee 100% security.
-        </p>
-
-        {/* Your Rights */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Your Rights</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          Depending on your location, you may have rights to:
-        </p>
-        <ul className="space-y-2 mb-6 ml-3">
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>Access, update, or delete your personal data.</span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>Opt out of marketing emails or notifications.</span>
-          </li>
-          <li className="text-lg font-light text-gray-700 flex">
-            <span className="mr-2">•</span>
-            <span>Withdraw consent to data processing (may limit app functionality).</span>
-          </li>
-        </ul>
-
-        {/* Cookies & Tracking */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Cookies & Tracking</h2>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          Our App may use cookies or similar technologies to personalize content, remember
-          preferences, and analyze usage trends.
-        </p>
-
-        {/* Children's Privacy */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Children's Privacy</h2>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          Our App is not intended for children under 13 (or relevant local age). We do not knowingly
-          collect their data.
-        </p>
-
-        {/* Third-Party Links */}
-        <h2 className="font-medium text-2xltext-gray-900 mb-2">Third-Party Links</h2>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          Our App may contain links to third-party websites/services. We are not responsible for
-          their privacy practices.
-        </p>
-
-        {/* Changes to this Policy */}
-        <h2 className="font-medium text-2xl text-gray-900 mb-2">Changes to this Policy</h2>
-        <p className="text-lg font-light text-gray-700 mb-6">
-          We may update this Privacy Policy from time to time. Any changes will be posted within the
-          App with a revised "Effective Date."
-        </p>
-
-        {/* Contact Us */}
-        <h2 className="font-medium text-2xltext-gray-900 mb-2">Contact Us</h2>
-        <p className="text-lg font-light text-gray-700 mb-2">
-          If you have questions or concerns about this Privacy Policy, please contact us at:
-        </p>
-        <div className="space-y-2">
-          <p className="text-lg font-light text-gray-700 flex items-center">
-            <span className="mr-2">✉</span>
-            <span>Email: [support@youapp.com]</span>
-          </p>
-          <p className="text-lg font-light text-gray-700 flex items-center">
-            <span className="mr-2">📞</span>
-            <span>Phone: [Your Support Number]</span>
-          </p>
+        <div className="space-y-10 sm:space-y-12">
+          {sections.map((section) => (
+            <SectionContent key={section.id} section={section} />
+          ))}
         </div>
       </div>
     </div>
