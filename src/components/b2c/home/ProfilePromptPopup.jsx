@@ -18,7 +18,7 @@ export default function ProfilePromptPopup() {
         let isMounted = true;
 
         const checkProfileAndShowPopup = async () => {
-            // Already dismissed in this session — skip
+            // Already dismissed in this session — skip done
             if (sessionStorage.getItem('profilePromptDismissed') === 'true') {
                 if (isMounted) setHasChecked(true);
                 return;

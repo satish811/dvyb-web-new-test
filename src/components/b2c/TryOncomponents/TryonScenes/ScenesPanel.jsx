@@ -123,6 +123,9 @@ const ScenesPanel = ({
                   onChange={handleFileChange}
                 />
               </div>
+              <p className="text-[11px] text-gray-400 mt-2 leading-5">
+                Upload a clear background image for the best screen placement. Plain, well-lit scenes work best.
+              </p>
 
               {/* Custom Scenes Grid */}
               {customScenes.length > 0 && (

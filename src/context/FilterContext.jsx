@@ -33,6 +33,9 @@ export const FilterProvider = ({ children }) => {
     colors: [],
     priceRange: { min: 0, max: 50000 },
     discounts: [],
+    weavingMethods: [],
+    certifications: [],
+    sareeBlouseOptions: [],
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -46,6 +49,9 @@ export const FilterProvider = ({ children }) => {
     blouses: [],
     boutiques: [],
     recentUploads: [],
+    weavingMethods: [],
+    certifications: [],
+    sareeBlouseOptions: [],
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -133,6 +139,36 @@ export const FilterProvider = ({ children }) => {
             }
             break;
 
+          case "weavingMethods": {
+            const weavingMethods = newFilters.weavingMethods || [];
+            if (weavingMethods.includes(value)) {
+              newFilters.weavingMethods = weavingMethods.filter((item) => item !== value);
+            } else {
+              newFilters.weavingMethods = [...weavingMethods, value];
+            }
+            break;
+          }
+
+          case "certifications": {
+            const certifications = newFilters.certifications || [];
+            if (certifications.includes(value)) {
+              newFilters.certifications = certifications.filter((item) => item !== value);
+            } else {
+              newFilters.certifications = [...certifications, value];
+            }
+            break;
+          }
+
+          case "sareeBlouseOptions": {
+            const sareeBlouseOptions = newFilters.sareeBlouseOptions || [];
+            if (sareeBlouseOptions.includes(value)) {
+              newFilters.sareeBlouseOptions = sareeBlouseOptions.filter((item) => item !== value);
+            } else {
+              newFilters.sareeBlouseOptions = [...sareeBlouseOptions, value];
+            }
+            break;
+          }
+
           case "recentUploads":
             const recentUploads = newFilters.recentUploads || [];
             if (recentUploads.includes(value)) {
@@ -175,6 +211,9 @@ export const FilterProvider = ({ children }) => {
       blouses: [],
       boutiques: [],
       recentUploads: [],
+      weavingMethods: [],
+      certifications: [],
+      sareeBlouseOptions: [],
     });
     setNavbarCategory("");
   }, []);
@@ -196,6 +235,9 @@ export const FilterProvider = ({ children }) => {
       blouses: newFilters.blouses || [],
       boutiques: newFilters.boutiques || [],
       recentUploads: newFilters.recentUploads || [],
+      weavingMethods: newFilters.weavingMethods || [],
+      certifications: newFilters.certifications || [],
+      sareeBlouseOptions: newFilters.sareeBlouseOptions || [],
     });
     if (newFilters.categories?.length > 0) {
       setNavbarCategory(newFilters.categories[0]);

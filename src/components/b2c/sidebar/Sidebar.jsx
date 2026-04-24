@@ -37,19 +37,25 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
     colors: [],
     boutiques: [],
     priceRange: { min: 0, max: 0 },
+    weavingMethods: [],
+    certifications: [],
+    sareeBlouseOptions: [],
   });
 
   const { selectedFilters, updateFilter } = useFilter();
   const selectedCategory = selectedFilters.categories[0] || null;
 
   // Helper function to update filter data
-  const updateAllFilterData = ({ categories, boutiques, sizes, colors, priceRange }) => {
+  const updateAllFilterData = ({ categories, boutiques, sizes, colors, priceRange, weavingMethods, certifications, sareeBlouseOptions }) => {
     setFilterData({
       categories,
       boutiques,
       sizes,
       colors,
       priceRange,
+      weavingMethods,
+      certifications,
+      sareeBlouseOptions,
     });
   };
 
@@ -179,6 +185,36 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
             defaultOpen={true}
           />
         )}
+
+        {filterData.weavingMethods.length > 0 && (
+          <FilterSection
+            title="WEAVING METHOD"
+            items={filterData.weavingMethods}
+            searchable={true}
+            defaultOpen={false}
+            filterType="weavingMethods"
+          />
+        )}
+
+        {filterData.certifications.length > 0 && (
+          <FilterSection
+            title="CERTIFICATION"
+            items={filterData.certifications}
+            searchable={true}
+            defaultOpen={false}
+            filterType="certifications"
+          />
+        )}
+
+        {filterData.sareeBlouseOptions.length > 0 && (
+          <FilterSection
+            title="SAREE BLOUSE OPTION"
+            items={filterData.sareeBlouseOptions}
+            searchable={true}
+            defaultOpen={false}
+            filterType="sareeBlouseOptions"
+          />
+        )}
       </div>
     </aside>
   );
@@ -247,7 +283,31 @@ function extractDynamicFilterData(products, activeCategory, selectedBoutiques, s
     sizes: extractSizes(finalFilteredProducts),
     colors: extractColors(finalFilteredProducts),
     priceRange: getPriceRange(finalFilteredProducts),
+    weavingMethods: extractFilterFacet(finalFilteredProducts, ["weavingMethod", "weavingmethod", "weaving"], true),
+    certifications: extractFilterFacet(finalFilteredProducts, ["certification", "certifications", "certified"], true),
+    sareeBlouseOptions: extractFilterFacet(finalFilteredProducts, ["sareeBlouseOption", "sareeBlouse", "saree_blouse_option", "saree_blouse"], true),
   };
+}
+
+function extractFilterFacet(products, keys, useCount = false) {
+  const map = new Map();
+
+  products.forEach((product) => {
+    keys.forEach((key) => {
+      const value = product[key] || product[key?.toLowerCase?.()];
+      if (value && typeof value === "string") {
+        const normalized = value.trim();
+        if (normalized.length === 0) return;
+
+        const currentCount = map.get(normalized) || 0;
+        map.set(normalized, currentCount + 1);
+      }
+    });
+  });
+
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 function extractBoutiques(products, activeCategory) {

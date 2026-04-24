@@ -115,7 +115,7 @@ const UploadSelfieModal = ({
   tryOnData,
 }) => {
   const MAX_UPLOAD_IMAGE_BYTES = 3.5 * 1024 * 1024;
-  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1775718504/img2_1_j0azs6.png";
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1776421637/Gemini_Generated_Image_tga4sxtga4sxtga4_k0gpfo.png";
 
   const currentUser = auth.currentUser;
   const { userCollection } = useAuth();
@@ -922,7 +922,7 @@ const UploadSelfieModal = ({
             {/* Example Image */}
             <div className="w-full max-w-[220px] md:max-w-[240px] shrink-0">
               <img
-                src="https://res.cloudinary.com/doiezptnn/image/upload/v1760530680/model2_eh2sqf.jpg"
+                src="https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png"
                 alt="Example"
                 className="w-full h-[320px] md:h-[400px] object-cover rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100"
               />
@@ -952,22 +952,22 @@ const UploadSelfieModal = ({
                 <ul className="space-y-2 mt-2 text-[12.5px] md:text-sm">
                   <li className="flex gap-2 text-[#7F6301]">
                     <span className="text-[#7F6301] font-medium leading-snug">
-                      • Stand straight and face forward
+                      • Stand straight facing the camera with your arms at your sides, and keep a full-body frame so you are visible from head to toe.
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
                     <span className="text-[#7F6301] font-medium leading-snug">
-                      • Maintain good lighting and contrast
+                      • Use bright light with a plain, neutral background.
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
                     <span className="text-[#7F6301] font-medium leading-snug">
-                      • Avoid filters or busy backgrounds
+                      • Wear fitted clothing so the AI can map the outfit to your body shape accurately.
                     </span>
                   </li>
                   <li className="flex gap-2 text-[#7F6301]">
                     <span className="text-[#7F6301] font-medium leading-snug">
-                      • Keep file size under 3.5MB
+                      • Avoid blurry, dark, filtered, or cropped images, and make sure you are the only person in the photo.
                     </span>
                   </li>
                 </ul>
@@ -1039,10 +1039,10 @@ const UploadSelfieModal = ({
           <div className="bg-red-50 p-4 rounded-xl border border-red-200 text-left w-full max-w-sm">
             <p className="font-semibold text-red-800 mb-2">Please follow the below instructions</p>
             <ul className="text-sm text-red-700 space-y-1">
-              <li>• Keep file size under 3.5MB</li>
-              <li>• Ensure image is clear and not pixelated</li>
-              <li>• Maintain good lighting and contrast</li>
-              <li>• Keep background clean or neutral</li>
+              <li>• Stand straight facing the camera with your arms at your sides, and keep a full-body frame so you are visible from head to toe.</li>
+              <li>• Use bright light with a plain, neutral background.</li>
+              <li>• Wear fitted clothing so the AI can map the outfit to your body shape accurately.</li>
+              <li>• Avoid blurry, dark, filtered, or cropped images, and make sure you are the only person in the photo.</li>
             </ul>
           </div>
           <button className="w-full max-w-sm bg-primary text-white py-3 rounded-lg font-medium mt-5 opacity-60 cursor-not-allowed">
@@ -1111,12 +1111,10 @@ const UploadSelfieModal = ({
               </p>
             </div>
             <ul className="text-md ml-2 text-black  text-outfit  mt-3 space-y-1">
-              <li>• Keep file size under 3.5MB</li>
-              <li>• Ensure image is clear and not pixelated</li>
-              <li>
-                • Maintain <span className="text-primary"> good lighting and contrast </span>{" "}
-              </li>
-              <li>• Keep background clean or neutral</li>
+              <li>• Stand straight facing the camera with your arms at your sides, and keep a full-body frame so you are visible from head to toe.</li>
+              <li>• Use bright light with a plain, neutral background.</li>
+              <li>• Wear fitted clothing so the AI can map the outfit to your body shape accurately.</li>
+              <li>• Avoid blurry, dark, filtered, or cropped images, and make sure you are the only person in the photo.</li>
             </ul>
           </div>
           <button
