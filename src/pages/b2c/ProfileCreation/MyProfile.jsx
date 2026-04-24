@@ -64,7 +64,7 @@ const MyProfile = () => {
   const [generatedResults, setGeneratedResults] = useState({});
   const [centerImage, setCenterImage] = useState(null);
 
-  const totalSteps = 8;
+  const totalSteps = 11;
   const getModelKey = (model) => model?.id || model?.name || "";
   const normalizeModelName = (value) => {
     const lettersOnly = String(value || "")
@@ -119,7 +119,7 @@ const MyProfile = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       if (videoRef.current) videoRef.current.srcObject = stream;
       streamRef.current = stream;
-      setCurrentStep(6);
+      setCurrentStep(9);
     } catch (err) {
       setCameraError(true);
     }
@@ -238,7 +238,7 @@ const MyProfile = () => {
 
       setCapturedImage(processedImage);
       setProfileData((prev) => ({ ...prev, photoUrl: processedImage }));
-      if (advanceToPreview) setCurrentStep(7);
+      if (advanceToPreview) setCurrentStep(9);
     } finally {
       setProcessingImage(false);
     }
@@ -298,7 +298,7 @@ const MyProfile = () => {
     await setProcessedImage(capturedBlob, true);
   };
 
-  const handleFileUpload = async (e, advanceToPreview = currentStep >= 5) => {
+  const handleFileUpload = async (e, advanceToPreview = false) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
@@ -310,6 +310,79 @@ const MyProfile = () => {
     }
   };
 
+  // const handleSaveModel = async () => {
+  //   const trimmedModelName = normalizeModelName(modelName);
+
+  //   if (!trimmedModelName) {
+  //     alert('Please enter a model name using alphabets only.');
+  //     return;
+  //   }
+
+  //   if (!capturedImage && !profileData.photoUrl) {
+  //     alert('Please upload a photo for your model.');
+  //     return;
+  //   }
+
+  //   if (savedModels.length >= 4 && !savedModels.some((item) => item.name.toLowerCase() === trimmedModelName.toLowerCase())) {
+  //     alert('You can save up to 4 models. Delete one before adding a new model.');
+  //     return;
+  //   }
+
+  //   let sourceImage = capturedImage || profileData.photoUrl;
+
+  //   // upload only if it's base64
+  //   if (sourceImage.startsWith("data:image")) {
+  //     const file = dataURLtoFile(sourceImage, "model.jpg");
+
+  //     const formData = new FormData();
+  //     formData.append("file", file);
+
+  //     const uploadRes = await fetch("/api/upload-model-image", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+  //     if (!uploadRes.ok) {
+  //       throw new Error("Cloudinary upload failed");
+  //     }
+
+  //     const uploadData = await uploadRes.json();
+
+  //     if (!uploadData.success || !uploadData.url) {
+  //       throw new Error("No Cloudinary URL returned");
+  //     }
+
+  //     sourceImage = uploadData.url; // actual hosted URL
+  //   }
+
+  //   setSavingProfile(true);
+  //   try {
+  //     const dataToSave = {
+  //       ...profileData,
+  //       modelName: trimmedModelName,
+  //       photoUrl: sourceImage,
+  //     };
+
+  //     const savedProfile = await profileService.saveProfile(dataToSave, userCollection);
+  //     const nextSavedModels = Array.isArray(savedProfile?.savedModels) ? savedProfile.savedModels : [];
+  //     const persistedPhotoUrl = savedProfile?.photoUrl || dataToSave.photoUrl;
+
+  //     setSavedModels(nextSavedModels);
+  //     setSelectedModelId(null);
+  //     setHasSavedModels(nextSavedModels.length > 0);
+  //     setProfileData(prev => ({ ...prev, photoUrl: persistedPhotoUrl }));
+  //     setCapturedImage(persistedPhotoUrl);
+  //     setModelName(trimmedModelName);
+  //     setCurrentStep(9);
+  //   } catch (error) {
+  //     console.error('❌ Save error:', error);
+  //     alert(`Error saving model: ${error.message}`);
+  //   } finally {
+  //     setSavingProfile(false);
+  //   }
+  // };
+
+  // Automatically adjust garment scaling based on image dimensions
   const handleSaveModel = async () => {
     const trimmedModelName = normalizeModelName(modelName);
 
@@ -328,14 +401,43 @@ const MyProfile = () => {
       return;
     }
 
-    const sourceImage = capturedImage || profileData.photoUrl;
+    // ✅ FIXED: Always prefer capturedImage (which has the background swap applied)
+    // over profileData.photoUrl (which may be the original URL)
+    let sourceImage = capturedImage || profileData.photoUrl;
 
-    setSavingProfile(true);
+    // ✅ FIXED: Upload if base64 (background-swapped result is always base64)
+    if (sourceImage.startsWith("data:image")) {
+      setSavingProfile(true); // show spinner early during upload
+      try {
+        const file = dataURLtoFile(sourceImage, "model.jpg");
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
+
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success || !uploadData.url) throw new Error("No Cloudinary URL returned");
+
+        sourceImage = uploadData.url;
+      } catch (err) {
+        alert(`Image upload failed: ${err.message}`);
+        setSavingProfile(false);
+        return;
+      }
+    } else {
+      setSavingProfile(true);
+    }
+
     try {
       const dataToSave = {
         ...profileData,
         modelName: trimmedModelName,
-        photoUrl: sourceImage,
+        photoUrl: sourceImage, // ✅ This is now always the background-swapped Cloudinary URL
       };
 
       const savedProfile = await profileService.saveProfile(dataToSave, userCollection);
@@ -345,10 +447,12 @@ const MyProfile = () => {
       setSavedModels(nextSavedModels);
       setSelectedModelId(null);
       setHasSavedModels(nextSavedModels.length > 0);
+
+      // ✅ Update both capturedImage and profileData with the final Cloudinary URL
       setProfileData(prev => ({ ...prev, photoUrl: persistedPhotoUrl }));
       setCapturedImage(persistedPhotoUrl);
       setModelName(trimmedModelName);
-      setCurrentStep(9);
+      setCurrentStep(12);
     } catch (error) {
       console.error('❌ Save error:', error);
       alert(`Error saving model: ${error.message}`);
@@ -357,7 +461,6 @@ const MyProfile = () => {
     }
   };
 
-  // Automatically adjust garment scaling based on image dimensions
   const handleImageFit = (e) => {
     const img = e.target;
     const ratio = img.naturalWidth / img.naturalHeight;
@@ -428,63 +531,6 @@ const MyProfile = () => {
       setLoadingTryOn(false);
     }
   };
-  //  last worked
-  // const generateVirtualTryOns = async () => {
-  //   if (!profileData.photoUrl) {
-  //     console.error("❌ No user photo available");
-  //     return;
-  //   }
-
-  //   setLoadingTryOn(true);
-  //   console.log("🚀 Starting multi try-on generation...");
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('model', dataURLtoFile(profileData.photoUrl, 'user.jpg'));
-
-  //     console.log("📤 Sending request to /api/multi-tryon...");
-
-  //     const res = await fetch('/api/multi-tryon', {
-  //       method: 'POST',
-  //       body: formData
-  //     });
-
-  //     console.log(`📡 Server responded with status: ${res.status}`);
-
-  //     if (!res.ok) {
-  //       const errorData = await res.json();
-  //       throw new Error(errorData.details || `Server error: ${res.status}`);
-  //     }
-
-  //     const data = await res.json();
-  //     console.log("📥 Received data:", data);
-
-  //     if (data.success && data.results) {
-  //       console.log("✅ Multi try-on successful!");
-  //       console.log("Results:", Object.keys(data.results));
-
-  //       // Set results for all outfits
-  //       setGeneratedResults(data.results);
-
-  //       // Set center image to first available result
-  //       const firstResult = Object.values(data.results).find(r => r !== null);
-  //       if (firstResult) {
-  //         setCenterImage(firstResult);
-  //       } else {
-  //         setCenterImage(capturedImage);
-  //       }
-
-  //     } else {
-  //       throw new Error(data.error || "No results from server");
-  //     }
-
-  //   } catch (err) {
-  //     console.error("❌ Multi try-on failed:", err);
-  //     alert(`Try-on failed: ${err.message}`);
-  //   } finally {
-  //     setLoadingTryOn(false);
-  //   }
-  // };
 
   // Helper: convert base64 to File
   const dataURLtoFile = (dataurl, filename) => {
@@ -527,11 +573,11 @@ const MyProfile = () => {
           const existingSavedModels = Array.isArray(userProfile?.savedModels) ? userProfile.savedModels : [];
           const legacySavedModels = !existingSavedModels.length && hasProfilePhoto
             ? [{
-                id: userProfile?.modelName || 'legacy-model',
-                name: userProfile?.modelName || 'Model 1',
-                photoUrl: userProfile.photoUrl,
-                updatedAt: userProfile.updatedAt || new Date(),
-              }]
+              id: userProfile?.modelName || 'legacy-model',
+              name: userProfile?.modelName || 'Model 1',
+              photoUrl: userProfile.photoUrl,
+              updatedAt: userProfile.updatedAt || new Date(),
+            }]
             : existingSavedModels;
 
           if (legacySavedModels.length > 0) {
@@ -574,9 +620,20 @@ const MyProfile = () => {
   };
 
   const handleBack = () => {
-    if (currentStep === 8) setCurrentStep(7);
-    else if ([6, 7, 8].includes(currentStep)) setCurrentStep(5);
-    else setCurrentStep(prev => Math.max(prev - 1, 0));
+    // Step 9 (photo preview) → go back to Take Photo screen
+    if (currentStep === 9) {
+      setCurrentStep(8);
+      return;
+    }
+
+    // Step 8 (take photo screen) → go back to hair details
+    if (currentStep === 8) {
+      setCurrentStep(7);
+      return;
+    }
+
+    // Normal backward flow for all other steps
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
   const handleComplete = () => {
@@ -646,47 +703,6 @@ const MyProfile = () => {
 
 
 
-
-
-  // const generateSingleTryOn = async (outfitType, garmentUrl) => {
-  //   if (!profileData.photoUrl) return;
-
-  //   setGeneratingOutfit(outfitType);
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("model", dataURLtoFile(profileData.photoUrl, "user.jpg"));
-  //     formData.append("garmentUrl", garmentUrl);
-  //     formData.append("outfitType", outfitType);
-
-  //     const res = await fetch("/api/single-tryon", {
-  //       method: "POST",
-  //       headers: {
-  //         "Accept": "application/json"
-  //       },
-  //       body: formData
-  //     });
-
-  //     if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-  //     const data = await res.json();
-
-  //     if (data.result) {
-  //       setGeneratedResults(prev => ({
-  //         ...prev,
-  //         [outfitType]: data.result
-  //       }));
-
-  //       setCenterImage(data.result);
-  //       setSelectedOutfit(outfitType);
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Try-on failed:", err);
-  //     alert(`Try-on failed: ${outfitType}`);
-  //   } finally {
-  //     setGeneratingOutfit(null);
-  //   }
-  // };
 
 
   const outfitOptions = [
@@ -839,7 +855,7 @@ const MyProfile = () => {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 0:
+      case 0: // Welcome (unchanged)
         return (
           <div className="flex flex-col items-center justify-center min-h-[520px] px-4 sm:px-6 py-8 sm:py-10 md:py-6 lg:py-8">
             <div className="relative mb-6 xs:mb-7 sm:mb-8">
@@ -847,12 +863,10 @@ const MyProfile = () => {
                 <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
                   <img src={women_ic} alt="" className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10" />
                 </div>
-
                 <div className="absolute -top-1 -right-3 sm:-right-4">
                   <img src={yellow_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
                 </div>
               </div>
-
               <div className="absolute bottom-3 xs:bottom-3 sm:bottom-4 -left-5 sm:-left-6">
                 <img src={pink_star} className="w-5 h-5 sm:w-6 sm:h-6" alt="" />
               </div>
@@ -863,7 +877,7 @@ const MyProfile = () => {
             </h2>
 
             <p className="text-sm xs:text-sm sm:text-base text-[#45556C] text-center max-w-md mb-6 px-4 leading-relaxed">
-              Tell us your height, body shape, skin tone, and hair details before we create your model.
+              Tell us your height, weight, age group, location, body shape, skin tone, and hair details.
             </p>
 
             <div className="w-full max-w-xl space-y-4">
@@ -907,8 +921,7 @@ const MyProfile = () => {
           </div>
         );
 
-
-      case 1:
+      case 1: // HEIGHT (unchanged)
         return (
           <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
             <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
@@ -918,23 +931,18 @@ const MyProfile = () => {
               We'll use this to scale your virtual try-on accurately.
             </p>
 
+            {/* Unit Toggle */}
             <div className="flex gap-2 justify-center mt-8 xs:mt-9 sm:mt-12 md:mt-6 lg:mt-12 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
               <button
                 onClick={() => setProfileData({ ...profileData, unit: 'cm' })}
-                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'cm'
-                  ? 'text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'cm' ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 style={profileData.unit === 'cm' ? { background: 'var(--DVYB-P-900, #200000)' } : undefined}
               >
                 cm
               </button>
               <button
                 onClick={() => setProfileData({ ...profileData, unit: 'ft' })}
-                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'ft'
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.unit === 'ft' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
                 ft
               </button>
@@ -963,10 +971,7 @@ const MyProfile = () => {
                   });
                 }}
                 className="w-full h-[0.6px] bg-[#8B8680] rounded-lg appearance-none cursor-pointer accent-[#200000]"
-                style={{
-                  WebkitAppearance: 'none',
-                  appearance: 'none'
-                }}
+                style={{ WebkitAppearance: 'none', appearance: 'none' }}
               />
             </div>
 
@@ -974,15 +979,10 @@ const MyProfile = () => {
               DRAG THIS TO SET YOUR HEIGHT
             </p>
 
-            <div className={`max-w-4xl mx-auto mt-12  w-full items-center justify-center md:relative flex px-6`}>
+            <div className="max-w-4xl mx-auto mt-12 w-full items-center justify-center md:relative flex px-6">
               <button
                 onClick={handleNext}
-                disabled={
-                  (currentStep === 2 && !profileData.bodyShape) ||
-                  (currentStep === 3 && !profileData.skinTone) ||
-                  (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
-                }
-                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
                 style={{ background: 'var(--villy-primary, #33022F)' }}
               >
                 CONTINUE
@@ -992,11 +992,149 @@ const MyProfile = () => {
           </div>
         );
 
+      // ==================== NEW STEPS ====================
 
-      case 2:
+      case 2: // WEIGHT
+        return (
+          <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
+            <h2 className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
+              What is your weight?
+            </h2>
+            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8 text-center sm:text-left">
+              This helps improve fit recommendations.
+            </p>
+
+            <div className="flex gap-2 justify-center mt-8 xs:mt-9 sm:mt-12 md:mt-6 lg:mt-12 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
+              <button
+                onClick={() => setProfileData({ ...profileData, weightUnit: 'kg' })}
+                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.weightUnit === 'kg' ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                style={profileData.weightUnit === 'kg' ? { background: 'var(--DVYB-P-900, #200000)' } : undefined}
+              >
+                kg
+              </button>
+              <button
+                onClick={() => setProfileData({ ...profileData, weightUnit: 'lbs' })}
+                className={`px-5 xs:px-5 sm:px-6 md:px-5 lg:px-6 py-1.5 xs:py-2 sm:py-2 md:py-1.5 lg:py-2 text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-medium transition-all ${profileData.weightUnit === 'lbs' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                lbs
+              </button>
+            </div>
+
+            <div className="text-center items-center justify-center flex gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 mb-6 xs:mb-7 sm:mb-8 md:mb-5 lg:mb-8">
+              <div className="text-4xl xs:text-5xl sm:text-6xl md:text-5xl lg:text-6xl font-semibold text-gray-900">
+                {profileData.weight}
+              </div>
+              <div className="text-xl xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-normal text-gray-500">
+                {profileData.weightUnit}
+              </div>
+            </div>
+
+            <div className="px-2 xs:px-2 sm:px-0 md:px-2 lg:px-0">
+              <input
+                type="range"
+                min={profileData.weightUnit === 'kg' ? 30 : 66}
+                max={profileData.weightUnit === 'kg' ? 150 : 330}
+                step="1"
+                value={profileData.weight}
+                onChange={(e) => setProfileData({ ...profileData, weight: parseInt(e.target.value) })}
+                className="w-full h-[0.6px] bg-[#8B8680] rounded-lg appearance-none cursor-pointer accent-[#200000]"
+                style={{ WebkitAppearance: 'none', appearance: 'none' }}
+              />
+            </div>
+
+            <p className="text-center text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm mt-6 xs:mt-7 sm:mt-9 md:mt-5 lg:mt-9 font-medium text-gray-600 tracking-wide">
+              DRAG THIS TO SET YOUR WEIGHT
+            </p>
+
+            <div className="max-w-4xl mx-auto mt-12 w-full items-center justify-center md:relative flex px-6">
+              <button
+                onClick={handleNext}
+                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                style={{ background: 'var(--villy-primary, #33022F)' }}
+              >
+                CONTINUE
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        );
+
+      case 3: // AGE GROUP
         return (
           <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
-            {/* Header Section */}
+            <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
+              Which age group are you in?
+            </h2>
+            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
+              This helps us suggest age-appropriate styles.
+            </p>
+
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-4 md:gap-3 lg:gap-4 mb-8">
+              {["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"].map((group) => (
+                <button
+                  key={group}
+                  onClick={() => setProfileData({ ...profileData, ageGroup: group })}
+                  className={`py-4 px-6 border-2 rounded-xl text-sm font-medium transition-all ${profileData.ageGroup === group
+                    ? 'border-[#33022F] bg-[#FCF5F5] text-[#33022F]'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                >
+                  {group}
+                </button>
+              ))}
+            </div>
+
+            <div className="max-w-4xl mx-auto mt-6 w-full items-center justify-center md:relative flex">
+              <button
+                onClick={handleNext}
+                disabled={!profileData.ageGroup}
+                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: profileData.ageGroup ? 'var(--villy-primary, #33022F)' : '#ccc' }}
+              >
+                CONTINUE
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        );
+
+      case 4: // LOCATION
+        return (
+          <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
+            <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
+              Where are you located?
+            </h2>
+            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
+              This helps us recommend locally available styles and trends.
+            </p>
+
+            <div className="py-6">
+              <input
+                type="text"
+                placeholder="Enter your city (e.g. Hyderabad, Mumbai, Delhi...)"
+                value={profileData.location || ''}
+                onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                className="w-full px-5 py-4 border border-gray-300 rounded-2xl text-base focus:outline-none focus:border-[#33022F]"
+              />
+            </div>
+
+            <div className="max-w-4xl mx-auto mt-6 w-full items-center justify-center md:relative flex">
+              <button
+                onClick={handleNext}
+                disabled={!profileData.location?.trim()}
+                className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: profileData.location?.trim() ? 'var(--villy-primary, #33022F)' : '#ccc' }}
+              >
+                CONTINUE
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        );
+
+      case 5: // BODY SHAPE (old case 2 → now shifted)
+        return (
+          <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
             <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
               Which body shape describes you best?
             </h2>
@@ -1004,7 +1142,6 @@ const MyProfile = () => {
               This helps us show you how clothes will fit your unique silhouette.
             </p>
 
-            {/* Body Shape Grid */}
             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2.5 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 mb-5 xs:mb-6 sm:mb-8 md:mb-4 lg:mb-8">
               {bodyShapes.map(shape => (
                 <button
@@ -1022,31 +1159,23 @@ const MyProfile = () => {
               ))}
             </div>
 
-
-            <div className={`max-w-4xl  mt-6  items-center justify-center md:relative   flex   `}>
+            <div className="max-w-4xl mt-6 items-center justify-center md:relative flex">
               <button
                 onClick={handleNext}
-                disabled={
-                  (currentStep === 2 && !profileData.bodyShape) ||
-                  (currentStep === 3 && !profileData.skinTone) ||
-                  (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
-                }
+                disabled={!profileData.bodyShape}
                 className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{ background: 'var(--villy-primary, #33022F)' }}
+                style={{ background: profileData.bodyShape ? 'var(--villy-primary, #33022F)' : '#ccc' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
-
           </div>
         );
 
-
-      case 3:
+      case 6: // SKIN TONE (old case 3 → now shifted)
         return (
           <div className="max-w-2xl mx-auto mt-12 px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-0">
-            {/* Header Section */}
             <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1.5 xs:mb-2 sm:mb-2 md:mb-1.5 lg:mb-2 text-center sm:text-left">
               Which skin tone is closest to yours?
             </h2>
@@ -1054,7 +1183,6 @@ const MyProfile = () => {
               This ensures your virtual avatar represents you authentically.
             </p>
 
-            {/* Skin Tone Grid */}
             <div className="grid grid-cols-4 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4">
               {skinTones.map(tone => (
                 <button
@@ -1065,13 +1193,10 @@ const MyProfile = () => {
                     : 'border-transparent hover:border-gray-300'
                     }`}
                 >
-                  {/* Color Circle */}
                   <div
-                    className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-12 md:h-12 lg:w-16 lg:h-16"
+                    className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-12 md:h-12 lg:w-16 lg:h-16 rounded-full"
                     style={{ backgroundColor: tone.color }}
                   />
-
-                  {/* Label */}
                   <span className="text-[10px] xs:text-xs sm:text-sm md:text-xs lg:text-sm font-medium text-gray-700 text-center leading-tight">
                     {tone.label}
                   </span>
@@ -1079,16 +1204,12 @@ const MyProfile = () => {
               ))}
             </div>
 
-            <div className={`max-w-4xl  mt-12  items-center justify-center md:relative   flex   `}>
+            <div className="max-w-4xl mt-12 items-center justify-center md:relative flex">
               <button
                 onClick={handleNext}
-                disabled={
-                  (currentStep === 2 && !profileData.bodyShape) ||
-                  (currentStep === 3 && !profileData.skinTone) ||
-                  (currentStep === 4 && (!profileData.hairType || !profileData.hairLength || !profileData.hairColor))
-                }
+                disabled={!profileData.skinTone}
                 className="w-4xl h-14 text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{ background: 'var(--villy-primary, #33022F)' }}
+                style={{ background: profileData.skinTone ? 'var(--villy-primary, #33022F)' : '#ccc' }}
               >
                 CONTINUE
                 <ChevronRight className="w-5 h-5" />
@@ -1097,8 +1218,7 @@ const MyProfile = () => {
           </div>
         );
 
-
-      case 4:
+      case 7:
         return (
           <div className="max-w-2xl mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 mt-22 xs:py-5 sm:py-10 md:py-3 lg:py-10">
             {/* Header */}
@@ -1207,7 +1327,7 @@ const MyProfile = () => {
 
 
 
-      case 5:
+      case 8:
         return (
           <div className="max-w-2xl mt-22  mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-10 md:py-3 lg:py-10">
             {/* Header */}
@@ -1281,7 +1401,7 @@ const MyProfile = () => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleFileUpload}
+                onChange={(e) => handleFileUpload(e, true)}
                 className="hidden"
               />
 
@@ -1311,7 +1431,7 @@ const MyProfile = () => {
 
 
 
-      case 6:
+      case 9:
         return (
           <div className="max-w-2xl mx-auto justify-center items-center px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-8 md:py-3 lg:py-8">
             {/* Header */}
@@ -1350,7 +1470,7 @@ const MyProfile = () => {
                     {/* Overlay with profile details */}
                     <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-3 xs:p-3 sm:p-4 md:p-3 lg:p-4">
                       <div className="grid grid-cols-2 gap-x-3 xs:gap-x-4 sm:gap-x-4 md:gap-x-3 lg:gap-x-4 gap-y-1.5 xs:gap-y-2 sm:gap-y-2 md:gap-y-1.5 lg:gap-y-2 text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm">
-                        <div>
+                        {/* <div>
                           <span className="text-gray-600">Height</span>
                           <p className="font-medium">{profileData.height} cm</p>
                         </div>
@@ -1365,7 +1485,7 @@ const MyProfile = () => {
                         <div>
                           <span className="text-gray-600">Skin Tone</span>
                           <p className="font-medium capitalize">{profileData.skinTone}</p>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </>
@@ -1383,7 +1503,7 @@ const MyProfile = () => {
               <button
                 onClick={capturedImage ? handleSaveModel : capturePhoto}
                 disabled={processingImage || savingProfile}
-                className="w-full h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-gradient-to-r from-red-500 to-orange-400 text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all"
+                className="w-full h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-primary text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all"
               >
                 {processingImage ? 'PROCESSING BACKGROUND...' : capturedImage ? 'SAVE & CONTINUE' : 'CAPTURE PHOTO'}
               </button>
@@ -1396,85 +1516,7 @@ const MyProfile = () => {
         );
 
 
-      case 7:
-        return (
-          <div className="min-h-screen mt-28 bg-[#FAFAFA] flex flex-col">
-            {/* Main Content – Image Left, Text Right */}
-            <div className="flex-1 flex flex-col justify-center items-center lg:flex-row px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 gap-4 xs:gap-5 sm:gap-8 md:gap-4 lg:gap-8 py-4 xs:py-5 sm:py-6 md:py-3 lg:py-6">
-
-              {/* Left: Photo Preview */}
-              <div className="flex-1 w-full lg:max-w-md">
-                <img
-                  src={capturedImage || "https://i.imgur.com/1Qw2X3j.jpg"}
-                  alt="Your photo"
-                  className="w-full h-full min-h-[280px] xs:min-h-[320px] sm:min-h-96 md:min-h-[280px] lg:min-h-96 object-cover shadow-md"
-                />
-              </div>
-
-              {/* Right: Text + Tips */}
-              <div className=" flex flex-col justify-center -mt-38 w-full  max-w-md">
-                <h1 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1.5 sm:mb-2 md:mb-1 lg:mb-2 text-center lg:text-left">
-                  Your Model: {normalizeModelName(modelName) || 'Model'}
-                </h1>
-                <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-4 xs:mb-5 sm:mb-8 md:mb-4 lg:mb-8 text-center lg:text-left">
-                  Review your model and continue, or retake the image.
-                </p>
-
-                {/* Tips Card */}
-                <div
-                  className="p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 shadow-sm border border-gray-100 mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6"
-                  style={{ backgroundColor: '#BA8DB7' }}
-                >
-                  <p className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-primary mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
-                    For best results:
-                  </p>
-                  <ul className="space-y-2 xs:space-y-2 sm:space-y-3 md:space-y-2 lg:space-y-3 text-[#403200]">
-                    {[
-                      "Stand straight facing the camera with your arms at your sides.",
-                      "Full-body frame: Ensure you are visible from head to toe.",
-                      "Lighting & Background: Use bright light and a plain, neutral background.",
-                      "Wear fitted clothing: This allows the AI to map the outfit to your body shape accurately.",
-                      "Photo Quality: Avoid blurry, dark, filtered, or cropped images.",
-                      "Single Subject: Make sure you are the only person in the photo."
-                    ].map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2 xs:gap-2 sm:gap-3 md:gap-2 lg:gap-3">
-                        <span className="text-base xs:text-base sm:text-lg md:text-base lg:text-lg leading-none">•</span>
-                        <span className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm">{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3 xs:space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
-                  {/* Continue Button */}
-                  <button
-                    onClick={handleSaveModel}
-                    className="w-full h-11 xs:h-12 sm:h-14 md:h-11 lg:h-14 text-white text-sm xs:text-sm sm:text-lg md:text-sm lg:text-lg font-bold shadow-md flex items-center justify-center"
-                    style={{ backgroundColor: '#33022F' }}
-                  >
-                    SAVE & CONTINUE →
-                  </button>
-                  {/* Retake Button */}
-                  <button
-                    onClick={() => {
-                      setCapturedImage(null);
-                      setCurrentStep(5);
-                    }}
-                    className="w-full h-10 xs:h-11 sm:h-12 md:h-10 lg:h-12 bg-white border border-gray-300 text-gray-800 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm font-medium flex items-center justify-center gap-2"
-                  >
-                    <Camera size={16} className="xs:w-[18px] xs:h-[18px] sm:w-5 sm:h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                    RETAKE PHOTO
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-
-
-      case 8: // AI TRY-ON - Mobile & Desktop versions
+      case 11: // AI TRY-ON - Mobile & Desktop versions
         return (
           <>
             {/* Back Button - Desktop Only */}
@@ -1647,7 +1689,7 @@ const MyProfile = () => {
                       setSavedResults(cloudinaryUrls);
                       setHasSavedModels(true);
 
-                      setCurrentStep(9);
+                      setCurrentStep(11);
                     } catch (error) {
                       console.error("❌ Save error:", error);
                       alert(`Error saving profile: ${error.message}`);
@@ -1825,7 +1867,7 @@ disabled:opacity-50 transition-all"
                       setSavedResults(cloudinaryUrls);
                       setHasSavedModels(true);
 
-                      setCurrentStep(9);
+                      setCurrentStep(11);
                     } catch (error) {
                       console.error("❌ Save error:", error);
                       alert(`Error saving profile: ${error.message}`);
@@ -1858,10 +1900,10 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
           </>
         );
 
+      ////this is a comment 
 
 
-
-      case 9: // Success
+      case 12: // Success
         return (
           <div className="flex flex-col justify-center items-center min-h-[400px] xs:min-h-[450px] sm:min-h-[500px] md:min-h-[400px] lg:min-h-[500px] px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-6 xs:py-8 sm:py-10 md:py-6 lg:py-10">
 
@@ -2090,7 +2132,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
       </div>
 
       {/* Back Button */}
-      {currentStep > 0 && currentStep < 8 && (
+      {currentStep > 0 && currentStep < 10 && (
         <div className={`absolute top-44   flex z-40 ${currentStep === 7 ? 'left-74 mt-2' : 'left-112 '}`}>
           <button onClick={handleBack} className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-black">
             <ChevronLeft size={20} /> Back
@@ -2107,7 +2149,7 @@ text-white text-sm md:text-base font-semibold hover:shadow-lg transition-all dis
       {/* Hidden refs */}
       <video ref={videoRef} autoPlay playsInline className="hidden" />
       <canvas ref={canvasRef} className="hidden" />
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => handleFileUpload(e, true)} className="hidden" />
     </div>
   );
 };

@@ -56,7 +56,7 @@ const BlouseNeckCustomizer = ({
                 </div>
                 <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
                   }`}>
-                  {blouse.name}
+                  {blouse.name.toUpperCase()}
                 </span>
               </div>
             );
@@ -80,7 +80,7 @@ const BlouseNeckCustomizer = ({
                 </div>
                 <span className={`w-full py-1 text-[11px] font-medium text-center transition-colors ${active ? "bg-[#4a044e] text-white" : "bg-transparent text-gray-900"
                   }`}>
-                  {neck.label}
+                  {neck.label.toUpperCase()}
                 </span>
               </div>
             );
