@@ -12,17 +12,31 @@ import { useWishlist } from "../../../context/WishlistContext";
 
 // --- COMPONENTS ---
 
-const WelcomeBanner = () => (
-  <div className="bg-[#FFF8E1] p-4 rounded-lg flex items-center justify-between mb-6 shadow-sm border border-[#FFE0B2]">
-    <div className="flex items-center gap-3">
-      <span className="text-2xl">🎉</span>
-      <div>
-        <p className="font-bold text-gray-900 text-sm">Free Shipping on All Orders!</p>
-        <p className="text-xs text-gray-600 mt-0.5">No minimum order value • Delivered in 5-7 business days</p>
+const WelcomeBanner = ({ subtotal, isFreeShipping }) => {
+  const MINIMUM_FREE_SHIPPING = 5000;
+  const remainingAmount = Math.max(0, MINIMUM_FREE_SHIPPING - subtotal);
+
+  return (
+    <div className="bg-[#FFF8E1] p-4 rounded-lg flex items-center justify-between mb-6 shadow-sm border border-[#FFE0B2]">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🎉</span>
+        <div>
+          {isFreeShipping ? (
+            <>
+              <p className="font-bold text-gray-900 text-sm">Free Shipping on All Orders!</p>
+              <p className="text-xs text-gray-600 mt-0.5">No minimum order value • Delivered in 5-7 business days</p>
+            </>
+          ) : (
+            <>
+              <p className="font-bold text-gray-900 text-sm">Add ₹{remainingAmount.toLocaleString()} more for Free Shipping</p>
+              <p className="text-xs text-gray-600 mt-0.5">Free shipping on orders above ₹{MINIMUM_FREE_SHIPPING.toLocaleString()} • Delivered in 5-7 business days</p>
+            </>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveForLater }) => {
   // Mock Brand Name for demo matching image (In real app, this comes from product data)
@@ -387,8 +401,10 @@ export default function CartPage() {
   };
 
   // Calculations
+  const MINIMUM_FREE_SHIPPING = 5000;
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 0; // FREE
+  const isFreeShipping = subtotal >= MINIMUM_FREE_SHIPPING;
+  const shipping = isFreeShipping ? 0 : 100; // ₹100 shipping if below threshold
   const tax = subtotal * 0.18; // 18% GST example
   const total = subtotal + shipping + tax;
 
@@ -422,7 +438,7 @@ export default function CartPage() {
 
             {/* LEFT COLUMN: Items */}
             <div className="flex-1">
-              <WelcomeBanner />
+              <WelcomeBanner subtotal={subtotal} isFreeShipping={isFreeShipping} />
 
               <div className="space-y-4">
                 {cartItems.map(item => (
@@ -471,7 +487,11 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Shipping</span>
-                    <span className="font-bold text-green-600">FREE</span>
+                    {isFreeShipping ? (
+                      <span className="font-bold text-green-600">FREE</span>
+                    ) : (
+                      <span className="font-medium text-gray-900">₹{shipping.toLocaleString()}</span>
+                    )}
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Tax (18% GST)</span>
@@ -486,9 +506,11 @@ export default function CartPage() {
                 </div>
 
                 {/* Free Shipping Banner */}
-                <div className="bg-[#eef2ff] p-3 rounded-lg text-center mb-6">
-                  <p className="text-xs font-medium text-indigo-800">🎉 You're eligible for FREE shipping!</p>
-                </div>
+                {isFreeShipping && (
+                  <div className="bg-[#eef2ff] p-3 rounded-lg text-center mb-6">
+                    <p className="text-xs font-medium text-indigo-800">🎉 You're eligible for FREE shipping!</p>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="space-y-3">

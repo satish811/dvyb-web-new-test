@@ -36,6 +36,7 @@ export const FilterProvider = ({ children }) => {
     weavingMethods: [],
     certifications: [],
     sareeBlouseOptions: [],
+    deliveryTimes: [],
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -52,6 +53,7 @@ export const FilterProvider = ({ children }) => {
     weavingMethods: [],
     certifications: [],
     sareeBlouseOptions: [],
+    deliveryTimeWindows: [],
   });
 
   const [navbarCategory, setNavbarCategory] = useState("");
@@ -169,6 +171,16 @@ export const FilterProvider = ({ children }) => {
             break;
           }
 
+          case "deliveryTimeWindows": {
+            const deliveryTimeWindows = newFilters.deliveryTimeWindows || [];
+            if (deliveryTimeWindows.includes(value)) {
+              newFilters.deliveryTimeWindows = deliveryTimeWindows.filter((item) => item !== value);
+            } else {
+              newFilters.deliveryTimeWindows = [...deliveryTimeWindows, value];
+            }
+            break;
+          }
+
           case "recentUploads":
             const recentUploads = newFilters.recentUploads || [];
             if (recentUploads.includes(value)) {
@@ -214,6 +226,7 @@ export const FilterProvider = ({ children }) => {
       weavingMethods: [],
       certifications: [],
       sareeBlouseOptions: [],
+      deliveryTimeWindows: [],
     });
     setNavbarCategory("");
   }, []);
@@ -238,6 +251,7 @@ export const FilterProvider = ({ children }) => {
       weavingMethods: newFilters.weavingMethods || [],
       certifications: newFilters.certifications || [],
       sareeBlouseOptions: newFilters.sareeBlouseOptions || [],
+      deliveryTimeWindows: newFilters.deliveryTimeWindows || [],
     });
     if (newFilters.categories?.length > 0) {
       setNavbarCategory(newFilters.categories[0]);

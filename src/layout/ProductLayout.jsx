@@ -46,6 +46,7 @@ export default function ProductLayout({ children, products, categoryFromRoute, l
     if (selectedFilters.weavingMethods?.length) count += selectedFilters.weavingMethods.length;
     if (selectedFilters.certifications?.length) count += selectedFilters.certifications.length;
     if (selectedFilters.sareeBlouseOptions?.length) count += selectedFilters.sareeBlouseOptions.length;
+    if (selectedFilters.deliveryTimeWindows?.length) count += selectedFilters.deliveryTimeWindows.length;
     if (selectedFilters.priceMin != null) count++;
     if (selectedFilters.priceMax != null) count++;
     return count;

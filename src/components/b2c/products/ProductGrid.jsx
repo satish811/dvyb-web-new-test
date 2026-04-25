@@ -126,10 +126,14 @@ const ProductGrid = ({
   }, [filteredProducts, category]);
 
   /**
-   * Determines if a product should be shown based on admin publication status and product publication status.
+   * Determines if a product should be shown based on admin publication status, product publication status, and availability.
    */
   const shouldShowProduct = (product) => {
     if (!product) return false;
+
+    // Check if product is out of stock
+    const stockStatus = product.stockStatus || "In Stock";
+    if (stockStatus === "Out of Stock") return false;
 
     const adminPublished = product.isAdminPublished ?? product.availability?.isAdminPublished;
 

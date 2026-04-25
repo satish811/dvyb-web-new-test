@@ -84,6 +84,10 @@ class SearchOperationalService {
     if (!queryTokens.length) return true;
 
     const searchableText = [
+      product?.productCode,
+      product?.sku,
+      product?.code,
+      product?.id,
       product?.title,
       product?.name,
       product?.category,
@@ -143,8 +147,15 @@ class SearchOperationalService {
             ...data,
             title: data.title || data.name || "Untitled Product",
             name: data.name || data.title || "Untitled Product",
+            productCode: data.productCode || data.sku || data.code || doc.id,
+            sku: data.sku,
+            code: data.code,
             // Pre-compute a combined searchable text field for better matching
             _searchText: [
+              data.productCode,
+              data.sku,
+              data.code,
+              doc.id,
               data.title,
               data.name,
               data.category,
@@ -167,6 +178,9 @@ class SearchOperationalService {
         // Build Fuse.js index
         this._fuseInstance = new Fuse(this._cachedProducts, {
           keys: [
+            { name: "productCode", weight: 0.75 },
+            { name: "sku", weight: 0.7 },
+            { name: "code", weight: 0.7 },
             { name: "title", weight: 0.3 },
             { name: "name", weight: 0.3 },
             { name: "category", weight: 0.2 },
@@ -312,13 +326,27 @@ class SearchOperationalService {
         const aExact =
           a.title?.toLowerCase() === originalQuery ||
           a.name?.toLowerCase() === originalQuery ||
+          a.productCode?.toLowerCase() === originalQuery ||
+          a.sku?.toLowerCase() === originalQuery ||
+          a.code?.toLowerCase() === originalQuery ||
+          a.id?.toLowerCase() === originalQuery ||
           a.title?.toLowerCase() === stemmedQuery ||
-          a.name?.toLowerCase() === stemmedQuery;
+          a.name?.toLowerCase() === stemmedQuery ||
+          a.productCode?.toLowerCase() === stemmedQuery ||
+          a.sku?.toLowerCase() === stemmedQuery ||
+          a.code?.toLowerCase() === stemmedQuery;
         const bExact =
           b.title?.toLowerCase() === originalQuery ||
           b.name?.toLowerCase() === originalQuery ||
+          b.productCode?.toLowerCase() === originalQuery ||
+          b.sku?.toLowerCase() === originalQuery ||
+          b.code?.toLowerCase() === originalQuery ||
+          b.id?.toLowerCase() === originalQuery ||
           b.title?.toLowerCase() === stemmedQuery ||
-          b.name?.toLowerCase() === stemmedQuery;
+          b.name?.toLowerCase() === stemmedQuery ||
+          b.productCode?.toLowerCase() === stemmedQuery ||
+          b.sku?.toLowerCase() === stemmedQuery ||
+          b.code?.toLowerCase() === stemmedQuery;
 
         if (aExact && !bExact) return -1;
         if (!aExact && bExact) return 1;
@@ -356,6 +384,9 @@ class SearchOperationalService {
       const suggestions = new Set();
 
       results.forEach((product) => {
+        if (product.productCode) suggestions.add(product.productCode);
+        if (product.sku) suggestions.add(product.sku);
+        if (product.code) suggestions.add(product.code);
         suggestions.add(product.title || product.name);
         if (product.category) suggestions.add(product.category);
         if (product.subcategory) suggestions.add(product.subcategory);
