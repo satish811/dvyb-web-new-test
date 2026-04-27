@@ -83,7 +83,45 @@ export default function Home() {
   }
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
-  const productsArray = Array.isArray(products) ? products : [];
+  const parseBooleanValue = (value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "published", "active", "live"].includes(normalized)) return true;
+      if (["false", "0", "no", "unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
+    }
+    return undefined;
+  };
+
+  const isProductVisible = (product) => {
+    if (!product) return false;
+
+    const adminPublished =
+      parseBooleanValue(product.isAdminPublished) ??
+      parseBooleanValue(product.adminPublished) ??
+      parseBooleanValue(product.is_admin_published) ??
+      parseBooleanValue(product.admin_published) ??
+      parseBooleanValue(product.availability?.isAdminPublished) ??
+      parseBooleanValue(product.availability?.adminPublished) ??
+      parseBooleanValue(product.superAdminPublished) ??
+      parseBooleanValue(product.isSuperAdminPublished) ??
+      parseBooleanValue(product.is_super_admin_published) ??
+      parseBooleanValue(product.super_admin_published);
+
+    const published =
+      parseBooleanValue(product.isPublished) ??
+      parseBooleanValue(product.published) ??
+      parseBooleanValue(product.is_published) ??
+      parseBooleanValue(product.availability?.isPublished) ??
+      parseBooleanValue(product.availability?.published);
+
+    if (adminPublished === false) return false;
+    if (published === false) return false;
+    return true;
+  };
+
+  const productsArray = Array.isArray(products) ? products.filter(isProductVisible) : [];
 
   return (
     <div className="">

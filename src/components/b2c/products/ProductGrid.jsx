@@ -84,8 +84,8 @@ const ProductGrid = ({
 
     // Group definitions: URL pattern → array of matching dressType keywords (all lowercase)
     const CATEGORY_GROUPS = {
-      saree: (dt) => dt === "saree" || dt === "sarees",
-      sarees: (dt) => dt === "saree" || dt === "sarees",
+      saree: (dt) => dt === "saree" || dt === "sarees" || dt.includes("saree") || dt.includes("sari"),
+      sarees: (dt) => dt === "saree" || dt === "sarees" || dt.includes("saree") || dt.includes("sari"),
       lehenga: (dt) => dt.includes("lehenga"),
       lehengas: (dt) => dt.includes("lehenga"),
       "kurta-sets": (dt) => dt.includes("kurta"),
@@ -109,16 +109,24 @@ const ProductGrid = ({
     const matcher = CATEGORY_GROUPS[categoryLower];
 
     // DEBUG: log all unique dressTypes + which ones match
-    const allDressTypes = [...new Set(filteredProducts.map(p => p.dressType).filter(Boolean))];
-    console.log(`[DEBUG] URL category="${categoryLower}" | All dressTypes in products:`, allDressTypes);
-
     const filtered = filteredProducts.filter(product => {
-      const dt = product.dressType?.trim()?.toLowerCase();
-      if (!dt) return false;
-      if (matcher) return matcher(dt);
-      // Fallback: check if dressType contains the first word of the category
+      const productFields = [
+        product.dressType,
+        product.category,
+        product.subcategory,
+        product.subDressType,
+        product.type,
+        product.subCategory,
+        product.productType,
+      ].filter(Boolean).map((value) => value.trim().toLowerCase());
+
+      if (!productFields.length) return false;
+      if (matcher) {
+        return productFields.some((field) => matcher(field));
+      }
+
       const baseWord = categoryLower.split("-")[0];
-      return dt.includes(baseWord);
+      return productFields.some((field) => field.includes(baseWord));
     });
 
     console.log(`[DEBUG] Found ${filtered.length} products for category "${categoryLower}"`);
@@ -128,20 +136,58 @@ const ProductGrid = ({
   /**
    * Determines if a product should be shown based on admin publication status, product publication status, and availability.
    */
+  const normalizeBoolean = (value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true" || normalized === "1" || normalized === "yes") return true;
+      if (normalized === "false" || normalized === "0" || normalized === "no") return false;
+    }
+    return undefined;
+  };
+
+  const parsePublicationStatus = (value) => {
+    if (typeof value !== "string") return undefined;
+    const normalized = value.trim().toLowerCase();
+    if (["published", "active", "live"].includes(normalized)) return true;
+    if (["unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
+    return undefined;
+  };
+
   const shouldShowProduct = (product) => {
     if (!product) return false;
 
     // Check if product is out of stock
-    const stockStatus = product.stockStatus || "In Stock";
-    if (stockStatus === "Out of Stock") return false;
+    const stockStatus = (product.stockStatus || "In Stock").toString().trim().toLowerCase();
+    if (stockStatus === "out of stock") return false;
 
-    const adminPublished = product.isAdminPublished ?? product.availability?.isAdminPublished;
+    const adminPublished =
+      normalizeBoolean(product.isAdminPublished) ??
+      normalizeBoolean(product.adminPublished) ??
+      normalizeBoolean(product.is_admin_published) ??
+      normalizeBoolean(product.admin_published) ??
+      normalizeBoolean(product.availability?.isAdminPublished) ??
+      normalizeBoolean(product.availability?.adminPublished) ??
+      normalizeBoolean(product.superAdminPublished) ??
+      normalizeBoolean(product.isSuperAdminPublished) ??
+      normalizeBoolean(product.is_super_admin_published) ??
+      normalizeBoolean(product.super_admin_published);
 
-    if (adminPublished !== undefined) {
-      if (adminPublished === false) return false;
-      if (adminPublished === true && !product.isPublished) return false;
-    }
-    return product.isPublished === true;
+    const isPublished =
+      normalizeBoolean(product.isPublished) ??
+      normalizeBoolean(product.published) ??
+      normalizeBoolean(product.is_published) ??
+      normalizeBoolean(product.availability?.isPublished) ??
+      normalizeBoolean(product.availability?.published) ??
+      parsePublicationStatus(product.status) ??
+      parsePublicationStatus(product.publishedStatus);
+
+    if (adminPublished === false) return false;
+    if (isPublished === false) return false;
+    if (adminPublished === true && isPublished !== true) return false;
+
+    return isPublished === true || product.isPublished === true || product.published === true;
   };
 
   /**
@@ -174,11 +220,6 @@ const ProductGrid = ({
   const startIndex = shouldPaginate ? (currentPage - 1) * productsPerPage : 0;
   const endIndex = shouldPaginate ? startIndex + productsPerPage : productsToDisplay.length;
   const paginatedProducts = productsToDisplay.slice(startIndex, endIndex);
-
-  console.log("^^^^^^^^^^^^^^^^^^^", paginatedProducts);
-
-  console.log("Products to display:", paginatedProducts.length, "products");
-  console.log("First product dressType:", paginatedProducts[0]?.dressType);
 
   // Ensure current page is valid (if filters reduce product count)
   useEffect(() => {

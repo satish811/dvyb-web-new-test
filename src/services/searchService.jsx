@@ -80,6 +80,48 @@ class SearchOperationalService {
       .filter(Boolean);
   }
 
+  _normalizeBoolean(value) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "published", "active", "live"].includes(normalized)) return true;
+      if (["false", "0", "no", "unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
+    }
+    return undefined;
+  }
+
+  _isProductVisible(product) {
+    if (!product) return false;
+
+    const adminPublished =
+      this._normalizeBoolean(product.isAdminPublished) ??
+      this._normalizeBoolean(product.adminPublished) ??
+      this._normalizeBoolean(product.is_admin_published) ??
+      this._normalizeBoolean(product.admin_published) ??
+      this._normalizeBoolean(product.availability?.isAdminPublished) ??
+      this._normalizeBoolean(product.availability?.adminPublished) ??
+      this._normalizeBoolean(product.superAdminPublished) ??
+      this._normalizeBoolean(product.isSuperAdminPublished) ??
+      this._normalizeBoolean(product.is_super_admin_published) ??
+      this._normalizeBoolean(product.super_admin_published);
+
+    const published =
+      this._normalizeBoolean(product.isPublished) ??
+      this._normalizeBoolean(product.published) ??
+      this._normalizeBoolean(product.is_published) ??
+      this._normalizeBoolean(product.availability?.isPublished) ??
+      this._normalizeBoolean(product.availability?.published);
+
+    if (adminPublished === false) return false;
+    if (published === false) return false;
+    if (adminPublished === true && published === undefined) {
+      return true;
+    }
+
+    return published !== false;
+  }
+
   _matchesStrictQuery(product, queryTokens = []) {
     if (!queryTokens.length) return true;
 
@@ -140,40 +182,42 @@ class SearchOperationalService {
           throw error;
         }
 
-        this._cachedProducts = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            title: data.title || data.name || "Untitled Product",
-            name: data.name || data.title || "Untitled Product",
-            productCode: data.productCode || data.sku || data.code || doc.id,
-            sku: data.sku,
-            code: data.code,
-            // Pre-compute a combined searchable text field for better matching
-            _searchText: [
-              data.productCode,
-              data.sku,
-              data.code,
-              doc.id,
-              data.title,
-              data.name,
-              data.category,
-              data.subcategory,
-              data.description,
-              data.dressType,
-              data.fabric,
-              data.craft,
-              data.shopName,
-              data.boutiqueName,
-              data.brand,
-              ...(Array.isArray(data.tags) ? data.tags : []),
-            ]
-              .filter(Boolean)
-              .join(" ")
-              .toLowerCase(),
-          };
-        });
+        this._cachedProducts = querySnapshot.docs
+          .map((doc) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              title: data.title || data.name || "Untitled Product",
+              name: data.name || data.title || "Untitled Product",
+              productCode: data.productCode || data.sku || data.code || doc.id,
+              sku: data.sku,
+              code: data.code,
+              // Pre-compute a combined searchable text field for better matching
+              _searchText: [
+                data.productCode,
+                data.sku,
+                data.code,
+                doc.id,
+                data.title,
+                data.name,
+                data.category,
+                data.subcategory,
+                data.description,
+                data.dressType,
+                data.fabric,
+                data.craft,
+                data.shopName,
+                data.boutiqueName,
+                data.brand,
+                ...(Array.isArray(data.tags) ? data.tags : []),
+              ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase(),
+            };
+          })
+          .filter((product) => this._isProductVisible(product));
 
         // Build Fuse.js index
         this._fuseInstance = new Fuse(this._cachedProducts, {
@@ -320,6 +364,9 @@ class SearchOperationalService {
       if (strictMatch) {
         results = results.filter((p) => this._matchesStrictQuery(p, queryTokens));
       }
+
+      // Always exclude unpublished or hidden products from final output.
+      results = results.filter((p) => this._isProductVisible(p));
 
       // Sort: exact matches first, then by fuzzy score (lower = better)
       results.sort((a, b) => {
