@@ -74,9 +74,7 @@ const CustomizationPanel = ({
       </div>
 
       {/* ── 360 VIEW TOGGLE CARD ────────────────────────────────── */}
-      <div className="w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[24px] p-4 px-5 flex items-center justify-between">
-        <ViewModeToggle viewMode={viewMode} handleViewModeSwitch={handleViewModeSwitch} />
-      </div>
+      <ViewModeToggle viewMode={viewMode} handleViewModeSwitch={handleViewModeSwitch} />
 
       {/* ── RESET BUTTON ────────────────────────────────────────── */}
       <button
@@ -84,7 +82,7 @@ const CustomizationPanel = ({
   className="
     w-full
     min-h-12
-    bg-[#74136C]
+    bg-white
     shadow-md
     rounded-full
     py-3
@@ -94,7 +92,9 @@ const CustomizationPanel = ({
     justify-center
     gap-2
     border border-[#74136C]
-    hover:bg-[#5a0f54]
+    text-[#74136C]
+    hover:bg-[#74136C]
+    hover:text-white
     active:scale-[0.97]
     transition-all
   "
@@ -105,7 +105,7 @@ const CustomizationPanel = ({
     className="w-[18px] h-[18px] object-contain shrink-0"
   />
 
-  <span className="text-[16px] font-semibold text-white whitespace-nowrap">
+  <span className="text-[16px] font-semibold whitespace-nowrap">
     Re-Try
   </span>
 </button>
