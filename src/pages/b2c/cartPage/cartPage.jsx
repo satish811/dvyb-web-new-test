@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, Link } from "react-router-dom";
 import { cartService } from "../../../services/cartService";
@@ -9,6 +9,8 @@ import { Minus, Plus, X, Trash2, Heart, Share2, Copy } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaTwitter, FaEnvelope } from "react-icons/fa";
 import LazyImageLoader from "../../../components/b2c/LazyImageLoader/LazyImageLoader";
 import { useWishlist } from "../../../context/WishlistContext";
+import { getProductAvailabilityLabel, isProductOutOfStock } from "../../../utils/productVisibility";
+import { useProducts } from "../../../hooks/useProducts";
 
 // --- COMPONENTS ---
 
@@ -41,11 +43,18 @@ const WelcomeBanner = ({ subtotal, isFreeShipping }) => {
 const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveForLater }) => {
   // Mock Brand Name for demo matching image (In real app, this comes from product data)
   const brandName = item.brand || "VILLY FASHION";
+  const stockStatus = getProductAvailabilityLabel(item);
+  const isOutOfStock = stockStatus === "Out of Stock";
 
   return (
     <div className="bg-white border border-gray-100 p-3 sm:p-4 rounded-xl flex flex-row gap-3 sm:gap-6 mb-4 relative shadow-sm hover:shadow-md transition-shadow">
       {/* Image */}
-      <div className="w-[100px] h-[130px] sm:w-32 sm:h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+      <div className="w-[100px] h-[130px] sm:w-32 sm:h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
+        {isOutOfStock && (
+          <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-gray-500 text-white text-[10px] font-bold uppercase tracking-wide">
+            Out of Stock
+          </div>
+        )}
         <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
       </div>
 
@@ -91,7 +100,7 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
           <div className="flex items-center border border-gray-200 rounded-md">
             <button
               onClick={() => onQuantityChange(item.uniqueId, -1)}
-              disabled={item.quantity <= 1}
+              disabled={item.quantity <= 1 || isOutOfStock}
               className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50"
             >
               <Minus size={14} />
@@ -99,6 +108,7 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, onSizeChange, onSaveFo
             <span className="w-8 h-8 flex items-center justify-center font-medium text-sm text-gray-900">{item.quantity}</span>
             <button
               onClick={() => onQuantityChange(item.uniqueId, 1)}
+              disabled={isOutOfStock}
               className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50"
             >
               <Plus size={14} />
@@ -251,12 +261,36 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("B2C");
   const { addToWishlist } = useWishlist();
+  const { products, loading: productsLoading } = useProducts();
 
   // State for Layout
   const [promoCode, setPromoCode] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const dummyShareUrl = `https://villy.com/shared-cart/${Date.now()}`;
+
+  const productsById = useMemo(() => {
+    return new Map((products || []).map((product) => [product.id, product]));
+  }, [products]);
+
+  const displayCartItems = useMemo(() => {
+    return cartItems.map((item) => {
+      const liveProduct = productsById.get(item.productId || item.id);
+      if (!liveProduct) return item;
+      return {
+        ...liveProduct,
+        ...item,
+        id: liveProduct.id || item.id,
+        productId: item.productId || liveProduct.id || item.id,
+        uniqueId: item.uniqueId || item.productId || item.id,
+      };
+    });
+  }, [cartItems, productsById]);
+
+  const hasOutOfStockItems = useMemo(
+    () => displayCartItems.some((item) => isProductOutOfStock(item)),
+    [displayCartItems]
+  );
 
   // --- LOGIC (Simplified from original for succinctness, keeping core functionality) ---
 
@@ -400,15 +434,24 @@ export default function CartPage() {
     }
   };
 
+  const handleProceedToCheckout = () => {
+    if (hasOutOfStockItems) {
+      alert("Some products are out of stock, remove them to proceed to checkout.");
+      return;
+    }
+
+    navigate('/checkout');
+  };
+
   // Calculations
   const MINIMUM_FREE_SHIPPING = 5000;
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = displayCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const isFreeShipping = subtotal >= MINIMUM_FREE_SHIPPING;
   const shipping = isFreeShipping ? 0 : 100; // ₹100 shipping if below threshold
   const tax = subtotal * 0.18; // 18% GST example
   const total = subtotal + shipping + tax;
 
-  if (loading) return (
+  if (loading || productsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <LazyImageLoader isProcessing={true} size="page" />
     </div>
@@ -441,7 +484,7 @@ export default function CartPage() {
               <WelcomeBanner subtotal={subtotal} isFreeShipping={isFreeShipping} />
 
               <div className="space-y-4">
-                {cartItems.map(item => (
+                {displayCartItems.map(item => (
                   <CartItemCard
                     key={item.uniqueId}
                     item={item}
@@ -515,7 +558,7 @@ export default function CartPage() {
                 {/* Actions */}
                 <div className="space-y-3">
                   <button
-                    onClick={() => navigate('/checkout')}
+                    onClick={handleProceedToCheckout}
                     className="w-full py-4 bg-[#33022F] text-white font-bold rounded-lg text-sm hover:bg-[#5a0452] transition shadow-lg hover:shadow-xl"
                   >
                     Proceed to Checkout

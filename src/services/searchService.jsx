@@ -1,6 +1,7 @@
 import { db } from "../config/firebaseConfig";
 import { collectionGroup, getDocs } from "firebase/firestore";
 import Fuse from "fuse.js";
+import { isProductPublishedByBoth } from "../utils/productVisibility";
 
 /**
  * SearchService — Production-level fuzzy search with Fuse.js
@@ -80,46 +81,8 @@ class SearchOperationalService {
       .filter(Boolean);
   }
 
-  _normalizeBoolean(value) {
-    if (typeof value === "boolean") return value;
-    if (typeof value === "number") return value === 1;
-    if (typeof value === "string") {
-      const normalized = value.trim().toLowerCase();
-      if (["true", "1", "yes", "published", "active", "live"].includes(normalized)) return true;
-      if (["false", "0", "no", "unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
-    }
-    return undefined;
-  }
-
   _isProductVisible(product) {
-    if (!product) return false;
-
-    const adminPublished =
-      this._normalizeBoolean(product.isAdminPublished) ??
-      this._normalizeBoolean(product.adminPublished) ??
-      this._normalizeBoolean(product.is_admin_published) ??
-      this._normalizeBoolean(product.admin_published) ??
-      this._normalizeBoolean(product.availability?.isAdminPublished) ??
-      this._normalizeBoolean(product.availability?.adminPublished) ??
-      this._normalizeBoolean(product.superAdminPublished) ??
-      this._normalizeBoolean(product.isSuperAdminPublished) ??
-      this._normalizeBoolean(product.is_super_admin_published) ??
-      this._normalizeBoolean(product.super_admin_published);
-
-    const published =
-      this._normalizeBoolean(product.isPublished) ??
-      this._normalizeBoolean(product.published) ??
-      this._normalizeBoolean(product.is_published) ??
-      this._normalizeBoolean(product.availability?.isPublished) ??
-      this._normalizeBoolean(product.availability?.published);
-
-    if (adminPublished === false) return false;
-    if (published === false) return false;
-    if (adminPublished === true && published === undefined) {
-      return true;
-    }
-
-    return published !== false;
+    return isProductPublishedByBoth(product);
   }
 
   _matchesStrictQuery(product, queryTokens = []) {

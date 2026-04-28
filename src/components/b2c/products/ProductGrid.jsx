@@ -5,6 +5,7 @@ import { useFilter } from "../../../context/FilterContext";
 import ProductCard from "./ProductCard";
 import AdsCarousel from "../../common/AdSection/AdsCarousel";
 import Pagination from "../../common/Pagination";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 // Category mapping for URL to product dressType
 const CATEGORY_MAPPINGS = {
@@ -133,61 +134,8 @@ const ProductGrid = ({
     return filtered;
   }, [filteredProducts, category]);
 
-  /**
-   * Determines if a product should be shown based on admin publication status, product publication status, and availability.
-   */
-  const normalizeBoolean = (value) => {
-    if (typeof value === "boolean") return value;
-    if (typeof value === "number") return value === 1;
-    if (typeof value === "string") {
-      const normalized = value.trim().toLowerCase();
-      if (normalized === "true" || normalized === "1" || normalized === "yes") return true;
-      if (normalized === "false" || normalized === "0" || normalized === "no") return false;
-    }
-    return undefined;
-  };
-
-  const parsePublicationStatus = (value) => {
-    if (typeof value !== "string") return undefined;
-    const normalized = value.trim().toLowerCase();
-    if (["published", "active", "live"].includes(normalized)) return true;
-    if (["unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
-    return undefined;
-  };
-
   const shouldShowProduct = (product) => {
-    if (!product) return false;
-
-    // Check if product is out of stock
-    const stockStatus = (product.stockStatus || "In Stock").toString().trim().toLowerCase();
-    if (stockStatus === "out of stock") return false;
-
-    const adminPublished =
-      normalizeBoolean(product.isAdminPublished) ??
-      normalizeBoolean(product.adminPublished) ??
-      normalizeBoolean(product.is_admin_published) ??
-      normalizeBoolean(product.admin_published) ??
-      normalizeBoolean(product.availability?.isAdminPublished) ??
-      normalizeBoolean(product.availability?.adminPublished) ??
-      normalizeBoolean(product.superAdminPublished) ??
-      normalizeBoolean(product.isSuperAdminPublished) ??
-      normalizeBoolean(product.is_super_admin_published) ??
-      normalizeBoolean(product.super_admin_published);
-
-    const isPublished =
-      normalizeBoolean(product.isPublished) ??
-      normalizeBoolean(product.published) ??
-      normalizeBoolean(product.is_published) ??
-      normalizeBoolean(product.availability?.isPublished) ??
-      normalizeBoolean(product.availability?.published) ??
-      parsePublicationStatus(product.status) ??
-      parsePublicationStatus(product.publishedStatus);
-
-    if (adminPublished === false) return false;
-    if (isPublished === false) return false;
-    if (adminPublished === true && isPublished !== true) return false;
-
-    return isPublished === true || product.isPublished === true || product.published === true;
+    return isProductPublishedByBoth(product) && !isProductOutOfStock(product);
   };
 
   /**

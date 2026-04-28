@@ -22,6 +22,7 @@ import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 import ProfilePromptPopup from "../../../components/b2c/home/ProfilePromptPopup";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 import useScrollRestore from "../../../hooks/useScrollRestore";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 export default function Home() {
   const { products, loading, error } = useProducts();
@@ -83,45 +84,7 @@ export default function Home() {
   }
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
-  const parseBooleanValue = (value) => {
-    if (typeof value === "boolean") return value;
-    if (typeof value === "number") return value === 1;
-    if (typeof value === "string") {
-      const normalized = value.trim().toLowerCase();
-      if (["true", "1", "yes", "published", "active", "live"].includes(normalized)) return true;
-      if (["false", "0", "no", "unpublished", "draft", "inactive", "hidden"].includes(normalized)) return false;
-    }
-    return undefined;
-  };
-
-  const isProductVisible = (product) => {
-    if (!product) return false;
-
-    const adminPublished =
-      parseBooleanValue(product.isAdminPublished) ??
-      parseBooleanValue(product.adminPublished) ??
-      parseBooleanValue(product.is_admin_published) ??
-      parseBooleanValue(product.admin_published) ??
-      parseBooleanValue(product.availability?.isAdminPublished) ??
-      parseBooleanValue(product.availability?.adminPublished) ??
-      parseBooleanValue(product.superAdminPublished) ??
-      parseBooleanValue(product.isSuperAdminPublished) ??
-      parseBooleanValue(product.is_super_admin_published) ??
-      parseBooleanValue(product.super_admin_published);
-
-    const published =
-      parseBooleanValue(product.isPublished) ??
-      parseBooleanValue(product.published) ??
-      parseBooleanValue(product.is_published) ??
-      parseBooleanValue(product.availability?.isPublished) ??
-      parseBooleanValue(product.availability?.published);
-
-    if (adminPublished === false) return false;
-    if (published === false) return false;
-    return true;
-  };
-
-  const productsArray = Array.isArray(products) ? products.filter(isProductVisible) : [];
+  const productsArray = Array.isArray(products) ? products.filter(isProductPublishedByBoth) : [];
 
   return (
     <div className="">
