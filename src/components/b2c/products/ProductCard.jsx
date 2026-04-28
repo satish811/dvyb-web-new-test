@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useWishlist } from "../../../context/WishlistContext";
-import { isProductOutOfStock } from "../../../utils/productVisibility";
 
 /**
  * ProductCard displays a single product with clean UI and enhanced visual hierarchy.
@@ -25,7 +24,7 @@ const ProductCard = ({ product, onClose }) => {
 
   // Stock Status
   const stockStatus = product.stockStatus || "In Stock";
-  const isOutOfStock = isProductOutOfStock(product) || stockStatus === "Out of Stock";
+  const isOutOfStock = stockStatus === "Out of Stock";
 
   const handleImageError = () => {
     setImageError(true);

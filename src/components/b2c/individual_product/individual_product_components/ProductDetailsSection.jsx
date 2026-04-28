@@ -15,29 +15,98 @@ const ProductDetailsSection = ({ product }) => {
   const [expanded, setExpanded] = useState(false);
 
   const detailRows = useMemo(() => {
+    const formatDate = (val) => {
+      if (!val) return "N/A";
+      try {
+        const d = val?.toDate ? val.toDate() : new Date(val);
+        return d.toLocaleDateString();
+      } catch (e) {
+        return String(val);
+      }
+    };
+
+    const colorDisplay = (colorKey) => {
+      if (!colorKey) return colorKey;
+      const parts = String(colorKey).split("_");
+      return parts[0] || colorKey;
+    };
+
+    const unitBreakdown = () => {
+      const units = product.units || product.availability?.units || {};
+      if (!units || typeof units !== "object") return "N/A";
+
+      const lines = [];
+      for (const [colorKey, sizes] of Object.entries(units)) {
+        if (!sizes) continue;
+        // If nosize is present, show it directly
+        if (sizes.nosize !== undefined) {
+          lines.push(`${colorDisplay(colorKey)}: ${sizes.nosize}`);
+          continue;
+        }
+
+        // Otherwise, summarize sizes
+        const perSize = [];
+        for (const [sizeKey, qty] of Object.entries(sizes)) {
+          perSize.push(`${sizeKey}: ${qty}`);
+        }
+        if (perSize.length) lines.push(`${colorDisplay(colorKey)} — ${perSize.join(", ")}`);
+      }
+
+      return lines.length ? lines.join(" | ") : "N/A";
+    };
+
+    const capitalizeWords = (input) => {
+      if (input === undefined || input === null) return "";
+      if (Array.isArray(input)) return input.map((v) => capitalizeWords(v)).join(", ");
+      const str = String(input).trim();
+      return str
+        .split(" ")
+        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ""))
+        .join(" ");
+    };
+
+    const formatValue = (val) => {
+      if (val === undefined || val === null || val === "") return "N/A";
+      if (typeof val === "number") return String(val);
+      if (Array.isArray(val)) return capitalizeWords(val);
+      return capitalizeWords(val);
+    };
+
+    const getOccasionValue = () => {
+      const occasionSource =
+        product.occasion ??
+        product.attributes?.occasion ??
+        product.details?.occasion;
+
+      if (Array.isArray(occasionSource)) {
+        return occasionSource;
+      }
+
+      if (typeof occasionSource === "string" && occasionSource.trim()) {
+        return occasionSource.trim();
+      }
+
+      return "";
+    };
+
     const rows = [
-      {
-        label: "Dress Type",
-        value: firstNonEmptyString(product.dressType),
-      },
-      {
-        label: "Occasion",
-        value: firstNonEmptyString(product.occasion),
-      },
-      {
-        label: "Boutique Name / Shop Name",
-        value: firstNonEmptyString(
-          product.boutiqueName,
-          product.shopName,
-          product.boutique
-        ),
-      },
+      { label: "Category", value: firstNonEmptyString(product.category) },
+      { label: "Product Type", value: firstNonEmptyString(product.productType) },
+      { label: "Dress Type", value: firstNonEmptyString(product.dressType) },
+      { label: "Saree Blouse Option", value: firstNonEmptyString(product.sareeBlouseOption, product.sareeBlouse) },
+      { label: "Occasion", value: getOccasionValue() },
+      { label: "Primary Fabric", value: firstNonEmptyString(product.primaryFabric, product.fabric, product.material) },
+      { label: "Fabric Sub-Category", value: firstNonEmptyString(product.fabricSubCategory, product.fabricSubcategory) },
+      { label: "Weave Type", value: firstNonEmptyString(product.weave, product.weaveType) },
+      { label: "Craft", value: firstNonEmptyString(product.craft) },
+      { label: "Boutique Name / Shop Name", value: firstNonEmptyString(product.boutiqueName, product.shopName, product.boutique) },
+      { label: "Sizes", value: Array.isArray(product.selectedSizes) && product.selectedSizes.length ? product.selectedSizes : (product.sizes || "N/A") },
+      { label: "Colors", value: Array.isArray(product.selectedColors) && product.selectedColors.length ? product.selectedColors.map(colorDisplay) : (product.colors || "N/A") },
+      { label: "Note", value: firstNonEmptyString(product.note) },
+      { label: "Components", value: firstNonEmptyString(product.components) },
     ];
 
-    return rows.map((row) => ({
-      ...row,
-      value: row.value || "N/A",
-    }));
+    return rows.map((row) => ({ ...row, value: row.value ? formatValue(row.value) : "N/A" }));
   }, [product]);
 
   return (

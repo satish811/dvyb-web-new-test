@@ -1,82 +1,37 @@
-import React from "react";
+import React, { useMemo } from "react";
 import SinglePageBanner from "@/assets/b2c/images/MainBlog/SinglePageBanner.svg";
-
 import GreenSaree from "@/assets/b2c/images/MainBlog/Green.png";
 import RedSaree from "@/assets/b2c/images/MainBlog/RedSaree.png";
-import Blue from "@/assets/b2c/images/SingleBlog/Blue.svg";
-import Green from "@/assets/b2c/images/SingleBlog/Green.svg";
-import red from "@/assets/b2c/images/SingleBlog/red.svg";
-import orange from "@/assets/b2c/images/SingleBlog/Orange.svg";
-import red2 from "@/assets/b2c/images/SingleBlog/red2.svg";
+import { useProducts } from "../../../hooks/useProducts";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
+import { useNavigate } from "react-router-dom";
+
+const capitalizeWords = (input) => {
+  if (input === undefined || input === null) return "";
+  const value = String(input).trim();
+  if (!value) return "";
+
+  return value
+    .split(" ")
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""))
+    .join(" ");
+};
 
 const SingleMainBlog = () => {
+  const { products } = useProducts();
+  const navigate = useNavigate();
+
   // hero + after-paragraph images
   const heroImage = SinglePageBanner;
   const subImages = [GreenSaree, RedSaree];
 
-  // suggestion images
-  const suggestionProducts = [
-    {
-      id: 1,
-      image: red,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 2,
-      image: Green,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 3,
-      image: orange,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 4,
-      image: red2,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 5,
-      image: Blue,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 1,
-      image: red,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 2,
-      image: Green,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 3,
-      image: orange,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 4,
-      image: red2,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 5,
-      image: Blue,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-  ];
+  const suggestionProducts = useMemo(() => {
+    const availableTrendingProducts = (products || [])
+      .filter((product) => isProductPublishedByBoth(product) && !isProductOutOfStock(product))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    return availableTrendingProducts.slice(0, 10);
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -258,28 +213,21 @@ const SingleMainBlog = () => {
           >
             SUGGESTIONS
           </h2>
-          <button className="text-sm underline hover:text-gray-600">VIEW ALL</button>
+          <button onClick={() => navigate('/womenwear')} className="text-sm underline hover:text-gray-600">VIEW ALL</button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {suggestionProducts.map((product) => (
-            <div key={product.id} className="cursor-pointer">
+            <div
+              key={product.id}
+              className="cursor-pointer"
+              onClick={() => (window.location.href = `/products/${product.id}`)}
+            >
               <img
-                src={product.image}
-                alt={product.title}
+                src={product.imageUrls?.[0] || ""}
+                alt={product.name || product.title || `Product ${product.id}`}
                 className="w-full h-[340px] object-cover rounded-md mb-3"
               />
-              <p
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontWeight: 700,
-                  fontSize: "18px",
-                  lineHeight: "28px",
-                }}
-                className="mb-1 text-gray-800"
-              >
-                SUHINO
-              </p>
               <p
                 style={{
                   fontFamily: "Outfit, sans-serif",
@@ -289,7 +237,7 @@ const SingleMainBlog = () => {
                 }}
                 className="text-gray-600 mb-1"
               >
-                {product.title}
+                {capitalizeWords(product.name || product.title || product.description || "")}
               </p>
               <p
                 style={{
@@ -300,7 +248,7 @@ const SingleMainBlog = () => {
                 }}
                 className="text-gray-800"
               >
-                {product.price}
+                ₹{product.price?.toLocaleString("en-IN") || "0"}
               </p>
             </div>
           ))}

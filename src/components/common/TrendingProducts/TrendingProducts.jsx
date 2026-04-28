@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { useProducts } from "../../../hooks/useProducts";
 import { getDailyRandomProducts } from "../../utils/getDailyRandomProducts";
 import { useNavigate } from "react-router-dom";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 const TrendingProducts = ({
   onClose,
@@ -21,7 +22,10 @@ const TrendingProducts = ({
 
   useEffect(() => {
     if (products && products.length) {
-      setDailyPicks(getDailyRandomProducts(products, cols));
+      const availableProducts = products.filter(
+        (product) => isProductPublishedByBoth(product) && !isProductOutOfStock(product)
+      );
+      setDailyPicks(getDailyRandomProducts(availableProducts, cols));
     } else {
       setDailyPicks([]);
     }
@@ -72,9 +76,7 @@ const TrendingProducts = ({
           </h2>
           <button
             onClick={handleViewAllClick}
-            className="text-primary hover:border-b border-primary font-[Outfit,sans-serif] 
-            text-xs sm:text-sm md:text-[14px] font-medium uppercase text-gray-700 
-            hover:text-black transition pb-1"
+            className="font-[Outfit,sans-serif] text-xs sm:text-sm md:text-[14px] font-medium uppercase text-gray-700 hover:text-black hover:border-b border-primary transition pb-1"
           >
             View All
           </button>
@@ -102,7 +104,7 @@ const TrendingProducts = ({
           ? dailyPicks.map((product) => (
               <div
                 key={product.id}
-                className={`bg-white cursor-pointer overflow-hidden duration-300 group flex flex-col ${isSmall ? "flex-shrink-0" : ""}`}
+                className={`bg-white cursor-pointer overflow-hidden duration-300 group flex flex-col ${isSmall ? "shrink-0" : ""}`}
                 style={{
                   width: isSmall ? cardStyles.cardWidth : "100%",
                   minWidth: isSmall ? cardStyles.cardWidth : "auto",
@@ -196,7 +198,7 @@ const TrendingProducts = ({
             Array.from({ length: cols }).map((_, i) => (
               <div
                 key={i}
-                className={`animate-pulse bg-slate-100 ${isSmall ? "h-32 sm:h-40 flex-shrink-0" : "h-48 sm:h-56"}`}
+                className={`animate-pulse bg-slate-100 ${isSmall ? "h-32 sm:h-40 shrink-0" : "h-48 sm:h-56"}`}
                 style={{
                   aspectRatio: cardStyles.imageAspect,
                   width: isSmall ? cardStyles.cardWidth : "auto",

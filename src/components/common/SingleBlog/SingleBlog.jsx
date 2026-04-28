@@ -1,20 +1,32 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Diwali from "@/assets/b2c/images/SingleBlog/Diwali.svg";
-import Blue from "@/assets/b2c/images/SingleBlog/Blue.svg";
-import Green from "@/assets/b2c/images/SingleBlog/Green.svg";
-import red from "@/assets/b2c/images/SingleBlog/red.svg";
-import orange from "@/assets/b2c/images/SingleBlog/Orange.svg";
-import red2 from "@/assets/b2c/images/SingleBlog/red2.svg";
+import { useProducts } from "../../../hooks/useProducts";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
+
+const capitalizeWords = (input) => {
+  if (input === undefined || input === null) return "";
+  const value = String(input).trim();
+  if (!value) return "";
+
+  return value
+    .split(" ")
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""))
+    .join(" ");
+};
 
 export default function SingleBlog() {
-  const suggestions = [
-    { id: 1, img: Blue },
-    { id: 2, img: Green },
-    { id: 3, img: red },
-    { id: 4, img: orange },
-    { id: 5, img: red2 },
-  ];
+  const { products } = useProducts();
+  const navigate = useNavigate();
+
+  const suggestions = useMemo(() => {
+    const availableTrendingProducts = (products || [])
+      .filter((product) => isProductPublishedByBoth(product) && !isProductOutOfStock(product))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    return availableTrendingProducts.slice(0, 5);
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-white mt-25">
@@ -106,38 +118,29 @@ export default function SingleBlog() {
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-normal">SUGGESTIONS</h2>
-            <button className="text-sm underline">VIEW ALL</button>
+            <button onClick={() => navigate('/womenwear')} className="text-sm underline">VIEW ALL</button>
           </div>
 
-          <div className="relative">
-            <button className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-yellow-400 rounded-full p-2 z-10 hidden lg:block">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
+          <div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-hidden">
               {suggestions.map((item) => (
-                <div key={item.id} className="flex flex-col">
-                  <div className="bg-gray-100 aspect-[3/4] mb-3 rounded overflow-hidden">
+                <div key={item.id} className="flex flex-col cursor-pointer" onClick={() => navigate(`/products/${item.id}`)}>
+                  <div className="bg-gray-100 aspect-3/4 mb-3 rounded overflow-hidden">
                     <img
-                      src={item.img}
-                      alt={`Saree ${item.id}`}
+                      src={item.imageUrls?.[0] || ""}
+                      alt={item.name || item.title || `Product ${item.id}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="text-xs">
-                    <p className="font-medium mb-1">SUHINO</p>
                     <p className="text-gray-600 mb-2 leading-tight">
-                      Ivory Tissue Mirror & Zari Embroidered Lehenga Set
+                      {(item.name || item.title || item.description || "").replace(/(^|\s)\S/g, l => l.toUpperCase())}
                     </p>
-                    <p className="font-medium">₹94,900</p>
+                    <p className="font-medium">₹{item.price?.toLocaleString("en-IN") || "0"}</p>
                   </div>
                 </div>
               ))}
             </div>
-
-            <button className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-yellow-400 rounded-full p-2 z-10 hidden lg:block">
-              <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
         </section>
       </main>
