@@ -55,7 +55,7 @@ const ProductDescriptionSection = ({ product }) => {
 
   const displayDescription = formatDisplayValue(description);
   const displayFit = formatDisplayValue(fit);
-  const displayCode = formatDisplayValue(code);
+  const displayCode = code; // Don't capitalize product code
 
   return (
     <div className="w-full border-b border-gray-200">

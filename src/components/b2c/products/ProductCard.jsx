@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useWishlist } from "../../../context/WishlistContext";
+import { isProductOutOfStock } from "../../../utils/productVisibility";
 
 /**
  * ProductCard displays a single product with clean UI and enhanced visual hierarchy.
@@ -24,7 +25,25 @@ const ProductCard = ({ product, onClose }) => {
 
   // Stock Status
   const stockStatus = product.stockStatus || "In Stock";
-  const isOutOfStock = stockStatus === "Out of Stock";
+  const isOutOfStock = isProductOutOfStock(product) || stockStatus === "Out of Stock";
+
+  // Calculate total inventory for sarees
+  const calculateTotalInventory = () => {
+    if (!product.units || typeof product.units !== "object") return 0;
+    let total = 0;
+    Object.values(product.units).forEach((colorSizes) => {
+      if (typeof colorSizes === "object" && colorSizes !== null) {
+        Object.values(colorSizes).forEach((quantity) => {
+          total += parseInt(quantity) || 0;
+        });
+      }
+    });
+    return total;
+  };
+
+  const totalInventory = calculateTotalInventory();
+  const isSaree = product.dressType?.toLowerCase() === "saree";
+  const shouldShowInventory = isSaree && totalInventory > 0 && totalInventory < 10;
 
   const handleImageError = () => {
     setImageError(true);
@@ -177,6 +196,13 @@ const ProductCard = ({ product, onClose }) => {
             )}
           </div>
         )}
+
+        {/* Inventory Count for Sarees (< 10 items)
+        {shouldShowInventory && (
+          <div className="text-xs text-red-600 font-medium mt-1">
+            Only {totalInventory} item{totalInventory !== 1 ? 's' : ''} left
+          </div>
+        )} */}
       </div>
     </div>
   );
