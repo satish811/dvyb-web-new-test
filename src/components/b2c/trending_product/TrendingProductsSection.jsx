@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../../../hooks/useProducts";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 const TrendingProductsSection = () => {
   const { products, loading, error } = useProducts();
@@ -24,7 +25,9 @@ const TrendingProductsSection = () => {
     return dateB - dateA;
   });
 
-  const displayProducts = sortedProducts.slice(0, 6);
+  const displayProducts = sortedProducts
+    .filter((product) => isProductPublishedByBoth(product))
+    .slice(0, 6);
 
   return (
     <div className="mt-8 pt-6 flex flex-col w-full gap-6">

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUI } from "../../../context/UIContext";
 import { useProducts } from "../../../hooks/useProducts";
 import { motion } from "framer-motion";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 // Background Pattern
 import bgPattern from "../../../assets/b2c/landing/Landing-villy/tryitbuyitframe.png";
@@ -26,6 +27,8 @@ export default function TryItBuyItSection() {
         // Exclude any product whose name, title, category, or dressType contains "bride" or "bridal"
         const brideRegex = /bride|bridal/i;
         const filtered = allProducts.filter((p) => {
+            if (!isProductPublishedByBoth(p)) return false;
+
             const fields = [p.name, p.title, p.category, p.dressType].filter(Boolean);
             return !fields.some((f) => brideRegex.test(f));
         });

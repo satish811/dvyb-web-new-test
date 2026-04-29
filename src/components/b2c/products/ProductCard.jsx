@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useWishlist } from "../../../context/WishlistContext";
+import { isProductOutOfStock } from "../../../utils/productVisibility";
 
 /**
  * ProductCard displays a single product with clean UI and enhanced visual hierarchy.
@@ -22,6 +23,28 @@ const ProductCard = ({ product, onClose }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isWishlisted = isInWishlist(product.id);
 
+  // Stock Status
+  const stockStatus = product.stockStatus || "In Stock";
+  const isOutOfStock = isProductOutOfStock(product) || stockStatus === "Out of Stock";
+
+  // Calculate total inventory for sarees
+  const calculateTotalInventory = () => {
+    if (!product.units || typeof product.units !== "object") return 0;
+    let total = 0;
+    Object.values(product.units).forEach((colorSizes) => {
+      if (typeof colorSizes === "object" && colorSizes !== null) {
+        Object.values(colorSizes).forEach((quantity) => {
+          total += parseInt(quantity) || 0;
+        });
+      }
+    });
+    return total;
+  };
+
+  const totalInventory = calculateTotalInventory();
+  const isSaree = product.dressType?.toLowerCase() === "saree";
+  const shouldShowInventory = isSaree && totalInventory > 0 && totalInventory < 10;
+
   const handleImageError = () => {
     setImageError(true);
   };
@@ -29,6 +52,13 @@ const ProductCard = ({ product, onClose }) => {
   const handleWishlistClick = (e) => {
     e.stopPropagation(); // Prevent card navigation
     toggleWishlist(product);
+  };
+
+  const handleCardClick = () => {
+    if (!isOutOfStock) {
+      navigate(`/products/${product.id}`);
+      onClose?.();
+    }
   };
 
   const imageUrl = product.imageUrls?.[0];
@@ -62,18 +92,15 @@ const ProductCard = ({ product, onClose }) => {
 
   return (
     <div
-      className="bg-white rounded-md shadow-sm hover:shadow-md cursor-pointer overflow-hidden duration-300 group flex flex-col w-full relative"
-      onClick={() => {
-        navigate(`/products/${product.id}`);
-        onClose?.();
-      }}
+      className={`bg-white rounded-md shadow-sm overflow-hidden duration-300 group flex flex-col w-full relative ${!isOutOfStock ? 'hover:shadow-md cursor-pointer' : 'opacity-70'}`}
+      onClick={handleCardClick}
     >
       {/* Product Image Container */}
       <div className="relative w-full aspect-[2/3] bg-gray-50 overflow-hidden rounded-t-md">
         <img
           src={displayImage}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-700 ease-in-out ${!isOutOfStock ? 'group-hover:scale-105' : ''}`}
           onError={handleImageError}
         />
 
@@ -81,6 +108,15 @@ const ProductCard = ({ product, onClose }) => {
         {isNew && (
           <div className="absolute top-2 left-2 bg-black text-white text-xs font-bold px-2.5 py-1 uppercase tracking-wider">
             New
+          </div>
+        )}
+
+        {/* Out of Stock Overlay */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="bg-white px-4 py-2 rounded-lg">
+              <p className="text-gray-900 font-bold text-sm uppercase">Out of Stock</p>
+            </div>
           </div>
         )}
 
@@ -160,6 +196,13 @@ const ProductCard = ({ product, onClose }) => {
             )}
           </div>
         )}
+
+        {/* Inventory Count for Sarees (< 10 items)
+        {shouldShowInventory && (
+          <div className="text-xs text-red-600 font-medium mt-1">
+            Only {totalInventory} item{totalInventory !== 1 ? 's' : ''} left
+          </div>
+        )} */}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import SingleBanner from "@/assets/b2c/images/MainBlog/SingleBanner.png";
 import Bride from "@/assets/b2c/images/MainBlog/BrideImageMain.svg";
 import GreenSaree from "@/assets/b2c/images/MainBlog/Green.png";
@@ -9,44 +9,26 @@ import Green from "@/assets/b2c/images/SingleBlog/Green.svg";
 import red from "@/assets/b2c/images/SingleBlog/red.svg";
 import orange from "@/assets/b2c/images/SingleBlog/Orange.svg";
 import red2 from "@/assets/b2c/images/SingleBlog/red2.svg";
+import { useProducts } from "../../../hooks/useProducts";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
+import { useNavigate } from "react-router-dom";
 const MainBlog = () => {
+  const navigate = useNavigate();
+
   // Array of images - you can replace these URLs with your actual image links
   const heroImages = [Bride, GreenSaree, bride, RedSaree];
 
   const bannerImage = SingleBanner;
 
-  const suggestionProducts = [
-    {
-      id: 1,
-      image: red,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 2,
-      image: Green,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 3,
-      image: orange,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 4,
-      image: red2,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-    {
-      id: 5,
-      image: Blue,
-      title: "Ivory Tissue Mirror & Zari Embroidered Lehenga Set",
-      price: "₹94,900",
-    },
-  ];
+  const { products } = useProducts();
+
+  const suggestionProducts = useMemo(() => {
+    const availableTrendingProducts = (products || [])
+      .filter((product) => isProductPublishedByBoth(product) && !isProductOutOfStock(product))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    return availableTrendingProducts.slice(0, 5);
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-white mt-30">
@@ -263,23 +245,22 @@ const MainBlog = () => {
             >
               SUGGESTIONS
             </h2>
-            <button className="text-sm underline hover:text-gray-600">VIEW ALL</button>
+            <button onClick={() => navigate('/womenwear')} className="text-sm underline hover:text-gray-600">VIEW ALL</button>
           </div>
 
           <div className="relative">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
               {suggestionProducts.map((product) => (
-                <div key={product.id} className="group cursor-pointer">
+                <div key={product.id} className="group cursor-pointer" onClick={() => navigate(`/products/${product.id}`)}>
                   <div className="relative overflow-hidden rounded-lg mb-4">
                     <img
-                      src={product.image}
-                      alt={product.title}
+                      src={product.imageUrls?.[0] || ""}
+                      alt={product.name || product.title || `Product ${product.id}`}
                       className="w-full h-80 object-cover transform group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <p className="text-xs font-semibold mb-1">SUHINO</p>
-                  <h3 className="text-sm mb-2 line-clamp-2">{product.title}</h3>
-                  <p className="font-bold">{product.price}</p>
+                  <h3 className="text-sm mb-2 line-clamp-2">{(product.name || product.title || "").replace(/(^|\s)\S/g, l => l.toUpperCase())}</h3>
+                  <p className="font-bold">₹{product.price?.toLocaleString("en-IN") || "0"}</p>
                 </div>
               ))}
             </div>

@@ -25,6 +25,23 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     images.length >= 2 &&
     selectedIndex >= images.length - 2;
 
+  // Calculate inventory for sarees
+  const calculateTotalInventory = () => {
+    if (!product?.units || typeof product.units !== "object") return 0;
+    let total = 0;
+    Object.values(product.units).forEach((colorSizes) => {
+      if (typeof colorSizes === "object" && colorSizes !== null) {
+        Object.values(colorSizes).forEach((quantity) => {
+          total += parseInt(quantity) || 0;
+        });
+      }
+    });
+    return total;
+  };
+
+  const totalInventory = calculateTotalInventory();
+  const shouldShowInventory = isSareeProduct && totalInventory > 0 && totalInventory < 10;
+
   const handleImageError = () => setImageError(true);
 
   useEffect(() => {
@@ -351,6 +368,8 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
               Select an image
             </div>
           )}
+
+
 
           {isLensActive && selectedImage && !imageError && (
             <div

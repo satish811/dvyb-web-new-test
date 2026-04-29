@@ -22,7 +22,7 @@ export default function FooterLinks({ title, links }) {
       <h5 className="font-semibold uppercase text-sm tracking-wider text-gray-900 mb-4">{title}</h5>
       <ul className="space-y-1">
         {links.map((link) => (
-          <li key={link.to}>
+          <li key={link.to + link.label}>
             {link.label === "wholesaler" || link.label === "Virtual Try On" ? (
               <button
                 onClick={() => handleLinkClick(link)}
@@ -30,6 +30,15 @@ export default function FooterLinks({ title, links }) {
               >
                 {link.label}
               </button>
+            ) : link.external ? (
+              <a
+                href={link.to}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-gray-600 hover:text-gray-900 transition uppercase"
+              >
+                {link.label}
+              </a>
             ) : (
               <Link
                 to={link.to}

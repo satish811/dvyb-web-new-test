@@ -290,6 +290,22 @@ const IndividualProductDetailsPage = () => {
   const requiresSizeSelection = !isSaree;
   const isB2BUser = userRole === "B2B";
 
+  // Calculate total inventory for sarees
+  const calculateTotalInventory = () => {
+    if (!product?.units || typeof product.units !== "object") return 0;
+    let total = 0;
+    Object.values(product.units).forEach((colorSizes) => {
+      if (typeof colorSizes === "object" && colorSizes !== null) {
+        Object.values(colorSizes).forEach((quantity) => {
+          total += parseInt(quantity) || 0;
+        });
+      }
+    });
+    return total;
+  };
+
+  const totalInventory = calculateTotalInventory();
+
   const validateSizeSelection = () => {
     if (requiresSizeSelection && !selectedSize && !isB2BUser) {
       setShowSizeError(true);
@@ -805,6 +821,8 @@ const IndividualProductDetailsPage = () => {
                 similarProducts={similarProducts}
                 currentProductId={product.id}
                 currentColorName={currentColorName}
+                totalInventory={totalInventory}
+                isSaree={isSaree}
               />
             );
           })()}

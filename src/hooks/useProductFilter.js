@@ -35,7 +35,7 @@ export const useProductFilter = (products = []) => {
         const CATEGORY_GROUPS = {
           "KURTA SETS": (v) => v.includes("KURTA"),
           "KURTA SET": (v) => v.includes("KURTA"),
-          "SAREE": (v) => v === "SAREE" || v === "SAREES",
+          "SAREE": (v) => v === "SAREE" || v === "SAREES" || v.includes("SAREE") || v.includes("SARI"),
           "LEHENGA": (v) => v.includes("LEHENGA"),
           "ANARKALIS": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),
           "ANARKALI": (v) => v === "ANARKALI" || v === "ANARKALIS" || v.includes("ANARKALI"),

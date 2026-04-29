@@ -116,6 +116,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import WishlistHeartButton from "../../common/WishlistHeartButton";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 // Assets
 import vector1 from "../../../assets/b2c/landing/Landing-villy/newvector1.png";
@@ -126,7 +127,7 @@ export default function PopularProductsSection({ products: firebaseProducts = []
     const navigate = useNavigate();
 
     const products = Array.isArray(firebaseProducts)
-        ? firebaseProducts.slice(0, 8)
+        ? firebaseProducts.filter(isProductPublishedByBoth).slice(0, 8)
         : [];
 
     const formatPrice = (price) => {

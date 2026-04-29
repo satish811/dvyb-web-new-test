@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../../../hooks/useProducts";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 const SimilarProductsSection = ({ dressType }) => {
   const { products, loading } = useProducts();
@@ -12,6 +13,7 @@ const SimilarProductsSection = ({ dressType }) => {
     return products
       .filter((p) => {
         return (
+          isProductPublishedByBoth(p) &&
           p.dressType &&
           p.dressType.toLowerCase() === dressType.toLowerCase()
         );
