@@ -43,6 +43,7 @@ import LandingPage from "../pages/b2c/LandingPage/LandingPage";
 
 import BestSeller from "../components/common/footer/BestSeller/BestSeller";
 import OurStory from "../components/common/OurStory/ourStory";
+import FeedbackPage from "../components/common/FeedbackPage/FeedbackPage";
 
 export default function AppRoutes() {
   const { products, loading, error } = useProducts();
@@ -62,7 +63,7 @@ export default function AppRoutes() {
       {/* FULL PAGE LOADER */}
       {(showLoader || loggingOut) && (
         loggingOut ? <LogoutSkeleton /> : (
-          <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-[9999]">
+          <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex justify-center items-center z-9999">
             <LazyImageLoader isProcessing={true} />
           </div>
         )
@@ -307,6 +308,16 @@ export default function AppRoutes() {
               <PageTransition>
                 <MainLayout>
                   <TermsAndConditions />
+                </MainLayout>
+              </PageTransition>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <PageTransition>
+                <MainLayout>
+                  <FeedbackPage />
                 </MainLayout>
               </PageTransition>
             }

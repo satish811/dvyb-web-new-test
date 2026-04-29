@@ -22,6 +22,7 @@ import NewArrivalBanner from "../../../components/b2c/home/NewArrivalBanner";
 import ProfilePromptPopup from "../../../components/b2c/home/ProfilePromptPopup";
 import { LOADING_FRAMES, FRAME_INTERVAL } from "../../../assets/lazyloading2";
 import useScrollRestore from "../../../hooks/useScrollRestore";
+import { isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 export default function Home() {
   const { products, loading, error } = useProducts();
@@ -83,7 +84,7 @@ export default function Home() {
   }
   if (error) return <div className="text-center text-iserror py-20">{error}</div>;
 
-  const productsArray = Array.isArray(products) ? products : [];
+  const productsArray = Array.isArray(products) ? products.filter(isProductPublishedByBoth) : [];
 
   return (
     <div className="">

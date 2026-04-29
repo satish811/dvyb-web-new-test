@@ -2,11 +2,13 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import colorUtils from "../../../utils/colorUtils";
 
-const ProductColorSelector = ({ similarProducts = [], currentProductId, currentColorName = "" }) => {
+const ProductColorSelector = ({ similarProducts = [], currentProductId, currentColorName = "", totalInventory = 0, isSaree = false }) => {
   const navigate = useNavigate();
 
   // If no similar products at all, don't render
   if (similarProducts.length === 0) return null;
+
+  const shouldShowInventory = isSaree && totalInventory > 0 && totalInventory < 10;
 
   const handleProductClick = (productId) => {
     if (String(productId) !== String(currentProductId)) {
@@ -81,6 +83,13 @@ const ProductColorSelector = ({ similarProducts = [], currentProductId, currentC
           );
         })}
       </div>
+
+      {/* Inventory Count for Sarees (< 10 items) */}
+      {shouldShowInventory && (
+        <div style={{ marginTop: "1px", color: "#DC2626", fontWeight: "600", fontSize: "13px" }}>
+          Only {totalInventory} item{totalInventory !== 1 ? 's' : ''} left
+        </div>
+      )}
     </div>
   );
 };

@@ -60,6 +60,7 @@ const TryOnPreviewPage = () => {
   const [activeSection, setActiveSection] = useState("scenes");
   const [isVideoPaused, setIsVideoPaused] = useState(false);
   const videoRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   // ============================================
   // CUSTOM HOOKS (All Business Logic)
@@ -151,10 +152,35 @@ const TryOnPreviewPage = () => {
   useEffect(() => {
     if (backgroundChangedImage) {
       setCurrentImage(backgroundChangedImage);
+      scrollToTop();
     }
   }, [backgroundChangedImage]);
 
 
+
+  const getScrollTarget = () => {
+    if (scrollContainerRef.current) return scrollContainerRef.current;
+    if (typeof document !== "undefined") {
+      return document.scrollingElement || document.documentElement || document.body;
+    }
+    return null;
+  };
+
+  const scrollToTop = () => {
+    const target = getScrollTarget();
+    if (!target) return;
+    if (typeof target.scrollTo === "function") {
+      target.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      target.scrollTop = 0;
+    }
+  };
+
+  useEffect(() => {
+    if (!currentImage) return;
+    const timeout = setTimeout(scrollToTop, 75);
+    return () => clearTimeout(timeout);
+  }, [currentImage]);
 
   const getCurrentDisplayImage = () => {
     return currentImage || backgroundChangedImage || tryOnResult;
@@ -239,6 +265,7 @@ const TryOnPreviewPage = () => {
       setCurrentImage(newImg);
       // Update base image for background changes
       setLatestBaseImage(newImg);
+      scrollToTop();
     }
   };
 
@@ -249,6 +276,7 @@ const TryOnPreviewPage = () => {
       setCurrentImage(newImg);
       // Update base image for background changes
       setLatestBaseImage(newImg);
+      scrollToTop();
     }
   };
 
@@ -280,7 +308,7 @@ const TryOnPreviewPage = () => {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-4">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-4">
         {/* Try-On Result Image */}
         <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 min-h-[60vh] flex items-center justify-center">
           {isProcessing || isChangingBackground ? (
@@ -424,28 +452,18 @@ const TryOnPreviewPage = () => {
 
           {/* View in 360 Toggle */}
           <div className="px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-3">
-                <img src={t360} alt="" />
-                <span className="text-sm  font-family-outfit font-medium text-black">
-                  View Your Virtual Video
-                </span>
-              </div>
+            <div className="flex items-center justify-center">
               <button
                 onClick={handle360Toggle}
                 disabled={isGeneratingVideo}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${view360Enabled ? "bg-[#8B0000]" : "bg-gray-300"
-                  }`}
+                className="bg-[#8B0000] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#A00000] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
-                <span
-                  className={`inline-block h-4 w-4 transform bg-white rounded-full transition-transform ${view360Enabled ? "translate-x-6" : "translate-x-1"
-                    }`}
-                />
+                {view360Enabled ? "View 2D Image" : "View 3D Video"}
               </button>
             </div>
             {isGeneratingVideo && (
-              <p className="text-xs text-gray-500 mt-2">
-                Generating 360° view... {videoProgress}%
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Generating 3D view... {videoProgress}%
               </p>
             )}
           </div>

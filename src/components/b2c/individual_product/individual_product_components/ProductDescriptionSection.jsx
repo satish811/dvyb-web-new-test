@@ -10,6 +10,25 @@ const firstNonEmptyString = (...values) => {
   return "";
 };
 
+const capitalizeWords = (input) => {
+  if (input === undefined || input === null) return "";
+  const value = String(input).trim();
+  if (!value) return "";
+
+  return value
+    .split(" ")
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""))
+    .join(" ");
+};
+
+const formatDisplayValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => capitalizeWords(item)).join(", ");
+  }
+
+  return capitalizeWords(value);
+};
+
 const ProductDescriptionSection = ({ product }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -34,6 +53,10 @@ const ProductDescriptionSection = ({ product }) => {
     product?.id ? String(product.id) : ""
   );
 
+  const displayDescription = formatDisplayValue(description);
+  const displayFit = formatDisplayValue(fit);
+  const displayCode = code; // Don't capitalize product code
+
   return (
     <div className="w-full border-b border-gray-200">
       <button
@@ -53,21 +76,21 @@ const ProductDescriptionSection = ({ product }) => {
           {description && (
             <div>
               <span className="font-semibold">Product Description: </span>
-              <span>{description}</span>
+              <span>{displayDescription}</span>
             </div>
           )}
 
           {fit && (
             <div>
               <span className="font-semibold">Fit: </span>
-              <span>{fit}</span>
+              <span>{displayFit}</span>
             </div>
           )}
 
           {code && (
             <div>
               <span className="font-semibold">Product Code: </span>
-              <span>{code}</span>
+              <span>{displayCode}</span>
             </div>
           )}
 

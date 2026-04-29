@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Trash2, ShoppingCart, Eye, Heart, ChevronDown } from "lucide-react";
@@ -8,10 +8,12 @@ import { usePopup } from "../../../context/ToastPopupContext";
 import { useWishlist } from "../../../context/WishlistContext";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
+import { useProducts } from "../../../hooks/useProducts";
 
 // Services
 import { wishlistService } from "../../../services/wishlistService";
 import { cartService } from "../../../services/cartService";
+import { getProductAvailabilityLabel } from "../../../utils/productVisibility";
 
 // Assets
 import empty_wishlistIc from "../../../assets/ProfileImages/empty_wishlistIc.png";
@@ -20,7 +22,7 @@ import LoginModal from "../login/loginModel";
 // --- New Wishlist Card Component ---
 const WishlistProductCard = ({ item, onAddToCart, onRemove, isAddingToCart }) => {
   const navigate = useNavigate();
-  const stockStatus = item.stockStatus || "In Stock";
+  const stockStatus = getProductAvailabilityLabel(item);
 
   const getBadgeColor = (status) => {
     switch (status) {
@@ -125,6 +127,7 @@ const WishlistProductCard = ({ item, onAddToCart, onRemove, isAddingToCart }) =>
 const WishlistPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { products, loading: productsLoading } = useProducts();
   const { wishlistItems, loading, removeFromWishlist } = useWishlist();
   const [userRole, setUserRole] = useState("B2C");
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -135,6 +138,23 @@ const WishlistPage = () => {
   // Safe popup access
   const popupContext = usePopup();
   const showPopup = popupContext?.showPopup;
+
+  const productsById = useMemo(() => {
+    return new Map((products || []).map((product) => [product.id, product]));
+  }, [products]);
+
+  const displayWishlistItems = useMemo(() => {
+    return wishlistItems.map((item) => {
+      const liveProduct = productsById.get(item.productId || item.id);
+      if (!liveProduct) return item;
+      return {
+        ...liveProduct,
+        ...item,
+        id: liveProduct.id || item.id,
+        productId: item.productId || liveProduct.id || item.id,
+      };
+    });
+  }, [wishlistItems, productsById]);
 
   // Get user role
   useEffect(() => {
@@ -254,7 +274,7 @@ const WishlistPage = () => {
   };
 
   // Loading State
-  if (loading) {
+  if (loading || productsLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <div className="text-gray-600">Loading your wishlist...</div>
@@ -362,7 +382,7 @@ const WishlistPage = () => {
             />
           </div>
           <p className="text-xl font-bold text-gray-800">Your Wishlist is Empty</p>
-          <p className="text-sm font-medium text-gray-500 mt-2 mb-8">Items added to your wishlist will appear here</p>
+            <p className="text-sm font-medium text-gray-500 mt-2 mb-8">Items added to your wishlist will appear here</p>
 
           <Link
             to={userRole === "B2B" ? "/womenwear" : "/womenwear"}
@@ -374,7 +394,7 @@ const WishlistPage = () => {
       ) : (
         /* Wishlist Grid */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-          {[...wishlistItems]
+          {[...displayWishlistItems]
             .sort((a, b) => {
               if (sortBy === "price-high-low") return (b.price || 0) - (a.price || 0);
               if (sortBy === "price-low-high") return (a.price || 0) - (b.price || 0);

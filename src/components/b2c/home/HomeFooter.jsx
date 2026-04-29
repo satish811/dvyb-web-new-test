@@ -1,10 +1,9 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Facebook, Instagram, Youtube } from "lucide-react";
 import { FaXTwitter } from "react-icons/fa6";
 import { useUI } from "../../../context/UIContext";
-import { useAuth } from "../../../context/AuthContext";
 
 // Assets
 import footerBg from "../../../assets/b2c/landing/Landing-villy/footerbackground3.png";
@@ -16,7 +15,7 @@ import returnIcon from "../../../assets/b2c/landing/Landing-villy/ReturnPolicy.p
 
 export default function HomeFooter() {
     const { setTryOnModalOpen } = useUI();
-    const { userRole } = useAuth(); // Get user role from context
+    const navigate = useNavigate();
 
     const headerStyle = {
         fontFamily: 'Outfit, sans-serif',
@@ -37,9 +36,13 @@ export default function HomeFooter() {
         textTransform: 'uppercase'
     };
 
+    const handleFeedbackClick = () => {
+        navigate('/feedback');
+    };
+
     return (
         <footer
-            className="relative w-full text-white pt-8 pb-64 md:pb-56 2xl:pt-12 2xl:pb-64 bg-cover bg-no-repeat min-h-[800px]"
+            className="relative w-full text-white pt-8 pb-64 md:pb-56 2xl:pt-12 2xl:pb-64 bg-cover bg-no-repeat min-h-[900px]"
             style={{
                 backgroundImage: `url(${footerBg})`,
                 backgroundColor: '#9A3258', // Fallback color matching the image
@@ -48,6 +51,10 @@ export default function HomeFooter() {
             }}
         >
             <div className="max-w-[1400px] 2xl:max-w-[1920px] mx-auto px-6 md:px-10 2xl:px-20 h-full flex flex-col justify-between">
+
+                <div className="mb-8 rounded-xl bg-white/10 p-4 text-sm text-gray-100 max-w-4xl">
+                    <p className="font-medium uppercase tracking-wide">Disclaimer: All the images are AI generated images.</p>
+                </div>
 
                 <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20 2xl:gap-32">
 
@@ -63,8 +70,7 @@ export default function HomeFooter() {
                                         onClick={() => setTryOnModalOpen(true)}
                                         className="hover:text-white transition-colors text-left"
                                     >
-                                        Virtual Try On
-                                    </button>
+                                        VIRTUAL TRY ON                                    </button>
                                 </li>
                                 {/* <li><Link to="/womenwear" className="hover:text-white transition-colors">Exclusives</Link></li>
                                 <li><Link to="/best-seller" className="hover:text-white transition-colors">Best Sellers</Link></li> */}
@@ -87,21 +93,18 @@ export default function HomeFooter() {
                         <div className="flex flex-col gap-6 2xl:gap-8">
                             <h4 style={headerStyle}>Our Products</h4>
                             <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
-                                {/* Conditionally show Digiwarehouse for B2B users only */}
-                                {userRole === "B2B" && (
-                                    <li>
-                                        <a
-                                            href="https://www.villydigi.in/"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="hover:text-white transition-colors"
-                                        >
-                                            Digiwarehouse
-                                        </a>
-                                    </li>
-                                )}
-                                <li><Link to="/Returns" className="hover:text-white transition-colors">Return Policy</Link></li>
-                                {/* <li><a href="#" className="hover:text-white transition-colors">Warranty</a></li> */}
+                                <li>
+                                    <a
+                                        href="https://villydigi.in/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-white transition-colors"
+                                    >
+                                        Digiwarehouse
+                                    </a>
+                                </li>
+                                <li><Link to="/terms" className="hover:text-white transition-colors">Shipping Info</Link></li>
+                                <li><Link to="/terms" className="hover:text-white transition-colors">Return Policy</Link></li>
                             </ul>
                         </div>
 
@@ -111,15 +114,22 @@ export default function HomeFooter() {
                             <ul className="space-y-3 2xl:space-y-4 text-gray-200" style={linkStyle}>
                                 <li><Link to="/faq" className="hover:text-white transition-colors">Support</Link></li>
                                 <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        onClick={handleFeedbackClick}
+                                        className="hover:text-white transition-colors text-left"
+                                    >
+                                        FEEDBACK
+                                    </button>
+                                </li>
                             </ul>
                         </div>
 
                     </div>
 
                     {/* RIGHT SIDE - Social & App */}
-                    <div className="lg:w-auto lg:flex-shrink-0" style={{ display: 'flex', flexDirection: 'column' }}>
-
-                        {/* Social + App container */}
+                    <div className="lg:w-auto lg:shrink-0 flex flex-col gap-8">
                         <div style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -127,29 +137,22 @@ export default function HomeFooter() {
                             maxWidth: '280px',
                             width: '100%',
                         }}>
-
-
                             <h4 style={{
                                 ...headerStyle,
                                 margin: 0,
                             }}>Experience VILLY App on Mobile</h4>
 
-                            {/* Buttons row */}
                             <div style={{
                                 display: 'flex',
                                 gap: 'clamp(6px, 0.6vw, 12px)',
                             }}>
-                                {/* App Store Button */}
                                 <a href="#" className="block transition-opacity hover:opacity-90">
                                     <img src={appStoreImg} alt="Download on the App Store" style={{ height: 'clamp(28px, 2.4vw, 38px)', width: 'auto', display: 'block' }} />
                                 </a>
-
-                                {/* Google Play Button */}
                                 <a href="#" className="block transition-opacity hover:opacity-90">
                                     <img src={googlePlayImg} alt="Get it on Google Play" style={{ height: 'clamp(28px, 2.4vw, 38px)', width: 'auto', display: 'block' }} />
                                 </a>
                             </div>
-
                         </div>
 
                     </div>
@@ -160,7 +163,7 @@ export default function HomeFooter() {
 
                     {/* Return Badge */}
                     <div className="flex items-center gap-3 2xl:gap-4 justify-start w-full max-w-[320px]">
-                        <img src={returnIcon} alt="14 Days Return" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain flex-shrink-0" />
+                        <img src={returnIcon} alt="14 Days Return" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain shrink-0" />
                         <p className="text-sm 2xl:text-base tracking-wide text-left">
                             <span className="uppercase font-bold">Return within 14 days</span>{' '}
                             <span className="text-gray-200 font-light block sm:inline">of receiving your order</span>
@@ -169,7 +172,7 @@ export default function HomeFooter() {
 
                     {/* Original Badge */}
                     <div className="flex items-center gap-3 2xl:gap-4 justify-start w-full max-w-[320px]">
-                        <img src={originalIcon} alt="100% Original" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain flex-shrink-0" />
+                        <img src={originalIcon} alt="100% Original" className="w-10 h-10 2xl:w-12 2xl:h-12 object-contain shrink-0" />
                         <p className="text-sm 2xl:text-base tracking-wide text-left">
                             <span className="uppercase font-bold">100% Original</span>{' '}
                             <span className="text-gray-200 font-light block sm:inline">guarantee for all products at villy.in</span>

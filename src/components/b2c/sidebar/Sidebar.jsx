@@ -40,13 +40,17 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
     weavingMethods: [],
     certifications: [],
     sareeBlouseOptions: [],
+    deliveryTimes: [
+      { name: "3-5 days", count: 0 },
+      { name: "7-8 days", count: 0 },
+    ],
   });
 
   const { selectedFilters, updateFilter } = useFilter();
   const selectedCategory = selectedFilters.categories[0] || null;
 
   // Helper function to update filter data
-  const updateAllFilterData = ({ categories, boutiques, sizes, colors, priceRange, weavingMethods, certifications, sareeBlouseOptions }) => {
+  const updateAllFilterData = ({ categories, boutiques, sizes, colors, priceRange, weavingMethods, certifications, sareeBlouseOptions, deliveryTimes }) => {
     setFilterData({
       categories,
       boutiques,
@@ -56,6 +60,10 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
       weavingMethods,
       certifications,
       sareeBlouseOptions,
+      deliveryTimes: deliveryTimes || [
+        { name: "3-5 days", count: 0 },
+        { name: "7-8 days", count: 0 },
+      ],
     });
   };
 
@@ -186,7 +194,16 @@ const Sidebar = ({ products = [], activeRouteCategory = null }) => {
           />
         )}
 
+        <FilterSection
+          title="DELIVERY TIME"
+          items={filterData.deliveryTimes}
+          searchable={false}
+          defaultOpen={false}
+          filterType="deliveryTimeWindows"
+        />
+
         {filterData.weavingMethods.length > 0 && (
+
           <FilterSection
             title="WEAVING METHOD"
             items={filterData.weavingMethods}
@@ -286,6 +303,10 @@ function extractDynamicFilterData(products, activeCategory, selectedBoutiques, s
     weavingMethods: extractFilterFacet(finalFilteredProducts, ["weavingMethod", "weavingmethod", "weaving"], true),
     certifications: extractFilterFacet(finalFilteredProducts, ["certification", "certifications", "certified"], true),
     sareeBlouseOptions: extractFilterFacet(finalFilteredProducts, ["sareeBlouseOption", "sareeBlouse", "saree_blouse_option", "saree_blouse"], true),
+    deliveryTimes: [
+      { name: "3-5 days", count: 0 },
+      { name: "7-8 days", count: 0 },
+    ],
   };
 }
 

@@ -18,6 +18,25 @@ const toDisplayLabel = (key) =>
         .trim()
         .replace(/^./, (char) => char.toUpperCase());
 
+const capitalizeWords = (input) => {
+    if (input === undefined || input === null) return "";
+    const value = String(input).trim();
+    if (!value) return "";
+
+    return value
+        .split(" ")
+        .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""))
+        .join(" ");
+};
+
+const formatValue = (value) => {
+    if (Array.isArray(value)) {
+        return value.map((item) => capitalizeWords(item)).join(", ");
+    }
+
+    return capitalizeWords(value);
+};
+
 const MaterialsSection = ({ product }) => {
     const [expanded, setExpanded] = useState(false);
 
@@ -120,7 +139,10 @@ const MaterialsSection = ({ product }) => {
             }))
         : [];
 
-    const rows = [...baseRows, ...extraRows];
+    const rows = [...baseRows, ...extraRows].map((row) => ({
+        ...row,
+        value: formatValue(row.value),
+    }));
 
     return (
         <div className="w-full border-b border-gray-200">

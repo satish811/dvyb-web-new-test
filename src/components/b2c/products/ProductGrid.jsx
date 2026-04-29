@@ -5,6 +5,7 @@ import { useFilter } from "../../../context/FilterContext";
 import ProductCard from "./ProductCard";
 import AdsCarousel from "../../common/AdSection/AdsCarousel";
 import Pagination from "../../common/Pagination";
+import { isProductOutOfStock, isProductPublishedByBoth } from "../../../utils/productVisibility";
 
 // Category mapping for URL to product dressType
 const CATEGORY_MAPPINGS = {
@@ -84,8 +85,8 @@ const ProductGrid = ({
 
     // Group definitions: URL pattern → array of matching dressType keywords (all lowercase)
     const CATEGORY_GROUPS = {
-      saree: (dt) => dt === "saree" || dt === "sarees",
-      sarees: (dt) => dt === "saree" || dt === "sarees",
+      saree: (dt) => dt === "saree" || dt === "sarees" || dt.includes("saree") || dt.includes("sari"),
+      sarees: (dt) => dt === "saree" || dt === "sarees" || dt.includes("saree") || dt.includes("sari"),
       lehenga: (dt) => dt.includes("lehenga"),
       lehengas: (dt) => dt.includes("lehenga"),
       "kurta-sets": (dt) => dt.includes("kurta"),
@@ -109,35 +110,32 @@ const ProductGrid = ({
     const matcher = CATEGORY_GROUPS[categoryLower];
 
     // DEBUG: log all unique dressTypes + which ones match
-    const allDressTypes = [...new Set(filteredProducts.map(p => p.dressType).filter(Boolean))];
-    console.log(`[DEBUG] URL category="${categoryLower}" | All dressTypes in products:`, allDressTypes);
-
     const filtered = filteredProducts.filter(product => {
-      const dt = product.dressType?.trim()?.toLowerCase();
-      if (!dt) return false;
-      if (matcher) return matcher(dt);
-      // Fallback: check if dressType contains the first word of the category
+      const productFields = [
+        product.dressType,
+        product.category,
+        product.subcategory,
+        product.subDressType,
+        product.type,
+        product.subCategory,
+        product.productType,
+      ].filter(Boolean).map((value) => value.trim().toLowerCase());
+
+      if (!productFields.length) return false;
+      if (matcher) {
+        return productFields.some((field) => matcher(field));
+      }
+
       const baseWord = categoryLower.split("-")[0];
-      return dt.includes(baseWord);
+      return productFields.some((field) => field.includes(baseWord));
     });
 
     console.log(`[DEBUG] Found ${filtered.length} products for category "${categoryLower}"`);
     return filtered;
   }, [filteredProducts, category]);
 
-  /**
-   * Determines if a product should be shown based on admin publication status and product publication status.
-   */
   const shouldShowProduct = (product) => {
-    if (!product) return false;
-
-    const adminPublished = product.isAdminPublished ?? product.availability?.isAdminPublished;
-
-    if (adminPublished !== undefined) {
-      if (adminPublished === false) return false;
-      if (adminPublished === true && !product.isPublished) return false;
-    }
-    return product.isPublished === true;
+    return isProductPublishedByBoth(product) && !isProductOutOfStock(product);
   };
 
   /**
@@ -170,11 +168,6 @@ const ProductGrid = ({
   const startIndex = shouldPaginate ? (currentPage - 1) * productsPerPage : 0;
   const endIndex = shouldPaginate ? startIndex + productsPerPage : productsToDisplay.length;
   const paginatedProducts = productsToDisplay.slice(startIndex, endIndex);
-
-  console.log("^^^^^^^^^^^^^^^^^^^", paginatedProducts);
-
-  console.log("Products to display:", paginatedProducts.length, "products");
-  console.log("First product dressType:", paginatedProducts[0]?.dressType);
 
   // Ensure current page is valid (if filters reduce product count)
   useEffect(() => {
