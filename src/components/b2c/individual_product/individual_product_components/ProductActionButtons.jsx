@@ -224,9 +224,6 @@ const ProductActionButtons = ({
               />
               Virtual try on
             </button>
-            <p className="text-xs text-gray-600 text-center leading-relaxed">
-              Note: These are AI-generated models. Please refer to the original garment image for accurate details.
-            </p>
           </div>
         )}
       </div>

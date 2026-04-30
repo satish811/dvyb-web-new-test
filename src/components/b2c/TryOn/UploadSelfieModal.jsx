@@ -274,7 +274,7 @@ const UploadSelfieModal = ({
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777482916/MODEL1-L_w98jb9.png",
       },
       {
-        modelName: "Medium Tall Athletic",
+        modelName: "Medium Athletic",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777482914/MODEL2-L_qnrpyj.png",
       },
@@ -299,17 +299,17 @@ const UploadSelfieModal = ({
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777481516/MODEL1_qcuzkx.png",
       },
       {
-        modelName: "Medium Tall Athletic",
+        modelName: "Medium Athletic",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777481520/MODEL3_qdbhv3.png",
       },
       {
-        modelName: "Fair Tall Slender",
+        modelName: "Fair Slender",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777487806/MODEL2-S_yec4p0.png",
       },
       {
-        modelName: "Dusky Tall Lean",
+        modelName: "Dusky Lean",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1777481518/MODEL4_ymhgj5.png",
       },
