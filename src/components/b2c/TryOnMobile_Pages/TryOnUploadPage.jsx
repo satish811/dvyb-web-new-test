@@ -318,7 +318,7 @@ const TryOnUploadPage = () => {
   };
 
   const exampleImage =
-    "https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png";
+    "https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png";
 
   if (!tryOnData) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

@@ -922,7 +922,7 @@ const UploadSelfieModal = ({
             {/* Example Image */}
             <div className="w-full max-w-[220px] md:max-w-[240px] shrink-0">
               <img
-                src="https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png"
+                src="https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png"
                 alt="Example"
                 className="w-full h-[320px] md:h-[400px] object-cover rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100"
               />
