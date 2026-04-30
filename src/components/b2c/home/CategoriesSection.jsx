@@ -11,7 +11,7 @@ import indoWesternImg from "../../../assets/b2c/landing/Landing-villy/indowester
 import kurtasImg from "../../../assets/b2c/landing/Landing-villy/Kurtas.jpg";
 import shararasImg from "../../../assets/b2c/landing/Landing-villy/Shararas.jpg";
 import anarkali from "../../../assets/b2c/landing/Landing-villy/anrakalidec.png";
-import bridalImg from "../../../assets/b2c/landing/Landing-villy/bridal1.jpg";
+import bridalImg from "../../../assets/b2c/landing/Landing-villy/bridal1.png";
 
 const categories = [
     { id: 1, title: "SAREES", img: sareeImg, link: "/women/saree" },
