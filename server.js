@@ -141,7 +141,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
 
 // ✅ Set limits FIRST before any routes
-app.use(cors());
+app.use(cors({
+  origin: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Authorization"],
+  credentials: true,
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
