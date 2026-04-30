@@ -224,9 +224,9 @@ const ProductActionButtons = ({
               />
               Virtual try on
             </button>
-
-        />
-      )}
+          </div>
+        )}
+      </div>
     </>
   );
 };
