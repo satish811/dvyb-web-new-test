@@ -53,7 +53,7 @@ export default function HomeFooter() {
             <div className="max-w-[1400px] 2xl:max-w-[1920px] mx-auto px-6 md:px-10 2xl:px-20 h-full flex flex-col justify-between">
 
                 <div className="mb-8 rounded-xl bg-white/10 p-4 text-sm text-gray-100 max-w-4xl">
-                    <p className="font-medium uppercase tracking-wide">Disclaimer: All the images are AI generated images.</p>
+                    <p className="font-medium uppercase tracking-wide">Disclaimer : All the images are AI generated.</p>
                 </div>
 
                 <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20 2xl:gap-32">
