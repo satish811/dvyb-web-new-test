@@ -1,8 +1,8 @@
 import CategoryCarousel from "../../../components/utils/CategoryCarousel";
 import ProductGrid from "../../../components/product/productGrid";
 import SectionTitle from "../../../components/utils/SectionTitle";
-import homeBannerWomen from "../../../assets/hero_women.jpg";
-import homeBannerMen from "../../../assets/men.png";
+import homeBannerWomen from "../../../assets/women2.png";
+import homeBannerMen from "../../../assets/men1.png";
 import ClosetIconsSection from "../../../components/b2c/home/ClosetIconsSection";
 import { useProducts } from "../../../hooks/useProducts";
 import LuxuryPicks from "../../../components/b2c/home/LuxuryPicks";
