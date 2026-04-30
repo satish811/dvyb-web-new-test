@@ -31,13 +31,17 @@ const DeliveryReturnsSection = () => {
                         <p>We accept all major credit cards, debit cards, UPI, and net banking</p>
                     </div>
 
-                    <div>
+                            <div>
                         <h4 className="font-semibold mb-1">Returns</h4>
                         <p>30-day return policy for all items</p>
                         <p>Items must be unworn and in original condition</p>
                     </div>
                 </div>
             )}
+
+            <p className="text-xs text-gray-600 mt-3">
+                Note: These are AI-generated models. Please refer to the original garment image for accurate details.
+            </p>
         </div>
     );
 };
