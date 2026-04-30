@@ -98,7 +98,7 @@ const TryOnMobileSheet = ({
           disabled={isProcessing}
           className="flex items-center gap-1.5 text-sm text-[#4a044e] font-medium transition-opacity hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <RotateCcw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} /> Re-Try
+          <RotateCcw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} /> 2DRe-Try
         </button>
       </div>
 

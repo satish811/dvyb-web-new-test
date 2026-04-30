@@ -106,7 +106,7 @@ const CustomizationPanel = ({
   />
 
   <span className="text-[16px] font-semibold whitespace-nowrap">
-    Re-Try
+    2D Re-Try
   </span>
 </button>
 
