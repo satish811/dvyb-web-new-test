@@ -227,6 +227,30 @@ const ProductActionButtons = ({
           </div>
         )}
       </div>
+
+      {/* B2B Bulk Order Popup */}
+      {showBulkPopup && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pb-10">
+          <div className="relative">
+            <BuyNowColorsPopup
+              product={product}
+              onClose={() => setShowBulkPopup(false)}
+              userRole="B2B"
+              onConfirm={handleB2BPopupConfirm}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Login Required Popup - Keep this if you still want the slide popup as well */}
+      {showLoginPopup && (
+        <RightSlidePopup
+          keyProp="login-required"
+          content="Please login to continue."
+          autoHideDelay={4000}
+          onClose={() => setShowLoginPopup(false)}
+        />
+      )}
     </>
   );
 };
