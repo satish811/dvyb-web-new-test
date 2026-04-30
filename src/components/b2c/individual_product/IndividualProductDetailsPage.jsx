@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProducts } from "../../../hooks/useProducts";
 import { cartService } from "../../../services/cartService";
 import { useWishlist } from "../../../context/WishlistContext";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import { auth } from "../../../config";
 import B2BAuthService from "../../../services/b2bAuthService";
 import { motion, AnimatePresence } from "framer-motion";
@@ -102,6 +103,12 @@ const IndividualProductDetailsPage = () => {
 
   const [showPage, setShowPage] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { userProfile } = useAuth();
+  const tryOnLimit = userProfile?.daily_tryon_limit ?? 10;
+  const tryOnUsed = userProfile?.daily_tryon_used ?? 0;
+  const tryOnRemaining = Math.max(0, tryOnLimit - tryOnUsed);
+  const isTryOnLimitReached = tryOnRemaining <= 0;
 
   const [userRole, setUserRole] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -361,6 +368,16 @@ const IndividualProductDetailsPage = () => {
   const handleTryOnClick = () => {
     if (userRole === "B2B") {
       alert("Virtual Try-On is not available for your account");
+      return;
+    }
+
+    if (!auth.currentUser) {
+      alert("Please log in to use Virtual Try-On.");
+      return;
+    }
+
+    if (isTryOnLimitReached) {
+      alert(`You've reached today's try-on limit (${tryOnLimit}). Come back tomorrow or upgrade your plan.`);
       return;
     }
 
@@ -849,10 +866,19 @@ const IndividualProductDetailsPage = () => {
             addingToCart={addingToCart}
             addingToWishlist={addingToWishlist}
             isB2BUser={isB2BUser}
+            tryOnDisabled={isTryOnLimitReached}
+            tryOnRemaining={tryOnRemaining}
+            tryOnLimit={tryOnLimit}
             product={product}
             selectedSize={selectedSize}
             selectedColor={product.selectedColors?.[0]}
           />
+
+          {auth.currentUser && !isB2BUser && (
+            <div className="mt-3 text-center text-sm text-gray-600">
+              Try-ons left today: <span className="font-semibold text-black">{tryOnRemaining}</span> / {tryOnLimit}
+            </div>
+          )}
 
           {showB2BPopup && (
             <AvailColorsPopup
