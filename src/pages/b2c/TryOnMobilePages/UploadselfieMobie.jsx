@@ -7,7 +7,7 @@ import red_warnIc from "../../../assets/TryOn/red_warnIc.svg";
 
 const ProfilePhotoSelector = ({ onSelect }) => {
   const [firebaseImage, setFirebaseImage] = useState(
-    "https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png"
+    "https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png"
   );
   const [loading, setLoading] = useState(false);
 

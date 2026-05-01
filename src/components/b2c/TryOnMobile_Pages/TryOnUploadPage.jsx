@@ -94,12 +94,12 @@ const TryOnUploadPage = () => {
           "https://res.cloudinary.com/doiezptnn/image/upload/v1774807978/Light-skinned_mid-height_fit_g0njuy.png",
       },
       {
-        modelName: "Fair Tall Slender",
+        modelName: "Fair Slender",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Fair_tall_slender_j039ez.png",
       },
       {
-        modelName: "Dusky Tall Lean",
+        modelName: "Dusky Lean",
         modelimg:
           "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Dusky_tall_lean_ruqqfe.png",
       },
@@ -318,7 +318,7 @@ const TryOnUploadPage = () => {
   };
 
   const exampleImage =
-    "https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png";
+    "https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png";
 
   if (!tryOnData) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

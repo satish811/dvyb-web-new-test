@@ -115,7 +115,7 @@ const UploadSelfieModal = ({
   tryOnData,
 }) => {
   const MAX_UPLOAD_IMAGE_BYTES = 3.5 * 1024 * 1024;
-  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1776421637/Gemini_Generated_Image_tga4sxtga4sxtga4_k0gpfo.png";
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1777488494/Background_rcvkq6.png";
 
   const currentUser = auth.currentUser;
   const { userCollection } = useAuth();
@@ -271,23 +271,23 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Petite Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811392/Tan_petite_curvy_no8gp9.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777482916/MODEL1-L_w98jb9.png",
       },
       {
-        modelName: "Dusky Mid-height Fit",
+        modelName: "Medium Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811395/Dusky_mid-height_fit_ihazii.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777482914/MODEL2-L_qnrpyj.png",
       },
 
       {
-        modelName: "Light-skinned Tall Athletic",
+        modelName: "Light-Skinned Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811402/Light-skinned_tall_athletic_or2kyh.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777482913/MODEL3-L_swkk7f.png",
       },
       {
         modelName: "Fair Tall Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774811407/Fair_tall_slim_qs9zs7.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777482915/MODEL4-L_w8h0ci.png",
       },
 
 
@@ -296,22 +296,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Petite Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807971/Tan_petite_curvy_o8vqjp.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481516/MODEL1_qcuzkx.png",
       },
       {
-        modelName: "Light-skinned Mid-height Fit",
+        modelName: "Medium Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807978/Light-skinned_mid-height_fit_g0njuy.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481520/MODEL3_qdbhv3.png",
       },
       {
-        modelName: "Fair Tall Slender",
+        modelName: "Fair Slender",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Fair_tall_slender_j039ez.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777487806/MODEL2-S_yec4p0.png",
       },
       {
-        modelName: "Dusky Tall Lean",
+        modelName: "Dusky Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774807970/Dusky_tall_lean_ruqqfe.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481518/MODEL4_ymhgj5.png",
       },
     ];
 
@@ -319,22 +319,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL1-U_asnvzx.png",
       },
       {
         modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL2-U_ylvhkc.png",
       },
       {
         modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483321/MODEL3-U_ejqnna.png",
       },
       {
         modelName: "Olive Mid-height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483317/MODEL4-U_web0nr.png",
       },
     ];
 
@@ -342,22 +342,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL1-U_asnvzx.png",
       },
       {
         modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL2-U_ylvhkc.png",
       },
       {
         modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483321/MODEL3-U_ejqnna.png",
       },
       {
-        modelName: "Olive Mid-height Slim",
+        modelName: "Olive Mid-Height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483317/MODEL4-U_web0nr.png",
       },
     ];
 
@@ -365,22 +365,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL1-U_asnvzx.png",
       },
       {
         modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL2-U_ylvhkc.png",
       },
       {
         modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483321/MODEL3-U_ejqnna.png",
       },
       {
-        modelName: "Olive Mid-height Slim",
+        modelName: "Olive Mid-Height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483317/MODEL4-U_web0nr.png",
       },
     ];
 
@@ -403,22 +403,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Tall Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809383/Tan_tall_curvy_puye9d.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL1-U_asnvzx.png",
       },
       {
         modelName: "Dusky Petite Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809381/Dusky_petite_lean_jwtujk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483316/MODEL2-U_ylvhkc.png",
       },
       {
         modelName: "Fair Tall Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809377/Fair_tall_athletic_tuzlck.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483321/MODEL3-U_ejqnna.png",
       },
       {
-        modelName: "Olive Mid-height Slim",
+        modelName: "Olive Mid-Height Slim",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1774809371/Olive_mid-height_slim_aqvijk.png",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777483317/MODEL4-U_web0nr.png",
       },
 
     ];
@@ -922,7 +922,7 @@ const UploadSelfieModal = ({
             {/* Example Image */}
             <div className="w-full max-w-[220px] md:max-w-[240px] shrink-0">
               <img
-                src="https://res.cloudinary.com/doiezptnn/image/upload/v1776952151/warehouse_uploads/ajuqvtblgnvl3qwmtpdt.png"
+                src="https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png"
                 alt="Example"
                 className="w-full h-[320px] md:h-[400px] object-cover rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100"
               />

@@ -13,7 +13,7 @@ import { profileService } from '../../../services/profileService';
 
 const MyProfile = () => {
   const MAX_MODEL_IMAGE_BYTES = 3.5 * 1024 * 1024;
-  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1776421637/Gemini_Generated_Image_tga4sxtga4sxtga4_k0gpfo.png";
+  const DEFAULT_PROFILE_BACKGROUND_URL = "https://res.cloudinary.com/doiezptnn/image/upload/v1777488494/Background_rcvkq6.png";
 
   const { user, userCollection, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
@@ -1329,101 +1329,125 @@ const MyProfile = () => {
 
       case 8:
         return (
-          <div className="max-w-2xl mt-22  mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-10 md:py-3 lg:py-10">
+          <div className="max-w-4xl mt-10 mx-auto px-4 xs:px-5 sm:px-6 md:px-4 lg:px-6 py-4 xs:py-5 sm:py-10 md:py-3 lg:py-10 flex flex-col items-center">
             {/* Header */}
-            <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-semibold text-gray-900 mb-1 xs:mb-1 sm:mb-2 md:mb-1 lg:mb-2 text-center sm:text-left">
+            <h2 className="text-lg xs:text-xl sm:text-2xl md:text-xl lg:text-2xl font-bold text-gray-900 mb-1 text-center">
               Take your photo
             </h2>
-            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-3 xs:mb-3 sm:mb-4 md:mb-2 lg:mb-2 text-center sm:text-left">
+            <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-6 text-center">
               This helps us create a more accurate virtual avatar of you.
             </p>
 
-            {/* Tips Card */}
-            <div className="mb-4 xs:mb-5 sm:mb-6 md:mb-4 lg:mb-6 p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 bg-[#E3C9E1]">
-              <div className="font-medium text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#400000] mb-3 xs:mb-3 sm:mb-4 md:mb-3 lg:mb-4">
-                For best results:
+            <div className="flex flex-col md:flex-row justify-center items-center md:items-start w-full gap-5 md:gap-8 pb-4">
+              {/* Picture on the left */}
+              <div className="w-full max-w-[220px] md:max-w-[240px] shrink-0">
+                <img
+                  src="https://res.cloudinary.com/doiezptnn/image/upload/v1777539866/Instruction_model_oi1cwt.png"
+                  alt="Example"
+                  className="w-full h-[320px] md:h-[400px] object-cover rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-gray-100"
+                />
               </div>
-              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-2 md:space-y-1.5 lg:space-y-2 text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm text-[#4A2D47] font-semibold">
-                <li>• Stand straight facing the camera with your arms at your sides.</li>
-                <li>• Full-body frame: Ensure you are visible from head to toe.</li>
-                <li>• Lighting &amp; Background: Use bright light and a plain, neutral background.</li>
-                <li>• Wear fitted clothing: This allows the AI to map the outfit to your body shape accurately.</li>
-                <li>• Photo Quality: Avoid blurry, dark, filtered, or cropped images.</li>
-                <li>• Single Subject: Make sure you are the only person in the photo.</li>
-              </ul>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3 xs:space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
-              {/* Take Photo Button */}
-              <button
-                onClick={startCamera}
-                disabled={cameraError || processingImage}
-                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#200000] hover:bg-gray-50 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#400000] flex items-center justify-center flex-shrink-0">
-                  <Camera className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-gray-900">
-                    Take a Photo
-                  </div>
-                  <div className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-500">
-                    Use your camera to capture a selfie
-                  </div>
-                </div>
-              </button>
+              {/* Instructions and Buttons on the right */}
+              <div className="flex flex-col w-full max-w-[340px] md:max-w-[360px] shrink-0 px-2 md:px-0 mt-2 md:mt-0">
+                <div
+                  className="rounded-xl p-5 w-full bg-[#FFF8F4] mb-4"
+                  style={{
+                    backgroundImage: `
+                      repeating-linear-gradient(0deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+                      repeating-linear-gradient(90deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+                      repeating-linear-gradient(180deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px),
+                      repeating-linear-gradient(270deg, #CFCFCF 0, #CFCFCF 12px, transparent 12px, transparent 24px)
+                    `,
+                    backgroundSize: "2px 100%, 100% 2px, 2px 100%, 100% 2px",
+                    backgroundPosition: "0 0, 0 0, 100% 0, 0 100%",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                >
+                  <h3 className="font-bold text-gray-900 mb-3 text-sm md:text-base">
+                    INSTRUCTIONS:
+                  </h3>
 
-              {/* Upload Photo Button */}
-              <button
-                onClick={() => {
-                  if (processingImage) return;
-                  fileInputRef.current?.click();
-                }}
-                disabled={processingImage}
-                className="w-full p-4 xs:p-5 sm:p-6 md:p-4 lg:p-6 border-2 border-[#4000003D] hover:border-gray-300 transition-all flex items-center gap-3 xs:gap-3 sm:gap-4 md:gap-3 lg:gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[#F0EDE8] flex items-center justify-center flex-shrink-0">
-                  <Upload className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 lg:w-6 lg:h-6 text-gray-600" />
+                  <ul className="space-y-2 mt-2 text-[12.5px] md:text-sm">
+                    <li className="flex gap-2 text-[#7F6301]">
+                      <span className="text-[#7F6301] font-medium leading-snug">
+                        • Stand straight facing the camera with your arms at your sides, and keep a full-body frame so you are visible from head to toe.
+                      </span>
+                    </li>
+                    <li className="flex gap-2 text-[#7F6301]">
+                      <span className="text-[#7F6301] font-medium leading-snug">
+                        • Use bright light with a plain, neutral background.
+                      </span>
+                    </li>
+                    <li className="flex gap-2 text-[#7F6301]">
+                      <span className="text-[#7F6301] font-medium leading-snug">
+                        • Wear fitted clothing so the AI can map the outfit to your body shape accurately.
+                      </span>
+                    </li>
+                    <li className="flex gap-2 text-[#7F6301]">
+                      <span className="text-[#7F6301] font-medium leading-snug">
+                        • Avoid blurry, dark, filtered, or cropped images, and make sure you are the only person in the photo.
+                      </span>
+                    </li>
+                  </ul>
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-gray-900">
-                    Upload a Photo
-                  </div>
-                  <div className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm text-gray-500">
-                    Choose an existing photo from your device
-                  </div>
-                </div>
-              </button>
 
-              {/* Hidden File Input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, true)}
-                className="hidden"
-              />
+                <p className="text-[11px] md:text-sm text-gray-500 font-medium mb-5 px-1 leading-snug text-center md:text-left">
+                  Your photos are never stored in our system. We respect your privacy and are committed to protecting your personal data.
+                </p>
 
-              {/* Camera Error Message */}
-              {cameraError && (
-                <div className="mt-4 xs:mt-5 sm:mt-6 md:mt-4 lg:mt-6 p-3 xs:p-3 sm:p-4 md:p-3 lg:p-4 bg-gray-900 text-white text-center">
-                  <p className="font-medium text-xs xs:text-sm sm:text-sm md:text-xs lg:text-sm mb-2">
-                    Unable to access camera. Please check permissions.
-                  </p>
-                  <button onClick={startCamera} className="text-xs xs:text-xs sm:text-sm md:text-xs lg:text-sm underline">
-                    Try Again
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      if (processingImage) return;
+                      fileInputRef.current?.click();
+                    }}
+                    disabled={processingImage}
+                    className="w-full text-white py-3.5 text-center font-semibold rounded-lg cursor-pointer transition-all shadow-sm mb-1 text-[14px] disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ background: 'var(--villy-primary, #33022F)' }}
+                  >
+                    Click to upload
+                  </button>
+
+                  <button
+                    onClick={startCamera}
+                    disabled={cameraError || processingImage}
+                    className="w-full border-2 py-3 font-semibold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 text-[14px] disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ borderColor: 'var(--villy-primary, #33022F)', color: 'var(--villy-primary, #33022F)' }}
+                  >
+                    <Camera size={18} strokeWidth={2.5} />
+                    Use camera
                   </button>
                 </div>
-              )}
 
-              {processingImage && (
-                <div className="mt-4 p-3 bg-[#33022F]/10 border border-[#33022F]/20 text-[#33022F] text-sm flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Enhancing your background, please wait...
-                </div>
-              )}
+                {/* Hidden File Input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, true)}
+                  className="hidden"
+                />
 
+                {/* Camera Error Message */}
+                {cameraError && (
+                  <div className="mt-4 p-3 bg-gray-900 text-white text-center rounded-lg">
+                    <p className="font-medium text-sm mb-2">
+                      Unable to access camera. Please check permissions.
+                    </p>
+                    <button onClick={startCamera} className="text-sm underline">
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                {processingImage && (
+                  <div className="mt-4 p-3 bg-[#33022F]/10 border border-[#33022F]/20 text-[#33022F] text-sm flex items-center justify-center gap-2 rounded-lg">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Enhancing your background...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -1439,7 +1463,7 @@ const MyProfile = () => {
               Take your photo
             </h2>
             <p className="text-sm xs:text-sm sm:text-base md:text-sm lg:text-base text-[#45556C] mb-4 xs:mb-5 sm:mb-8 md:mb-4 lg:mb-8 text-center sm:text-left">
-              This helps us create a more accurate virtual avatar of you.
+              This helps us create a more accurate virtual model of your's.
             </p>
 
             {/* Tips Card */}
@@ -1505,7 +1529,7 @@ const MyProfile = () => {
                 disabled={processingImage || savingProfile}
                 className="w-full h-12 xs:h-12 sm:h-14 md:h-11 lg:h-14 bg-primary text-white text-sm xs:text-sm sm:text-base md:text-sm lg:text-base font-semibold hover:shadow-lg transition-all"
               >
-                {processingImage ? 'PROCESSING BACKGROUND...' : capturedImage ? 'SAVE & CONTINUE' : 'CAPTURE PHOTO'}
+                {processingImage ? 'PROCESSING BACKGROUND...' : savingProfile ? 'SAVING...' : capturedImage ? 'SAVE & CONTINUE' : 'CAPTURE PHOTO'}
               </button>
 
             </div>
