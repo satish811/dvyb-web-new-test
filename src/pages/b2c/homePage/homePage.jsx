@@ -271,7 +271,7 @@ export default function Home() {
             src={homeBannerMen}
             alt="Men's Fashion"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 40%' }}
+            style={{ objectPosition: 'center 30%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
