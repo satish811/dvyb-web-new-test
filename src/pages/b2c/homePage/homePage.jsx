@@ -265,12 +265,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Side - Men */}
+      {/* Right Side - Men */}
         <div className="relative w-1/2 h-full">
           <img
             src={homeBannerMen}
             alt="Men's Fashion"
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 30%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
