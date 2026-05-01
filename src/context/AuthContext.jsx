@@ -62,6 +62,13 @@ export const AuthProvider = ({ children }) => {
         getDoc(doc(db, "B2BBulkOrders_users", firebaseUser.uid)),
       ]);
 
+      const tryOnDefaults = {
+        plan_type: "free",
+        daily_tryon_limit: 10,
+        daily_tryon_used: 0,
+        last_tryon_reset_date: null,
+      };
+
       let userCollection, userRole, userData;
 
       // Determine role based on HOW the user signed in
@@ -76,7 +83,8 @@ export const AuthProvider = ({ children }) => {
         if (b2cSnap.exists()) {
           userCollection = "b2c_users";
           userRole = "B2C";
-          userData = b2cSnap.data();
+          userData = { ...tryOnDefaults, ...b2cSnap.data() };
+          await setDoc(doc(db, userCollection, firebaseUser.uid), userData, { merge: true });
         } else {
           // Create B2C doc for phone user
           userCollection = "b2c_users";
@@ -95,6 +103,7 @@ export const AuthProvider = ({ children }) => {
             profilePic: "",
             role: "B2C",
             userType: "b2c",
+            ...tryOnDefaults,
             extraData: {},
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -106,17 +115,20 @@ export const AuthProvider = ({ children }) => {
         // Email/password login + exists in B2B collection = B2B
         userCollection = "B2BBulkOrders_users";
         userRole = "B2B";
-        userData = b2bSnap.data();
+        userData = { ...tryOnDefaults, ...b2bSnap.data() };
+        await setDoc(doc(db, userCollection, firebaseUser.uid), userData, { merge: true });
       } else if (b2cSnap.exists()) {
         // Fallback: check B2C collection
         userCollection = "b2c_users";
         userRole = "B2C";
-        userData = b2cSnap.data();
+        userData = { ...tryOnDefaults, ...b2cSnap.data() };
+        await setDoc(doc(db, userCollection, firebaseUser.uid), userData, { merge: true });
       } else if (b2bSnap.exists()) {
         // Fallback: check B2B collection (for non-phone, non-standard providers)
         userCollection = "B2BBulkOrders_users";
         userRole = "B2B";
-        userData = b2bSnap.data();
+        userData = { ...tryOnDefaults, ...b2bSnap.data() };
+        await setDoc(doc(db, userCollection, firebaseUser.uid), userData, { merge: true });
       } else {
         const intendedType = intendedUserType || detectedType;
         const targetCollection = getCollectionInfo(intendedType);
@@ -138,6 +150,7 @@ export const AuthProvider = ({ children }) => {
           profilePic: "",
           role: userRole,
           userType: userRole.toLowerCase(),
+          ...tryOnDefaults,
           extraData: {},
           createdAt: new Date(),
           updatedAt: new Date(),

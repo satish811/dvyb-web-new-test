@@ -16,6 +16,9 @@ const ProductActionButtons = ({
   onB2BBuyNow,
   addingToCart,
   addingToWishlist,
+  tryOnDisabled,
+  tryOnRemaining,
+  tryOnLimit,
   product,
   selectedSize,
   selectedColor,
@@ -23,7 +26,7 @@ const ProductActionButtons = ({
   const navigate = useNavigate();
   const { isInCart } = useCart();
   const isGuest = !user;
-  const isVirtualTryOnDisabled = isGuest || isB2BUser;
+  const isVirtualTryOnDisabled = isGuest || isB2BUser || tryOnDisabled;
   const [showBulkPopup, setShowBulkPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showGuestMessage, setShowGuestMessage] = useState(false);
@@ -126,6 +129,13 @@ const ProductActionButtons = ({
       return;
     }
 
+    if (tryOnDisabled) {
+      handleLoginRequired(
+        "You've reached today's try-on limit. Come back tomorrow or upgrade your plan."
+      );
+      return;
+    }
+
     // Call the onVirtualTryOn function passed from parent with the event
     if (onVirtualTryOn) {
       onVirtualTryOn(e);
@@ -214,7 +224,8 @@ const ProductActionButtons = ({
           <div className="flex flex-col gap-2">
             <button
               onClick={handleVirtualTryOnClick}
-              className="flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md"
+              disabled={isVirtualTryOnDisabled}
+              className={`flex items-center justify-center gap-2 py-4 font-semibold text-sm md:text-base rounded-none transition-all duration-200 text-white hover:opacity-90 hover:shadow-md ${isVirtualTryOnDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
               style={{ background: "linear-gradient(90deg, #9A6E97 0%, #835D80 32.69%, #8F658B 63.94%, #8F688C 100%)" }}
             >
               <img
@@ -224,6 +235,14 @@ const ProductActionButtons = ({
               />
               Virtual try on
             </button>
+            <p className="text-xs text-gray-600 text-center leading-relaxed">
+              Note: These are AI-generated models. Please refer to the original garment image for accurate details.
+            </p>
+            {typeof tryOnRemaining === "number" && tryOnLimit != null && (
+              <p className="text-xs text-gray-500 text-center mt-1">
+                {tryOnRemaining} / {tryOnLimit} try-ons left today
+              </p>
+            )}
           </div>
         )}
       </div>
