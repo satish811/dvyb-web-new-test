@@ -238,7 +238,7 @@ export default function Home() {
             src={homeBannerWomen}
             alt="Women's Fashion"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 60%' }}
+            style={{ objectPosition: 'center 40%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
@@ -271,7 +271,7 @@ export default function Home() {
             src={homeBannerMen}
             alt="Men's Fashion"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 60%' }}
+            style={{ objectPosition: 'center 40%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
