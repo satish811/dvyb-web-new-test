@@ -1,8 +1,8 @@
 import CategoryCarousel from "../../../components/utils/CategoryCarousel";
 import ProductGrid from "../../../components/product/productGrid";
 import SectionTitle from "../../../components/utils/SectionTitle";
-import homeBannerWomen from "../../../assets/women 1.png";
-import homeBannerMen from "../../../assets/men1 1.png";
+import homeBannerWomen from "../../../assets/women.png";
+import homeBannerMen from "../../../assets/men1.png";
 import ClosetIconsSection from "../../../components/b2c/home/ClosetIconsSection";
 import { useProducts } from "../../../hooks/useProducts";
 import LuxuryPicks from "../../../components/b2c/home/LuxuryPicks";
@@ -237,8 +237,7 @@ export default function Home() {
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 40%' }}
+            className="w-full h-full object-cover object-top lg:object-center"
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
@@ -270,8 +269,7 @@ export default function Home() {
           <img
             src={homeBannerMen}
             alt="Men's Fashion"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 30%' }}
+            className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-black/10"></div>
 

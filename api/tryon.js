@@ -1547,7 +1547,6 @@ import axios from "axios";
 import multer from "multer";
 import cloudinary from "cloudinary";
 import { GoogleAuth } from "google-auth-library";
-import admin from "firebase-admin";
 
 
 // ============ VERCEL CONFIG ============
@@ -1588,23 +1587,6 @@ function runMiddleware(req, res, fn) {
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 const MINIMAX_BASE_URL = 'https://api.minimax.io/v1';
 const MINIMAX_API_KEY = process.env.MINIMAX_API_KEY;
-
-const FIREBASE_SERVICE_ACCOUNT_JSON = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-if (!admin.apps.length) {
-  if (FIREBASE_SERVICE_ACCOUNT_JSON) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert(JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON)),
-      });
-    } catch (error) {
-      console.error("Invalid Firebase service account JSON:", error);
-      admin.initializeApp({ credential: admin.credential.applicationDefault() });
-    }
-  } else {
-    admin.initializeApp({ credential: admin.credential.applicationDefault() });
-  }
-}
-const adminDb = admin.firestore();
 
 // Vertex AI Virtual Try-On (no prompting)
 const VERTEX_PROJECT_ID = process.env.GOOGLE_PROJECT_ID || "dvyb-8b572";
@@ -1679,98 +1661,6 @@ const getMinimaxHeaders = () => ({
   'Authorization': `Bearer ${MINIMAX_API_KEY}`,
   'Content-Type': 'application/json'
 });
-
-const AUTH_HEADER_PREFIX = "Bearer ";
-
-const getAuthTokenFromHeaders = (req) => {
-  const header = req.headers.authorization || req.headers.Authorization;
-  if (!header || typeof header !== "string") return null;
-  if (!header.startsWith(AUTH_HEADER_PREFIX)) return null;
-  return header.slice(AUTH_HEADER_PREFIX.length).trim();
-};
-
-const authenticateRequest = async (req) => {
-  const token = getAuthTokenFromHeaders(req);
-  if (!token) {
-    const error = new Error("Missing or invalid Authorization header");
-    error.statusCode = 401;
-    throw error;
-  }
-
-  const decodedToken = await admin.auth().verifyIdToken(token);
-  if (!decodedToken || !decodedToken.uid) {
-    const error = new Error("Invalid auth token");
-    error.statusCode = 401;
-    throw error;
-  }
-
-  return decodedToken;
-};
-
-const getUserDocRef = async (uid) => {
-  const b2cRef = adminDb.collection("b2c_users").doc(uid);
-  const b2bRef = adminDb.collection("B2BBulkOrders_users").doc(uid);
-
-  const [b2cSnap, b2bSnap] = await Promise.all([b2cRef.get(), b2bRef.get()]);
-  if (b2cSnap.exists) return b2cRef;
-  if (b2bSnap.exists) return b2bRef;
-  return null;
-};
-
-const getDailyLimitFromPlan = (planType) => {
-  const plan = (planType || "free").toString().toLowerCase();
-  if (plan === "pro") return 50;
-  if (plan === "premium") return 200;
-  return 10;
-};
-
-const ensureTryOnQuota = async (userRef) => {
-  const today = new Date().toISOString().slice(0, 10);
-
-  return await adminDb.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(userRef);
-    if (!snapshot.exists) {
-      const error = new Error("User profile not found");
-      error.statusCode = 404;
-      throw error;
-    }
-
-    const data = snapshot.data();
-    const currentDate = data.last_tryon_reset_date || null;
-    const limit = data.daily_tryon_limit ?? getDailyLimitFromPlan(data.plan_type);
-    let used = Number(data.daily_tryon_used || 0);
-    const needsReset = currentDate !== today;
-
-    if (needsReset) {
-      used = 0;
-      transaction.set(userRef, {
-        daily_tryon_used: 0,
-        last_tryon_reset_date: today,
-        daily_tryon_limit: limit,
-        plan_type: data.plan_type || "free",
-      }, { merge: true });
-    }
-
-    if (used >= limit) {
-      const error = new Error("LIMIT_EXCEEDED");
-      error.statusCode = 429;
-      throw error;
-    }
-
-    const newUsed = used + 1;
-    transaction.set(userRef, {
-      daily_tryon_used: newUsed,
-      last_tryon_reset_date: today,
-      daily_tryon_limit: limit,
-      plan_type: data.plan_type || "free",
-    }, { merge: true });
-
-    return {
-      limit,
-      used: newUsed,
-    };
-  });
-};
 
 // Background options with URLs
 const backgrounds = {
@@ -2662,31 +2552,9 @@ export default async function handler(req, res) {
 
 
 
-    // ======== POST: /api/garnment-swap ========
+    // ======== POST: /api/test-tryon ========
     if (req.method === "POST" && path === "/api/garnment-swap") {
-      console.log('\n🎯 === AUTHORIZED TRY-ON REQUEST ===');
-
-      let quotaResult = null;
-      let userRef = null;
-
-      try {
-        const decodedToken = await authenticateRequest(req);
-        userRef = await getUserDocRef(decodedToken.uid);
-        if (!userRef) {
-          return res.status(404).json({
-            success: false,
-            error: "User record not found",
-          });
-        }
-
-        quotaResult = await ensureTryOnQuota(userRef);
-      } catch (err) {
-        console.error("❌ Quota validation failed:", err.message);
-        return res.status(err.statusCode || 401).json({
-          success: false,
-          error: err.message || "Unauthorized",
-        });
-      }
+      console.log('\n🎯 === TEST TRY-ON REQUEST ===');
 
       await runMiddleware(
         req,
@@ -2698,12 +2566,6 @@ export default async function handler(req, res) {
       );
 
       if (!req.files?.model || !req.files?.garment) {
-        if (quotaResult && userRef) {
-          await userRef.update({
-            daily_tryon_used: admin.firestore.FieldValue.increment(-1)
-          });
-        }
-
         return res.status(400).json({
           success: false,
           error: "Both model and garment images required"
@@ -2716,44 +2578,21 @@ export default async function handler(req, res) {
       const outfitType = req.body.outfitType || "saree";
 
       console.log(`🚀 Generating try-on for ${outfitType}...`);
+      const output = await generateTryOnWithRetry(
+        modelBase64,
+        garmentBase64,
+        outfitType
+      );
 
-      try {
-        const output = await generateTryOnWithRetry(
-          modelBase64,
-          garmentBase64,
-          outfitType
-        );
-
-        if (!output) {
-          throw new Error("No image generated");
-        }
-
-        console.log(`✨ SUCCESS`);
-        return res.json({
-          success: true,
-          result: `data:image/png;base64,${output}`,
-          tryOnLimit: quotaResult.limit,
-          tryOnUsed: quotaResult.used,
-          tryOnRemaining: Math.max(0, quotaResult.limit - quotaResult.used),
-        });
-      } catch (err) {
-        console.error("❌ Try-on generation failed:", err.message);
-
-        if (quotaResult && userRef) {
-          try {
-            await userRef.update({
-              daily_tryon_used: admin.firestore.FieldValue.increment(-1)
-            });
-          } catch (rollbackError) {
-            console.error("❌ Failed to roll back reserved quota:", rollbackError);
-          }
-        }
-
-        return res.status(500).json({
-          success: false,
-          error: err.message || "Try-on generation failed",
-        });
+      if (!output) {
+        throw new Error("No image generated");
       }
+
+      console.log(`✨ SUCCESS`);
+      return res.json({
+        success: true,
+        result: `data:image/png;base64,${output}`
+      });
     }
 
 

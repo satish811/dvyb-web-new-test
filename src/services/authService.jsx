@@ -90,11 +90,11 @@ class AuthenticationService {
             ...extraData,
           });
 
-      await setDoc(doc(db, collection, user.uid), JSON.parse(JSON.stringify(userData)));
+      await setDoc(doc(db, "B2BBulkOrders_users", user.uid), userDoc);
 
       return {
         success: true,
-        user: userData,
+        user: userDoc,
       };
     } catch (error) {
       console.error("B2B Registration error:", error);

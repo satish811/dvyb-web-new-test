@@ -42,17 +42,9 @@ if (typeof window !== 'undefined') {
   try {
     // Use debug token in development (localhost)
     if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN) {
-      // Accept a real debug token or the special string "true" to generate one.
-      self.FIREBASE_APPCHECK_DEBUG_TOKEN =
-        import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN === "true"
-          ? true
-          : import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
-      console.log(
-        "🔧 App Check Debug Mode enabled for localhost",
-        self.FIREBASE_APPCHECK_DEBUG_TOKEN === true
-          ? "(generate new debug token)"
-          : self.FIREBASE_APPCHECK_DEBUG_TOKEN
-      );
+      // Enable debug mode for local testing
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN;
+      console.log("🔧 App Check Debug Mode enabled for localhost");
     }
     
     // Initialize App Check with ReCAPTCHA (works in both debug and production)

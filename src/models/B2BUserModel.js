@@ -1,5 +1,5 @@
 export class B2BUserModel {
-  constructor({ uid, username, mobile, email, password, confirmPassword, pan = "", aadhaar = "", plan_type = "free" }) {
+  constructor({ uid, username, mobile, email, password, confirmPassword, pan = "", aadhaar = "" }) {
     this.uid = uid;
     this.username = username;
     this.mobile = mobile;
@@ -12,10 +12,6 @@ export class B2BUserModel {
     this.aadhaar = aadhaar;
 
     this.role = "B2B";
-    this.plan_type = plan_type;
-    this.daily_tryon_limit = 10;
-    this.daily_tryon_used = 0;
-    this.last_tryon_reset_date = null;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }

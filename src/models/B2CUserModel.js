@@ -27,10 +27,6 @@ export class B2CUserModel {
     this.dob = dob;
     this.profilePic = profilePic;
     this.role = "b2c";
-    this.plan_type = "free";
-    this.daily_tryon_limit = 10;
-    this.daily_tryon_used = 0;
-    this.last_tryon_reset_date = null;
     this.extraData = extraData;
     this.createdAt = new Date();
     this.updatedAt = new Date();

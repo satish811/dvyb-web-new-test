@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useRef } from "react";
-import { auth } from "../config/firebaseConfig";
 import { API_ENDPOINTS } from "../utils/tryOnConstants";
 import { createTryOnFormData } from "../utils/tryOnHelpers";
 
@@ -55,12 +54,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
     setTryOnResult(null);
 
     try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("Please log in to use Virtual Try-On.");
-      }
-
-      const token = await currentUser.getIdToken();
       const formData = await createTryOnFormData(
         modelImage,
         garmentImage,
@@ -72,9 +65,6 @@ export const useTryOnLogic = (tryOnData, isOpen) => {
       const response = await fetch(API_ENDPOINTS.GARMENT_SWAP, {
         method: "POST",
         body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {
