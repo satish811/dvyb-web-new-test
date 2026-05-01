@@ -237,7 +237,8 @@ export default function Home() {
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 60%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
@@ -269,7 +270,8 @@ export default function Home() {
           <img
             src={homeBannerMen}
             alt="Men's Fashion"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 60%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
