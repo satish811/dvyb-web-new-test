@@ -232,12 +232,13 @@ export default function Home() {
       {/* DESKTOP HERO SECTION (Hidden on Mobile) */}
       <section className="hidden md:flex relative w-full overflow-hidden h-[calc(100dvh-64px)] md:max-h-[800px] xl:max-h-none flex-row">
 
-        {/* Left Side - Women */}
+    {/* Left Side - Women */}
         <div className="relative w-1/2 h-full">
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
-            className="w-full h-full object-cover object-top lg:object-center"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center 40%' }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
