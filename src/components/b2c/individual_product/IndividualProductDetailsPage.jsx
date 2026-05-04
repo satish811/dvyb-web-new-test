@@ -208,6 +208,7 @@ const IndividualProductDetailsPage = () => {
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
 
   const product = products.find((p) => String(p.id) === String(id));
+  console.log("SIZE CHART:", product?.sizeChart);
   console.log("🛍️ [Product Details] Full product data:", product);
 
   if (!product) return <div className="text-center py-10 text-gray-500">Product not found.</div>;
@@ -791,6 +792,9 @@ const IndividualProductDetailsPage = () => {
             const currentColorName = currentColorRaw.includes("_")
               ? currentColorRaw.split("_")[0]
               : currentColorRaw;
+            const availableColorNames = (product.selectedColors || []).map((colorRaw) => (
+              colorRaw && colorRaw.includes("_") ? colorRaw.split("_")[0] : colorRaw
+            ));
 
             // Find similar products: same name but different product IDs
             // This mimics Myntra/Ajio's "more colors" feature
@@ -821,6 +825,7 @@ const IndividualProductDetailsPage = () => {
                 similarProducts={similarProducts}
                 currentProductId={product.id}
                 currentColorName={currentColorName}
+                availableColorNames={availableColorNames}
                 totalInventory={totalInventory}
                 isSaree={isSaree}
               />
@@ -835,6 +840,7 @@ const IndividualProductDetailsPage = () => {
               selectedSize={selectedSize}
               showError={showSizeError}
               shake={shakeSizeSelector}
+              sizeChart={product?.sizeChart}
             />
           )}
 

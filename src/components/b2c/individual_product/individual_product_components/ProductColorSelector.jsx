@@ -2,13 +2,36 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import colorUtils from "../../../utils/colorUtils";
 
-const ProductColorSelector = ({ similarProducts = [], currentProductId, currentColorName = "", totalInventory = 0, isSaree = false }) => {
+const ProductColorSelector = ({
+  similarProducts = [],
+  currentProductId,
+  currentColorName = "",
+  availableColorNames = [],
+  totalInventory = 0,
+  isSaree = false
+}) => {
   const navigate = useNavigate();
 
   // If no similar products at all, don't render
   if (similarProducts.length === 0) return null;
 
   const shouldShowInventory = isSaree && totalInventory > 0 && totalInventory < 10;
+
+  const colorToProductId = similarProducts.reduce((acc, sp) => {
+    const key = (sp.colorName || "").trim().toLowerCase();
+    if (key && !acc[key]) {
+      acc[key] = sp.id;
+    }
+    return acc;
+  }, {});
+
+  const availableColors = Array.from(
+    new Set(
+      [...availableColorNames, ...similarProducts.map((sp) => sp.colorName)]
+        .map((name) => (name || "").trim())
+        .filter(Boolean)
+    )
+  );
 
   const handleProductClick = (productId) => {
     if (String(productId) !== String(currentProductId)) {
@@ -18,7 +41,7 @@ const ProductColorSelector = ({ similarProducts = [], currentProductId, currentC
 
   return (
     <div className="flex flex-col w-full" style={{ gap: "10px" }}>
-      {/* Label: COLOUR: <color circle> */}
+      {/* Label: COLOUR: all available color circles */}
       <div
         style={{
           display: "flex",
@@ -33,17 +56,31 @@ const ProductColorSelector = ({ similarProducts = [], currentProductId, currentC
         }}
       >
         <span>COLOUR:</span>
-        <span
-          style={{
-            display: "inline-block",
-            width: "20px",
-            height: "20px",
-            borderRadius: "50%",
-            backgroundColor: colorUtils.getHexFromName(currentColorName),
-            border: "1px solid #E5E7EB",
-          }}
-          title={currentColorName}
-        />
+        <div className="flex items-center flex-wrap" style={{ gap: "6px" }}>
+          {(availableColors.length ? availableColors : [currentColorName]).map((colorName) => {
+            const isCurrent = (colorName || "").toLowerCase() === (currentColorName || "").toLowerCase();
+            const targetProductId = colorToProductId[(colorName || "").toLowerCase()];
+            return (
+              <button
+                key={colorName || "default-color"}
+                type="button"
+                onClick={() => targetProductId && handleProductClick(targetProductId)}
+                style={{
+                  display: "inline-block",
+                  width: "20px",
+                  height: "20px",
+                  borderRadius: "50%",
+                  backgroundColor: colorUtils.getHexFromName(colorName || currentColorName),
+                  border: isCurrent ? "2px solid #33022F" : "1px solid #E5E7EB",
+                  boxShadow: isCurrent ? "0 0 0 1px #FFFFFF inset" : "none",
+                  cursor: targetProductId ? "pointer" : "default",
+                }}
+                title={colorName || currentColorName}
+                aria-label={`Color ${colorName || currentColorName}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Similar Product Thumbnails */}

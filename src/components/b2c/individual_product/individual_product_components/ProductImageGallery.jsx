@@ -9,6 +9,8 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
   const [lensPosition, setLensPosition] = useState({ x: 50, y: 50 });
   const scrollContainerRef = useRef(null);
   const mainImageRef = useRef(null);
+  const galleryRef = useRef(null);
+  const [magnifierStyle, setMagnifierStyle] = useState(null);
   const lastScrollTop = useRef(0); // Store last scroll position
 
   const normalizedDressType = (product?.dressType || "").toLowerCase();
@@ -50,6 +52,21 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     setIsLensActive(false);
   }, [product?.id, images.length]);
 
+  useEffect(() => {
+    if (!isLensActive) return;
+
+    const handlePointerMove = (event) => {
+      if (!mainImageRef.current) return;
+
+      if (!mainImageRef.current.contains(event.target)) {
+        closeMagnifier();
+      }
+    };
+
+    document.addEventListener("pointermove", handlePointerMove);
+    return () => document.removeEventListener("pointermove", handlePointerMove);
+  }, [isLensActive]);
+
   const handleMainImageMouseMove = (e) => {
     if (!mainImageRef.current) return;
 
@@ -60,6 +77,20 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
     const clampedX = Math.min(100, Math.max(0, x));
     const clampedY = Math.min(100, Math.max(0, y));
     setLensPosition({ x: clampedX, y: clampedY });
+
+    // Compute magnifier position (fixed) on the right side of the main image
+    const gap = 16; // px gap between image and magnifier
+    const magnifierWidth = Math.round(rect.width);
+    const magnifierHeight = Math.round((magnifierWidth * 4) / 3);
+    const left = Math.min(window.innerWidth - magnifierWidth - 24, rect.right + gap);
+    const top = Math.max(168, rect.top);
+
+    setMagnifierStyle({ left, top, width: magnifierWidth, height: magnifierHeight });
+  };
+
+  const closeMagnifier = () => {
+    setIsLensActive(false);
+    setMagnifierStyle(null);
   };
 
   // Save scroll position before interaction
@@ -342,14 +373,14 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
             left: "89px",
             top: "0px",
             width: "349px",
-            height: "505px",
+            aspectRatio: "3 / 4",
           }}
           ref={mainImageRef}
           onMouseMove={handleMainImageMouseMove}
           onMouseEnter={() => {
             if (selectedImage && !imageError) setIsLensActive(true);
           }}
-          onMouseLeave={() => setIsLensActive(false)}
+          onMouseLeave={closeMagnifier}
         >
           {imageError ? (
             <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
@@ -371,18 +402,21 @@ const ProductImageGallery = ({ images = [], product = {} }) => {
 
 
 
-          {isLensActive && selectedImage && !imageError && (
+          {isLensActive && selectedImage && !imageError && magnifierStyle && ReactDOM.createPortal(
             <div
-              className="pointer-events-none absolute w-36 h-36 rounded-full shadow-2xl"
+              className="pointer-events-none fixed z-50 bg-white rounded-sm shadow-2xl border border-gray-200 overflow-hidden"
               style={{
-                left: `calc(${lensPosition.x}% - 72px)`,
-                top: `calc(${lensPosition.y}% - 72px)`,
+                left: magnifierStyle.left,
+                top: magnifierStyle.top,
+                width: magnifierStyle.width,
+                height: magnifierStyle.height,
                 backgroundImage: `url(${selectedImage})`,
                 backgroundRepeat: "no-repeat",
-                backgroundSize: "400% 400%",
+                backgroundSize: `240% 240%`,
                 backgroundPosition: `${lensPosition.x}% ${lensPosition.y}%`,
               }}
-            />
+            />,
+            document.body
           )}
         </div>
       </div>
