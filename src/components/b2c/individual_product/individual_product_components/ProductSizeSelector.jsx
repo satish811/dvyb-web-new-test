@@ -7,6 +7,7 @@ const ProductSizeSelector = ({
   onSizeSelect,
   selectedSize,
   showError,
+  sizeChart = null,
 }) => {
   const [internalSelectedSize, setInternalSelectedSize] = useState(null);
   const [showSizeChart, setShowSizeChart] = useState(false);
@@ -244,7 +245,7 @@ const ProductSizeSelector = ({
       </div>
 
       {/* Size Chart Popup */}
-      {showSizeChart && <SizeChartPopup onClose={handleCloseSizeChart} />}
+      {showSizeChart && <SizeChartPopup onClose={handleCloseSizeChart} sizeChart={sizeChart} />}
     </>
   );
 };

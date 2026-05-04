@@ -2,19 +2,60 @@ import { X, Ruler } from "lucide-react";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
-export default function SizeChartPopup({ onClose }) {
-  const sizeChart = {
-    title: "Clothing Size Guide",
-    units: "All measurements in inches",
-    headers: ["Size", "Chest", "Waist", "Hip"],
-    data: [
-      { size: "S", chest: "34-36", waist: "28-30", hip: "36-38" },
-      { size: "M", chest: "38-40", waist: "32-34", hip: "40-42" },
-      { size: "L", chest: "42-44", waist: "36-38", hip: "44-46" },
-      { size: "XL", chest: "46-48", waist: "40-42", hip: "48-50" },
-      { size: "XXL", chest: "50-52", waist: "44-46", hip: "52-54" },
-    ],
-  };
+const DEFAULT_HEADERS = ["Size", "Bust", "Waist", "Hip"];
+
+const normalizeCellValue = (value) => {
+  if (value === null || value === undefined || value === "") return "-";
+  return String(value);
+};
+
+// const buildRows = (sizeChart) => {
+//   if (!sizeChart || typeof sizeChart !== "object") return [];
+
+//   const unit = (sizeChart.unit || "inch").toLowerCase();
+//   const sourceRows = unit === "cm" ? sizeChart.rowsCm : sizeChart.rows;
+
+//   if (!Array.isArray(sourceRows)) return [];
+
+//   return sourceRows.map((row) => ({
+//     size: normalizeCellValue(row?.size),
+//     bust: normalizeCellValue(row?.bust),
+//     waist: normalizeCellValue(row?.waist),
+//     hip: normalizeCellValue(row?.hip),
+//   }));
+// };
+
+const buildRows = (sizeChart) => {
+  if (!sizeChart || typeof sizeChart !== "object") return [];
+
+  const unit = (sizeChart.unit || "inch").toLowerCase();
+
+  let sourceRows = [];
+
+  if (unit === "cm" && Array.isArray(sizeChart.rowsCm)) {
+    sourceRows = sizeChart.rowsCm;
+  } else if (Array.isArray(sizeChart.rows)) {
+    sourceRows = sizeChart.rows;
+  }
+
+  return sourceRows.map((row) => ({
+    size: normalizeCellValue(row?.size),
+    bust: normalizeCellValue(row?.bust),
+    waist: normalizeCellValue(row?.waist),
+    hip: normalizeCellValue(row?.hip),
+  }));
+};
+
+export default function SizeChartPopup({ onClose, sizeChart }) {
+  const title = sizeChart?.title || "Clothing Size Guide";
+  const unit = (sizeChart?.unit || "inch").toLowerCase();
+  const unitsLabel = unit === "cm" ? "All measurements in centimeters" : "All measurements in inches";
+  // const headers = sizeChart?.headers || DEFAULT_HEADERS;
+  const headers =
+  Array.isArray(sizeChart?.headers) && sizeChart.headers.length === 4
+    ? sizeChart.headers
+    : DEFAULT_HEADERS;
+  const data = buildRows(sizeChart);
 
   // Lock body scroll while modal is open, preserving current scroll position
   useEffect(() => {
@@ -77,54 +118,44 @@ export default function SizeChartPopup({ onClose }) {
             <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-3">
               <Ruler className="w-6 h-6 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">{sizeChart.title}</h2>
-            <p className="text-sm text-gray-600">{sizeChart.units}</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">{title}</h2>
+            <p className="text-sm text-gray-600">{unitsLabel}</p>
           </div>
 
           {/* Size Chart Table */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-200 text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  {sizeChart.headers.map((header, index) => (
-                    <th
-                      key={index}
-                      className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-900"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sizeChart.data.map((row, rowIndex) => (
-                  <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-700 font-medium">
-                      {row.size}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.chest}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.waist}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.hip}</td>
+            {data.length > 0 ? (
+              <table className="w-full border-collapse border border-gray-200 text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    {headers.map((header, index) => (
+                      <th
+                        key={index}
+                        className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-900"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Measurement Guide */}
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-2 text-sm">How to Measure</h3>
-            <ul className="text-xs text-gray-700 space-y-1">
-              <li>
-                • <strong>Chest:</strong> Measure around the fullest part
-              </li>
-              <li>
-                • <strong>Waist:</strong> Measure around natural waistline
-              </li>
-              <li>
-                • <strong>Hip:</strong> Measure around the fullest part
-              </li>
-            </ul>
+                </thead>
+                <tbody>
+                  {data.map((row, rowIndex) => (
+                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <td className="border border-gray-300 px-3 py-2 text-gray-700 font-medium">
+                        {row.size}
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.bust}</td>
+                      <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.waist}</td>
+                      <td className="border border-gray-300 px-3 py-2 text-gray-700">{row.hip}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="rounded-lg border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-600">
+                Size chart not available for this product.
+              </div>
+            )}
           </div>
 
           {/* Footer Note */}

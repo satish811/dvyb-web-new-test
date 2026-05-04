@@ -208,6 +208,7 @@ const IndividualProductDetailsPage = () => {
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
 
   const product = products.find((p) => String(p.id) === String(id));
+  console.log("SIZE CHART:", product?.sizeChart);
   console.log("🛍️ [Product Details] Full product data:", product);
 
   if (!product) return <div className="text-center py-10 text-gray-500">Product not found.</div>;
@@ -839,6 +840,7 @@ const IndividualProductDetailsPage = () => {
               selectedSize={selectedSize}
               showError={showSizeError}
               shake={shakeSizeSelector}
+              sizeChart={product?.sizeChart}
             />
           )}
 
