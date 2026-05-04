@@ -30,6 +30,8 @@ export default function Home() {
   const location = useLocation();
   const { userRole } = useAuth();
   const [mobileTab, setMobileTab] = useState("women");
+  const womenHeroObjectPosition = 'center 12%';
+  const menHeroObjectPosition = 'center 10%';
   const isB2B = userRole === "B2B";
   useScrollRestore(loading);
 
@@ -117,12 +119,11 @@ export default function Home() {
               <img
                 src={homeBannerWomen}
                 alt="Women's Fashion"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover"
+                style={{ objectPosition: womenHeroObjectPosition }}
               />
-              {/* Gradient Overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-b from-[#33022F]/40 via-transparent to-[#33022F]/80"></div>
 
-              {/* Content Overlay */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 pt-16">
                 <h1
                   className="text-white drop-shadow-xl mb-3 text-[14vw] sm:text-[56px]"
@@ -209,7 +210,7 @@ export default function Home() {
               <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
                 <button
                   type="button"
-                  className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-[#ffffff] flex flex-col items-center justify-center border-t border-white/20 uppercase"
+                  className="bg-[#FFFFFF1A] backdrop-blur-md w-full py-4 sm:py-5 text-white flex flex-col items-center justify-center border-t border-white/20 uppercase"
                 >
                   <span style={{
                     fontFamily: "Outfit, sans-serif",
@@ -231,18 +232,16 @@ export default function Home() {
 
       {/* DESKTOP HERO SECTION (Hidden on Mobile) */}
       <section className="hidden md:flex relative w-full overflow-hidden h-[calc(100dvh-64px)] md:max-h-[800px] xl:max-h-none flex-row">
-
-    {/* Left Side - Women */}
+        {/* Left Side - Women */}
         <div className="relative w-1/2 h-full">
           <img
             src={homeBannerWomen}
             alt="Women's Fashion"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 40%' }}
+            style={{ objectPosition: womenHeroObjectPosition }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
-          {/* Dark gradient at the bottom for text readability, similar to the image's bottom bar */}
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
 
           <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
@@ -265,17 +264,16 @@ export default function Home() {
           </div>
         </div>
 
-      {/* Right Side - Men */}
+        {/* Right Side - Men */}
         <div className="relative w-1/2 h-full">
           <img
             src={homeBannerMen}
             alt="Men's Fashion"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center 30%' }}
+            style={{ objectPosition: menHeroObjectPosition }}
           />
           <div className="absolute inset-0 bg-black/10"></div>
 
-          {/* Dark gradient at the bottom for text readability, similar to the image's bottom bar */}
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
 
           <div className="absolute bottom-0 w-full flex justify-center pointer-events-auto">
