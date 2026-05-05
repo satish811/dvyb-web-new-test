@@ -265,6 +265,8 @@ export default function CartPage() {
 
   // State for Layout
   const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountAmount }
+  const [promoMessage, setPromoMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const dummyShareUrl = `https://villy.com/shared-cart/${Date.now()}`;
@@ -449,7 +451,47 @@ export default function CartPage() {
   const isFreeShipping = subtotal >= MINIMUM_FREE_SHIPPING;
   const shipping = isFreeShipping ? 0 : 100; // ₹100 shipping if below threshold
   const tax = subtotal * 0.18; // 18% GST example
-  const total = subtotal + shipping + tax;
+
+  // Promo logic: NEW10 => 10% off on in-stock items when cart subtotal >= 5000
+  const eligibleSubtotal = displayCartItems.reduce((sum, item) => {
+    const out = isProductOutOfStock(item);
+    return sum + (out ? 0 : item.price * item.quantity);
+  }, 0);
+
+  const computePromoDiscount = (code) => {
+    if (!code) return 0;
+    const normalized = String(code).trim().toUpperCase();
+    if (normalized === 'NEW10') {
+      // Minimum order check uses full subtotal (including OOS items)
+      if (subtotal < 5000) return 0;
+      return Math.round(eligibleSubtotal * 0.10);
+    }
+    return 0;
+  };
+
+  const discountAmount = appliedPromo && appliedPromo.code ? appliedPromo.discountAmount : 0;
+
+  const total = subtotal + shipping + tax - discountAmount;
+
+  // Recompute promo discount if cart changes or applied promo exists
+  useEffect(() => {
+    if (appliedPromo?.code) {
+      const newDiscount = computePromoDiscount(appliedPromo.code);
+      if (newDiscount > 0) {
+        setAppliedPromo({ ...appliedPromo, discountAmount: newDiscount });
+        setPromoMessage(`Applied ${appliedPromo.code}: ₹${newDiscount.toLocaleString()} off`);
+      } else {
+        setAppliedPromo(null);
+        if (appliedPromo.code === 'NEW10') {
+          if (subtotal < 5000) setPromoMessage('NEW10 requires minimum order of ₹5,000');
+          else setPromoMessage('NEW10 applies only to in-stock items in your cart');
+        } else {
+          setPromoMessage('Promo no longer applicable');
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems, products]);
 
   if (loading || productsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -508,18 +550,41 @@ export default function CartPage() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Coming soon"
-                      disabled
-                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
+                      placeholder="Enter code (e.g. NEW10)"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm bg-white"
                     />
                     <button
-                      disabled
-                      className="bg-gray-300 text-gray-500 px-4 py-2 rounded-md text-sm font-medium cursor-not-allowed"
+                      onClick={() => {
+                        const code = String(promoCode || '').trim().toUpperCase();
+                        if (!code) {
+                          setPromoMessage('Please enter a promo code');
+                          return;
+                        }
+
+                        const discount = computePromoDiscount(code);
+                        if (discount > 0) {
+                          setAppliedPromo({ code, discountAmount: discount });
+                          setPromoMessage(`Applied ${code}: ₹${discount.toLocaleString()} off`);
+                        } else {
+                          // Provide specific feedback
+                          if (code === 'NEW10' && subtotal < 5000) {
+                            setPromoMessage('NEW10 requires minimum order of ₹5,000');
+                          } else if (code === 'NEW10' && eligibleSubtotal === 0) {
+                            setPromoMessage('NEW10 applies only to in-stock items in your cart');
+                          } else {
+                            setPromoMessage('Invalid or inapplicable promo code');
+                          }
+                          setAppliedPromo(null);
+                        }
+                      }}
+                      className="bg-[#33022F] text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-95 transition"
                     >
                       Apply
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Promo codes coming soon!</p>
+                  <p className="text-xs mt-1" style={{ color: promoMessage.includes('Applied') ? '#16A34A' : '#6B7280' }}>{promoMessage || 'Enter NEW10 for 10% off on in-stock items (min ₹5,000)'} </p>
                 </div>
 
                 {/* Costs */}
@@ -540,6 +605,12 @@ export default function CartPage() {
                     <span>Tax (18% GST)</span>
                     <span className="font-medium text-gray-900">₹{tax.toLocaleString()}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Promo ({appliedPromo?.code})</span>
+                      <span className="font-medium text-green-600">-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Total */}
