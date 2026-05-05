@@ -858,7 +858,7 @@ const UploadSelfieModal = ({
               </div>
               <div className="flex gap-4 items-center px-1 pb-1">
                 <img src={garmentImage} className="h-[52px] w-[52px] rounded-lg object-cover shadow-sm bg-gray-50" alt="Garment" />
-                <p className="text-[14px] font-medium text-gray-800 line-clamp-2 pr-2">{garmentName}</p>
+                <p className="text-[14px] font-medium text-gray-800 line-clamp-2 text-center capitalize pr-2">{garmentName}</p>
               </div>
             </div>
 
@@ -1248,7 +1248,7 @@ const UploadSelfieModal = ({
                         alt={model.name || "Saved model"}
                         className="w-full h-[240px] object-contain rounded"
                       />
-                      <p className="text-center mt-2 text-sm font-medium text-gray-700">
+                      <p className="text-center mt-2 text-sm font-medium text-gray-700 capitalize">
                         {model.name || "My Model"}
                       </p>
 
@@ -1297,7 +1297,7 @@ const UploadSelfieModal = ({
                         alt={model.modelName}
                         className="w-full h-[240px] object-contain rounded"
                       />
-                      <p className="text-center mt-2 text-sm font-medium text-gray-700">
+                      <p className="text-center mt-2 text-sm font-medium text-gray-700 capitalize">
                         {model.modelName}
                       </p>
 
@@ -1427,7 +1427,7 @@ const UploadSelfieModal = ({
                 <span className="text-sm font-semibold text-[#15912C]">SELECTED DRESS</span>
                 <img src={Tickic} className="h-4 w-4" alt="check" />
               </div>
-              <p className="text-sm text-gray-700 line-clamp-2">{garmentName}</p>
+              <p className="text-sm text-gray-700 line-clamp-2 text-center capitalize">{garmentName}</p>
             </div>
 
             {/* ---------- Model Card ---------- */}
@@ -1443,13 +1443,13 @@ const UploadSelfieModal = ({
                 <span className="text-sm font-semibold text-[#15912C]">SELECTED MODEL</span>
                 <img src={Tickic} className="h-4 w-4" alt="check" />
               </div>
-              <p className="text-sm text-gray-700 text-center">{selectedModel.name}</p>
+              <p className="text-sm text-gray-700 text-center capitalize">{selectedModel.name}</p>
             </div>
           </div>
-
+{/* 
           <div className="flex flex-col md:flex-row gap-2 md:gap-4 mt-4">
             {/* Select Another Dress */}
-            <button
+            {/* <button
               onClick={() => {
                 onClose();
                 navigate(`/products/${tryOnData?.productId}`);
@@ -1458,9 +1458,9 @@ const UploadSelfieModal = ({
               style={{ background: 'var(--villy-primary, #33022F)' }}
             >
               Select Another Dress
-            </button>
+            </button> */} 
 
-            {/* Select Another Model */}
+            {/* Select Another Model
             <button
               onClick={() => {
                 setShowModelPreview(false);
@@ -1471,7 +1471,7 @@ const UploadSelfieModal = ({
             >
               Select Another Model
             </button>
-          </div>
+          </div> */}
 
           {/* ---------- Continue button (bottom-right) ---------- */}
           <div className="flex justify-center md:justify-end mt-6 md:mt-8">
