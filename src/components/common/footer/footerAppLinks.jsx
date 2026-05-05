@@ -10,7 +10,8 @@ const FooterAppLinks = () => {
           className="h-10 md:h-16 w-auto"
         />
       </a>
-      <a href="#">
+
+      <a href="https://play.google.com/store/apps/details?id=com.dvybcb.flutter_dvybc&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
           alt="Google Play"
