@@ -296,22 +296,22 @@ const UploadSelfieModal = ({
       {
         modelName: "Tan Petite Curvy",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1778071686/WhatsApp_Image_2026-05-06_at_4.52.11_PM_ejqnrw.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481516/MODEL1_qcuzkx.png",
       },
       {
         modelName: "Medium Athletic",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1778071686/WhatsApp_Image_2026-05-06_at_4.52.10_PM_1_v9nmg5.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481520/MODEL3_qdbhv3.png",
       },
       {
         modelName: "Fair Slender",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1778071686/WhatsApp_Image_2026-05-06_at_4.52.10_PM_2_uehta3.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777487806/MODEL2-S_yec4p0.png",
       },
       {
         modelName: "Dusky Lean",
         modelimg:
-          "https://res.cloudinary.com/doiezptnn/image/upload/v1778071686/WhatsApp_Image_2026-05-06_at_4.52.10_PM_uxt75z.jpg",
+          "https://res.cloudinary.com/doiezptnn/image/upload/v1777481518/MODEL4_ymhgj5.png",
       },
     ];
 
