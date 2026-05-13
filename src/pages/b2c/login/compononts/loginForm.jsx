@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import CountryCodeDropdown from "../../../../components/common/login/countryCodeDropdown";
 import { setupRecaptcha, sendOtp, cleanupRecaptcha } from "../../../../services/otpService";
+import authService from "../../../../services/authService";
+import { FcGoogle } from "react-icons/fc";
 import loginBanner from "@/assets/common/login/loginBanner.svg";
 
-const LoginForm = ({ onOtpSent, onGuest }) => {
+const LoginForm = ({ onOtpSent, onGoogleSuccess }) => {
   const [countryCode, setCountryCode] = useState("+91");
   const [mobile, setMobile] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     // Initialize reCAPTCHA when component mounts
@@ -52,6 +55,19 @@ const LoginForm = ({ onOtpSent, onGuest }) => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await authService.loginWithGoogle();
+      onGoogleSuccess(result);
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      alert(error.message);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white py-2 sm:py-4 md:py-6  w-full max-w-md mx-auto font-outfit mb-12">
       <img src={loginBanner} alt="login-banner" className=" mb-4 w-full object-cover h-52" />
@@ -71,7 +87,7 @@ const LoginForm = ({ onOtpSent, onGuest }) => {
         </div>
         <button
           type="submit"
-          disabled={loading || mobile.length < 10}
+          disabled={loading || mobile.length < 10 || googleLoading}
           className="bg-primary text-white p-3 hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {loading ? "Sending..." : "SIGNUP / LOGIN"}
@@ -81,10 +97,14 @@ const LoginForm = ({ onOtpSent, onGuest }) => {
         </div>
         <button
           type="button"
-          onClick={onGuest}
-          className="border border-primary text-primary p-2 hover:bg-color-secondary"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading || loading}
+          className="flex items-center justify-center gap-3 border border-gray-300 p-2.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
-          CHECK OUT AS GUEST
+          <FcGoogle size={22} />
+          <span className="text-gray-700 font-medium">
+            {googleLoading ? "Connecting..." : "CONTINUE WITH GOOGLE"}
+          </span>
         </button>
         <div className="text-xs text-center text-gray-500">
           By continuing, I agree to{" "}

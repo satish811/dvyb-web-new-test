@@ -90,14 +90,14 @@ class AuthenticationService {
             ...extraData,
           });
 
-      await setDoc(doc(db, "B2BBulkOrders_users", user.uid), userDoc);
+      await setDoc(doc(db, collection, user.uid), { ...userData });
 
       return {
         success: true,
-        user: userDoc,
+        user: userData,
       };
     } catch (error) {
-      console.error("B2B Registration error:", error);
+      console.error("Registration error:", error);
       throw new Error(this.getErrorMessage(error.code));
     }
   }
@@ -228,6 +228,68 @@ class AuthenticationService {
         error: error.message || "Failed to fetch user",
       };
     }
+  }
+
+  /** Google Login for B2C */
+  async loginWithGoogle() {
+    try {
+      const result = await signInWithPopup(this.auth, this.googleProvider);
+      const user = result.user;
+
+      // Check if user already exists in B2C collection
+      const userDoc = await getDoc(doc(this.db, this.b2cCollection, user.uid));
+
+      let userData;
+      if (userDoc.exists()) {
+        const existingData = userDoc.data();
+        userData = {
+          ...existingData,
+          collection: this.b2cCollection,
+          role: "B2C",
+          route: "/",
+        };
+        await this.saveAuthToken(user);
+        return { user, userData };
+      } else {
+        // Create new B2C user model
+        const newUserModel = new B2CUserModel({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "",
+          profilePic: user.photoURL || "",
+        });
+
+        const userObject = JSON.parse(JSON.stringify(newUserModel));
+        await setDoc(doc(this.db, this.b2cCollection, user.uid), userObject);
+
+        userData = {
+          ...userObject,
+          collection: this.b2cCollection,
+          role: "B2C",
+          route: "/",
+        };
+        await this.saveAuthToken(user);
+        return { user, userData };
+      }
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      throw new Error(this.getErrorMessage(error.code));
+    }
+  }
+
+  /** Translate Firebase error codes to readable messages */
+  getErrorMessage(code) {
+    const errors = {
+      "auth/email-already-in-use": "This email is already registered. Please login instead.",
+      "auth/invalid-email": "Invalid email address format.",
+      "auth/weak-password": "Password is too weak. (Min 6 characters)",
+      "auth/wrong-password": "Incorrect password.",
+      "auth/user-not-found": "No account found with this email.",
+      "auth/too-many-requests": "Too many attempts. Please try again later.",
+      "auth/popup-closed-by-user": "Login popup was closed before completion.",
+      "auth/cancelled-popup-request": "Login process was cancelled.",
+    };
+    return errors[code] || "Authentication failed. Please try again.";
   }
 }
 

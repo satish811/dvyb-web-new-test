@@ -203,7 +203,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     // Default B2C Login
     return (
       <>
-        <LoginForm onOtpSent={handleOtpSent} onGuest={handleGuestCheckout} />
+        <LoginForm onOtpSent={handleOtpSent} onGoogleSuccess={handleOtpSuccess} />
 
         {/* Divider */}
         <div className="flex items-center justify-center text-gray-500 my-2">

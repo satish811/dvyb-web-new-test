@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import OtpInput from "./otpInput";
 import { verifyOtp } from "../../../services/otpService";
+import { Loader2 } from "lucide-react";
 import otpBanner from "../../../assets/common/login/loginBanner.svg";
 
 const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend }) => {
@@ -23,15 +24,14 @@ const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend })
     }
   }, [resendCooldown]);
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    if (locked) return;
+  const performVerification = async (enteredOtp) => {
+    if (locked || !enteredOtp || enteredOtp.length < 6) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const { user, userData } = await verifyOtp(confirmation, otp, mobile);
+      const { user, userData } = await verifyOtp(confirmation, enteredOtp, mobile);
 
       console.log("✅ OTP Verified & User Collection:", {
         userId: user.uid,
@@ -40,10 +40,7 @@ const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend })
         route: userData.route,
       });
 
-      // Reset attempts on success
       setAttempts(0);
-
-      // Pass both user and userData to onSuccess
       onSuccess({ user, userData });
     } catch (err) {
       const newAttempts = attempts + 1;
@@ -61,15 +58,20 @@ const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend })
       if (newAttempts >= maxAttempts) {
         setLocked(true);
         setTimeout(() => {
-          onResend(); // Force resend after lock
+          onResend();
           setLocked(false);
-          setAttempts(0); // Reset after resend
-        }, 5000); // 5s delay before forcing resend
+          setAttempts(0);
+        }, 5000);
       }
     } finally {
       setLoading(false);
-      if (!locked) setOtp(""); // Clear input on fail (unless locked)
+      if (!locked) setOtp("");
     }
+  };
+
+  const handleVerify = (e) => {
+    e.preventDefault();
+    performVerification(otp);
   };
 
   const handleResend = () => {
@@ -104,7 +106,8 @@ const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend })
             onChange={setOtp}
             length={6}
             onComplete={(value) => {
-              console.log("OTP Complete:", value);
+              console.log("OTP Complete - Auto Verifying:", value);
+              performVerification(value);
             }}
             error={error}
             autoFocus
@@ -173,9 +176,18 @@ const OtpVerification = ({ confirmation, mobile, onSuccess, onError, onResend })
           <button
             type="submit"
             disabled={loading || locked || otp.length < 6}
-            className={`w-full py-2 mt-4 ${locked ? "bg-gray-300 cursor-not-allowed" : "bg-primary"} text-white`}
+            className={`w-full py-2 mt-4 flex items-center justify-center gap-2 ${locked ? "bg-gray-300 cursor-not-allowed" : "bg-primary"} text-white transition-all`}
           >
-            {loading ? "Verifying..." : locked ? "Locked - Resending..." : "VERIFY OTP"}
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>VERIFYING...</span>
+              </>
+            ) : locked ? (
+              "LOCKED - RESENDING..."
+            ) : (
+              "VERIFY OTP"
+            )}
           </button>
         </form>
       </div>
